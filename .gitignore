@@ -1,0 +1,15 @@
+### App specific ###
+/dist/
+big_flu
+/data/
+/releases/
+server.dist.js
+/static/
+s3/
+
+### OSX ###
+.DS_Store
+
+### npm ###
+node_modules/
+npm-debug.log
