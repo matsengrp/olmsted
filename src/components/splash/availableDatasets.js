@@ -7,7 +7,7 @@ const formatDataset = (dataset, dispatch) => {
   return (
     <tr key={dataset.id}
       style={{backgroundColor: dataset.selected ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"}}
-      onClick={() => dispatch({type: TOGGLE_DATASET, dataset: dataset.id})}>
+      onClick={() => dispatch({type: TOGGLE_DATASET, dataset: dataset})}>
       <td><input style={{marginLeft: "5px"}} type="checkbox" checked={dataset.selected}></input></td>
       <td>{dataset.id}</td>
       <td>{dataset.n_subjects}</td>

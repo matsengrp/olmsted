@@ -22,8 +22,11 @@ const datasets = (state = {
         datapath: action.datapath});
 
     } case types.TOGGLE_DATASET: {
+      var toggled = action.dataset;
+      console.log("Reducer fired; state: ", state.availableDatasets);
+      Object.assign(toggled, {selected: !action.dataset.selected});
       return Object.assign({}, state, {
-        displayComponent: action.displayComponent,
+        availableDatasets: Object.assign(state.availableDatasets, toggled),
         datapath: action.datapath,
         errorMessage: action.errorMessage
       });
