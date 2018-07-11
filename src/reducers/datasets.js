@@ -28,17 +28,11 @@ const datasets = (state = {
         datapath: action.datapath});
 
     } case types.TOGGLE_DATASET: {
-      // var toggled = action.dataset;
-      // console.log("Reducer fired; state: ", state.availableDatasets);
-      // Object.assign(toggled, {selected: !action.dataset.selected});
-
-
       var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
         (dataset.id === action.dataset_id)
           ? {...dataset, selected: !dataset.selected}
           : dataset
       )
-
       return Object.assign({}, state, {
         availableDatasets: updatedAvailableDatasets,
         datapath: action.datapath,
