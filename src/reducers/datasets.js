@@ -3,7 +3,7 @@ import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
 const datasets = (state = {
   s3bucket: "live",
-  availableDatasets: undefined,
+  availableDatasets: [],
   splash: undefined,
   datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
   displayComponent: chooseDisplayComponentFromPathname(window.location.pathname),
@@ -12,7 +12,13 @@ const datasets = (state = {
   errorMessage: undefined
 }, action) => {
   switch (action.type) {
-
+    case types.PAGE_CHANGE: {
+      return Object.assign({}, state, {
+        displayComponent: action.displayComponent,
+        datapath: action.datapath,
+        errorMessage: action.errorMessage
+      });
+    }  
     case types.DATASETS_RECEIVED: {
       return Object.assign({}, state, {
         s3bucket: action.s3bucket,
@@ -22,11 +28,19 @@ const datasets = (state = {
         datapath: action.datapath});
 
     } case types.TOGGLE_DATASET: {
-      var toggled = action.dataset;
-      console.log("Reducer fired; state: ", state.availableDatasets);
-      Object.assign(toggled, {selected: !action.dataset.selected});
+      // var toggled = action.dataset;
+      // console.log("Reducer fired; state: ", state.availableDatasets);
+      // Object.assign(toggled, {selected: !action.dataset.selected});
+
+
+      var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
+        (dataset.id === action.dataset_id)
+          ? {...dataset, selected: !dataset.selected}
+          : dataset
+      )
+
       return Object.assign({}, state, {
-        availableDatasets: Object.assign(state.availableDatasets, toggled),
+        availableDatasets: updatedAvailableDatasets,
         datapath: action.datapath,
         errorMessage: action.errorMessage
       });
