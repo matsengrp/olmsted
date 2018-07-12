@@ -10,7 +10,7 @@ import { AppContainer } from 'react-hot-loader';
 import injectTapEventPlugin from "react-tap-event-plugin";
 import Monitor from "./components/framework/monitor";
 import App from "./components/app";
-import Splash from "./components/splash";
+import Splash from "./components/splash/index";
 import Status from "./components/status";
 import Notifications from "./components/notifications/notifications";
 import configureStore from "./store";
@@ -35,6 +35,7 @@ if (!window.NEXTSTRAIN) {window.NEXTSTRAIN = {};}
 /* google analytics */
 ReactGA.initialize(process.env.NODE_ENV === "production" ? "UA-92687617-1" : "UA-92687617-2");
 
+// ROUTING
 @connect((state) => ({displayComponent: state.datasets.displayComponent}))
 class MainComponentSwitch extends React.Component {
   render() {
@@ -50,7 +51,6 @@ class MainComponentSwitch extends React.Component {
     }
   }
 }
-
 
 const Root = () => {
   return (

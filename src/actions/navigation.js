@@ -5,9 +5,9 @@ import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
 
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
-  if (pathname === "/" || pathname === "/all") return "splash";
-  else if (pathname.startsWith("/status")) return "status";
-  return "app"; // fallthrough
+  // if (pathname === "/" || pathname === "/all") return "splash";
+  if (pathname.startsWith("/app")) return "app";
+  return "splash"; // fallthrough
 };
 
 export const getDatapath = (path, _) => {
@@ -74,9 +74,11 @@ export const browserBackForward = () => (dispatch, getState) => {
   const { datasets } = getState();
   /* if the pathname has changed, trigger the changePage action (will trigger new post to load, new dataset to load, etc) */
   // console.log("broswer back/forward detected. From: ", datasets.urlPath, datasets.urlSearch, "to:", window.location.pathname, window.location.search)
+  console.log('PATH', window.location.pathname);
   if (datasets.urlPath !== window.location.pathname) {
+    
     dispatch(changePage({path: window.location.pathname}));
   } else {
-    dispatch(changePageQuery({queryToUse: queryString.parse(window.location.search)}));
+    dispatch(changePageQuery({query: queryString.parse(window.location.search)}));
   }
 };

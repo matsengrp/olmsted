@@ -1,6 +1,11 @@
 import * as types from "../actions/types";
 import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
+export const filterDatasets = (datasets) => {
+  console.log('filter datasets:', datasets);
+  return datasets.filter(dataset => dataset.selected == true).map(dataset => dataset.id);
+};
+
 const datasets = (state = {
   s3bucket: "live",
   availableDatasets: [],
@@ -20,6 +25,7 @@ const datasets = (state = {
       });
     }  
     case types.DATASETS_RECEIVED: {
+      console.log('DATA SETS RECEIVED', action.availableDatasets);
       return Object.assign({}, state, {
         s3bucket: action.s3bucket,
         splash: action.splash,
@@ -28,6 +34,7 @@ const datasets = (state = {
         datapath: action.datapath});
 
     } case types.TOGGLE_DATASET: {
+      console.log(state.availableDatasets);
       var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
         (dataset.id === action.dataset_id)
           ? {...dataset, selected: !dataset.selected}

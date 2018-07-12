@@ -25,9 +25,13 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
   let pathname = window.location.pathname;
 
   /* first switch: query change */
+  query.tt = undefined;
   switch (action.type) {
     case types.CLEAN_START: // fallthrough
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: // fallthrough
+      console.log('URL QUERY CHANGE ACTION');
+      query = action.query;
+      break;
     case types.CHANGE_URL_QUERY_BUT_NOT_REDUX_STATE:
       query = action.query;
       break;
@@ -105,6 +109,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       if (action.query) {
         query = action.query;
       } else if (action.displayComponent !== state.datasets.displayComponent) {
+        console.log("action.displayComponent !== state.datasets.displayComponent");
         query = {};
       }
       break;

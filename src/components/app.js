@@ -18,13 +18,15 @@ import { analyticsNewPage } from "../util/googleAnalytics";
 import filesDropped from "../actions/filesDropped";
 import Narrative from "./narrative";
 import { calcUsableWidth, computeResponsive } from "../util/computeResponsive";
+import {filterDatasets } from "../reducers/datasets"
+import { changePage } from "../actions/navigation";
 
 const nextstrainLogo = require("../images/nextstrain-logo-small.png");
 
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
-const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHeight, panels, grid, narrative, frequenciesLoaded}) => {
+const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHeight, panels, grid, narrative, frequenciesLoaded, availableDatasets}) => {
   //if (showSpinner) {
     //return (<img className={"spinner"} src={nextstrainLogo} alt="loading" style={{marginTop: `${availableHeight / 2 - 100}px`}}/>);
   //}
@@ -39,12 +41,24 @@ const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHe
   const chart = computeResponsive({horizontal: chartWidthFraction, vertical: chartHeightFraction, availableWidth, availableHeight, minHeight: 150});
 
   /* TODO */
+  const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
+  <li>{dataset}</li>
+  );
+  
+  const divStyle = {
+    fontSize: 20,
+  }; 
   return (
     <div style={styles}>
       <h2>Clonal Families</h2>
+      <h1>CHOSEN DATASETS</h1>
+      <ul style={divStyle}>{chosenDatasets}</ul>
+
     </div>
   );
 };
+
+
 
 const Sidebar = ({styles, sidebarOpen, mobileDisplay, narrative, mapOn, toggleHandler}) => {
   return (
@@ -74,11 +88,13 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
   panelLayout: state.controls.panelLayout,
   displayNarrative: state.narrative.display,
   browserDimensions: state.browserDimensions.browserDimensions,
-  frequenciesLoaded: state.frequencies.loaded
+  frequenciesLoaded: state.frequencies.loaded,
+  availableDatasets: state.datasets.availableDatasets
 }))
 class App extends React.Component {
   constructor(props) {
     super(props);
+    console.log('state', props);
     /* window listener to see when width changes cross threshold to toggle sidebar */
     const mql = window.matchMedia(`(min-width: ${controlsHiddenWidth}px)`);
     mql.addListener(() => this.setState({
@@ -168,6 +184,7 @@ class App extends React.Component {
           grid={this.props.panelLayout === "grid"}
           narrative={this.props.displayNarrative}
           frequenciesLoaded={this.props.frequenciesLoaded}
+          availableDatasets={this.props.availableDatasets}
         />
         <Overlay
           styles={overlayStyles}

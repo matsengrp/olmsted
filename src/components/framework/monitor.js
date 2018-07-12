@@ -27,6 +27,7 @@ class Monitor extends React.Component {
   componentDidMount() {
     /* API call to charon to get initial datasets etc (needed to load the splash page) */
     getDatasets(this.props.dispatch);
+    //this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener( // future resizes
       "resize",
