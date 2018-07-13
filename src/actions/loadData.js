@@ -12,9 +12,15 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     const datapath = window.location.pathname.replace(/^\//, '').replace(/\/$/, '').replace('/', '_');
     dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
   };
-  const processData = (data) => {
+  const processData = (data, query) => {
     // console.log("SERVER API REQUEST RETURNED:", datasets);
-    const availableDatasets = JSON.parse(data);
+    var availableDatasets = JSON.parse(data);
+    const selectedDatasets = [].concat(query.selectedDatasets);
+    
+    availableDatasets = availableDatasets.map(dataset =>
+       Object.assign({...dataset, selected: selectedDatasets.includes(dataset.id)}) 
+    )
+    
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
       getDatapath(window.location.pathname, availableDatasets) :
       undefined;
@@ -25,6 +31,7 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
       user: "guest",
       datapath
     });
+
   };
 
   const query = queryString.parse(window.location.search);
@@ -33,7 +40,8 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onload = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText);
+      processData(xmlHttp.responseText, query);
+
     } else {
       charonErrorHandler();
     }

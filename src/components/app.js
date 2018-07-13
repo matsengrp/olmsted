@@ -44,7 +44,7 @@ const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHe
   const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
   <li>{dataset}</li>
   );
-  
+
   const divStyle = {
     fontSize: 20,
   }; 
@@ -94,7 +94,7 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    console.log('state', props);
+    // console.log('state', props);
     /* window listener to see when width changes cross threshold to toggle sidebar */
     const mql = window.matchMedia(`(min-width: ${controlsHiddenWidth}px)`);
     mql.addListener(() => this.setState({
@@ -173,7 +173,7 @@ class App extends React.Component {
 
     return (
       <span>
-        <DownloadModal/>
+        {/* <DownloadModal/> */}
         <Contents
           sidebarOpen={this.state.sidebarOpen}
           styles={contentStyles}

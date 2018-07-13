@@ -12,7 +12,7 @@ import treeToo from "./treeToo";
 
 const rootReducer = combineReducers({
   metadata,
-  tree,
+  // tree,
   frequencies,
   controls,
   entropy,

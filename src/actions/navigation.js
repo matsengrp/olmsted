@@ -1,6 +1,6 @@
 import queryString from "query-string";
 import parseParams from "../util/parseParams";
-import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
+import { modifyStateViaURLQuery } from "./recomputeReduxState";
 import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
 
 // This should be more clearly marked as part of the routing logic
@@ -61,10 +61,10 @@ ARGUMENTS:
 (2) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
 */
 export const changePageQuery = ({queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
-  const newState = createStateFromQueryOrJSONs({oldState: getState(), query: queryToUse});
+  const state =  getState();
   dispatch({
     type: URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
-    ...newState,
+    ...state,
     pushState: push,
     query: queryToDisplay ? queryToDisplay : queryToUse
   });
@@ -72,13 +72,15 @@ export const changePageQuery = ({queryToUse, queryToDisplay = false, push = true
 
 export const browserBackForward = () => (dispatch, getState) => {
   const { datasets } = getState();
+  // console.log('DATASETS',queryString.parse(window.location.search));
   /* if the pathname has changed, trigger the changePage action (will trigger new post to load, new dataset to load, etc) */
   // console.log("broswer back/forward detected. From: ", datasets.urlPath, datasets.urlSearch, "to:", window.location.pathname, window.location.search)
-  console.log('PATH', window.location.pathname);
+  // console.log('PATH', window.location.pathname);
   if (datasets.urlPath !== window.location.pathname) {
     
     dispatch(changePage({path: window.location.pathname}));
-  } else {
-    dispatch(changePageQuery({query: queryString.parse(window.location.search)}));
-  }
+  } 
+
+  dispatch(changePageQuery({queryToUse: queryString.parse(window.location.search)}));
+  
 };

@@ -8,7 +8,7 @@ import { getDatasets } from "../../actions/loadData";
 import { twoColumnBreakpoint } from "../../util/globals";
 
 @connect((state) => ({
-  displayNarrative: state.narrative.display,
+  displayNarrative: state.narrative.display, 
   canTogglePanelLayout: state.controls.canTogglePanelLayout
 }))
 class Monitor extends React.Component {
@@ -27,7 +27,7 @@ class Monitor extends React.Component {
   componentDidMount() {
     /* API call to charon to get initial datasets etc (needed to load the splash page) */
     getDatasets(this.props.dispatch);
-    //this.onURLChanged();
+    this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener( // future resizes
       "resize",

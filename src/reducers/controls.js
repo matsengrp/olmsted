@@ -70,7 +70,7 @@ export const getDefaultControlsState = () => {
 
 const Controls = (state = getDefaultControlsState(), action) => {
   switch (action.type) {
-    case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: /* fallthrough */
+    // case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: /* fallthrough */
     case types.CLEAN_START:
       return action.controls;
     case types.BRANCH_MOUSEENTER:
