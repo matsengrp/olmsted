@@ -1,7 +1,5 @@
 import queryString from "query-string";
 import * as types from "../actions/types";
-import { numericToCalendar } from "../util/dateHelpers";
-import { modifyStateViaURLQuery } from "../actions/recomputeReduxState";
 
 /* What is this middleware?
 This middleware acts to keep the app state and the URL query state in sync by intercepting actions
@@ -30,7 +28,6 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
   switch (action.type) {
     case types.CLEAN_START: // fallthrough
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: // fallthrough
-      // console.log('URL_QUERY_CHANGE_WITH_COMPUTE', action);
       query = action.query;
       break;
     case types.CHANGE_URL_QUERY_BUT_NOT_REDUX_STATE:
@@ -40,7 +37,6 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       if (action.query) {
         query = action.query;
       } else if (action.displayComponent !== state.datasets.displayComponent) {
-        // console.log("action.displayComponent !== state.datasets.displayComponent");
         query = {};
       }
       break;
@@ -65,9 +61,8 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     default:
       break;
   }
-  if(query){
 
-  
+  if(query){
     Object.keys(query).filter((k) => !query[k]).forEach((k) => delete query[k]);
     let search = queryString.stringify(query).replace(/%2C/g, ',').replace(/%2F/g, '/');
     if (search) {search = "?" + search;}
@@ -76,9 +71,6 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     if (pathname !== window.location.pathname || search !== window.location.search) {
       let newURLString = pathname;
       if (search) {newURLString += search;}
-      // if (pathname !== window.location.pathname) {console.log(pathname, window.location.pathname)}
-      // if (window.location.search !== search) {console.log(window.location.search, search)}
-      // console.log(`Action ${action.type} Changing URL from ${window.location.href} -> ${newURLString} (pushState: ${action.pushState})`);
       if (action.pushState === true) {
         window.history.pushState({}, "", newURLString);
       } else {
@@ -89,5 +81,6 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       next({type: types.URL, path: pathname, query: search});
     }
   }
+
   return result;
 };

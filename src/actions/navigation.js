@@ -1,6 +1,4 @@
 import queryString from "query-string";
-import parseParams from "../util/parseParams";
-import { modifyStateViaURLQuery } from "./recomputeReduxState";
 import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
 
 // This should be more clearly marked as part of the routing logic

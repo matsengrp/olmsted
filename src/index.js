@@ -4,15 +4,12 @@ import "./util/polyfills"; // eslint-disable-line
 /* L I B R A R I E S */
 import React from "react";
 import ReactDOM from "react-dom";
-import ReactGA from "react-ga";
 import { connect, Provider } from "react-redux";
 import { AppContainer } from 'react-hot-loader';
 import injectTapEventPlugin from "react-tap-event-plugin";
 import Monitor from "./components/framework/monitor";
 import App from "./components/app";
 import Splash from "./components/splash/index";
-import Status from "./components/status";
-import Notifications from "./components/notifications/notifications";
 import configureStore from "./store";
 import NavBar from "./components/framework/nav-bar";
 import { CenterContent } from "./components/splash/centerContent";
@@ -22,18 +19,10 @@ import "./css/global.css";
 import "./css/browserCompatability.css";
 import "./css/bootstrapCustomized.css";
 import "./css/static.css";
-import "./css/notifications.css";
 import "./css/boxed.css";
 import "./css/select.css";
-import "./css/narrative.css";
 
 const store = configureStore();
-
-/* set up non-redux state storage for the animation - use this conservitavely! */
-if (!window.NEXTSTRAIN) {window.NEXTSTRAIN = {};}
-
-/* google analytics */
-ReactGA.initialize(process.env.NODE_ENV === "production" ? "UA-92687617-1" : "UA-92687617-2");
 
 // ROUTING
 @connect((state) => ({displayComponent: state.datasets.displayComponent}))
@@ -44,7 +33,6 @@ class MainComponentSwitch extends React.Component {
       // splash & dataset selector
       case "splash": return (<Splash/>);
       case "app" : return (<App/>);
-      case "status" : return (<Status/>);
       default:
         console.error(`reduxStore.datasets.displayComponent is invalid (${this.props.displayComponent})`);
         return (<Splash/>);
@@ -57,7 +45,6 @@ const Root = () => {
     <Provider store={store}>
       <div>
         <Monitor/>
-        <Notifications/>
         <NavBar/>
         <MainComponentSwitch/>
         <div className="static" style={{marginTop: 50}} >

@@ -11,8 +11,6 @@ import { TOGGLE_NARRATIVE } from "../../actions/types";
 
 @connect((state) => {
   return {
-    narrativeLoaded: state.narrative.loaded,
-    narrativeDisplayed: state.narrative.display,
     browserDimensions: state.browserDimensions.browserDimensions
   };
 })
@@ -134,21 +132,6 @@ class NavBar extends React.Component {
 
   render() {
     const styles = this.getStyles();
-    if (this.props.narrativeLoaded) {
-      const onClick = () => {this.props.dispatch({ type: TOGGLE_NARRATIVE});};
-      const text = this.props.narrativeDisplayed ? "show controls" : "show narrative";
-      return (
-        <Flex style={styles.main}>
-          {this.getLogo(styles)}
-          {this.getLogoType(styles)}
-          <div style={{flex: 5}}/>
-          <button style={materialButton} onClick={onClick}>
-            {text}
-          </button>
-          <div style={{width: this.props.minified ? 8 : 0 }}/>
-        </Flex>
-      );
-    }
     return (
       <Flex style={styles.main}>
         {this.getLogo(styles)}

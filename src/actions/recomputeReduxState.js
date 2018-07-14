@@ -1,24 +1,5 @@
-import queryString from "query-string";
-import { numericToCalendar, calendarToNumeric } from "../util/dateHelpers";
-import { reallySmallNumber, twoColumnBreakpoint } from "../util/globals";
-import { calcBrowserDimensionsInitialState } from "../reducers/browserDimensions";
-import { strainNameToIdx, calculateVisiblityAndBranchThickness } from "../util/treeVisibilityHelpers";
-import { constructVisibleTipLookupBetweenTrees } from "../util/treeTangleHelpers";
-import { calcTipRadii } from "../util/tipRadiusHelpers";
-import { getDefaultControlsState } from "../reducers/controls";
-import { getValuesAndCountsOfVisibleTraitsFromTree,
-  getAllValuesAndCountsOfTraitsFromTree } from "../util/treeCountingHelpers";
-import { calcEntropyInView } from "../util/entropy";
-import { treeJsonToState } from "../util/treeJsonProcessing";
-import { entropyCreateStateFromJsons } from "../util/entropyCreateStateFromJsons";
-import { determineColorByGenotypeType, calcNodeColor } from "../util/colorHelpers";
-import { calcColorScale } from "../util/colorScale";
-import { processFrequenciesJSON, computeMatrixFromRawData } from "../util/processFrequencies";
-
-
-
 /* need a (better) way to keep the queryParams all in "sync" */
-export const modifyStateViaURLQuery = (state, query) => {
+export const modifyStateViaURLQuery = (state) => {
   // console.log("Query incoming: ", query);
   // if (query) {
   //   state.datasets.availableDatasets = query.availableDatasets;
@@ -153,12 +134,6 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
 };
 
 
-const removePanelIfPossible = (panels, name) => {
-  const idx = panels.indexOf(name);
-  if (idx !== -1) {
-    panels.splice(idx, 1);
-  }
-};
 
 
 
