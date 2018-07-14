@@ -1,6 +1,10 @@
 import * as types from "../actions/types";
 import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
+export const filterDatasets = (datasets) => {
+  return datasets.filter(dataset => dataset.selected == true).map(dataset => dataset.id);
+};
+
 const datasets = (state = {
   s3bucket: "live",
   availableDatasets: [],

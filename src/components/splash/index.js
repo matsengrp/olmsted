@@ -9,6 +9,8 @@ import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
 import { Provider } from 'react-redux';
 
+import {filterDatasets } from "../../reducers/datasets"
+
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
   availableDatasets: state.clonalFamilies.availableClonalFamilies,
@@ -43,7 +45,9 @@ class Splash extends React.Component {
             </p>
             <button
               style={{marginLeft: "100%"}}
-              onClick={(e) => this.props.dispatch(changePage({path: "app"}))}>
+              onClick={
+                (e) => this.props.dispatch(changePage({path: "/app", query: {selectedDatasets: filterDatasets(this.props.availableDatasets)}}))
+                }>
               Explore!
             </button>
             {/*This only happens when the app loads up, not when we change the state.*/}

@@ -18,6 +18,8 @@ import { analyticsNewPage } from "../util/googleAnalytics";
 import filesDropped from "../actions/filesDropped";
 import Narrative from "./narrative";
 import { calcUsableWidth, computeResponsive } from "../util/computeResponsive";
+import {filterDatasets } from "../reducers/datasets"
+import { changePage } from "../actions/navigation";
 
 const nextstrainLogo = require("../images/nextstrain-logo-small.png");
 
@@ -40,12 +42,21 @@ class ClonalFamiliesExplorer extends React.Component {
   };
 };
 
-const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHeight, panels, grid, narrative, frequenciesLoaded}) => {
+const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHeight, panels, grid, narrative, frequenciesLoaded, availableDatasets}) => {
   //if (showSpinner) {
   //}
   /* TODO */
+  const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
+  <li>{dataset}</li>
+  );
+
+  const divStyle = {
+    fontSize: 20,
+  }; 
   return (
     <div style={{margin: 50}}>
+      <h2>Chosen datasets</h2>
+      <ul style={divStyle}>{chosenDatasets}</ul>
       <h2>Clonal Families</h2>
       <ClonalFamiliesExplorer/>
       <h3>Viz</h3>
@@ -53,6 +64,8 @@ const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHe
     </div>
   );
 };
+
+
 
 const Sidebar = ({styles, sidebarOpen, mobileDisplay, narrative, mapOn, toggleHandler}) => {
   return (
@@ -82,11 +95,13 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
   panelsToDisplay: state.controls.panelsToDisplay,
   panelLayout: state.controls.panelLayout,
   displayNarrative: state.narrative.display,
+  availableDatasets: state.datasets.availableDatasets,
   browserDimensions: state.browserDimensions.browserDimensions
 }))
 class App extends React.Component {
   constructor(props) {
     super(props);
+    // console.log('state', props);
     /* window listener to see when width changes cross threshold to toggle sidebar */
     const mql = window.matchMedia(`(min-width: ${controlsHiddenWidth}px)`);
     mql.addListener(() => this.setState({
@@ -165,7 +180,7 @@ class App extends React.Component {
 
     return (
       <span>
-        <DownloadModal/>
+        {/* <DownloadModal/> */}
         <Contents
           sidebarOpen={this.state.sidebarOpen}
           styles={contentStyles}
@@ -176,6 +191,7 @@ class App extends React.Component {
           grid={this.props.panelLayout === "grid"}
           narrative={this.props.displayNarrative}
           frequenciesLoaded={this.props.frequenciesLoaded}
+          availableDatasets={this.props.availableDatasets}
         />
         <Overlay
           styles={overlayStyles}

@@ -8,7 +8,7 @@ import { getDatasets, getClonalFamilies } from "../../actions/loadData";
 import { twoColumnBreakpoint } from "../../util/globals";
 
 @connect((state) => ({
-  displayNarrative: state.narrative.display,
+  displayNarrative: state.narrative.display, 
   canTogglePanelLayout: state.controls.canTogglePanelLayout
 }))
 class Monitor extends React.Component {

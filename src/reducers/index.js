@@ -10,7 +10,8 @@ import narrative from "./narrative";
 
 const rootReducer = combineReducers({
   metadata,
-  tree,
+  //tree,
+  //frequencies,
   controls,
   browserDimensions,
   notifications,
