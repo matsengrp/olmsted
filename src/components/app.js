@@ -9,7 +9,25 @@ import {filterDatasets } from "../reducers/datasets"
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
+
+
+@connect((state) => ({
+  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
+class ClonalFamiliesExplorer extends React.Component {
+  render() {
+    return (
+      <table>
+        <tbody>
+          <tr><th>n seqs</th></tr>
+          {this.props.availableClonalFamilies.map((data) =>
+            (<tr><td>{data.n_seqs}</td></tr>))}
+        </tbody>
+      </table>);
+  };
+};
 const Contents = ({styles, grid, availableDatasets}) => {
+  //if (showSpinner) {
+  //}
   /* TODO */
   const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
   <li>{dataset}</li>
@@ -19,11 +37,13 @@ const Contents = ({styles, grid, availableDatasets}) => {
     fontSize: 20,
   }; 
   return (
-    <div style={styles}>
-      <h2>Clonal Families</h2>
-      <h1>CHOSEN DATASETS</h1>
+    <div style={{margin: 50}}>
+      <h2>Chosen datasets</h2>
       <ul style={divStyle}>{chosenDatasets}</ul>
-
+      <h2>Clonal Families</h2>
+      <ClonalFamiliesExplorer/>
+      <h3>Viz</h3>
+      <h3>Table</h3>
     </div>
   );
 };
@@ -35,6 +55,7 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
       <div/>
   );
 };
+
 
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,

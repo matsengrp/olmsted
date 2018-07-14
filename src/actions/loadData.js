@@ -5,13 +5,44 @@ import { getDatapath, goTo404, chooseDisplayComponentFromPathname } from "./navi
 import { createStateFromQueryOrJSONs, createTreeTooState } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
 
+const charonErrorHandler = () => {
+  console.warn("Failed to get manifest JSON from server");
+  const datapath = window.location.pathname.replace(/^\//, '').replace(/\/$/, '').replace('/', '_');
+  dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
+};
+
+export const getClonalFamilies = (dispatch, s3bucket = "live") => {
+  const processData = (data) => {
+    console.log("calling processData; here's the data:", data);
+    const availableClonalFamilies = JSON.parse(data);
+    //const availableClonalFamilies = data;
+    const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
+      getDatapath(window.location.pathname, availableClonalFamilies) :
+      undefined;
+    dispatch({
+      type: types.CLONAL_FAMILIES_RECEIVED,
+      availableClonalFamilies
+    });
+  };
+
+  const query = queryString.parse(window.location.search);
+  const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
+
+  const xmlHttp = new XMLHttpRequest();
+  xmlHttp.onload = () => {
+    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+      processData(xmlHttp.responseText);
+    } else {
+      charonErrorHandler();
+    }
+  };
+
+  xmlHttp.onerror = charonErrorHandler;
+  xmlHttp.open("get", `${charonAPIAddress}request=clonalFamilies&user=${user}&s3=${s3bucket}`, true); // true for asynchronous
+  xmlHttp.send(null);
+};
 
 export const getDatasets = (dispatch, s3bucket = "live") => {
-  const charonErrorHandler = () => {
-    console.warn("Failed to get manifest JSON from server");
-    const datapath = window.location.pathname.replace(/^\//, '').replace(/\/$/, '').replace('/', '_');
-    dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
-  };
   const processData = (data, query) => {
     // console.log("SERVER API REQUEST RETURNED:", datasets);
     var availableDatasets = JSON.parse(data);
