@@ -36,7 +36,7 @@ class ClonalFamiliesExplorer extends React.Component {
         <tbody>
           <tr><th>n seqs</th></tr>
           {this.props.availableClonalFamilies.map((data) =>
-            (<tr><td>{data.n_seqs}</td></tr>))}
+            (<tr key={data.ident}><td>{data.n_seqs}</td></tr>))}
         </tbody>
       </table>);
   };
