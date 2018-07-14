@@ -13,7 +13,6 @@ const charonErrorHandler = () => {
 
 export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   const processData = (data) => {
-    console.log("calling processData; here's the data:", data);
     const availableClonalFamilies = JSON.parse(data);
     //const availableClonalFamilies = data;
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
@@ -72,7 +71,6 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   xmlHttp.onload = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       processData(xmlHttp.responseText, query);
-
     } else {
       charonErrorHandler();
     }

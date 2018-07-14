@@ -13,7 +13,7 @@ import {filterDatasets } from "../reducers/datasets"
 
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
-class ClonalFamiliesExplorer extends React.Component {
+class ClonalFamiliesTable extends React.Component {
   render() {
     return (
       <table>
@@ -25,6 +25,7 @@ class ClonalFamiliesExplorer extends React.Component {
       </table>);
   };
 };
+
 const Contents = ({styles, grid, availableDatasets}) => {
   //if (showSpinner) {
   //}
@@ -41,7 +42,8 @@ const Contents = ({styles, grid, availableDatasets}) => {
       <h2>Chosen datasets</h2>
       <ul style={divStyle}>{chosenDatasets}</ul>
       <h2>Clonal Families</h2>
-      <ClonalFamiliesExplorer/>
+      <p>TODO: Add pagination here, as well as other columns</p>
+      <ClonalFamiliesTable/>
       <h3>Viz</h3>
       <h3>Table</h3>
     </div>
