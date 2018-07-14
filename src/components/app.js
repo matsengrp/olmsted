@@ -14,20 +14,43 @@ import * as _ from 'lodash';
  */
 
 
+
+const Table = ({data, mappings, pagination = {page: 0, per_page: 10, order_by: "n_seqs", desc: true}}) => {
+  console.log("pagination:", pagination)
+  var d = _.drop(data, pagination.page * pagination.per_page)
+  return (<table>
+            <tbody>
+              <tr>
+                { _.map(mappings, ([name, __]) =>
+                  <th key={name}>{name}</th>) }
+              </tr>
+              { _.take(
+                  _.drop(data, pagination.page * pagination.per_page),
+                  pagination.per_page).map((datum) =>
+                <tr key={datum.ident}>
+                  { _.map(mappings, ([__, attr]) =>
+                    <td key={attr}>{datum[attr]}</td>) }
+                </tr>
+              )}
+            </tbody>
+          </table>)}
+
+
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesTable extends React.Component {
   render() {
     return (
-      <table>
-        <tbody>
-          <tr><th>n seqs</th></tr>
-          {_.take(this.props.availableClonalFamilies, 10).map((data) =>
-            (<tr key={data.ident}><td>{data.n_seqs}</td></tr>))}
-        </tbody>
-      </table>);
-  };
-};
+      <Table data={this.props.availableClonalFamilies}
+        mappings={
+          [["ID", "id"],
+           ["N seqs", "n_seqs"],
+           ["V gene", "v_gene"],
+           ["D gene", "d_gene"],
+           ["J gene", "j_gene"],
+           //["seed run", "has_seed"],
+          ]}/>)}}
+
 
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
@@ -54,7 +77,7 @@ const Contents = ({styles, grid, availableDatasets}) => {
   //}
   /* TODO */
   const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
-  <li>{dataset}</li>
+    <li key={dataset}>{dataset}</li>
   );
 
   const divStyle = {
@@ -69,6 +92,8 @@ const Contents = ({styles, grid, availableDatasets}) => {
       <h2>Table</h2>
       <p>TODO: Add pagination!</p>
       <ClonalFamiliesTable/>
+      <h2>Clonal Family details</h2>
+      <p>TODO: Select clonal families from table and show tree, ancestral reconstructions etc here</p>
     </div>
   );
 };
