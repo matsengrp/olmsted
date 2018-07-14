@@ -14,7 +14,7 @@ const applyCharonToApp = (app) => {
       case "datasets": {
         getFiles.getDatasets(query, res);
         break;
-      } case "clonal_families": {
+      } case "clonalFamilies": {
         getFiles.getClonalFamilies(query, res);
         break;
       } case "narrative": {

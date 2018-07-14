@@ -10,8 +10,8 @@ import { displayError } from "./displayError";
 import { Provider } from 'react-redux';
 
 @connect((state) => ({
-  splash: state.datasets.splash,
   availableDatasets: state.datasets.availableDatasets,
+  availableDatasets: state.clonalFamilies.availableClonalFamilies,
   errorMessage: state.datasets.errorMessage
 }))
 class Splash extends React.Component {

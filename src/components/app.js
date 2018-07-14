@@ -24,24 +24,32 @@ const nextstrainLogo = require("../images/nextstrain-logo-small.png");
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
+
+@connect((state) => ({
+  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
+class ClonalFamiliesExplorer extends React.Component {
+  render() {
+    return (
+      <table>
+        <tbody>
+          <tr><th>n seqs</th></tr>
+          {this.props.availableClonalFamilies.map((data) =>
+            (<tr><td>{data.n_seqs}</td></tr>))}
+        </tbody>
+      </table>);
+  };
+};
+
 const Contents = ({sidebarOpen, showSpinner, styles, availableWidth, availableHeight, panels, grid, narrative, frequenciesLoaded}) => {
   //if (showSpinner) {
-    //return (<img className={"spinner"} src={nextstrainLogo} alt="loading" style={{marginTop: `${availableHeight / 2 - 100}px`}}/>);
   //}
-  const show = (name) => panels.indexOf(name) !== -1;
-  /* Calculate reponsive geometries. chart: entropy, frequencies. big: map, tree */
-  const chartWidthFraction = 1;
-  let bigWidthFraction = grid ? 0.5 : 1;
-  let chartHeightFraction = 0.3;
-  let bigHeightFraction = grid ? 0.7 : 0.88;
-
-  const big = computeResponsive({horizontal: bigWidthFraction, vertical: bigHeightFraction, availableWidth, availableHeight});
-  const chart = computeResponsive({horizontal: chartWidthFraction, vertical: chartHeightFraction, availableWidth, availableHeight, minHeight: 150});
-
   /* TODO */
   return (
-    <div style={styles}>
+    <div style={{margin: 50}}>
       <h2>Clonal Families</h2>
+      <ClonalFamiliesExplorer/>
+      <h3>Viz</h3>
+      <h3>Table</h3>
     </div>
   );
 };
@@ -68,13 +76,13 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
   );
 };
 
+
 @connect((state) => ({
   metadataLoaded: state.metadata.loaded,
   panelsToDisplay: state.controls.panelsToDisplay,
   panelLayout: state.controls.panelLayout,
   displayNarrative: state.narrative.display,
-  browserDimensions: state.browserDimensions.browserDimensions,
-  frequenciesLoaded: state.frequencies.loaded
+  browserDimensions: state.browserDimensions.browserDimensions
 }))
 class App extends React.Component {
   constructor(props) {
