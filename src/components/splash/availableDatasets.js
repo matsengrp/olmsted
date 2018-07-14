@@ -24,7 +24,6 @@ export const displayAvailableDatasets = (availableDatasets, dispatch) => {
       </div>
     );
   }
-  const queries = availableDatasets;
   return (
     <div>
       <div style={{fontSize: "26px"}}>
@@ -39,7 +38,7 @@ export const displayAvailableDatasets = (availableDatasets, dispatch) => {
             <th>Clonal Families</th>
             <th>Build time</th>
           </tr>
-          {queries.map((data) => formatDataset(data, dispatch))}
+          {availableDatasets.map((data) => formatDataset(data, dispatch))}
         </tbody>
       </table>
     </div>

@@ -13,7 +13,7 @@ import {filterDatasets } from "../../reducers/datasets"
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
-  availableDatasets: state.clonalFamilies.availableClonalFamilies,
+  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
   errorMessage: state.datasets.errorMessage
 }))
 class Splash extends React.Component {

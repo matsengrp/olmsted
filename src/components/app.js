@@ -1,9 +1,12 @@
 import React from "react";
 import PropTypes from 'prop-types';
+import VegaLite from 'react-vega-lite';
+import Vega from 'react-vega';
 import { connect } from "react-redux";
 import { loadJSONs } from "../actions/loadData";
 import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../util/globals";
-import {filterDatasets } from "../reducers/datasets"
+import { filterDatasets } from "../reducers/datasets"
+import * as _ from 'lodash';
 
 
 /* <Contents> contains the header, tree, map, footer components etc.
@@ -19,12 +22,32 @@ class ClonalFamiliesTable extends React.Component {
       <table>
         <tbody>
           <tr><th>n seqs</th></tr>
-          {this.props.availableClonalFamilies.map((data) =>
+          {_.take(this.props.availableClonalFamilies, 10).map((data) =>
             (<tr key={data.ident}><td>{data.n_seqs}</td></tr>))}
         </tbody>
       </table>);
   };
 };
+
+@connect((state) => ({
+  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
+class ClonalFamiliesViz extends React.Component {
+  render() {
+    return <VegaLite data={{values: this.props.availableClonalFamilies}}
+      onSignalHover={(...args) => console.log(args)}
+      spec={{
+          width: 900,
+          height: 700,
+          mark: "point",
+          encoding: {
+            x: {field: "n_seqs", type: "quantitative"},
+            y: {field: "mean_mut_freq", type: "quantitative"},
+            color: {field: "subject.id", type: "nominal"},
+            shape: {field: "sample.timepoint", type: "nominal"},
+            opacity: {value: 0.35},
+            }}}/>;
+      }};
+
 
 const Contents = ({styles, grid, availableDatasets}) => {
   //if (showSpinner) {
@@ -40,12 +63,12 @@ const Contents = ({styles, grid, availableDatasets}) => {
   return (
     <div style={{margin: 50}}>
       <h2>Chosen datasets</h2>
-      <ul style={divStyle}>{chosenDatasets}</ul>
-      <h2>Clonal Families</h2>
-      <p>TODO: Add pagination here, as well as other columns</p>
+      <ul>{chosenDatasets}</ul>
+      <h2>Viz</h2>
+      <ClonalFamiliesViz/>
+      <h2>Table</h2>
+      <p>TODO: Add pagination!</p>
       <ClonalFamiliesTable/>
-      <h3>Viz</h3>
-      <h3>Table</h3>
     </div>
   );
 };
