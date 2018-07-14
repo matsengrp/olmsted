@@ -1,5 +1,4 @@
 import React from "react";
-import {processAvailableDatasets} from "../status";
 import { TOGGLE_DATASET } from "../../actions/types";
 import { red } from "./displayError";
 
