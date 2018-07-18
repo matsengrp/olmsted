@@ -7,26 +7,35 @@ import { loadJSONs } from "../actions/loadData";
 import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../util/globals";
 import { filterDatasets } from "../reducers/datasets"
 import * as _ from 'lodash';
+import * as types from "../actions/types";
 
 
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
 
+const tableStyle = {fontSize: '15px'};
 
-
-const Table = ({data, mappings, pagination = {page: 0, per_page: 10, order_by: "n_seqs", desc: true}}) => {
-  console.log("pagination:", pagination)
+const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
+  console.log("pagination:", pagination);
   var d = _.drop(data, pagination.page * pagination.per_page)
-  return (<table>
+  return (<table style={tableStyle}>
             <tbody>
               <tr>
-                { _.map(mappings, ([name, __]) =>
-                  <th key={name}>{name}</th>) }
+                <th><a onClick={pageUp}>page up</a></th>
+                <th><a onClick={pageDown}>page down</a></th>
               </tr>
-              { _.take(
-                  _.drop(data, pagination.page * pagination.per_page),
-                  pagination.per_page).map((datum) =>
+              <tr>
+                { _.map(mappings, ([name, attribute]) =>
+                  <th key={name} onClick={toggleSort.bind(this, attribute)}>{name}</th>) }
+              </tr>
+              {_.take(    
+                _.drop(
+                  _.orderBy(data,[pagination.order_by], [pagination.desc ? "desc":"asc"]),
+                  pagination.page * pagination.per_page
+                ),
+                pagination.per_page
+                ).map((datum) =>
                 <tr key={datum.ident}>
                   { _.map(mappings, ([__, attr]) =>
                     <td key={attr}>{datum[attr]}</td>) }
@@ -37,10 +46,32 @@ const Table = ({data, mappings, pagination = {page: 0, per_page: 10, order_by: "
 
 
 @connect((state) => ({
+  pagination: state.clonalFamilies.pagination,
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesTable extends React.Component {
+  constructor(props) {
+    super(props);
+
+    // This binding is necessary to make `this` work in the callback
+    this.pageUp = this.pageUp.bind(this);
+    this.pageDown = this.pageDown.bind(this);
+    this.toggleSort = this.toggleSort.bind(this);
+  }
+
+  pageDown(){
+    this.props.dispatch({type: types.PAGE_DOWN});
+  }
+
+  pageUp(){
+    this.props.dispatch({type: types.PAGE_UP});
+  }
+
+  toggleSort(attribute){
+    this.props.dispatch({type: types.TOGGLE_SORT, column: attribute})
+  }
+
   render() {
-    return (
+    return (  
       <Table data={this.props.availableClonalFamilies}
         mappings={
           [["ID", "id"],
@@ -49,7 +80,14 @@ class ClonalFamiliesTable extends React.Component {
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
            //["seed run", "has_seed"],
-          ]}/>)}}
+          ]}
+        pagination = {this.props.pagination}
+        pageUp = {this.pageUp}
+        pageDown = {this.pageDown}
+        toggleSort = {this.toggleSort}/>
+    )
+  }       
+}
 
 
 @connect((state) => ({
@@ -90,7 +128,6 @@ const Contents = ({styles, grid, availableDatasets}) => {
       <h2>Viz</h2>
       <ClonalFamiliesViz/>
       <h2>Table</h2>
-      <p>TODO: Add pagination!</p>
       <ClonalFamiliesTable/>
       <h2>Clonal Family details</h2>
       <p>TODO: Select clonal families from table and show tree, ancestral reconstructions etc here</p>

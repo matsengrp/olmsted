@@ -101,7 +101,7 @@ const getSegmentName = (datapath, availableDatasets) => {
 };
 
 
-const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket, narrativeJSON) => {
+const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
   const apiPath = (jsonType) =>
     `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
 
@@ -141,9 +141,6 @@ const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket, narrativeJSON
         `));
         return;
       }
-      if (narrativeJSON) {
-        data.JSONs.narrative = narrativeJSON;
-      }
       dispatch({
         type: types.CLEAN_START,
         ...createStateFromQueryOrJSONs(data)
@@ -155,22 +152,6 @@ const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket, narrativeJSON
     });
 };
 
-const fetchNarrativesAndDispatch = (dispatch, datasets, query, s3bucket) => {
-  fetch(`${charonAPIAddress}request=narrative&name=${datasets.datapath.replace(/^\//, '').replace(/\//, '_').replace(/narratives_/, '')}`)
-    .then((res) => res.json())
-    .then((blocks) => {
-      const newDatasets = {...datasets};
-      newDatasets.datapath = getDatapath(blocks[0].dataset, datasets.availableDatasets);
-      fetchDataAndDispatch(dispatch, newDatasets, query, s3bucket, blocks);
-    })
-    .catch((err) => {
-      // some coding error in handling happened. This is not the rejection of the promise you think it is!
-      // syntax error is akin to a 404
-      console.error("Error in fetchNarrativesAndDispatch", err);
-    });
-
-};
-
 export const loadJSONs = (s3override = undefined) => {
   return (dispatch, getState) => {
     const { datasets, tree } = getState();
@@ -179,11 +160,7 @@ export const loadJSONs = (s3override = undefined) => {
     }
     const query = queryString.parse(window.location.search);
     const s3bucket = s3override ? s3override : datasets.s3bucket;
-    if (datasets.datapath.startsWith("narrative")) {
-      fetchNarrativesAndDispatch(dispatch, datasets, query, s3bucket);
-    } else {
-      fetchDataAndDispatch(dispatch, datasets, query, s3bucket, false);
-    }
+    fetchDataAndDispatch(dispatch, datasets, query, s3bucket, false);
   };
 };
 

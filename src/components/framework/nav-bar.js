@@ -6,8 +6,6 @@ import SidebarChevron from "./sidebar-chevron";
 import { titleColors } from "../../util/globals";
 import { darkGrey, brandColor, materialButton } from "../../globalStyles";
 import { changePage } from "../../actions/navigation";
-import { TOGGLE_NARRATIVE } from "../../actions/types";
-
 
 @connect((state) => {
   return {
