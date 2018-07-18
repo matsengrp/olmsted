@@ -1,7 +1,7 @@
 import * as types from "../actions/types";
-import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
 const clonalFamilies = (state = {
+  visibleClonalFamilies: [],
   availableClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity}
 }, action) => {
