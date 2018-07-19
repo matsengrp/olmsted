@@ -15,9 +15,26 @@ const computeClonalFamiliesPage = (data, pagination) => {
           )
 }
 
+const brushSelection = state => state.brushSelection
+
+// Stubbing for now to always return true; TODO: have this use the brush selection to check whether the datum
+// is in brush selection range for both x and y; Also have to write actions and reducers to get this brush
+// selection data in to the store and to here
+const checkBrushSelection = (brushSelection, datum) => true
+
+const applyFilters = (data, brushSelection) =>
+  _.filter(data, _.partial(checkBrushSelection, brushSelection))
+
+
+const getSelectedClonalFamilies = () => {
+  return createSelector(
+    [getClonalFamilies, getBrushSelection],
+    (data, brushSelection) => {
+      return applyFilters(data, brushSelection)})}
+
 const getClonalFamiliesPage = () => {
   return createSelector(
-    [getClonalFamilies, getPagination],
+    [getSelectedClonalFamilies, getPagination],
     (data, pagination) => {
       return computeClonalFamiliesPage(data, pagination)
     }
