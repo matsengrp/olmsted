@@ -28,9 +28,8 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
           </table>)}
 
 const makeMapStateToProps = () => {
-  const getClonalFamiliesPage = getClonalFamiliesPage()
   const mapStateToProps = (state) => {
-    let newClonalFamiliesPage = getClonalFamiliesPage(state.clonalFamilies)
+    let newClonalFamiliesPage = getClonalFamiliesPage()(state.clonalFamilies)
     return Object.assign({}, state.clonalFamilies, {
       visibleClonalFamilies: newClonalFamiliesPage
     })
