@@ -29,7 +29,7 @@ const getSelectedClonalFamilies = () => {
     (data, brushSelection) => {
       return applyFilters(data, brushSelection)})}
 
-const getClonalFamiliesPage = () => {
+const getClonalFamiliesPageSelector = () => {
   return createSelector(
     [getSelectedClonalFamilies, getPagination],
     (data, pagination) => {
@@ -38,4 +38,4 @@ const getClonalFamiliesPage = () => {
   )
 }
 
-export default getClonalFamiliesPage
+export default getClonalFamiliesPageSelector
