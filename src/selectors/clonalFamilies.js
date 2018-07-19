@@ -6,7 +6,6 @@ const getClonalFamilies = (state) => state.availableClonalFamilies
 
 const getPagination = (state) => state.pagination
 
-
 const computeClonalFamiliesPage = (data, pagination) => 
   fun.threadf(data,
     [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
