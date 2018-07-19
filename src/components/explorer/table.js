@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as types from "../../actions/types";
-import getClonalFamiliesPage from "../../selectors/clonalFamilies";
+import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 
 const tableStyle = {fontSize: '15px'};
 
@@ -28,7 +28,7 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
           </table>)}
 
 const makeMapStateToProps = () => {
-  const getClonalFamiliesPage = getClonalFamiliesPage()
+  const getClonalFamiliesPage = getClonalFamiliesPageSelector()
   const mapStateToProps = (state) => {
     let newClonalFamiliesPage = getClonalFamiliesPage(state.clonalFamilies)
     return Object.assign({}, state.clonalFamilies, {

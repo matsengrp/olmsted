@@ -3,6 +3,7 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
+import * as types from '../../actions/types';
 
 
 const MyVegaLite = args => {
@@ -20,12 +21,27 @@ const MyVegaLite = args => {
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesViz extends React.Component {
+  constructor(props) {
+    super(props);
+    // This binding is necessary to make `this` work in the callback
+    this.updateBrushSelection = this.updateBrushSelection.bind(this);
+  }
+
+  updateBrushSelection(args){
+    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: args});
+  }
+  
+
   render() {
     return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
       onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
       onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
-      onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
-      onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
+      onSignalBrush_n_seqs={(...args) => {
+        this.updateBrushSelection(args)
+      }}
+      onSignalBrush_mean_mut_freq={(...args) => {
+        this.updateBrushSelection(args)
+      }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ false}
       spec={{

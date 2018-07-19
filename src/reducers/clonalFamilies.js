@@ -1,6 +1,7 @@
 import * as types from "../actions/types";
 
 const clonalFamilies = (state = {
+  brushSelection: undefined,
   visibleClonalFamilies: [],
   availableClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity}
@@ -14,6 +15,25 @@ const clonalFamilies = (state = {
         availableClonalFamilies: action.availableClonalFamilies,
         pagination: new_pagination
       });
+    } case types.UPDATE_BRUSH_SELECTION: {
+      if (action.updatedBrushData[0] == "brush_mean_mut_freq") {
+          let sortedBrushRange = action.updatedBrushData[1].slice(0).sort()
+          let new_brushSelection = Object.assign({}, state.brushSelection, {
+            mean_mut_freq: sortedBrushRange
+          });
+          return Object.assign({}, state, {
+            brushSelection: new_brushSelection
+          });
+      }
+      if (action.updatedBrushData[0] == "brush_n_seqs") {
+          let sortedBrushRange = action.updatedBrushData[1].slice(0).sort()
+          let new_brushSelection = Object.assign({}, state.brushSelection, {
+            n_seqs: sortedBrushRange
+          });
+          return Object.assign({}, state, {
+            brushSelection: new_brushSelection
+          });
+      }  
     } case types.PAGE_DOWN: {
       if(state.pagination.page+1 <= state.pagination.last_page){
         let new_pagination = Object.assign({}, state.pagination, {
