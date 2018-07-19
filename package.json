@@ -81,6 +81,7 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "request": "^2.65.0",
+    "reselect": "^3.0.1",
     "vega": "^4.0.0",
     "vega-lite": "^2.6.0",
     "vega-tooltip": "^0.12.0",

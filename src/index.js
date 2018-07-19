@@ -8,7 +8,7 @@ import { connect, Provider } from "react-redux";
 import { AppContainer } from 'react-hot-loader';
 import injectTapEventPlugin from "react-tap-event-plugin";
 import Monitor from "./components/framework/monitor";
-import App from "./components/app";
+import App from "./components/explorer/app";
 import Splash from "./components/splash/index";
 import configureStore from "./store";
 import NavBar from "./components/framework/nav-bar";
