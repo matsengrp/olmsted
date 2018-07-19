@@ -145,7 +145,6 @@ export const createStateFromQueryOrJSONs = ({
   let entropy, controls, metadata, tree;
   /* first task is to create metadata, entropy, controls & tree partial state */
   if (JSONs) {
-    if (JSONs.narrative) narrative = JSONs.narrative;
     /* ceate metadata state */
     metadata = JSONs.meta;
     if (Object.prototype.hasOwnProperty.call(metadata, "loaded")) {

@@ -1,94 +1,22 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import VegaLite from 'react-vega-lite';
-import * as vl from 'vega-lite';
 // import 
-import Vega from 'react-vega';
 import { connect } from "react-redux";
-import { loadJSONs } from "../actions/loadData";
-import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../util/globals";
-import { filterDatasets } from "../reducers/datasets"
-import * as _ from 'lodash';
-
+import { loadJSONs } from "../../actions/loadData";
+import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../../util/globals";
+import { filterDatasets } from "../../reducers/datasets"
+import ClonalFamiliesTable from "./table";
+import * as viz from "./visualization";
 
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
 
 
-
-const Table = ({data, mappings, pagination = {page: 0, per_page: 10, order_by: "n_seqs", desc: true}}) => {
-  console.log("pagination:", pagination)
-  var d = _.drop(data, pagination.page * pagination.per_page)
-  return (<table>
-            <tbody>
-              <tr>
-                { _.map(mappings, ([name, __]) =>
-                  <th key={name}>{name}</th>) }
-              </tr>
-              { _.take(
-                  _.drop(data, pagination.page * pagination.per_page),
-                  pagination.per_page).map((datum) =>
-                <tr key={datum.ident}>
-                  { _.map(mappings, ([__, attr]) =>
-                    <td key={attr}>{datum[attr]}</td>) }
-                </tr>
-              )}
-            </tbody>
-          </table>)}
-
-
-@connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
-class ClonalFamiliesTable extends React.Component {
-  render() {
-    return (
-      <Table data={this.props.availableClonalFamilies}
-        mappings={
-          [["ID", "id"],
-           ["N seqs", "n_seqs"],
-           ["V gene", "v_gene"],
-           ["D gene", "d_gene"],
-           ["J gene", "j_gene"],
-           //["seed run", "has_seed"],
-          ]}/>)}}
-
-
-const MyVegaLite = args => {
-  console.log("vega-lite", args.spec)
-  console.log("vega", vl.compile(args.spec).spec)
-  return <div>
-    <pre>TODO: Add vega-lite -> vega translation of the spec, so that you can see all of the underlying signal names</pre>
-    <pre>TODO: Add error messages and vega/vega-lite schema checks for debugging purposes</pre>
-    <VegaLite {...args}/>
-  </div>}
-
-@connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
-class ClonalFamiliesViz extends React.Component {
-  render() {
-    return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
-      onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
-      onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
-      onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
-      onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
-      onParseError={(...args) => console.error("parse error:", args)}
-      spec={{
-          width: 900,
-          height: 700,
-          mark: "point",
-          selection: {brush: {type: "interval"}},
-          encoding: {
-            x: {field: "n_seqs", type: "quantitative"},
-            y: {field: "mean_mut_freq", type: "quantitative"},
-            color: {field: "subject.id", type: "nominal"},
-            shape: {field: "sample.timepoint", type: "nominal"},
-            opacity: {value: 0.35},
-            }}}/>;
-      }};
-
-
 const Contents = ({styles, grid, availableDatasets}) => {
+
+//const Contents = ({availableDatasets}) => {
   //if (showSpinner) {
   //}
   /* TODO */
@@ -96,17 +24,14 @@ const Contents = ({styles, grid, availableDatasets}) => {
     <li key={dataset}>{dataset}</li>
   );
 
-  const divStyle = {
-    fontSize: 20,
-  }; 
   return (
     <div style={{margin: 50}}>
       <h2>Chosen datasets</h2>
       <ul>{chosenDatasets}</ul>
       <h2>Viz</h2>
-      <ClonalFamiliesViz/>
+      <viz.ClonalFamiliesViz/>
+      {/* <viz.ClonalFamiliesViz2/> */}
       <h2>Table</h2>
-      <p>TODO: Add pagination!</p>
       <ClonalFamiliesTable/>
       <h2>Clonal Family details</h2>
       <p>TODO: Select clonal families from table and show tree, ancestral reconstructions etc here</p>
@@ -121,7 +46,6 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
       <div/>
   );
 };
-
 
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,

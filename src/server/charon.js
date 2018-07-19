@@ -1,6 +1,5 @@
 const queryString = require("query-string");
 const getFiles = require('./getFiles');
-const serverNarratives = require('./narratives');
 
 const applyCharonToApp = (app) => {
   app.get('/charon*', (req, res) => {
@@ -16,9 +15,6 @@ const applyCharonToApp = (app) => {
         break;
       } case "clonalFamilies": {
         getFiles.getClonalFamilies(query, res);
-        break;
-      } case "narrative": {
-        serverNarratives.serveNarrative(query, res);
         break;
       } case "splashimage": {
         getFiles.getSplashImage(query, res);
