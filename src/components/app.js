@@ -1,6 +1,8 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import VegaLite from 'react-vega-lite';
+import * as vl from 'vega-lite';
+// import 
 import Vega from 'react-vega';
 import { connect } from "react-redux";
 import { loadJSONs } from "../actions/loadData";
@@ -52,16 +54,30 @@ class ClonalFamiliesTable extends React.Component {
           ]}/>)}}
 
 
+const MyVegaLite = args => {
+  console.log("vega-lite", args.spec)
+  console.log("vega", vl.compile(args.spec).spec)
+  return <div>
+    <pre>TODO: Add vega-lite -> vega translation of the spec, so that you can see all of the underlying signal names</pre>
+    <pre>TODO: Add error messages and vega/vega-lite schema checks for debugging purposes</pre>
+    <VegaLite {...args}/>
+  </div>}
+
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesViz extends React.Component {
   render() {
-    return <VegaLite data={{values: this.props.availableClonalFamilies}}
-      onSignalHover={(...args) => console.log(args)}
+    return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
+      onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
+      onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
+      onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
+      onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
+      onParseError={(...args) => console.error("parse error:", args)}
       spec={{
           width: 900,
           height: 700,
           mark: "point",
+          selection: {brush: {type: "interval"}},
           encoding: {
             x: {field: "n_seqs", type: "quantitative"},
             y: {field: "mean_mut_freq", type: "quantitative"},
