@@ -35,7 +35,7 @@ const _thread = (isThreadFirst, init, ...forms) =>
       else {
           return next.call(this, prev);
       }
-  }, first);
+  }, init);
 
 export const threadf = (init, ...forms) => {
   _thread(true, init, ...forms)}

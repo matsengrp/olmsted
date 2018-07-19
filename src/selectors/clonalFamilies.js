@@ -13,7 +13,7 @@ const computeClonalFamiliesPage = (data, pagination) =>
     [_.drop,     pagination.page * pagination.per_page],
     [_.take,     pagination.per_page])
 
-const brushSelection = state => state.brushSelection
+const getBrushSelection = state => state.brushSelection
 
 // Stubbing for now to always return true; TODO: have this use the brush selection to check whether the datum
 // is in brush selection range for both x and y; Also have to write actions and reducers to get this brush
