@@ -1,19 +1,16 @@
 import { createSelector } from 'reselect';
 import * as _ from 'lodash';
+import * as fun from '../components/framework/fun';
 
 const getClonalFamilies = (state) => state.availableClonalFamilies
 
 const getPagination = (state) => state.pagination
 
-const computeClonalFamiliesPage = (data, pagination) => {
-    return _.take(    
-            _.drop(
-              _.orderBy(data,[pagination.order_by], [pagination.desc ? "desc":"asc"]),
-              pagination.page * pagination.per_page
-            ),
-            pagination.per_page
-          )
-}
+const computeClonalFamiliesPage = (data, pagination) => 
+  fun.threadf(data,
+    [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
+    [_.drop,     pagination.page * pagination.per_page],
+    [_.take,     pagination.per_page])
 
 const getBrushSelection = state => state.brushSelection
 
