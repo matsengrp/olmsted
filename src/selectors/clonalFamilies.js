@@ -15,7 +15,7 @@ const computeClonalFamiliesPage = (data, pagination) => {
           )
 }
 
-const getClonalFamiliesPage = () => {
+const getClonalFamiliesPageSelector = () => {
   return createSelector(
     [getClonalFamilies, getPagination],
     (data, pagination) => {
@@ -24,4 +24,4 @@ const getClonalFamiliesPage = () => {
   )
 }
 
-export default getClonalFamiliesPage
+export default getClonalFamiliesPageSelector
