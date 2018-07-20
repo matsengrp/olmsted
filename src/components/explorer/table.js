@@ -4,10 +4,8 @@ import * as _ from 'lodash';
 import * as types from "../../actions/types";
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 
-const tableStyle = {fontSize: '15px'};
-
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
-  return (<table style={tableStyle}>
+  return (<table style={{fontSize: '15px'}}>
             <tbody>
               <tr>
                 <th><a onClick={pageUp}>page up</a></th>
