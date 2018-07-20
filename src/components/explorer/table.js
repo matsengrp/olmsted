@@ -7,13 +7,16 @@ import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 const tableStyle = {fontSize: '15px'};
 
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
-  return (<table style={tableStyle}>
+  let spanStyle = {margin: 10, fontSize: 13}
+  return (
+    <div style={{display: "flex", flexDirection: "column"}}>
+      <div style={{paddingLeft: 30, marginDown: 30, display: "flex"}}>
+        <span style={spanStyle}><a onClick={pageUp}>page up</a></span>
+        <span style={spanStyle}>{pagination.page}</span>
+        <span style={spanStyle}><a onClick={pageDown}>page down</a></span>
+      </div>
+          <table style={tableStyle}>
             <tbody>
-              <tr>
-                <th><a onClick={pageUp}>page up</a></th>
-                <th>{pagination.page}</th>
-                <th><a onClick={pageDown}>page down</a></th>
-              </tr>
               <tr>
                 { _.map(mappings, ([name, attribute]) =>
                   <th key={name} onClick={toggleSort.bind(this, attribute)}>{name}</th>) }
@@ -25,7 +28,8 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
                 </tr>
               )}
             </tbody>
-          </table>)}
+          </table>
+    </div>)}
 
 const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
@@ -62,7 +66,7 @@ class ClonalFamiliesTable extends React.Component {
   }
 
   render() {
-    return (  
+    return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
           [["ID", "id"],
