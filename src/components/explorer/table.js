@@ -4,8 +4,6 @@ import * as _ from 'lodash';
 import * as types from "../../actions/types";
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 
-const tableStyle = {fontSize: '15px'};
-
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
   let spanStyle = {margin: 10, fontSize: 13}
   return (
@@ -15,7 +13,7 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
         <span style={spanStyle}>{pagination.page}</span>
         <span style={spanStyle}><a onClick={pageDown}>page down</a></span>
       </div>
-          <table style={tableStyle}>
+          <table style={{fontSize: '15px'}}>
             <tbody>
               <tr>
                 { _.map(mappings, ([name, attribute]) =>

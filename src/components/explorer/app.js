@@ -32,7 +32,9 @@ const Contents = ({styles, grid, availableDatasets}) => {
       <viz.ClonalFamiliesViz/>
       {/* <viz.ClonalFamiliesViz2/> */}
       <h2>Table</h2>
-      <ClonalFamiliesTable/>
+      <div style={{paddingBottom: 20, width: 800, height:300, overflow:'scroll'}}>
+        <ClonalFamiliesTable/>
+      </div>
       <h2>Clonal Family details</h2>
       <p>TODO: Select clonal families from table and show tree, ancestral reconstructions etc here</p>
     </div>
