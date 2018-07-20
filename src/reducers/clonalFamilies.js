@@ -16,13 +16,19 @@ const clonalFamilies = (state = {
         pagination: new_pagination
       });
     } case types.UPDATE_BRUSH_SELECTION: {
+      //Update the page to send it back to page 0
+      //TODO: Find a way to limit last page once final updates are made for table (other than maybe through the view)
+      let new_pagination = Object.assign({}, state.pagination, {
+        page: 0
+      });
       if (action.updatedBrushData[0] == "brush_mean_mut_freq") {
           let sortedBrushRange = action.updatedBrushData[1].slice(0).sort()
           let new_brushSelection = Object.assign({}, state.brushSelection, {
             mean_mut_freq: sortedBrushRange
           });
           return Object.assign({}, state, {
-            brushSelection: new_brushSelection
+            brushSelection: new_brushSelection,
+            pagination: new_pagination
           });
       }
       if (action.updatedBrushData[0] == "brush_n_seqs") {
@@ -31,7 +37,8 @@ const clonalFamilies = (state = {
             n_seqs: sortedBrushRange
           });
           return Object.assign({}, state, {
-            brushSelection: new_brushSelection
+            brushSelection: new_brushSelection,
+            pagination: new_pagination
           });
       }  
     } case types.PAGE_DOWN: {
