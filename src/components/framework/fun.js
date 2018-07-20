@@ -39,8 +39,8 @@ const _thread = (isThreadFirst, init, ...forms) =>
 
 
 // Thread first
-export const threadf = (init, ...forms) => {
-  _thread(true, init, ...forms)}
+export const threadf = (init, ...forms) =>
+  _thread(true, init, ...forms)
 
 // Thread last
 export const threadl = (init, ...forms) =>

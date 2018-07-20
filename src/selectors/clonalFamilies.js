@@ -8,23 +8,11 @@ const getPagination = (state) => state.pagination
 
 const getBrushSelection = state => state.brushSelection
 
-const computeClonalFamiliesPage = (data, pagination) => {
-  // This thread thing broke for some reason: INVESTIGATE
-  // console.log("DATA",data);
-  // let result = fun.threadf(data,
-  //   [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
-  //   [_.drop,     pagination.page * pagination.per_page],
-  //   [_.take,     pagination.per_page])
-  // console.log("FUN", result)
-  // return result
-  return _.take(    
-    _.drop(
-      _.orderBy(data,[pagination.order_by], [pagination.desc ? "desc":"asc"]),
-      pagination.page * pagination.per_page
-    ),
-    pagination.per_page
-  )
-}
+const computeClonalFamiliesPage = (data, pagination) =>
+  fun.threadf(data,
+    [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
+    [_.drop,     pagination.page * pagination.per_page],
+    [_.take,     pagination.per_page])
 
 const checkInRange = (key, datum, brushSelection) => {
   return (brushSelection[key][0] < datum[key]) && (datum[key] < brushSelection[key][1])
