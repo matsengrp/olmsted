@@ -14,8 +14,32 @@ const MyVegaLite = args => {
       console.error("couldn't parse vega-lite:", e)
     }
   }
-  return <VegaLite {...args}/>}
-
+  return <VegaLite {...args}/>
+}
+  
+// WHAT DO WE REALLY WANT HERE? v_start (always is zero), cdr3_start, v_end, d_start, d_end, j_start, cdr3_end  (cdr3_start + cdr3_length), j_end (= length)
+const NaiveSequence = ({cdr3_start, v_end, d_start, d_end, j_start, cdr3_end}) => {
+  return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
+      onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
+      onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
+      onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
+      onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
+      onParseError={(...args) => console.error("parse error:", args)}
+      debug={/* true for debugging */ false}
+      spec={{
+          width: 900,
+          height: 700,
+          mark: "point",
+          selection: {brush: {type: "interval"}},
+          encoding: {
+            x: {field: "n_seqs", type: "quantitative"},
+            y: {field: "mean_mut_freq", type: "quantitative"},
+            color: {field: "subject.id", type: "nominal"},
+            shape: {field: "sample.timepoint", type: "nominal"},
+            opacity: {value: 0.35},
+            }}}/>;
+      
+}
 
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))

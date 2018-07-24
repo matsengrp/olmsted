@@ -3,29 +3,61 @@ import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as types from "../../actions/types";
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
+import VegaLite from 'react-vega-lite';
+import * as vl from 'vega-lite';
+
+
+const MyVegaLite = args => {
+  if (args.debug) {
+    console.log("compiling vega-lite", args.spec)
+    try {
+      console.log("resulting vega", vl.compile(args.spec).spec)
+    } catch (e) {
+      console.error("couldn't parse vega-lite:", e)
+    }
+  }
+  return <VegaLite {...args}/>}
 
 const tableStyle = {fontSize: '15px'};
 
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
-  return (<table style={tableStyle}>
-            <tbody>
-              <tr>
-                <th><a onClick={pageUp}>page up</a></th>
-                <th>{pagination.page}</th>
-                <th><a onClick={pageDown}>page down</a></th>
-              </tr>
-              <tr>
-                { _.map(mappings, ([name, attribute]) =>
-                  <th key={name} onClick={toggleSort.bind(this, attribute)}>{name}</th>) }
-              </tr>
-              {data.map((datum) =>
-                <tr key={datum.ident}>
-                  { _.map(mappings, ([__, attr]) =>
-                    <td key={attr}>{datum[attr]}</td>) }
-                </tr>
-              )}
-            </tbody>
-          </table>)}
+  return (
+          <div className="container">
+            <div className="item"><a onClick={pageUp}>page up</a></div>
+            <div className="item">{pagination.page}</div>
+            <div className="item item-filler"><a onClick={pageDown}>page down</a></div>
+            { _.map(mappings, ([name, attribute]) =>
+              <div className="item" key={name} onClick={toggleSort.bind(this, attribute)}>{name}</div>) }
+            {data.map((datum) => {
+              return _.map(mappings, ([__, attr]) => {
+                    if(attr == "naive_sequence"){
+                      return <div className="item item-viz" key={attr}>
+                              <MyVegaLite data={{values: data}}
+                                onParseError={(...args) => console.error("parse error:", args)}
+                                debug={/* true for debugging */ false}
+                                spec={{
+                                    width: 200,
+                                    height: 150,
+                                    mark: "point",
+                                    encoding: {
+                                      x: {field: "n_seqs", type: "quantitative"},
+                                      y: {field: "mean_mut_freq", type: "quantitative"},
+                                      color: {field: "subject.id", type: "nominal"},
+                                      shape: {field: "sample.timepoint", type: "nominal"},
+                                      opacity: {value: 0.35},
+                                      }}}/>
+                            </div>
+                    }
+                    return <div className="item" key={attr}>{datum[attr]}</div>
+                  }
+                ) 
+              }
+            )}
+
+           
+            
+          </div>
+        )}
 
 const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
@@ -70,7 +102,8 @@ class ClonalFamiliesTable extends React.Component {
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
-           //["seed run", "has_seed"],
+           ["Naive sequence", "naive_sequence"]
+            //["seed run", "has_seed"],
           ]}
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
