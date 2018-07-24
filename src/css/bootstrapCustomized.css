@@ -120,7 +120,7 @@ hr {
 
 
 /* GRID */
-.container {
+.grid-container {
   display: grid;
   grid-template-columns: [start] 70px [one] 70px [two] 100px [three] 70px [four] 70px [five] auto [end];
   grid-template-rows: auto; 
@@ -798,7 +798,7 @@ hr {
 }
 .clearfix:before,
 .clearfix:after,
-/* .container:before, */
+.container:before,
 .container:after,
 .container-fluid:before,
 .container-fluid:after,

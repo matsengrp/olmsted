@@ -5,7 +5,7 @@ import * as types from "../../actions/types";
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
-
+import {NaiveSequence} from './visualization';
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -22,7 +22,7 @@ const tableStyle = {fontSize: '15px'};
 
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
   return (
-          <div className="container">
+          <div className="grid-container">
             <div className="item"><a onClick={pageUp}>page up</a></div>
             <div className="item">{pagination.page}</div>
             <div className="item item-filler"><a onClick={pageDown}>page down</a></div>
@@ -32,20 +32,14 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
               return _.map(mappings, ([__, attr]) => {
                     if(attr == "naive_sequence"){
                       return <div className="item item-viz" key={attr}>
-                              <MyVegaLite data={{values: data}}
-                                onParseError={(...args) => console.error("parse error:", args)}
-                                debug={/* true for debugging */ false}
-                                spec={{
-                                    width: 200,
-                                    height: 150,
-                                    mark: "point",
-                                    encoding: {
-                                      x: {field: "n_seqs", type: "quantitative"},
-                                      y: {field: "mean_mut_freq", type: "quantitative"},
-                                      color: {field: "subject.id", type: "nominal"},
-                                      shape: {field: "sample.timepoint", type: "nominal"},
-                                      opacity: {value: 0.35},
-                                      }}}/>
+                              <NaiveSequence v_start={datum["v_start"]}
+                                cdr3_start={datum["cdr3_start"]}
+                                v_end={datum["v_end"]}
+                                d_start={datum["d_start"]}
+                                d_end={datum["d_end"]}
+                                j_start={datum["j_start"]}
+                                cdr3_length={datum["cdr3_length"]}
+                                j_end={datum["j_end"]} />
                             </div>
                     }
                     return <div className="item" key={attr}>{datum[attr]}</div>
