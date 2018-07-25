@@ -39,7 +39,10 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
                                 d_end={datum["d_end"]}
                                 j_start={datum["j_start"]}
                                 cdr3_length={datum["cdr3_length"]}
-                                j_end={datum["j_end"]} />
+                                j_end={datum["j_end"]}
+                                v_gene={datum["v_gene"]}
+                                d_gene={datum["d_gene"]}
+                                j_gene={datum["j_gene"]} />
                             </div>
                     }
                     return <div className="item" key={attr}>{datum[attr]}</div>

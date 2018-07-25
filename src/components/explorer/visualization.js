@@ -17,7 +17,7 @@ const MyVegaLite = args => {
   return <VegaLite {...args}/>
 }
 
-const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end) => {
+const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene) => {
   let result = {
     values: [
     {
@@ -29,6 +29,7 @@ const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cd
     {
       family: "5p",
       region: "V gene",
+      gene: v_gene,
       start: v_start,
       end: v_end
     },
@@ -41,6 +42,7 @@ const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cd
     {
       family: "5p",
       region: "D gene",
+      gene: d_gene,
       start: d_start,
       end: d_end
     },
@@ -53,15 +55,16 @@ const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cd
     {
       family: "5p",
       region: "J gene",
+      gene: j_gene,
       start: j_start,
       end: j_end
     }
   ]} 
   return result 
 }
-const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end}) => {
+const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene}) => {
       return <MyVegaLite 
-              data= {getNaiveVizData(v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end)}
+              data= {getNaiveVizData(v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene)}
               onParseError={(...args) => console.error("parse error:", args)}
               debug={/* true for debugging */ false}
               spec={{
@@ -91,9 +94,9 @@ const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr
                     axis: {title: "", ticks: false, labels: false},
                   },
                   tooltip: [
-                    {"field": "region", "type": "nominal"},
-                    {"field": "start", "type": "quantitative"},
-                    {"field": "end", "type": "quantitative"}
+                    {field: "region", type: "nominal"},
+                    {field: "start", type: "quantitative"},
+                    {field: "end", type: "quantitative"}
                   ]
                 }}, 
                 {  
@@ -128,9 +131,10 @@ const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr
                     axis: {title: "", ticks: false, labels: false},
                   },
                   tooltip: [
-                    {"field": "region", "type": "nominal"},
-                    {"field": "start", "type": "quantitative"},
-                    {"field": "end", "type": "quantitative"}
+                    {field: "region", type: "nominal"},
+                    {field: "start", type: "quantitative"},
+                    {field: "end", type: "quantitative"},
+                    {field: "gene", type: "nominal"}
                   ],
                   color: {
                     field: "region",
