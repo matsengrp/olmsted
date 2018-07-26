@@ -122,7 +122,7 @@ hr {
 /* GRID */
 .grid-container {
   display: grid;
-  grid-template-columns: [start] 70px [one] 70px [two] 100px [three] 70px [four] 70px [five] auto [end];
+  grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];
   grid-template-rows: auto; 
 }
 

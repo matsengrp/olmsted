@@ -20,7 +20,7 @@ const MyVegaLite = args => {
 
 const tableStyle = {fontSize: '15px'};
 
-const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
+const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, selectFamily, selectedFamily}) => {
   return (
           <div className="grid-container">
             <div className="item"><a onClick={pageUp}>page up</a></div>
@@ -44,6 +44,19 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination}) => {
                                 d_gene={datum["d_gene"]}
                                 j_gene={datum["j_gene"]} />
                             </div>
+                    }
+                    else if (attr == "select"){
+                      return( <div className="item"
+                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
+                                onClick={() => selectFamily(datum)}
+                                >
+                                <input   
+                                  style={{marginLeft: "5px"}}
+                                  checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
+                                  type="checkbox"
+                                  >
+                                </input>
+                              </div>)
                     }
                     return <div className="item" key={attr}>{datum[attr]}</div>
                   }
@@ -71,11 +84,11 @@ const makeMapStateToProps = () => {
 class ClonalFamiliesTable extends React.Component {
   constructor(props) {
     super(props);
-
     // This binding is necessary to make `this` work in the callback
     this.pageUp = this.pageUp.bind(this);
     this.pageDown = this.pageDown.bind(this);
     this.toggleSort = this.toggleSort.bind(this);
+    this.selectFamily = this.selectFamily.bind(this);
   }
 
   pageDown(){
@@ -87,14 +100,19 @@ class ClonalFamiliesTable extends React.Component {
   }
 
   toggleSort(attribute){
-    this.props.dispatch({type: types.TOGGLE_SORT, column: attribute})
+    this.props.dispatch({type: types.TOGGLE_SORT, column: attribute});
+  }
+
+  selectFamily(family){
+    this.props.dispatch({type: types.TOGGLE_FAMILY, family: family});
   }
 
   render() {
     return (  
       <Table data={this.props.visibleClonalFamilies}
         mappings={
-          [["ID", "id"],
+          [["Select", "select"],
+           ["ID", "id"],
            ["N seqs", "n_seqs"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
@@ -105,7 +123,9 @@ class ClonalFamiliesTable extends React.Component {
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
         pageDown = {this.pageDown}
-        toggleSort = {this.toggleSort}/>
+        toggleSort = {this.toggleSort}
+        selectFamily = {this.selectFamily}
+        selectedFamily = {this.props.selectedFamily}/>
     )
   }       
 }

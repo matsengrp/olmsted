@@ -46,7 +46,15 @@ class Splash extends React.Component {
             <button
               style={{marginLeft: "100%"}}
               onClick={
-                (e) => this.props.dispatch(changePage({path: "/app", query: {selectedDatasets: filterDatasets(this.props.availableDatasets)}}))
+                (e) => this.props.dispatch(
+                  changePage(
+                    {path: "/app",query: 
+                      {selectedDatasets: filterDatasets(
+                              this.props.availableDatasets).map(dataset => dataset.id)
+                      }
+                    }
+                  )
+                )
                 }>
               Explore!
             </button>
