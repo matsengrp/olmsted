@@ -1,4 +1,6 @@
 import * as types from "../actions/types";
+import * as _ from "lodash";
+
 
 const clonalFamilies = (state = {
   brushSelection: undefined,
@@ -21,26 +23,26 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      if (action.updatedBrushData[0] == "brush_mean_mut_freq") {
-          let sortedBrushRange = action.updatedBrushData[1].slice(0).sort()
-          let new_brushSelection = Object.assign({}, state.brushSelection, {
-            mean_mut_freq: sortedBrushRange
-          });
-          return Object.assign({}, state, {
-            brushSelection: new_brushSelection,
-            pagination: new_pagination
-          });
+      // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
+      let attr = action.updatedBrushData[0].replace("brush_", "")
+      let range
+      // if no brush selection has been made or if brush has been unselected, range will be undefined
+      if (action.updatedBrushData[1]) {
+        // if we have a range, first slice so that we get a copy (important or weird state bugs crop up with
+        // vega), and then sort so that we have range in canonical order
+        range = action.updatedBrushData[1].slice(0)
+        range = _.sortBy(range)
+      } else {
+        // otherwise leave undefined, to trigger select all in selectors.clonalFamilies.checkBrushSelection
+        range = undefined
       }
-      if (action.updatedBrushData[0] == "brush_n_seqs") {
-          let sortedBrushRange = action.updatedBrushData[1].slice(0).sort()
-          let new_brushSelection = Object.assign({}, state.brushSelection, {
-            n_seqs: sortedBrushRange
-          });
-          return Object.assign({}, state, {
-            brushSelection: new_brushSelection,
-            pagination: new_pagination
-          });
-      }  
+      let brushDelta = {}
+      brushDelta[attr] = range
+      let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
+      return Object.assign({}, state, {
+        brushSelection: new_brushSelection,
+        pagination: new_pagination
+      });
     } case types.PAGE_DOWN: {
       if(state.pagination.page+1 <= state.pagination.last_page){
         let new_pagination = Object.assign({}, state.pagination, {
@@ -62,7 +64,6 @@ const clonalFamilies = (state = {
       }
       return state;
     } case types.TOGGLE_SORT: {
-      console.log(action);
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0,
         order_by: action.column,
