@@ -28,7 +28,8 @@ const checkBrushSelection = (brushSelection, datum) => {
 
 const applyFilters = (data, brushSelection) => {
   if (brushSelection) {
-    return  _.filter(data, _.partial(checkBrushSelection, brushSelection))
+    let newdata =  _.filter(data, _.partial(checkBrushSelection, brushSelection))
+    return newdata
   }
   return data
 }
