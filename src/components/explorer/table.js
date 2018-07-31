@@ -32,33 +32,33 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
               return _.map(mappings, ([__, attr]) => {
                     if(attr == "naive_sequence"){
                       return <div className="item item-viz" key={attr}>
-                              <NaiveSequence v_start={datum["cluster"][0]["v_start"]}
-                                cdr3_start={datum["cluster"][0]["cdr3_start"]}
-                                v_end={datum["cluster"][0]["v_end"]}
-                                d_start={datum["cluster"][0]["d_start"]}
-                                d_end={datum["cluster"][0]["d_end"]}
-                                j_start={datum["cluster"][0]["j_start"]}
-                                cdr3_length={datum["cluster"][0]["cdr3_length"]}
-                                j_end={datum["cluster"][0]["j_end"]}
-                                v_gene={datum["cluster"][0]["v_gene"]}
-                                d_gene={datum["cluster"][0]["d_gene"]}
-                                j_gene={datum["cluster"][0]["j_gene"]} />
+                              <NaiveSequence v_start={datum["v_start"]}
+                                cdr3_start={datum["cdr3_start"]}
+                                v_end={datum["v_end"]}
+                                d_start={datum["d_start"]}
+                                d_end={datum["d_end"]}
+                                j_start={datum["j_start"]}
+                                cdr3_length={datum["cdr3_length"]}
+                                j_end={datum["j_end"]}
+                                v_gene={datum["v_gene"]}
+                                d_gene={datum["d_gene"]}
+                                j_gene={datum["j_gene"]} />
                             </div>
                     }
                     else if (attr == "select"){
                       return( <div className="item"
-                                style={selectedFamily? {backgroundColor: datum["cluster"][0].ident == selectedFamily["cluster"][0].ident ? "lightblue" : "white"} : {}}
+                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
                                 onClick={() => selectFamily(datum)}
                                 >
                                 <input   
                                   style={{marginLeft: "5px"}}
-                                  checked={selectedFamily? (datum["cluster"][0].ident == selectedFamily["cluster"][0].ident): false}
+                                  checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
                                   type="checkbox"
                                   >
                                 </input>
                               </div>)
                     }
-                    return <div className="item" key={attr}>{datum["cluster"][0][attr]}</div>
+                    return <div className="item" key={attr}>{datum[attr]}</div>
                   }
                 ) 
               }

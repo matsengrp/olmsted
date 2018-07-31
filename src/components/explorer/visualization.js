@@ -3,7 +3,6 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
-import * as _ from 'lodash';
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -162,9 +161,8 @@ const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesViz extends React.Component {
-  vega_values = _.map(this.props.availableClonalFamilies, (datum)=>datum["cluster"][0])
   render() {
-    return <MyVegaLite data={{values: this.vega_values}}
+    return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
       onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
       onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
       onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}

@@ -34,7 +34,7 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
       <h2>Table</h2>
       <ClonalFamiliesTable/>
       <h2>Clonal Family details</h2>
-      <ul>{selectedFamily? selectedFamily["asr_tree"][0].contents: ""}</ul>
+      <ul>{selectedFamily? selectedFamily["asr_tree"]["contents"] : ""}</ul>
       </div>
   );
 };
