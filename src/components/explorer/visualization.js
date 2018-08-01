@@ -99,7 +99,6 @@ class ClonalFamiliesViz2 extends React.Component {
             shape: {field: "sample.timepoint", type: "nominal"},
             opacity: {value: 0.35},
           }
-          
           }}/>;
       }};
 
