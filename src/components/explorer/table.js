@@ -69,6 +69,7 @@ class ClonalFamiliesTable extends React.Component {
         mappings={
           [["ID", "id"],
            ["N seqs", "n_seqs"],
+           ["Mean mut freq", "mean_mut_freq"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
