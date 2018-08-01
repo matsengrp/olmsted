@@ -34,7 +34,9 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
       <h2>Table</h2>
       <ClonalFamiliesTable/>
       <h2>Clonal Family details</h2>
-      <ul>{selectedFamily? selectedFamily["asr_tree"]["contents"] : ""}</ul>
+      <ul>{selectedFamily? <viz.TreeViz/> : ""}
+          
+      </ul>
       </div>
   );
 };
