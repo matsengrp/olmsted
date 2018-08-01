@@ -119,13 +119,22 @@ hr {
 }
 
 
-
-.container {
-  margin-right: auto;
-  margin-left: auto;
-  padding-left: 15px;
-  padding-right: 15px;
+/* GRID */
+.grid-container {
+  display: grid;
+  grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];
+  grid-template-rows: auto; 
 }
+
+.item {
+  border: 1px solid rgb(45, 45, 150);
+}
+
+.item-filler{
+  grid-column: two / end;
+}
+
+
 @media (min-width: 768px) {
   .container {
     width: 728px;

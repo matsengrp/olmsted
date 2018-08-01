@@ -4,6 +4,7 @@ import * as _ from "lodash";
 
 const clonalFamilies = (state = {
   brushSelection: undefined,
+  selectedFamily: undefined,
   visibleClonalFamilies: [],
   availableClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity}
@@ -71,6 +72,11 @@ const clonalFamilies = (state = {
       });
       return Object.assign({}, state, {
         pagination: new_pagination
+      });
+    } case types.TOGGLE_FAMILY: {
+      console.log(state);
+      return Object.assign({}, state, {
+        selectedFamily: action.family,
       });
     } default: {
       return state;

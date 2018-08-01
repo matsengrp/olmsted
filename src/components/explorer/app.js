@@ -8,21 +8,21 @@ import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../../util/
 import { filterDatasets } from "../../reducers/datasets"
 import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
-
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
 
 
-const Contents = ({styles, grid, availableDatasets}) => {
+const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
 
 //const Contents = ({availableDatasets}) => {
   //if (showSpinner) {
   //}
   /* TODO */
   const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
-    <li key={dataset}>{dataset}</li>
+    <li key={dataset.id}>{dataset.id}</li>
   );
+  
 
   return (
     <div style={{margin: 50}}>
@@ -36,8 +36,8 @@ const Contents = ({styles, grid, availableDatasets}) => {
         <ClonalFamiliesTable/>
       </div>
       <h2>Clonal Family details</h2>
-      <p>TODO: Select clonal families from table and show tree, ancestral reconstructions etc here</p>
-    </div>
+      <ul>{selectedFamily? selectedFamily.ident: ""}</ul>
+      </div>
   );
 };
 
@@ -51,7 +51,8 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,
-  availableDatasets: state.datasets.availableDatasets
+  availableDatasets: state.datasets.availableDatasets,
+  selectedFamily: state.clonalFamilies.selectedFamily
 }))
 class App extends React.Component {
   constructor(props) {
@@ -135,6 +136,7 @@ class App extends React.Component {
           availableWidth={availableWidth}
           availableHeight={availableHeight}
           availableDatasets={this.props.availableDatasets}
+          selectedFamily={this.props.selectedFamily}
         />
         <Overlay
           styles={overlayStyles}

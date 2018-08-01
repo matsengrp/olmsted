@@ -61,3 +61,4 @@ export const PAGE_DOWN = "PAGE_DOWN";
 export const PAGE_UP = "PAGE_UP";
 export const TOGGLE_SORT = "TOGGLE_SORT";
 export const UPDATE_BRUSH_SELECTION = "UPDATE_BRUSH_SELECTION";
+export const TOGGLE_FAMILY = "TOGGLE_FAMILY";
