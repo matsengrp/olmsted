@@ -234,7 +234,6 @@ class ClonalFamiliesViz2 extends React.Component {
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class TreeViz extends React.Component {
   render() {
-    console.log("TREE VIZ")
     return <Vega
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ false}
@@ -302,4 +301,4 @@ class TreeViz extends React.Component {
           }/>;
       }};
 
-export {ClonalFamiliesViz, ClonalFamiliesViz2, ClonalFamiliesVizCustom, TreeViz, NaiveSequence}
+export {ClonalFamiliesViz, ClonalFamiliesViz2, TreeViz, NaiveSequence}
