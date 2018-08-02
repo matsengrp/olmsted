@@ -111,7 +111,7 @@ class ClonalFamiliesTable extends React.Component {
       <Table data={this.props.visibleClonalFamilies}
         mappings={
           [["Select", "select"],
-           ["Naive sequence", "naive_sequence"],
+          ["Naive sequence", "naive_sequence"],
            //["ID", "id"],
            ["N seqs", "n_seqs"],
            ["Mean mut freq", "mean_mut_freq"],

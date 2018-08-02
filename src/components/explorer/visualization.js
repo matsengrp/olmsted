@@ -3,9 +3,9 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
-import * as v from "vega";
 import * as types from '../../actions/types';
-
+import {createClassFromSpec} from 'react-vega';
+import naiveVegaSpec from './vega/vega_specs.js';
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -19,21 +19,9 @@ const MyVegaLite = args => {
   return <VegaLite {...args}/>
 }
 
-const MyVega = args => {
-  if (args.debug) {
-    console.log("compiling vega-lite", args.spec)
-    try {
-      console.log("resulting vega", v.compile(args.spec).spec)
-    } catch (e) {
-      console.error("couldn't parse vega-lite:", e)
-    }
-  }
-  return <Vega {...args}/>
-}
-
 const getNaiveVizData = (datum) => {
   let result = {
-    values: [
+    source: [
     {
       family: "5p",
       region: "CDR3",
@@ -76,101 +64,11 @@ const getNaiveVizData = (datum) => {
   ]} 
   return result 
 }
+
+const NaiveViz = createClassFromSpec(naiveVegaSpec)
+
 const NaiveSequence = ({datum}) => {
-      return <MyVegaLite 
-              data= {getNaiveVizData(datum)}
-              onParseError={(...args) => console.error("parse error:", args)}
-              debug={/* true for debugging */ false}
-              spec={{
-                width: 250,
-                height: 25,
-                layer: [{
-                transform: [{
-                  filter: {field: "region", oneOf: ["CDR3"]}
-                }],
-                mark: {type: "bar",color:"yellow", size: 25},
-                encoding: {
-                  x: {
-                    field: "start",
-                    type: "quantitative",
-                    axis: {title: "", ticks: false, labels: false},
-                    scale: {domain: [0,400]}
-                  },
-                  x2: {
-                    field: "end",
-                    type: "quantitative",
-                    axis: {title: "", ticks: false, labels: false},
-                    scale: {domain: [0,400]}
-                  },
-                  y: {
-                    field: "family",
-                    type: "nominal",
-                    axis: {title: "", ticks: false, labels: false},
-                  },
-                  tooltip: [
-                    {field: "region", type: "nominal"},
-                    {field: "start", type: "quantitative"},
-                    {field: "end", type: "quantitative"}
-                  ]
-                }}, 
-                {  
-                transform: [{
-                  filter: {field: "region", oneOf: [
-                    "V gene",
-                    "Insertion 1",
-                    "D gene",
-                    "Insertion 2",
-                    "J gene"]
-                  }
-                }],   
-                mark: {type: "bar", size: 12},
-                encoding: {
-                  x: {
-                    field: "start",
-                    type: "quantitative",
-                    axis: {title: "", ticks: false, labels: false},
-                    scale: {domain: [0,400]}
-
-                  },
-                  x2: {
-                    field: "end",
-                    type: "quantitative",
-                    axis: {title: "", ticks: false, labels: false},
-                    scale: {domain: [0,400]}
-
-                  },
-                  y: {
-                    field: "family",
-                    type: "nominal",
-                    axis: {title: "", ticks: false, labels: false},
-                  },
-                  tooltip: [
-                    {field: "region", type: "nominal"},
-                    {field: "start", type: "quantitative"},
-                    {field: "end", type: "quantitative"},
-                    {field: "gene", type: "nominal"}
-                  ],
-                  color: {
-                    field: "region",
-                    type: "nominal",
-                    legend: null,
-                    scale: {
-                      domain:
-                        [ "V gene",
-                          "Insertion 1",
-                          "D gene",
-                          "Insertion 2",
-                          "J gene",
-                        ],
-                      range: ["#db2c0d", "#36db0d", "#000000", "#36db0d", "#2c12ea"],
-                      type: "ordinal"
-                    }
-                    
-                }
-              }
-            }
-          ]
-          }}/>;
+      return <NaiveViz data = {getNaiveVizData(datum)} />;
 }
 
 @connect((state) => ({
