@@ -181,7 +181,7 @@ class ClonalFamiliesViz extends React.Component {
       onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
       onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
       onParseError={(...args) => console.error("parse error:", args)}
-      debug={/* true for debugging */ false}
+      debug={/* true for debugging */ true}
       spec={{
           width: 900,
           height: 700,
@@ -246,16 +246,12 @@ class ClonalFamiliesViz2 extends React.Component {
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class TreeViz extends React.Component {
   render() {
-    console.log("TREE VIZ")
-    return <MyVega
-      onSignalTooltip={/* doesn"t work yet */ (...args) => console.log("Tooltip:", args)}
-      onSignalHover={/* doesn"t work yet */ (...args) => console.log("Hover:", args)}
-      onSignalBrush_n_seqs={(...args) => console.log("Brushed n_seqs:", args)}
-      onSignalBrush_mean_mut_freq={(...args) => console.log("Brushed mut_freqs:", args)}
+    return <Vega
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ false}
       spec={{
-        "height": 2000,
+        "height": 1000,
+        "autosize": {"type": "pad", "resize": true},
         "padding": 5,
         "$schema": "https://vega.github.io/schema/vega/v3.0.json",
         "scales": [{"name": "color", 
@@ -301,12 +297,12 @@ class TreeViz extends React.Component {
                                           "fill": {"value": "#000"}}},
                      "type": "text",
                      "from": {"data": "leaves"}}],
-          "signals": [{"value": 200,
+          "signals": [{"value": 5000,
                        "name": "branchScale",
                        "bind": {"max": 5000, "step": 50, "input": "range", "min": 0}},
-                      {"value": 100,
+                      {"value": 70,
                        "name": "heightScale",
-                       "bind": {"max": 300, "step": 5, "input": "range", "min": 0}},
+                       "bind": {"max": 300, "step": 5, "input": "range", "min": 70}},
                       {"value": "datum",
                        "name": "cladify",
                        "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]}], 
