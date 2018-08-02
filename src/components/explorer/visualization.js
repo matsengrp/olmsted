@@ -29,54 +29,54 @@ const MyVega = args => {
   return <Vega {...args}/>
 }
 
-const getNaiveVizData = (v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene) => {
+const getNaiveVizData = (datum) => {
   let result = {
     values: [
     {
       family: "5p",
       region: "CDR3",
-      start: cdr3_start,
-      end: cdr3_start + cdr3_length
+      start: datum.cdr3_start,
+      end: datum.cdr3_start + datum.cdr3_length
     },
     {
       family: "5p",
       region: "V gene",
-      gene: v_gene,
-      start: v_start,
-      end: v_end
+      gene: datum.v_gene,
+      start: datum.v_start,
+      end: datum.v_end
     },
     {
       family: "5p",
       region: "Insertion 1",
-      start: v_end,
-      end: d_start
+      start: datum.v_end,
+      end: datum.d_start
     },
     {
       family: "5p",
       region: "D gene",
-      gene: d_gene,
-      start: d_start,
-      end: d_end
+      gene: datum.d_gene,
+      start: datum.d_start,
+      end: datum.d_end
     },
     {
       family: "5p",
       region: "Insertion 2",
-      start: d_end,
-      end: j_start
+      start: datum.d_end,
+      end: datum.j_start
     },
     {
       family: "5p",
       region: "J gene",
-      gene: j_gene,
-      start: j_start,
-      end: j_end
+      gene: datum.j_gene,
+      start: datum.j_start,
+      end: datum.j_end
     }
   ]} 
   return result 
 }
-const NaiveSequence = ({v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene}) => {
+const NaiveSequence = ({datum}) => {
       return <MyVegaLite 
-              data= {getNaiveVizData(v_start, cdr3_start, v_end, d_start, d_end, j_start, cdr3_length, j_end, v_gene, d_gene, j_gene)}
+              data= {getNaiveVizData(datum)}
               onParseError={(...args) => console.error("parse error:", args)}
               debug={/* true for debugging */ false}
               spec={{
