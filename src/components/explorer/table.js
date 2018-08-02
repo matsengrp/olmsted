@@ -38,7 +38,9 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
             {data.map((datum) => {
               return _.map(mappings, ([__, attr]) => {
                     if(attr == "naive_sequence"){
-                      return <div className="item item-viz" key={datum.ident + "-naive-sequence"}>
+                      return <div className="item item-viz"
+                                  style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
+                                  key={datum.ident + "-naive-sequence"}>
                               <NaiveSequence datum={datum}/>
                             </div>
                     }
@@ -55,7 +57,10 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
                                 </input>
                               </div>)
                     }
-                    return <div className="item" key={attr}>{datum[attr]}</div>
+                    return <div className="item" key={attr}
+                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}>
+                             {datum[attr]}
+                           </div>
                   }
                 ) 
               }
@@ -107,13 +112,13 @@ class ClonalFamiliesTable extends React.Component {
         mappings={
           [["Select", "select"],
            ["Naive sequence", "naive_sequence"],
-           ["ID", "id"],
+           //["ID", "id"],
            ["N seqs", "n_seqs"],
            ["Mean mut freq", "mean_mut_freq"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
-            //["seed run", "has_seed"],
+           ["seed run", "has_seed"],
           ]}
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
