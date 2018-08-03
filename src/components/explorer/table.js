@@ -20,53 +20,86 @@ const MyVegaLite = args => {
 
 const tableStyle = {fontSize: '15px'};
 
-const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, selectFamily, selectedFamily}) => {
-  let nCols = mappings.length
-  let templateColumnsStyle = "auto ".repeat(nCols)
-  return (
+class Table extends React.Component {
+  render(){
+    let nCols = this.props.mappings.length
+    let templateColumnsStyle = "auto ".repeat(nCols)
+    return (
           <div className="grid-container"
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
             <div className="item pagination-controls" style={{gridArea: "controls"}}>
-              <span style={{padding:10}}><a onClick={pageUp}>page up</a></span>
-              <span style={{padding:10}}>{pagination.page}</span>
-              <span style={{padding:10}}><a onClick={pageDown}>page down</a></span>
+              <span style={{padding:10}}><a onClick={this.props.pageUp}>page up</a></span>
+              <span style={{padding:10}}>{this.props.pagination.page}</span>
+              <span style={{padding:10}}><a onClick={this.props.pageDown}>page down</a></span>
             </div>
-            { _.map(mappings, ([name, attribute]) =>
-              <div className="item" key={name} onClick={toggleSort.bind(this, attribute)}>{name}</div>) }
-            {data.map((datum) => {
-              return _.map(mappings, ([__, attr]) => {
-                    if(attr == "naive_sequence"){
-                      return <div className="item item-viz"
-                                  style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
-                                  key={datum.ident + "-naive-sequence"}>
-                              <NaiveSequence datum={datum}/>
-                            </div>
-                    }
-                    else if (attr == "select"){
-                      return( <div className="item"
-                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
-                                onClick={() => selectFamily(datum)}
-                                >
-                                <input   
-                                  style={{marginLeft: "5px"}}
-                                  checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
-                                  type="checkbox"
-                                  >
-                                </input>
-                              </div>)
-                    }
-                    return <div className="item" key={attr}
-                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}>
-                             {datum[attr]}
-                           </div>
+            { _.map(this.props.mappings, ([name, attribute]) =>
+              <div className="item" key={name} onClick={ ()=> this.props.toggleSort( attribute)}>{name}</div>) }
+            {this.props.data.map((datum) => {
+              return _.map(this.props.mappings, ([__, attr, createComponent]) => {
+                   
+                    return createComponent(datum, attr, this.props.selectedFamily, this.props.selectFamily)
+                         
                   }
                 ) 
               }
             )}
           </div>
         )}
+
+      }
+
+const createNaiveAttribute = (datum, attr, selected, selectFamily) => {
+  return <NaiveAttribute  datum = {datum} selectedFamily = {selected}/>
+}
+
+class NaiveAttribute extends React.Component { 
+  render(){
+    return <div className="item item-viz"
+              style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}
+              key={this.props.datum.ident + "-naive-sequence"}>
+            <NaiveSequence datum={this.props.datum}/>
+          </div>
+  }
+}
+
+const createSelectAttribute = (datum, attr, selected, selectFamily) => {
+  return <SelectAttribute datum = {datum} selectedFamily = {selected} selectFamily = {selectFamily}/>
+}  
+
+class SelectAttribute extends React.Component { 
+  render(){
+    return <div className="item"
+            style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}
+            onClick={() => {
+              this.props.selectedFamily? console.log(this.props.selectedFamily.ident) : console.log("NONE")
+              return this.props.selectFamily(this.props.datum)
+            }
+          }
+            >
+            <input   
+              style={{marginLeft: "5px"}}
+              checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
+              type="checkbox"
+              >
+            </input>
+          </div>
+  }
+}
+
+const createTableAttribute = (datum, attr, selected, onClick) => {
+  return <TableAttribute attr = {attr} datum = {datum} selectedFamily = {selected}/>
+}
+
+class TableAttribute extends React.Component { 
+  render(){
+    return <div className="item" key={this.props.attr}
+                style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}>
+              {this.props.datum[this.props.attr]}
+            </div>
+  }
+}
 
 const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
@@ -110,15 +143,14 @@ class ClonalFamiliesTable extends React.Component {
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
-          [["Select", "select"],
-          ["Naive sequence", "naive_sequence"],
+          [["Select", "select", createSelectAttribute],
+          ["Naive sequence", "naive_sequence", createNaiveAttribute],
            //["ID", "id"],
-           ["N seqs", "n_seqs"],
-           ["Mean mut freq", "mean_mut_freq"],
-           ["V gene", "v_gene"],
-           ["D gene", "d_gene"],
-           ["J gene", "j_gene"],
-           ["seed run", "has_seed"],
+           ["N seqs", "n_seqs", createTableAttribute],
+           ["V gene", "v_gene", createTableAttribute],
+           ["D gene", "d_gene", createTableAttribute],
+           ["J gene", "j_gene", createTableAttribute],
+           ["seed run", "has_seed", createTableAttribute],
           ]}
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
