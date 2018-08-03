@@ -28,7 +28,7 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
-            <div className="item" style={{gridArea: "controls"}}>
+            <div className="item pagination-controls" style={{gridArea: "controls"}}>
               <span style={{padding:10}}><a onClick={pageUp}>page up</a></span>
               <span style={{padding:10}}>{pagination.page}</span>
               <span style={{padding:10}}><a onClick={pageDown}>page down</a></span>
