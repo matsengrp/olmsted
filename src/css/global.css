@@ -119,3 +119,23 @@ input:checked + .slider:before {
 }
 
 button:focus {outline:0;}
+
+
+
+/* GRID */
+.grid-container {
+  display: grid;
+  /*grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];*/
+  grid-template-columns: auto;
+  grid-template-rows: auto; 
+}
+
+.item {
+  /*border: 1px solid rgb(45, 45, 150);*/
+}
+
+.item-filler{
+  grid-column: two / end;
+}
+
+

@@ -21,28 +21,27 @@ const MyVegaLite = args => {
 const tableStyle = {fontSize: '15px'};
 
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, selectFamily, selectedFamily}) => {
+  let nCols = mappings.length
+  let templateColumnsStyle = "auto ".repeat(nCols)
   return (
-          <div className="grid-container">
-            <div className="item"><a onClick={pageUp}>page up</a></div>
-            <div className="item">{pagination.page}</div>
-            <div className="item item-filler"><a onClick={pageDown}>page down</a></div>
+          <div className="grid-container"
+               style={{gridTemplateColumns: templateColumnsStyle,
+                       gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
+               }}>
+            <div className="item" style={{gridArea: "controls"}}>
+              <span style={{padding:10}}><a onClick={pageUp}>page up</a></span>
+              <span style={{padding:10}}>{pagination.page}</span>
+              <span style={{padding:10}}><a onClick={pageDown}>page down</a></span>
+            </div>
             { _.map(mappings, ([name, attribute]) =>
               <div className="item" key={name} onClick={toggleSort.bind(this, attribute)}>{name}</div>) }
             {data.map((datum) => {
               return _.map(mappings, ([__, attr]) => {
                     if(attr == "naive_sequence"){
-                      return <div className="item item-viz" key={attr}>
-                              <NaiveSequence v_start={datum["v_start"]}
-                                cdr3_start={datum["cdr3_start"]}
-                                v_end={datum["v_end"]}
-                                d_start={datum["d_start"]}
-                                d_end={datum["d_end"]}
-                                j_start={datum["j_start"]}
-                                cdr3_length={datum["cdr3_length"]}
-                                j_end={datum["j_end"]}
-                                v_gene={datum["v_gene"]}
-                                d_gene={datum["d_gene"]}
-                                j_gene={datum["j_gene"]} />
+                      return <div className="item item-viz"
+                                  style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
+                                  key={datum.ident + "-naive-sequence"}>
+                              <NaiveSequence datum={datum}/>
                             </div>
                     }
                     else if (attr == "select"){
@@ -58,14 +57,14 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
                                 </input>
                               </div>)
                     }
-                    return <div className="item" key={attr}>{datum[attr]}</div>
+                    return <div className="item" key={attr}
+                                style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}>
+                             {datum[attr]}
+                           </div>
                   }
                 ) 
               }
             )}
-
-           
-            
           </div>
         )}
 
@@ -108,17 +107,18 @@ class ClonalFamiliesTable extends React.Component {
   }
 
   render() {
-    return (  
+    return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
           [["Select", "select"],
-           ["ID", "id"],
+          ["Naive sequence", "naive_sequence"],
+           //["ID", "id"],
            ["N seqs", "n_seqs"],
+           ["Mean mut freq", "mean_mut_freq"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
-           ["Naive sequence", "naive_sequence"]
-            //["seed run", "has_seed"],
+           ["seed run", "has_seed"],
           ]}
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
