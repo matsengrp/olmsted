@@ -111,50 +111,6 @@ class ClonalFamiliesViz extends React.Component {
             }}}/>;
       }};
 
-
-@connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
-class ClonalFamiliesViz2 extends React.Component {
-  render() {
-    return <VegaLite data={{values: this.props.availableClonalFamilies}}
-      onSignalHover={(...args) => console.log(args)}
-      onParseError={(...args) => console.error("vega parse error!:", args)}
-      spec={{
-          width: 900,
-          height: 700,
-          mark: "point",
-          transform: [{
-            bin: true,
-            field: "subject.id",
-            as: "subject_id" 
-          }],
-          selection: {
-            picked: {
-              type: "single", 
-              fields:["subject_id"],
-              bind: {input: "select", options: ["QA255", "MG505"]},
-              resolve: "global",
-              empty: "all"
-            }
-          },
-          encoding: {
-            x: {field: "n_seqs", type: "quantitative"},
-            y: {field: "mean_mut_freq", type: "quantitative"},
-            color: {
-              condition: {
-                selection: "picked", 
-                type: "nominal",
-                value: "black"
-              },
-              field: "subject.id",
-              type: "nominal"
-            },
-            shape: {field: "sample.timepoint", type: "nominal"},
-            opacity: {value: 0.35},
-          }
-          }}/>;
-      }};
-
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesVizCustom extends React.Component {
@@ -162,22 +118,32 @@ class ClonalFamiliesVizCustom extends React.Component {
     super(props);
     // This binding is necessary to make `this` work in the callback
     this.updateBrushSelection = this.updateBrushSelection.bind(this);
+    this.xField = "n_seqs";
+    this.yField = "mean_mut_freq";
   }
 
-  updateBrushSelection(args){
-    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: args});
+  updateBrushSelection(dim, attr, data){
+    let updateBrushData = [dim, attr, data]
+    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData});
   }
   
   render() {
     return <Vega
+      onSignalXField={(...args) => {
+        let result = args.slice(1)[0]
+        this.xField = result
+      }}
+      onSignalYField={(...args) => {
+        let result = args.slice(1)[0]
+        this.yField = result
+      }}
       onSignalBrush_n_seqs={(...args) => {
-        console.log("BRUSHHS", args)
-        this.updateBrushSelection(args)
+        let result = args.slice(1)[0]
+        this.updateBrushSelection("x", this.xField, result)
       }}
       onSignalBrush_mean_mut_freq={(...args) => {
-        console.log("BRUSHHS", args)
-
-        this.updateBrushSelection(args)
+        let result = args.slice(1)[0]
+        this.updateBrushSelection("y", this.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
@@ -250,10 +216,7 @@ class TreeViz extends React.Component {
                        "name": "cladify",
                        "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]}], 
           "width": 2000}
-      
-      
-          
           }/>;
       }};
 
-export {ClonalFamiliesViz, ClonalFamiliesViz2, ClonalFamiliesVizCustom, TreeViz, NaiveSequence}
+export {ClonalFamiliesViz, ClonalFamiliesVizCustom, TreeViz, NaiveSequence}

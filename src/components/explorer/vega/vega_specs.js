@@ -1344,9 +1344,9 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
-      "bind": {"input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
     { "name": "nullGap", "update": "nullSize + 10" }
   ],
