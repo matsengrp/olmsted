@@ -5,7 +5,7 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import {naiveVegaSpec, clonalFamiliesVizCustomSpec} from './vega/vega_specs.js';
+import {naiveVegaSpec, clonalFamiliesVizCustomSpec, clonalFamiliesTestSpec} from './vega/vega_specs.js';
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -155,11 +155,6 @@ class ClonalFamiliesViz2 extends React.Component {
           }}/>;
       }};
 
-
-// signals: [{"value": "n_seqs",
-// "name": "x",
-// "bind": {"input": "select", "options": ["n_seqs"]}}],
-
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesVizCustom extends React.Component {
@@ -174,7 +169,7 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
-    return <Vega data={{values: this.props.availableClonalFamilies}}
+    return <Vega
       onSignalBrush_n_seqs={(...args) => {
         console.log("BRUSHHS", args)
         this.updateBrushSelection(args)
