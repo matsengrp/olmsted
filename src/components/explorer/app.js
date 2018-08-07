@@ -29,8 +29,8 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
       <h2>Chosen datasets</h2>
       <ul>{chosenDatasets}</ul>
       <h2>Viz</h2>
-      <viz.ClonalFamiliesViz/>
-      {/* <viz.ClonalFamiliesViz2/> */}
+      {/* <viz.ClonalFamiliesViz/> */}
+      <viz.ClonalFamiliesVizCustom/>
       <h2>Table</h2>
       <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
         <ClonalFamiliesTable/>

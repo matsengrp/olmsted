@@ -14,14 +14,15 @@ const computeClonalFamiliesPage = (data, pagination) =>
     [_.drop,     pagination.page * pagination.per_page],
     [_.take,     pagination.per_page])
 
-const checkInRange = (key, datum, brushSelection) => {
-  return (brushSelection[key][0] < datum[key]) && (datum[key] < brushSelection[key][1])
+const checkInRange = (axis, datum, brushSelection) => {
+  return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
 }
 
 const checkBrushSelection = (brushSelection, datum) => {
-  let keys = Object.keys(brushSelection);
-  if(brushSelection[keys[0]] && brushSelection[keys[1]]){
-      return (checkInRange(keys[0], datum, brushSelection)) && (checkInRange(keys[1], datum, brushSelection))
+  if(brushSelection["x"] && brushSelection["y"]){
+    if(brushSelection["x"]["range"] && brushSelection["y"]["range"]){
+      return (checkInRange("x", datum, brushSelection)) && (checkInRange("y", datum, brushSelection))
+    }
   }
   return true
 }
