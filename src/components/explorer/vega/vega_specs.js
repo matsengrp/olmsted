@@ -679,7 +679,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "x",
       "orient": "bottom",
-      "offset": 5,
       "grid": false,
       "title": {"signal": "xField"},
       "tickCount": {
@@ -690,7 +689,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "x",
       "orient": "bottom",
-      "offset": 5,
       "grid": true,
       "tickCount": {
         "signal": "ceil(width/40)"
@@ -706,7 +704,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "y",
       "orient": "left",
-      "offset": 5,
       "grid": false,
       "title": {"signal": "yField"},
       "tickCount": {
@@ -717,12 +714,11 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "y",
       "orient": "left",
-      "offset": 5,
       "grid": true,
       "tickCount": {
         "signal": "ceil(height/40)"
       },
-      "gridScale": "x",
+      "gridScale": "x",    
       "domain": false,
       "labels": false,
       "maxExtent": 0,
@@ -979,4 +975,4 @@ const clonalFamiliesVizCustomSpec = (data) => {
   )
 }
 
-export {naiveVegaSpec, clonalFamiliesVizCustomSpec, clonalFamiliesTestSpec};
+export {naiveVegaSpec, clonalFamiliesVizCustomSpec};
