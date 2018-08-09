@@ -37,11 +37,14 @@ class Table extends React.Component {
             { _.map(this.props.mappings, ([name, attribute]) =>
               <div className="item" key={name} onClick={ ()=> this.props.toggleSort( attribute)}>{name}</div>) }
             {this.props.data.map((datum) => {
-              return _.map(this.props.mappings, ([__, attr, createComponent]) => {
-                   
-                    return createComponent(datum, attr, this.props.selectedFamily, this.props.selectFamily)
-                         
-                  }
+              return _.map(this.props.mappings, ([__, AttrOrComponent]) => {
+                console.log("type of", AttrOrComponent, typeof AttrOrComponent)
+                if ((typeof AttrOrComponent) == "string") {
+                  console.log("hear me fucking roar")
+                  return <TableAttribute datum={datum} attr={AttrOrComponent} selectedFamily={this.props.selectedFamily}/>
+                } else {
+                  return <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} selectFamily={this.props.selectFamily}/>
+                }}
                 ) 
               }
             )}
@@ -49,10 +52,6 @@ class Table extends React.Component {
         )}
 
       }
-
-const createNaiveAttribute = (datum, attr, selected, selectFamily) => {
-  return <NaiveAttribute  datum = {datum} selectedFamily = {selected}/>
-}
 
 class NaiveAttribute extends React.Component { 
   render(){
@@ -63,10 +62,6 @@ class NaiveAttribute extends React.Component {
           </div>
   }
 }
-
-const createSelectAttribute = (datum, attr, selected, selectFamily) => {
-  return <SelectAttribute datum = {datum} selectedFamily = {selected} selectFamily = {selectFamily}/>
-}  
 
 class SelectAttribute extends React.Component { 
   render(){
@@ -86,10 +81,6 @@ class SelectAttribute extends React.Component {
             </input>
           </div>
   }
-}
-
-const createTableAttribute = (datum, attr, selected, onClick) => {
-  return <TableAttribute attr = {attr} datum = {datum} selectedFamily = {selected}/>
 }
 
 class TableAttribute extends React.Component { 
@@ -143,14 +134,14 @@ class ClonalFamiliesTable extends React.Component {
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
-          [["Select", "select", createSelectAttribute],
-          ["Naive sequence", "naive_sequence", createNaiveAttribute],
+          [["Select", SelectAttribute],
+           ["Naive sequence", NaiveAttribute],
            //["ID", "id"],
-           ["N seqs", "n_seqs", createTableAttribute],
-           ["V gene", "v_gene", createTableAttribute],
-           ["D gene", "d_gene", createTableAttribute],
-           ["J gene", "j_gene", createTableAttribute],
-           ["seed run", "has_seed", createTableAttribute],
+           ["N seqs", "n_seqs"],
+           ["V gene", "v_gene"],
+           ["D gene", "d_gene"],
+           ["J gene", "j_gene"],
+           ["seed run", "has_seed"],
           ]}
         pagination = {this.props.pagination}
         pageUp = {this.pageUp}
