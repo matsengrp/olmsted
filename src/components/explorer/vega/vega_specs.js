@@ -975,6 +975,283 @@ const clonalFamiliesVizCustomSpec = (data) => {
   )
 }
 
+const concatTreeWithAlignSpecs  = (selectedFamily) => {
+  return(
+    {
+      "$schema": "https://vega.github.io/schema/vega/v4.json",
+      "description": "Two horizonally concatenated charts that show a histogram of precipitation in Seattle and the relationship between min and max temperature.",
+      "autosize": "pad",
+      "padding": 5,
+      "height": 1000,
+      "width": 2000,
+      "data": [
+        {
+          "name": "source_0",
+          "values":selectedFamily.asr_tree 
+        },
+        {
+          "name": "source_1",
+          "values":selectedFamily.cluster_aa 
+        },
+        {"name": "tree", 
+            "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
+                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                          "type": "tree",
+                          "as": ["y0", "x0", "depth0", "children0"],
+                          "method": "cluster"}, 
+                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                          "type": "tree", 
+                          "as": ["y", "x", "depth", "children"], 
+                          "method": "cluster"},
+                          {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
+                          {"expr": "datum.y0 * (heightScale / 100)", "type": "formula", "as": "y"}],
+            "source": "source_0"},
+        {"name": "links",
+        "transform": [{"key": "id", "type": "treelinks"},
+                      {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
+        "source": "tree"},
+        {"name": "nodes", "transform": [{"expr": "datum.type == 'node'", "type": "filter"}],
+          "source": "tree"},
+        {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}, 
+        {
+          "name": "data_1",
+          "source": "source_1",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "toNumber(datum[\"position\"])",
+              "as": "position"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {"value": 5000,
+                 "name": "branchScale",
+                 "bind": {"max": 5000, "step": 50, "input": "range", "min": 0}},
+                {"value": 70,
+                 "name": "heightScale",
+                 "bind": {"max": 300, "step": 5, "input": "range", "min": 70}},
+                {"value": "datum",
+                 "name": "cladify",
+                 "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
+        {"name": "concat_0_x_step", "value": 21},
+        {
+          "name": "concat_0_width",
+          "update": "bandspace(domain('concat_0_x').length, 0.1, 0.05) * concat_0_x_step"
+        },
+        {"name": "concat_1_width", "value": 200}
+      ],
+      "layout": {
+        "padding": {"row": 10, "column": 10},
+        "bounds": "full",
+        "align": "each"
+      },
+      "marks": [
+        {
+          "type": "group",
+          "name": "concat_0_group",
+          "style": "cell",
+          "encode": {
+            "update": {
+              "width": {"signal": "concat_0_width"},
+              "height": {"signal": "height"}
+            }
+          },
+          "marks": [{"encode": {"update": {"path": {"field": "path"},
+                                              "strokeWidth": {"value": 3},
+                                              "stroke": {"value": "#ccc"}}},
+                          "type": "path",
+                          "from": {"data": "links"}},
+              {"name": "ancestor",
+               "encode": {"update": {"y": {"field": "y"},"fill": {"value": "#000"}, "x": {"field": "x"}},
+                          "enter": {"size": {"value": 100}, "stroke": {"value": "#000"}}},
+               "type": "symbol",
+               "from": {"data": "nodes"}},
+              {"encode": {"update": {"y": {"field": "y"},
+                                     "dx": {"value": 2},
+                                     "dy": {"value": 3}, 
+                                     "x": {"field": "x"}}, 
+                          "enter": {"text": {"field": "label"},
+                                    "fill": {"value": "#000"}}},
+               "type": "text",
+               "from": {"data": "leaves"}}]
+         
+        },
+        {
+          "type": "group",
+          "name": "concat_1_group",
+          "style": "cell",
+          "encode": {
+            "update": {
+              "width": {"signal": "concat_1_width"},
+              "height": {"signal": "height"}
+            }
+          },
+          "marks": [
+            {
+              "name": "marks",
+              "type": "rect",
+              "style": ["tick"],
+              "from": {"data": "data_1"},
+              "encode": {
+                "update": {
+                  "opacity": {"value": 0.7},
+                  "fill": [
+                    {
+                      "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                      "value": null
+                    },
+                    {"scale": "color", "field": "mut_to"}
+                  ],
+                  "tooltip": {
+                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"]}"
+                  },
+                  "xc": {"scale": "x", "field": "position"},
+                  "yc": {"scale": "y", "field": "seq_id"},
+                  "height": {"signal": "ceil(height/20)"},
+                  "width": {"signal": "ceil(width/130)"}
+                }
+              }
+            }
+          ],
+          "axes": [
+            {
+              "scale": "x",
+              "orient": "bottom",
+              "grid": false,
+              "title": "position",
+              "labelFlush": true,
+              "labelOverlap": true,
+              "tickCount": {"signal": "ceil(width/40)"},
+              "zindex": 1
+            },
+            {
+              "scale": "x",
+              "orient": "bottom",
+              "gridScale": "y",
+              "grid": true,
+              "tickCount": {"signal": "130"},
+              "domain": false,
+              "labels": false,
+              "maxExtent": 0,
+              "minExtent": 0,
+              "ticks": false,
+              "zindex": 0
+            },
+            {
+              "scale": "y",
+              "orient": "left",
+              "grid": false,
+              "title": "seq_id",
+              "zindex": 1
+            }
+          ]
+        }
+      ],
+      
+      "scales": [
+        {
+          "name": "x",
+          "type": "linear",
+          "domain": {"data": "data_1", "field": "position"},
+          "range": [0, {"signal": "width"}],
+          "nice": true,
+          "zero": true
+        },
+        {
+          "name": "y",
+          "type": "point",
+          "domain": {"data": "data_1", "field": "seq_id", "sort": true},
+          "range": [0, {"signal": "height"}],
+          "padding": 0.5
+        },
+        {
+          "name": "color",
+          "type": "ordinal",
+          "domain": {"data": "data_1", "field": "mut_to", "sort": true},
+          "range": "category"
+        }
+      ],
+      "legends": [
+        {
+          "fill": "color",
+          "title": "mut_to",
+          "encode": {
+            "symbols": {
+              "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
+            }
+          }
+        }
+      ],
+      "config": {"axisY": {"minExtent": 30}}
+    }
+  )
+}
+
+const treeSpec = (data) => {
+  return( 
+  {
+  "height": 1000,
+  "autosize": {"type": "pad", "resize": true},
+  "padding": 5,
+  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "scales": [{"name": "color", 
+              "range": {"scheme": "magma"},
+              "type": "sequential", 
+              "domain": {"field": "depth", "data": "tree"},
+              "zero": true}],
+  "data": [{"name": "tree", 
+            "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
+                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                          "type": "tree",
+                          "as": ["y0", "x0", "depth0", "children0"],
+                          "method": "cluster"}, 
+                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                          "type": "tree", 
+                          "as": ["y", "x", "depth", "children"], 
+                          "method": "cluster"},
+                          {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
+                          {"expr": "datum.y0 * (heightScale / 100)", "type": "formula", "as": "y"}],
+            "values": data},
+           {"name": "links",
+            "transform": [{"key": "id", "type": "treelinks"},
+                          {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
+            "source": "tree"},
+           {"name": "nodes", "transform": [{"expr": "datum.type == 'node'", "type": "filter"}],
+             "source": "tree"},
+           {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}],
+    "marks": [{"encode": {"update": {"path": {"field": "path"},
+                                              "strokeWidth": {"value": 3},
+                                              "stroke": {"value": "#ccc"}}},
+                          "type": "path",
+                          "from": {"data": "links"}},
+              {"name": "ancestor",
+               "encode": {"update": {"y": {"field": "y"},"fill": {"value": "#000"}, "x": {"field": "x"}},
+                          "enter": {"size": {"value": 100}, "stroke": {"value": "#000"}}},
+               "type": "symbol",
+               "from": {"data": "nodes"}},
+              {"encode": {"update": {"y": {"field": "y"},
+                                     "dx": {"value": 2},
+                                     "dy": {"value": 3}, 
+                                     "x": {"field": "x"}}, 
+                          "enter": {"text": {"field": "label"},
+                                    "fill": {"value": "#000"}}},
+               "type": "text",
+               "from": {"data": "leaves"}}],
+    "signals": [{"value": 5000,
+                 "name": "branchScale",
+                 "bind": {"max": 5000, "step": 50, "input": "range", "min": 0}},
+                {"value": 70,
+                 "name": "heightScale",
+                 "bind": {"max": 300, "step": 5, "input": "range", "min": 70}},
+                {"value": "datum",
+                 "name": "cladify",
+                 "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]}], 
+    "width": 2000}
+  )
+}
+
 const seqAlignSpec = (data) => {
   return(
     {
@@ -1099,4 +1376,4 @@ const seqAlignSpec = (data) => {
   )
 }
 
-export {naiveVegaSpec, clonalFamiliesVizCustomSpec};
+export {naiveVegaSpec, clonalFamiliesVizCustomSpec, treeSpec, concatTreeWithAlignSpecs};
