@@ -8,10 +8,11 @@ import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../../util/
 import { filterDatasets } from "../../reducers/datasets"
 import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
+import { hot } from 'react-hot-loader';
+
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
-
 
 const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
 
@@ -151,4 +152,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default hot(module)(App);
