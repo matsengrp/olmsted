@@ -20,6 +20,19 @@ const MyVegaLite = args => {
 
 const tableStyle = {fontSize: '15px'};
 
+
+const PaginationControls = ({pageUp, pagination, pageDown}) => 
+  <span>
+    <span style={{padding:10}}><a onClick={pageUp}>page up</a></span>
+    <span style={{padding:10}}>{pagination.page}</span>
+    <span style={{padding:10}}><a onClick={pageDown}>page down</a></span>
+  </span>
+
+
+const TableAttribute = ({datum, attr}) =>
+  <span>{this.props.datum[this.props.attr]}</span>
+
+
 class Table extends React.Component {
   render(){
     let nCols = this.props.mappings.length
@@ -30,67 +43,36 @@ class Table extends React.Component {
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
             <div className="item pagination-controls" style={{gridArea: "controls"}}>
-              <span style={{padding:10}}><a onClick={this.props.pageUp}>page up</a></span>
-              <span style={{padding:10}}>{this.props.pagination.page}</span>
-              <span style={{padding:10}}><a onClick={this.props.pageDown}>page down</a></span>
+              <PaginationControls pageUp={this.props.pageUp} pagination={this.props.pagination} pageDown={this.props.pageDown}/>
             </div>
             { _.map(this.props.mappings, ([name, attribute]) =>
               <div className="item" key={name} onClick={ ()=> this.props.toggleSort( attribute)}>{name}</div>) }
             {this.props.data.map((datum) => {
-              return _.map(this.props.mappings, ([__, AttrOrComponent]) => {
-                console.log("type of", AttrOrComponent, typeof AttrOrComponent)
-                if ((typeof AttrOrComponent) == "string") {
-                  console.log("hear me fucking roar")
-                  return <TableAttribute datum={datum} attr={AttrOrComponent} selectedFamily={this.props.selectedFamily}/>
-                } else {
-                  return <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} selectFamily={this.props.selectFamily}/>
-                }}
-                ) 
-              }
-            )}
-          </div>
-        )}
+              return _.map(this.props.mappings, ([name, AttrOrComponent]) => {
+                let isAttr = ((typeof AttrOrComponent) == "string")
+                let InnerContent = isAttr ? <TableAttribute datum={datum} attr={AttrOrComponent}/> : <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} selectFamily={this.props.selectFamily}/>
+                let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
+                let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
+                //let result = <div className="item"
+                            //key={key}
+                            //style={style}>
+                         //<InnerContent/>
+                       //</div>
+                //return result
+                return <div className="item" key={key} style={{backgroundColor: "lightred"}}>{key}</div>
+              })})}
+          </div>)}}
 
-      }
 
-class NaiveAttribute extends React.Component { 
-  render(){
-    return <div className="item item-viz"
-              style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}
-              key={this.props.datum.ident + "-naive-sequence"}>
-            <NaiveSequence datum={this.props.datum}/>
-          </div>
-  }
-}
+const SelectAttribute = ({datum, selectedFamily, selectFamily}) =>
+  <input   
+    type="checkbox"
+    style={{marginLeft: "5px"}}
+    checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
+    onClick={() => {
+      selectedFamily? console.log(selectedFamily.ident) : console.log("NONE")
+      return selectFamily(datum)}}/>
 
-class SelectAttribute extends React.Component { 
-  render(){
-    return <div className="item"
-            style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}
-            onClick={() => {
-              this.props.selectedFamily? console.log(this.props.selectedFamily.ident) : console.log("NONE")
-              return this.props.selectFamily(this.props.datum)
-            }
-          }
-            >
-            <input   
-              style={{marginLeft: "5px"}}
-              checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
-              type="checkbox"
-              >
-            </input>
-          </div>
-  }
-}
-
-class TableAttribute extends React.Component { 
-  render(){
-    return <div className="item" key={this.props.attr}
-                style={this.props.selectedFamily? {backgroundColor: this.props.datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}}>
-              {this.props.datum[this.props.attr]}
-            </div>
-  }
-}
 
 const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
@@ -134,8 +116,9 @@ class ClonalFamiliesTable extends React.Component {
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
-          [["Select", SelectAttribute],
-           ["Naive sequence", NaiveAttribute],
+          [
+           //["Select", SelectAttribute],
+           //["Naive sequence", NaiveSequence],
            //["ID", "id"],
            ["N seqs", "n_seqs"],
            ["V gene", "v_gene"],
