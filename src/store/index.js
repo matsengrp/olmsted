@@ -4,22 +4,27 @@ import { changeURLMiddleware } from "../middleware/changeURL";
 import rootReducer from "../reducers";
 import { loggingMiddleware } from "../middleware/logActions"; // eslint-disable-line no-unused-vars
 
-const middleware = [
-  thunk,
-  changeURLMiddleware, // eslint-disable-line comma-dangle
-  loggingMiddleware
-];
-
-let CreateStoreWithMiddleware;
-if (process.env.NODE_ENV === 'production') {
-  CreateStoreWithMiddleware = applyMiddleware(...middleware)(createStore);
-} else {
-  CreateStoreWithMiddleware = compose(
+export default function configureStore(initialState) {
+  console.log("configure store!")
+  const middleware = [
+    thunk,
+    changeURLMiddleware, // eslint-disable-line comma-dangle
+    loggingMiddleware
+  ]
+   
+  const composedEnhancers = compose(
     applyMiddleware(...middleware),
     window.devToolsExtension ? window.devToolsExtension() : (f) => f
-  )(createStore);
+  )
+  const store = createStore(rootReducer, initialState, composedEnhancers)
+  if (process.env.NODE_ENV !== 'production' && module.hot) {
+    console.log("hot reducer reload")
+
+    module.hot.accept('../reducers', () => {
+      const nextRootReducer = require('../reducers/index');
+      store.replaceReducer(nextRootReducer);
+    });
+  }
+  
+  return store
 }
-
-const configureStore = (initialState) => CreateStoreWithMiddleware(rootReducer, initialState);
-
-export default configureStore;

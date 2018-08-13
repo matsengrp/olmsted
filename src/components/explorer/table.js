@@ -48,7 +48,7 @@ const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, select
                       return( <div className="item"
                                 style={selectedFamily? {backgroundColor: datum.ident == selectedFamily.ident ? "lightblue" : "white"} : {}}
                                 onClick={() => selectFamily(datum)}
-                                >
+                                key={datum.ident +"-select"}>
                                 <input   
                                   style={{marginLeft: "5px"}}
                                   checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
