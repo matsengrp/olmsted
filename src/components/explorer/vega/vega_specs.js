@@ -982,8 +982,8 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
       "description": "Two horizonally concatenated charts that show a histogram of precipitation in Seattle and the relationship between min and max temperature.",
       "autosize": "pad",
       "padding": 5,
-      "height": 1000,
-      "width": 2000,
+      "height": 800,
+      "width": 1000,
       "data": [
         {
           "name": "source_0",
@@ -1109,7 +1109,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
                   },
                   "xc": {"scale": "x", "field": "position"},
                   "yc": {"scale": "y", "field": "seq_id"},
-                  "height": {"signal": "ceil(height/20)"},
+                  "height": {"signal": "ceil(height/100)"},
                   "width": {"signal": "ceil(width/130)"}
                 }
               }

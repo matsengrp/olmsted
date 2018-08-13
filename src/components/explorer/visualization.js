@@ -6,6 +6,7 @@ import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
 import {naiveVegaSpec, clonalFamiliesVizCustomSpec, treeSpec, concatTreeWithAlignSpecs} from './vega/vega_specs.js';
+import computeSelectedFamilyData from "../../selectors/selectedFamily";
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -148,18 +149,38 @@ class ClonalFamiliesVizCustom extends React.Component {
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
       spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
-      }};
+  }
+};
+    
+const makeMapStateToProps = () => {
+  const getSelectedFamily = getSelectedFamilySelector()
+  const mapStateToProps = (state) => {
+    let newSelectedFamily = getSelectedFamily(state.selectedFamily)
+    return Object.assign({}, state.clonalFamilies, {
+      selectedFamily: newSelectedFamily
+    })
+  }
+  return mapStateToProps
+}
+// @connect(makeMapStateToProps)
 
 @connect((state) => ({
   selectedFamily: state.clonalFamilies.selectedFamily,
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class TreeViz extends React.Component {
+  constructor(props) {
+    super(props);
+    // this.selectedFamily = computeSelectedFamilyData(this.props.selectedFamily);
+    // console.log("SELECTED", this.selectedFamily)
+  }
   render() {
+    this.selectedFamily = computeSelectedFamilyData(this.props.selectedFamily)
+    console.log("SELECTED", this.selectedFamily)
     return <Vega
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ false}
       // spec={treeSpec(this.props.selectedFamily.asr_tree)}
-      spec={concatTreeWithAlignSpecs(this.props.selectedFamily)}
+      spec={concatTreeWithAlignSpecs(this.selectedFamily)}
       />;
       }};
 
