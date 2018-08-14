@@ -3,22 +3,7 @@ import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as types from "../../actions/types";
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
-import VegaLite from 'react-vega-lite';
-import * as vl from 'vega-lite';
 import {NaiveSequence} from './visualization';
-
-const MyVegaLite = args => {
-  if (args.debug) {
-    console.log("compiling vega-lite", args.spec)
-    try {
-      console.log("resulting vega", vl.compile(args.spec).spec)
-    } catch (e) {
-      console.error("couldn't parse vega-lite:", e)
-    }
-  }
-  return <VegaLite {...args}/>}
-
-const tableStyle = {fontSize: '15px'};
 
 const Table = ({pageUp, pageDown, toggleSort, data, mappings, pagination, selectFamily, selectedFamily}) => {
   let nCols = mappings.length

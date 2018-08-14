@@ -991,7 +991,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
         },
         {
           "name": "source_1",
-          "values":selectedFamily.cluster_aa 
+          "values":selectedFamily.alignment 
         },
         {"name": "tree", 
             "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -1038,7 +1038,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
         {"name": "concat_0_x_step", "value": 21},
         {
           "name": "concat_0_width",
-          "update": "bandspace(domain('concat_0_x').length, 0.1, 0.05) * concat_0_x_step"
+          "update": "branchScale/80"
         },
         {"name": "concat_1_width", "value": 200}
       ],
