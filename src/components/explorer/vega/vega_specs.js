@@ -1177,6 +1177,19 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
               "grid": false,
               "title": "seq_id",
               "zindex": 1
+            },
+            {
+              "scale": "y",
+              "orient": "left",
+              "gridScale": "x",
+              "grid": true,
+              // "tickCount": {"signal": "130"},
+              "domain": false,
+              "labels": false,
+              "maxExtent": 0,
+              "minExtent": 0,
+              "ticks": false,
+              "zindex": 0
             }
           ]
         }

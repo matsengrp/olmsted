@@ -85,6 +85,7 @@ const clonalFamilies = (state = {
       console.log(state);
       return Object.assign({}, state, {
         selectedFamily: action.family,
+        selectedSeq: {}
       });
     } 
     case types.UPDATE_SELECTED_SEQ: {
