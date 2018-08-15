@@ -1137,7 +1137,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
                     {"scale": "color", "field": "mut_to"}
                   ],
                   "tooltip": {
-                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"]}"
+                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                   },
                   "xc": {"scale": "x", "field": "position"},
                   "yc": {"scale": "y", "field": "seq_id"},
@@ -1207,7 +1207,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
         {
           "name": "y",
           "type": "point",
-          "domain": {"data": "data_1", "field": "seq_id", "sort": true},
+          "domain": {"data": "data_1", "field": "seq_id"},
           "range": [0, {"signal": "height"}],
           "padding": 0.5
         },

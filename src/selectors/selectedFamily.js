@@ -56,8 +56,8 @@ const computeSelectedFamilyData = (family, seq) => {
     let naive_seq = naive.seq[0];
     let mutations = _.map(data,  _.partial(getMutations, naive_seq))
     let result = _.flatten(mutations)
-  
-    family["alignment"] = result;
+    // reverse so that that we get the naive sequence at the top of the viz
+    family["alignment"] = _.reverse(result);
     return family;
   }
   else{
