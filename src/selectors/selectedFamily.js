@@ -3,6 +3,8 @@ import * as _ from 'lodash';
 
 const getSelectedFamily = (state) => state.selectedFamily
 
+const getSelectedSeq = (state) => state.selectedSeq
+
 const getMutations = (naive_seq, seq_record) =>{
   let seq = seq_record.seq[0];
   let is_naive = seq_record['id'] == 'naive';
@@ -18,19 +20,36 @@ const getMutations = (naive_seq, seq_record) =>{
   return mutations;
 }
 
-const computeSelectedFamilyData = (family, tipsOrLineage) => {  
+const followLineage = (family, leaf) => {
+  var lineage = [leaf];
+  var curr_node = leaf;
+  while (curr_node.parent){
+    let parent_id = curr_node.parent;
+    let parent = _.find(family["asr_tree"], {"id": parent_id});
+    lineage.push(parent);
+    curr_node = parent;
+  }
+  return lineage
+}
+
+const computeSelectedFamilyData = (family, seq) => {  
   if (family["cluster_aa"] && family["cluster_aa"].length > 0){
     let data = family["cluster_aa"].slice(0);
 
-    if (tipsOrLineage == "tips"){   
+    if (!_.isEmpty(seq)){
+      let lineage = followLineage(family, seq)
+      data = _.map(lineage,
+                    function(o) {
+                      return _.find(data, {"id": [o.id]})
+                    }
+                  )
+    }
+    else {   
       data = _
       .filter(family["asr_tree"].slice(0), function(o) { return o.type == "root" || o.type == "leaf"; })
       .map( function(o) {
         return _.find(data, {"id": [o.id]})
       })
-    }
-    else if (tipsOrLineage == "lineage"){
-      // TODO: compute ids for all the seqs in the lineage of a particular tip
     }
 
     let naive = _.find(data, {"id": ["naive"]});
@@ -46,14 +65,21 @@ const computeSelectedFamilyData = (family, tipsOrLineage) => {
   }
 }
 
-// Add 'alignmode' to this selector as grabbing the tipsOrLineage mode from state based
-// on whether we have clicked on a tip yet or not
+// lineage mode works like this: 
+// We have a slice of store that is "selectedSeq"
+//        if it is empty:
+//          then we do tips mode
+//        if it is not:
+//          then we use it for lineage mode
+//        *just means we have to reset it to null when we want to go back to tips mode 
+//        (this problem already exists in the scope of the tree for selected family)
+//        below we could pass leaf in to the selector from a state getter on "selectedSeq"
 const getSelectedFamilySelector = () => {
 
   return createSelector(
-    [getSelectedFamily],
-    (family) => {
-      return computeSelectedFamilyData(family, "tips");
+    [getSelectedFamily, getSelectedSeq],
+    (family, seq) => {
+      return computeSelectedFamilyData(family, seq);
     }
   )
 }

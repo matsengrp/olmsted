@@ -985,6 +985,7 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
       "height": 800,
       "width": 1000,
       "data": [
+        {"name": "pts_store"},
         {
           "name": "source_0",
           "values":selectedFamily.asr_tree 
@@ -1029,10 +1030,10 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
         {"value": 5000,
                  "name": "branchScale",
                  "bind": {"max": 5000, "step": 50, "input": "range", "min": 0}},
-                {"value": 70,
+        {"value": 70,
                  "name": "heightScale",
                  "bind": {"max": 300, "step": 5, "input": "range", "min": 70}},
-                {"value": "datum",
+        {"value": "datum",
                  "name": "cladify",
                  "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 21},
@@ -1040,7 +1041,38 @@ const concatTreeWithAlignSpecs  = (selectedFamily) => {
           "name": "concat_0_width",
           "update": "branchScale/80"
         },
-        {"name": "concat_1_width", "value": 200}
+        {"name": "concat_1_width", "value": 200},
+        {
+          "name": "unit",
+          "value": {},
+          "on": [
+            {"events": "mousemove", "update": "isTuple(group()) ? group() : unit"}
+          ]
+        },
+        {
+          "name": "pts",
+          "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
+        },
+        {
+          "name": "pts_tuple",
+          "value": {},
+          "on": [
+            {
+              "events": [{"source": "scope", "type": "click"}],
+              "update": "datum && item().mark.marktype !== 'group' ? datum : null",
+              "force": true
+            }
+          ]
+        },
+        {
+          "name": "pts_modify",
+          "on": [
+            {
+              "events": {"signal": "pts_tuple"},
+              "update": "modify(\"pts_store\", pts_tuple, true)"
+            }
+          ]
+        }
       ],
       "layout": {
         "padding": {"row": 10, "column": 10},

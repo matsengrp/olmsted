@@ -5,6 +5,7 @@ import * as _ from "lodash";
 const clonalFamilies = (state = {
   brushSelection: undefined,
   selectedFamily: undefined,
+  selectedSeq: {},
   visibleClonalFamilies: [],
   availableClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity}
@@ -85,6 +86,14 @@ const clonalFamilies = (state = {
       return Object.assign({}, state, {
         selectedFamily: action.family,
       });
+    } 
+    case types.UPDATE_SELECTED_SEQ: {
+      if(action.seq.parent){
+        return Object.assign({}, state, {
+          selectedSeq: action.seq,
+        });
+      }
+      return state;
     } default: {
       return state;
     }

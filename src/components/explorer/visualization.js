@@ -165,9 +165,24 @@ const makeMapStateToProps = () => {
 
 @connect(makeMapStateToProps)
 class TreeViz extends React.Component {
+  constructor(props) {
+    super(props);
+    // This binding is necessary to make `this` work in the callback
+    this.updateSelectedSeq = this.updateSelectedSeq.bind(this);
+   
+  }
+
+  updateSelectedSeq(seq){
+    this.props.dispatch({type: types.UPDATE_SELECTED_SEQ, seq: seq});
+  }
+
   render() {
        return <Vega
       onParseError={(...args) => console.error("parse error:", args)}
+      onSignalPts_tuple={(...args) => {
+        let node = args.slice(1)[0]
+        this.updateSelectedSeq(node)
+      }}
       debug={/* true for debugging */ false}
       // spec={treeSpec(this.props.selectedFamily.asr_tree)}
       spec={concatTreeWithAlignSpecs(this.props.selectedFamily)}
