@@ -8,7 +8,7 @@
     },
     "dev": {
       "plugins": [
-        ["strip-function-call", {"strip": ["timerStart", "timerEnd"]}]
+        ["react-hot-loader/babel", "strip-function-call", {"strip": ["timerStart", "timerEnd"]}]
       ],
     },
     "production": {

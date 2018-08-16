@@ -25,20 +25,27 @@ const clonalFamilies = (state = {
         page: 0
       });
       // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
-      let attr = action.updatedBrushData[0].replace("brush_", "")
+      let attr = action.updatedBrushData[1] //.replace("brush_", "")
       let range
       // if no brush selection has been made or if brush has been unselected, range will be undefined
-      if (action.updatedBrushData[1]) {
+      if (action.updatedBrushData[2]) {
         // if we have a range, first slice so that we get a copy (important or weird state bugs crop up with
         // vega), and then sort so that we have range in canonical order
-        range = action.updatedBrushData[1].slice(0)
+        range = action.updatedBrushData[2].slice(0)
         range = _.sortBy(range)
       } else {
         // otherwise leave undefined, to trigger select all in selectors.clonalFamilies.checkBrushSelection
         range = undefined
       }
-      let brushDelta = {}
-      brushDelta[attr] = range
+
+      // We can now change the axes, so we are just keeping track of which brush data comes
+      // from where to replace what
+      let brushDelta = {};
+      let axis = action.updatedBrushData[0];
+      brushDelta[axis] = {};
+      brushDelta[axis]["fieldName"] = attr;
+      brushDelta[axis]["range"] = range;
+
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,

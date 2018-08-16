@@ -2,10 +2,11 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
+  mode: 'development',
+  context: __dirname, 
   devtool: 'cheap-module-source-map',
   entry: [
     "babel-polyfill",
-    'react-hot-loader/patch',
     'webpack-hot-middleware/client',
     './src/index'
   ],
@@ -40,5 +41,9 @@ module.exports = {
         include: path.join(__dirname, "src")
       }
     ]
-  }
+  },
+  devServer: {
+    hot: true,
+    contentBase:'./'
+  },
 };

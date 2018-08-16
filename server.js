@@ -13,24 +13,25 @@ globals.setGlobals({
 });
 
 /* if we are in dev-mode, we need to import specific libraries & set flags */
-let webpack, config, webpackDevMiddleware, webpackHotMiddleware;
-if (devServer) {
-  webpack = require("webpack"); // eslint-disable-line
-  config = require("./webpack.config.dev"); // eslint-disable-line
-  webpackDevMiddleware = require("webpack-dev-middleware"); // eslint-disable-line
-  webpackHotMiddleware = require("webpack-hot-middleware"); // eslint-disable-line
-}
 
 const app = express();
 app.set('port', process.env.PORT || 4000);
 
 if (devServer) {
-  const compiler = webpack(config);
-  app.use(webpackDevMiddleware(compiler, {
-    noInfo: true,
-    publicPath: config.output.publicPath
+
+  let webpack = require("webpack"); // eslint-disable-line
+  let webpackConfig = require(process.env.WEBPACK_CONFIG ? process.env.WEBPACK_CONFIG : './webpack.config.dev');
+
+  const compiler = webpack(webpackConfig);
+
+  app.use(require("webpack-dev-middleware")(compiler, {
+    logLevel: 'warn', publicPath: webpackConfig.output.publicPath
   }));
-  app.use(webpackHotMiddleware(compiler));
+
+  app.use(require("webpack-hot-middleware")(compiler, {
+    log: console.log, path: '/__webpack_hmr', heartbeat: 10 * 1000
+  }));
+
 } else {
   app.use("/dist", expressStaticGzip("dist"));
   app.use(express.static(path.join(__dirname, "dist")));
