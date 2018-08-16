@@ -5,8 +5,9 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import {naiveVegaSpec, clonalFamiliesVizCustomSpec, treeSpec, concatTreeWithAlignSpecs} from './vega/vega_specs.js';
+import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec} from './vega/vega_specs.js';
 import getSelectedFamilySelector from "../../selectors/selectedFamily";
+import * as _ from "lodash";
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -169,7 +170,7 @@ class TreeViz extends React.Component {
     super(props);
     // This binding is necessary to make `this` work in the callback
     this.updateSelectedSeq = this.updateSelectedSeq.bind(this);
-   
+    this.furthestNode = Math.floor(200/_.maxBy(this.props.selectedFamily["asr_tree"], "distance").distance)
   }
 
   updateSelectedSeq(seq){
@@ -178,15 +179,15 @@ class TreeViz extends React.Component {
 
   render() {
        return <Vega
-      onParseError={(...args) => console.error("parse error:", args)}
-      onSignalPts_tuple={(...args) => {
-        let node = args.slice(1)[0]
-        this.updateSelectedSeq(node)
-      }}
-      debug={/* true for debugging */ false}
-      // spec={treeSpec(this.props.selectedFamily.asr_tree)}
-      spec={concatTreeWithAlignSpecs(this.props.selectedFamily)}
-      />;
-      }};
+        onParseError={(...args) => console.error("parse error:", args)}
+        onSignalPts_tuple={(...args) => {
+          let node = args.slice(1)[0]
+          this.updateSelectedSeq(node)
+        }}
+        debug={/* true for debugging */ false}
+        // spec={treeSpec(this.props.selectedFamily.asr_tree)}
+        spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.furthestNode)}
+        />;
+        }};
 
 export {ClonalFamiliesViz, ClonalFamiliesVizCustom, TreeViz, NaiveSequence}

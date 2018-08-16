@@ -37,9 +37,11 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
         <ClonalFamiliesTable/>
       </div>
       <h2>Clonal Family details</h2>
-      <ul>{selectedFamily? <viz.TreeViz/> : ""}
+      <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
+        <ul>{selectedFamily? <viz.TreeViz/> : ""}</ul>
+      </div>
           
-      </ul>
+      
       </div>
   );
 };
