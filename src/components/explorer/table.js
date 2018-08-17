@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as types from "../../actions/types";
+import * as explorerActions from "../../actions/explorer.js"
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
@@ -21,18 +22,18 @@ const MyVegaLite = args => {
 const tableStyle = {fontSize: '15px'};
 
 
-const PaginationControls = ({pageUp, pagination, pageDown}) => 
-  <span>
-    <span style={{padding:10}}><a onClick={pageUp}>page up</a></span>
-    <span style={{padding:10}}>{pagination.page}</span>
-    <span style={{padding:10}}><a onClick={pageDown}>page down</a></span>
-  </span>
+@connect()
+class PaginationControls extends React.Component {
+  render () {
+    return (
+      <span>
+        <span style={{padding:10}}><a onClick={() => this.props.dispatch(explorerActions.pageUp)}>page up</a></span>
+        <span style={{padding:10}}>{this.props.pagination.page}</span>
+        <span style={{padding:10}}><a onClick={() => this.props.dispatch(explorerActions.pageDown)}>page down</a></span>
+      </span>)}}
 
 
-const TableAttribute = ({datum, attr}) =>
-  <span>{this.props.datum[this.props.attr]}</span>
-
-
+@connect()
 class Table extends React.Component {
   render(){
     let nCols = this.props.mappings.length
@@ -43,35 +44,38 @@ class Table extends React.Component {
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
             <div className="item pagination-controls" style={{gridArea: "controls"}}>
-              <PaginationControls pageUp={this.props.pageUp} pagination={this.props.pagination} pageDown={this.props.pageDown}/>
+              <PaginationControls pagination={this.props.pagination} />
             </div>
             { _.map(this.props.mappings, ([name, attribute]) =>
-              <div className="item" key={name} onClick={ ()=> this.props.toggleSort( attribute)}>{name}</div>) }
+              <div className="item" key={name} onClick={ ()=> this.props.dispatch(explorerActions.toggleSort(attribute))}>{name}</div>) }
             {this.props.data.map((datum) => {
               return _.map(this.props.mappings, ([name, AttrOrComponent]) => {
                 let isAttr = ((typeof AttrOrComponent) == "string")
-                let InnerContent = isAttr ? <TableAttribute datum={datum} attr={AttrOrComponent}/> : <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} selectFamily={this.props.selectFamily}/>
                 let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
                 let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
-                //let result = <div className="item"
-                            //key={key}
-                            //style={style}>
-                         //<InnerContent/>
-                       //</div>
-                //return result
-                return <div className="item" key={key} style={{backgroundColor: "lightred"}}>{key}</div>
+                return <div className="item" key={key} style={{backgroundColor: "lightred"}}>
+                  {isAttr ?
+                    <span>{datum[AttrOrComponent]}</span> :
+                    <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>
+                  }
+                  </div>
               })})}
           </div>)}}
 
 
-const SelectAttribute = ({datum, selectedFamily, selectFamily}) =>
-  <input   
-    type="checkbox"
-    style={{marginLeft: "5px"}}
-    checked={selectedFamily? (datum.ident == selectedFamily.ident): false}
-    onClick={() => {
-      selectedFamily? console.log(selectedFamily.ident) : console.log("NONE")
-      return selectFamily(datum)}}/>
+@connect(
+  (store) => ({}),
+  (dispatch) => ({
+    dispatchSelect: (family) => {
+      dispatch(explorerActions.selectFamily(family))}}))
+class SelectAttribute extends React.Component {
+  render () {
+    return (
+      <input
+        type="checkbox"
+        style={{marginLeft: "5px"}}
+        checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
+        onClick={() => this.props.dispatchSelect(this.props.datum)}/>)}}
 
 
 const makeMapStateToProps = () => {
@@ -87,39 +91,15 @@ const makeMapStateToProps = () => {
 
 @connect(makeMapStateToProps)
 class ClonalFamiliesTable extends React.Component {
-  constructor(props) {
-    super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.pageUp = this.pageUp.bind(this);
-    this.pageDown = this.pageDown.bind(this);
-    this.toggleSort = this.toggleSort.bind(this);
-    this.selectFamily = this.selectFamily.bind(this);
-  }
-
-  pageDown(){
-    this.props.dispatch({type: types.PAGE_DOWN});
-  }
-
-  pageUp(){
-    this.props.dispatch({type: types.PAGE_UP});
-  }
-
-  toggleSort(attribute){
-    this.props.dispatch({type: types.TOGGLE_SORT, column: attribute});
-  }
-
-  selectFamily(family){
-    this.props.dispatch({type: types.TOGGLE_FAMILY, family: family});
-  }
 
   render() {
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
           [
-           //["Select", SelectAttribute],
-           //["Naive sequence", NaiveSequence],
-           //["ID", "id"],
+           ["Select", SelectAttribute],
+           ["Naive sequence", NaiveSequence],
+           ["ID", "id"],
            ["N seqs", "n_seqs"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
@@ -127,10 +107,6 @@ class ClonalFamiliesTable extends React.Component {
            ["seed run", "has_seed"],
           ]}
         pagination = {this.props.pagination}
-        pageUp = {this.pageUp}
-        pageDown = {this.pageDown}
-        toggleSort = {this.toggleSort}
-        selectFamily = {this.selectFamily}
         selectedFamily = {this.props.selectedFamily}/>
     )
   }       
