@@ -35,7 +35,7 @@ class PaginationControls extends React.Component {
 
 @connect()
 class Table extends React.Component {
-  render(){
+  render () {
     let nCols = this.props.mappings.length
     let templateColumnsStyle = "auto ".repeat(nCols)
     return (
@@ -56,8 +56,7 @@ class Table extends React.Component {
                 return <div className="item" key={key} style={{backgroundColor: "lightred"}}>
                   {isAttr ?
                     <span>{datum[AttrOrComponent]}</span> :
-                    <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>
-                  }
+                    <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
                   </div>
               })})}
           </div>)}}
