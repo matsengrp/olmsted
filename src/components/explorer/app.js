@@ -14,7 +14,7 @@ import { hot } from 'react-hot-loader';
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
 
-const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}) => {
 
 //const Contents = ({availableDatasets}) => {
   //if (showSpinner) {
@@ -38,7 +38,8 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily}) => {
       </div>
       <h2>Clonal Family details</h2>
       <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
-        <ul>{selectedFamily? <viz.TreeViz/> : ""}</ul>
+        {selectedFamily? <viz.TreeViz/> : ""}
+        {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
       </div>
           
       
@@ -57,7 +58,8 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,
   availableDatasets: state.datasets.availableDatasets,
-  selectedFamily: state.clonalFamilies.selectedFamily
+  selectedFamily: state.clonalFamilies.selectedFamily,
+  selectedSeq: state.clonalFamilies.selectedSeq
 }))
 class App extends React.Component {
   constructor(props) {
@@ -142,6 +144,7 @@ class App extends React.Component {
           availableHeight={availableHeight}
           availableDatasets={this.props.availableDatasets}
           selectedFamily={this.props.selectedFamily}
+          selectedSeq={this.props.selectedSeq}
         />
         <Overlay
           styles={overlayStyles}

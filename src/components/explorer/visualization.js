@@ -5,7 +5,7 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec} from './vega/vega_specs.js';
+import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/vega_specs.js';
 import getSelectedFamilySelector from "../../selectors/selectedFamily";
 import * as _ from "lodash";
 
@@ -190,4 +190,17 @@ class TreeViz extends React.Component {
         />;
         }};
 
-export {ClonalFamiliesViz, ClonalFamiliesVizCustom, TreeViz, NaiveSequence}
+@connect(makeMapStateToProps)
+class Lineage extends React.Component {
+  render() {
+        return <div>
+          <h2>Lineage</h2>
+          <Vega
+          onParseError={(...args) => console.error("parse error:", args)}
+          debug={/* true for debugging */ false}
+          spec={seqAlignSpec(this.props.selectedFamily["lineage_alignment"])}
+          />;
+        </div>
+        }};
+
+export {ClonalFamiliesViz, ClonalFamiliesVizCustom, TreeViz, NaiveSequence, Lineage}

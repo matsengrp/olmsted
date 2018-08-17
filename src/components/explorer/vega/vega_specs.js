@@ -898,11 +898,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         {"name": "pts_store"},
         {
           "name": "source_0",
-          "values":selectedFamily.asr_tree 
+          "values":selectedFamily["asr_tree"] 
         },
         {
           "name": "source_1",
-          "values":selectedFamily.alignment 
+          "values":selectedFamily["tips_alignment"] 
         },
         {"name": "tree", 
             "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -1144,4 +1144,141 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
   )
 }
 
-export {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec};
+const seqAlignSpec = (data) => {
+  return(
+    {
+      "$schema": "https://vega.github.io/schema/vega/v4.json",
+      "autosize": {"type": "fit", "resize": true},
+      "padding": 5,
+      "width": 1000,
+      "height": 400,
+      "style": "cell",
+      "data": [
+        {
+          "name": "source_0",
+          "values": data
+        },
+        {
+          "name": "data_0",
+          "source": "source_0",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "toNumber(datum[\"position\"])",
+              "as": "position"
+            }
+          ]
+        }
+      ],
+      "marks": [
+        {
+          "name": "marks",
+          "type": "rect",
+          "style": ["tick"],
+          "from": {"data": "data_0"},
+          "encode": {
+            "update": {
+              "opacity": {"value": 0.7},
+              "fill": [
+                {
+                  "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                  "value": null
+                },
+                {"scale": "color", "field": "mut_to"}
+              ],
+              "tooltip": {
+                "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+              },
+              "xc": {"scale": "x", "field": "position"},
+              "yc": {"scale": "y", "field": "seq_id"},
+              "height": {"signal": "8"},
+              "width": {"signal": "ceil(width/128)"}
+            }
+          }
+        }
+      ],
+      "scales": [
+        {
+          "name": "x",
+          "type": "linear",
+          "domain": {"data": "data_0", "field": "position"},
+          "range": [0, {"signal": "width"}],
+          "nice": true,
+          "zero": true
+        },
+        {
+          "name": "y",
+          "type": "point",
+          "domain": {"data": "data_0", "field": "seq_id"},
+          "range": [0, {"signal": "height"}],
+          "padding": 0.5
+        },
+        {
+          "name": "color",
+          "type": "ordinal",
+          "domain": {"data": "data_0", "field": "mut_to", "sort": true},
+          "range": "category"
+        }
+      ],
+      "axes": [
+        {
+          "scale": "x",
+          "orient": "bottom",
+          "grid": false,
+          "title": "position",
+          "labelFlush": true,
+          "labelOverlap": true,
+          "tickCount": {"signal": "ceil(width/40)"},
+          "zindex": 1
+        },
+        {
+          "scale": "x",
+          "orient": "bottom",
+          "gridScale": "y",
+          "grid": true,
+          "tickCount": 128,
+          "domain": false,
+          "labels": false,
+          "maxExtent": 0,
+          "minExtent": 0,
+          "ticks": false,
+          "zindex": 0
+        },
+        {
+          "scale": "y",
+          "orient": "left",
+          "grid": false,
+          "title": "seq_id",
+          "zindex": 1
+        },
+        {
+          "scale": "y",
+          "orient": "left",
+          "gridScale": "x",
+          "grid": true,
+          "tickCount": 128,
+          "domain": false,
+          "labels": false,
+          "maxExtent": 0,
+          "minExtent": 0,
+          "ticks": false,
+          "zindex": 0
+        },
+      ],
+      "legends": [
+        {
+          "fill": "color",
+          "title": "mut_to",
+          "encode": {
+            "symbols": {
+              "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
+            }
+          }
+        }
+      ],
+      "config": {"axisY": {"minExtent": 30}}
+    }
+  )
+}
+
+export {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec};

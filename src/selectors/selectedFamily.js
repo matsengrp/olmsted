@@ -35,7 +35,7 @@ const followLineage = (family, leaf) => {
 const computeSelectedFamilyData = (family, seq) => {  
   if (family["cluster_aa"] && family["cluster_aa"].length > 0){
     let data = family["cluster_aa"].slice(0);
-
+    var mode_key;
     if (!_.isEmpty(seq)){
       let lineage = followLineage(family, seq)
       data = _.map(lineage,
@@ -43,6 +43,7 @@ const computeSelectedFamilyData = (family, seq) => {
                       return _.find(data, {"id": [o.id]})
                     }
                   )
+      mode_key = "lineage_alignment";
     }
     else {   
       data = _
@@ -50,6 +51,7 @@ const computeSelectedFamilyData = (family, seq) => {
       .map( function(o) {
         return _.find(data, {"id": [o.id]})
       })
+      mode_key = "tips_alignment";
     }
 
     let naive = _.find(data, {"id": ["naive"]});
@@ -57,7 +59,8 @@ const computeSelectedFamilyData = (family, seq) => {
     let mutations = _.map(data,  _.partial(getMutations, naive_seq))
     let result = _.flatten(mutations)
     // reverse so that that we get the naive sequence at the top of the viz
-    family["alignment"] = _.reverse(result);
+    
+    family[mode_key] = _.reverse(result);
     return family;
   }
   else{
