@@ -896,83 +896,77 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
       "width": 1000,
       "data": [
         {"name": "pts_store"},
-        {
-          "name": "source_0",
-          "values":selectedFamily["asr_tree"] 
+        {"name": "source_0",
+         "values":selectedFamily["asr_tree"] 
         },
-        {
-          "name": "source_1",
-          "values":selectedFamily["tips_alignment"] 
+        {"name": "source_1",
+         "values":selectedFamily["tips_alignment"] 
         },
         {"name": "tree", 
-            "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
-                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
-                          "type": "tree",
-                          "as": ["y0", "x0", "depth0", "children0"],
-                          "method": "cluster"}, 
-                          {"size": [{"signal": "height"}, {"signal": "width - 100"}],
-                          "type": "tree", 
-                          "as": ["y", "x", "depth", "children"], 
-                          "method": "cluster"},
-                          {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
-                          {"expr": "datum.y0 * (heightScale / 100)", "type": "formula", "as": "y"}],
-            "source": "source_0"},
+         "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
+                       {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                        "type": "tree",
+                        "as": ["y0", "x0", "depth0", "children0"],
+                        "method": "cluster"}, 
+                       {"size": [{"signal": "height"}, {"signal": "width - 100"}],
+                        "type": "tree", 
+                        "as": ["y", "x", "depth", "children"], 
+                        "method": "cluster"},
+                       {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
+                       {"expr": "datum.y0 * (heightScale / 100)", "type": "formula", "as": "y"}],
+         "source": "source_0"},
         {"name": "links",
-        "transform": [{"key": "id", "type": "treelinks"},
-                      {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
-        "source": "tree"},
+         "transform": [{"key": "id", "type": "treelinks"},
+                       {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
+         "source": "tree"},
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
         {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}, 
-        {
-          "name": "data_1",
-          "source": "source_1",
-          "transform": [
-            {
-              "type": "formula",
-              "expr": "toNumber(datum[\"position\"])",
-              "as": "position"
-            }
-          ]
+        {"name": "data_1",
+         "source": "source_1",
+         "transform": [
+           {
+             "type": "formula",
+             "expr": "toNumber(datum[\"position\"])",
+             "as": "position"
+           }
+         ]
         }
       ],
       "signals": [
         {"value": furthestNode,
-                 "name": "branchScale",
-                 "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
+         "name": "branchScale",
+         "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         {"value": 100,
-                 "name": "heightScale",
-                 "bind": {"max": 200, "step": 5, "input": "range", "min": 70}},
+         "name": "heightScale",
+         "bind": {"max": 200, "step": 5, "input": "range", "min": 70}},
         {"value": "datum",
-                 "name": "cladify",
-                 "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
+         "name": "cladify",
+         "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 21},
-        {
-          "name": "concat_0_width",
-          "update": "branchScale/80"
+        {"name": "concat_0_width",
+         "update": "branchScale/80"
         },
         {"name": "concat_1_width", "value": 200},
-        {
-          "name": "unit",
-          "value": {},
-          "on": [
-            {"events": "mousemove", "update": "isTuple(group()) ? group() : unit"}
-          ]
+        {"name": "unit",
+         "value": {},
+         "on": [
+           {"events": "mousemove", "update": "isTuple(group()) ? group() : unit"}
+         ]
+        },
+        {"name": "pts",
+         "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
         },
         {
-          "name": "pts",
-          "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
-        },
-        {
-          "name": "pts_tuple",
-          "value": {},
-          "on": [
-            {
-              "events": [{"source": "scope", "type": "click"}],
-              "update": "datum && item().mark.marktype !== 'group' ? datum : null",
-              "force": true
-            }
-          ]
+         "name": "pts_tuple",
+         "value": {},
+         "on": [
+           {
+             "events": [{"source": "scope", "type": "click"}],
+             "update": "datum && item().mark.marktype !== 'group' ? datum : null",
+             "force": true
+           }
+         ]
         },
         {
           "name": "pts_modify",
@@ -990,34 +984,34 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         "align": "each"
       },
       "marks": [
-        {
-          "type": "group",
-          "name": "concat_0_group",
-          "style": "cell",
-          "encode": {
-            "update": {
-              "width": {"signal": "concat_0_width"},
-              "height": {"signal": "height"}
-            }
-          },
-          "marks": [{"encode": {"update": {"path": {"field": "path"},
-                                              "strokeWidth": {"value": 3},
-                                              "stroke": {"value": "#ccc"}}},
-                          "type": "path",
-                          "from": {"data": "links"}},
-              {"name": "ancestor",
-               "encode": {"update": {"y": {"field": "y"},"fill": {"value": "#000"}, "x": {"field": "x"}},
-                          "enter": {"size": {"value": 100}, "stroke": {"value": "#000"}}},
-               "type": "symbol",
-               "from": {"data": "nodes"}},
-              {"encode": {"update": {"y": {"field": "y"},
-                                     "dx": {"value": 2},
-                                     "dy": {"value": 3}, 
-                                     "x": {"field": "x"}}, 
-                          "enter": {"text": {"field": "label"},
-                                    "fill": {"value": "#000"}}},
-               "type": "text",
-               "from": {"data": "leaves"}}]
+        {"type": "group",
+         "name": "concat_0_group",
+         "style": "cell",
+         "encode": {
+           "update": {
+             "width": {"signal": "concat_0_width"},
+             "height": {"signal": "height"}
+           }
+         },
+         // marks within marks!? how does this work!?
+         "marks": [{"encode": {"update": {"path": {"field": "path"},
+                                             "strokeWidth": {"value": 3},
+                                             "stroke": {"value": "#ccc"}}},
+                         "type": "path",
+                         "from": {"data": "links"}},
+                   {"name": "ancestor",
+                    "encode": {"update": {"y": {"field": "y"},"fill": {"value": "#000"}, "x": {"field": "x"}},
+                               "enter": {"size": {"value": 100}, "stroke": {"value": "#000"}}},
+                    "type": "symbol",
+                    "from": {"data": "nodes"}},
+                   {"encode": {"update": {"y": {"field": "y"},
+                                          "dx": {"value": 2},
+                                          "dy": {"value": 3}, 
+                                          "x": {"field": "x"}}, 
+                               "enter": {"text": {"field": "label"},
+                                         "fill": {"value": "#000"}}},
+                    "type": "text",
+                    "from": {"data": "leaves"}}]
          
         },
         {
