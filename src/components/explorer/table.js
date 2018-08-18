@@ -53,7 +53,7 @@ class Table extends React.Component {
                 let isAttr = ((typeof AttrOrComponent) == "string")
                 let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
                 let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
-                return <div className="item" key={key} style={{backgroundColor: "lightred"}}>
+                return <div className="item" key={key} style={style}>
                   {isAttr ?
                     <span>{datum[AttrOrComponent]}</span> :
                     <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
