@@ -43,19 +43,19 @@ class Table extends React.Component {
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
-            <div className="item pagination-controls" style={{gridArea: "controls"}}>
+            <div className="grid-item pagination-controls" style={{gridArea: "controls"}}>
               <PaginationControls pagination={this.props.pagination} />
             </div>
             { _.map(this.props.mappings, ([name, attribute]) =>
-              <div className="item" key={name} onClick={ ()=> this.props.dispatch(explorerActions.toggleSort(attribute))}>{name}</div>) }
+              <div className="grid-item" key={name} onClick={ ()=> this.props.dispatch(explorerActions.toggleSort(attribute))}>{name}</div>) }
             {this.props.data.map((datum) => {
               return _.map(this.props.mappings, ([name, AttrOrComponent]) => {
                 let isAttr = ((typeof AttrOrComponent) == "string")
                 let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
                 let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
-                return <div className="item" key={key} style={style}>
+                return <div className="grid-item" key={key} style={style}>
                   {isAttr ?
-                    <span>{datum[AttrOrComponent]}</span> :
+                    <div style={{marginTop: 5, marginBottom: 5}}>{datum[AttrOrComponent]}</div> :
                     <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
                   </div>
               })})}
