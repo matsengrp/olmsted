@@ -129,10 +129,12 @@ button:focus {outline:0;}
   grid-template-columns: auto;
   grid-template-rows: auto; 
   justify-items: center;
+  /*align-content: stretch;*/
 }
 
-.item {
+.grid-item {
   /*border: 1px solid rgb(45, 45, 150);*/
+  place-self: center stretch;
 }
 
 .item-filler{
