@@ -55,7 +55,7 @@ class Table extends React.Component {
                 let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
                 return <div className="grid-item" key={key} style={style}>
                   {isAttr ?
-                    <div style={{marginTop: 5, marginBottom: 5}}>{datum[AttrOrComponent]}</div> :
+                    <div style={{marginTop: 5, marginBottom: 5}}>{String(_.get(datum, AttrOrComponent))}</div> :
                     <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
                   </div>
               })})}
@@ -103,7 +103,8 @@ class ClonalFamiliesTable extends React.Component {
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
-           ["seed run", "has_seed"],
+           ["Seed run", "has_seed"],
+           ["Subject ID", "subject.id"]
           ]}
         pagination = {this.props.pagination}
         selectedFamily = {this.props.selectedFamily}/>
