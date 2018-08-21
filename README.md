@@ -43,7 +43,7 @@ npm install
 sudo npm install
 ```
 
-You can then run olmsted locally with `npm start localData`, and open a browser to [http://localhost:4000](http://localhost:4000/).
+You can then run Olmsted locally with `npm start localData`, and open a browser to [http://localhost:4000](http://localhost:4000/).
 
 
 ## The explorer view
