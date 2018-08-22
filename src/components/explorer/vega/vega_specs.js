@@ -913,7 +913,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
                         "as": ["y", "x", "depth", "children"], 
                         "method": "cluster"},
                        {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
-                       {"expr": "datum.y0 * (heightScale / 100)", "type": "formula", "as": "y"}],
+                       {"expr": "datum.height * (heightScale/10)", "type": "formula", "as": "y"}],
          "source": "source_0"},
         {"name": "links",
          "transform": [{"key": "id", "type": "treelinks"},
