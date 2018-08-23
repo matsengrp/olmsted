@@ -904,14 +904,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
-                       {"size": [{"signal": "height"}, {"signal": "width - 100"}],
-                        "type": "tree",
-                        "as": ["y0", "x0", "depth0", "children0"],
-                        "method": "cluster"}, 
-                       {"size": [{"signal": "height"}, {"signal": "width - 100"}],
-                        "type": "tree", 
-                        "as": ["y", "x", "depth", "children"], 
-                        "method": "cluster"},
+                       
                        {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
                        {"expr": "datum.height * (heightScale/10)", "type": "formula", "as": "y"}],
          "source": "source_0"},
@@ -929,21 +922,22 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
              "type": "formula",
              "expr": "toNumber(datum[\"position\"])",
              "as": "position"
-           }
+           },
+           {"expr": "datum.height * (heightScale/10)", "type": "formula", "as": "y"}
          ]
         }
       ],
       "signals": [
-        {"value": furthestNode,
+        {"value": 0,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         {"value": 100,
          "name": "heightScale",
-         "bind": {"max": 200, "step": 5, "input": "range", "min": 70}},
+         "bind": {"max": 200, "step": 5, "input": "range", "min": 100}},
         {"value": "datum",
          "name": "cladify",
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
-        {"name": "concat_0_x_step", "value": 21},
+        {"name": "concat_0_x_step", "value": 0},
         {"name": "concat_0_width",
          "update": "branchScale/80"
         },
@@ -984,35 +978,74 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         "align": "each"
       },
       "marks": [
-        {"type": "group",
-         "name": "concat_0_group",
-         "style": "cell",
-         "encode": {
+        {
+          "type": "group",
+          "name": "concat_0_group",
+          "style": "cell",
+          "encode": {
            "update": {
              "width": {"signal": "concat_0_width"},
              "height": {"signal": "height"}
            }
-         },
-         // marks within marks!? how does this work!?
-         "marks": [{"encode": {"update": {"path": {"field": "path"},
-                                             "strokeWidth": {"value": 3},
-                                             "stroke": {"value": "#ccc"}}},
-                         "type": "path",
-                         "from": {"data": "links"}},
-                   {"name": "ancestor",
-                    "encode": {"update": {"y": {"field": "y"},"fill": {"value": "#000"}, "x": {"field": "x"}},
-                               "enter": {"size": {"value": 100}, "stroke": {"value": "#000"}}},
-                    "type": "symbol",
-                    "from": {"data": "nodes"}},
-                   {"encode": {"update": {"y": {"field": "y"},
-                                          "dx": {"value": 2},
-                                          "dy": {"value": 3}, 
-                                          "x": {"field": "x"}}, 
-                               "enter": {"text": {"field": "label"},
-                                         "fill": {"value": "#000"}}},
-                    "type": "text",
-                    "from": {"data": "leaves"}}]
-         
+          },
+          // marks within marks!? how does this work!?
+          "marks": [
+            {
+              "encode": {
+                "update": {
+                  "path": {"field": "path"},
+                  "strokeWidth": {"value": 2},
+                  "stroke": {"value": "#ccc"}
+                }
+              },
+              "type": "path",
+              "from": {"data": "links"}
+            },
+            {
+              "name": "ancestor",
+              "encode": {
+                "update": {
+                  "y": {"field": "y"},
+                  "fill": {"value": "#000"},
+                  "x": {"field": "x"},
+                  "tooltip": {
+                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                  }
+                },
+                "enter": {
+                  "size": {"value": 25},
+                  "stroke": {"value": "#000"},
+                  // "text": {"field": "label"},
+                  // "fill": {"value": "#000"}
+
+                }
+              },
+              "type": "symbol",
+              "from": {"data": "nodes"}
+            },
+            {
+              "type": "text",
+              "encode": {
+                "enter": {
+                  "text": {"field": "label"},
+                  "fill": {"value": "#000"},
+                  "fontSize": {"value": 10},
+                },
+                "update": {
+                  "y": {"scale": "y", "field": "y"},
+                  "dx": {"value": 2},
+                  "dy": {"value": 3}, 
+                  "x": {"field": "x"},
+                  "tooltip": {
+                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                  }
+                }
+               
+              },
+              
+              "from": {"data": "leaves"}
+            }
+          ] 
         },
         {
           "type": "group",
@@ -1044,7 +1077,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
                     "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                   },
                   "xc": {"scale": "x", "field": "position"},
-                  "yc": {"scale": "y", "field": "seq_id"},
+                  "yc": {"scale": "y", "field": "y"},
                   "height": {"signal": "ceil(height/100)"},
                   "width": {"signal": "ceil(width/128)"}
                 }
@@ -1079,6 +1112,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "scale": "y",
               "orient": "left",
               "grid": false,
+              "tickCount": {"signal": "length(data(\"leaves\"))"},
+              "labels": false,
               "title": "seq_id",
               "zindex": 1
             },
@@ -1087,6 +1122,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "orient": "left",
               "gridScale": "x",
               "grid": true,
+              "tickCount": {"signal": "length(data(\"leaves\"))"},
               "domain": false,
               "labels": false,
               "maxExtent": 0,
@@ -1109,8 +1145,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         },
         {
           "name": "y",
-          "type": "point",
-          "domain": {"data": "data_1", "field": "seq_id"},
+          "type": "linear",
+          "domain": {"data": "data_1", "field": "y"},
           "range": [0, {"signal": "heightScale*10"}],
           "padding": 0.5
         },

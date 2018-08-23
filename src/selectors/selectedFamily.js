@@ -18,8 +18,13 @@ const getMutations = (naive_seq, tree, seq_record) =>{
   _.forEach(pairs, function(pair) {
     let i = pair[0]
     let aa = pair[1]
-    if (aa != naive_seq[i] || is_naive){
-      mutations.push( { 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_record['id'], 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+    if (aa != naive_seq[i] ){
+      // console.log(node.height)
+      mutations.push( { 'height': node.height, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_record['id'], 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+    }
+    else if(is_naive){
+      mutations.push( { 'height': 0, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_record['id'], 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+
     }
   });
   //let node_with_muts = _.merge(node, {"mutations": mutations})
@@ -42,38 +47,36 @@ const computeSelectedFamilyData = (family, seq) => {
   if (family["cluster_aa"] && family["cluster_aa"].length > 0){
     let data = family["cluster_aa"].slice(0);
     var mode_key;
-    //should assign a y value here for all tree nodes using a postwalk calculation 
-    //  assigning successive integers to the leaf nodes, and taking the average of children positions for intermediate nodes
     if (!_.isEmpty(seq)){
       let lineage = followLineage(family, seq)
-      data = _.map(lineage,
+      data = _
+              .map(lineage,
                     function(node) {
                       let matched_seq = _.find(data, {"id": [node.id]})
                       node["seq"] = matched_seq.seq[0]
                       return node
                     }
                   )
+              .reverse()
       mode_key = "lineage_alignment";
     }
     else {   
       data = _
-      .filter(family["asr_tree"].slice(0), function(o) { return o.type == "root" || o.type == "leaf"; })
-      .map( function(node) {
-
-        let matched_seq = _.find(data, {"id": [node.id]})
-        node["seq"] = matched_seq.seq[0]
-        return node
-      })
+              .filter(family["asr_tree"].slice(0), function(o) { return o.type == "root" || o.type == "leaf"; })
+              .map( function(node) {
+                      let matched_seq = _.find(data, {"id": [node.id]})
+                      node["seq"] = matched_seq.seq[0]
+                      return node
+                    }
+              )
       mode_key = "tips_alignment";
     }
     let naive = _.find(data, {"id": "naive"});
     let naive_seq = naive.seq;
     let mutations_by_seq = _.map(data,  _.partial(getMutations, naive_seq, family["asr_tree"]))
     let all_mutations = _.flatten(mutations_by_seq)
-    console.log("all_mutations", all_mutations)
     // reverse so that that we get the naive sequence at the top of the viz
-    
-    family[mode_key] = _.reverse(all_mutations);
+    family[mode_key] = all_mutations;
     return family;
   }
   else{
