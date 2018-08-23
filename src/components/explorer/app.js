@@ -20,19 +20,13 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}
   //if (showSpinner) {
   //}
   /* TODO */
-  const chosenDatasets = filterDatasets(availableDatasets).map((dataset) =>
-    <li key={dataset.id}>{dataset.id}</li>
-  );
-  
-
   return (
     <div style={{margin: 50}}>
-      <h2>Chosen datasets</h2>
-      <ul>{chosenDatasets}</ul>
-      <h2>Viz</h2>
+      <h2>Clonal Families</h2>
+      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
       {/* <viz.ClonalFamiliesViz/> */}
       <viz.ClonalFamiliesVizCustom/>
-      <h2>Table</h2>
+      <h2>Selected clonal families</h2>
       <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
         <ClonalFamiliesTable/>
       </div>
@@ -41,9 +35,7 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}
         {selectedFamily? <viz.TreeViz/> : ""}
         {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
       </div>
-          
-      
-      </div>
+    </div>
   );
 };
 
