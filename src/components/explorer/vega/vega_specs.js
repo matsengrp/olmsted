@@ -896,11 +896,10 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
       "width": 1000,
       "data": [
         {"name": "pts_store"},
+
+        // Tree Data
         {"name": "source_0",
          "values":selectedFamily["asr_tree"] 
-        },
-        {"name": "source_1",
-         "values":selectedFamily["tips_alignment"] 
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -914,6 +913,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
         {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}, 
+        
+        // Mutations Data
+        {"name": "source_1",
+         "values":selectedFamily["tips_alignment"] 
+        },
         {"name": "data_1",
          "source": "source_1",
          "transform": [
@@ -924,18 +928,27 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
            },
            {"expr": "datum.height * heightScale", "type": "formula", "as": "y"}
          ]
-        }
+        },
       ],
       "signals": [
+        // Number of leaves
+        {
+          "name": "leaves_len",
+          "update": "length(data(\"leaves\"))"
+        },
+        // BRANCHSCALE - scales up width of tree
         {"value": 0,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
+        // HEIGHTSCALE - scales up height of tree
         {"value": 10,
          "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}},
+         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
+        },
+        // Height of viz scaled by number of leaves 
         {
           "name": "scaledHeight",
-          "update": "heightScale* (length(data(\"leaves\")))"
+          "update": "heightScale*(leaves_len+1)"
         },
         {"value": "datum",
          "name": "cladify",
@@ -951,6 +964,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
            {"events": "mousemove", "update": "isTuple(group()) ? group() : unit"}
          ]
         },
+        // On click stuff
         {"name": "pts",
          "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
         },
@@ -981,18 +995,19 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         "align": "each"
       },
       "marks": [
+        // TREE
         {
           "type": "group",
           "name": "concat_0_group",
           "style": "cell",
           "encode": {
            "update": {
-             "width": {"signal": "concat_0_width"},
+            //  "width": {"signal": "concat_0_width"},
              "height": {"signal": "scaledHeight"}
            }
           },
-          // marks within marks!? how does this work!?
           "marks": [
+            // LINKS
             {
               "encode": {
                 "update": {
@@ -1004,6 +1019,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "type": "path",
               "from": {"data": "links"}
             },
+            // INTERNAL NODES
             {
               "name": "ancestor",
               "encode": {
@@ -1018,14 +1034,12 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
                 "enter": {
                   "size": {"value": 25},
                   "stroke": {"value": "#000"},
-                  // "text": {"field": "label"},
-                  // "fill": {"value": "#000"}
-
                 }
               },
               "type": "symbol",
               "from": {"data": "nodes"}
             },
+            // LEAVES
             {
               "type": "text",
               "encode": {
@@ -1047,28 +1061,31 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "from": {"data": "leaves"}
             }
           ],
+          // Tree axes
           "axes": [{
             "scale": "time",
             "orient": "bottom",
             "grid": false,
-            "title": "time",
+            "title": "evolutionary time",
             "labelFlush": true,
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(width/40)"},
             "zindex": 1
           }]
         },
+        // SEQUENCE ALIGNMENT
         {
           "type": "group",
           "name": "concat_1_group",
           "style": "cell",
           "encode": {
             "update": {
-              "width": {"signal": "concat_1_width"},
+              // "width": {"signal": "concat_1_width"},
               "height": {"signal": "scaledHeight"}
             }
           },
           "marks": [
+            // MUTATIONS MARKS
             {
               "name": "marks",
               "type": "rect",
@@ -1090,12 +1107,14 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
                   "xc": {"scale": "x", "field": "position"},
                   "yc": {"scale": "y", "field": "y"},
                   "height": {"signal": "ceil(height/100)"},
-                  "width": {"signal": "ceil(width/128)"}
+                  "width": {"signal": "ceil(width/150)"}
                 }
               }
             }
           ],
+          // MUTATIONS AXES
           "axes": [
+            // x
             {
               "scale": "x",
               "orient": "bottom",
@@ -1106,6 +1125,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "tickCount": 128,
               "zindex": 1
             },
+            // x grid
             {
               "scale": "x",
               "orient": "bottom",
@@ -1119,21 +1139,23 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
               "ticks": false,
               "zindex": 0
             },
+            // y
             {
               "scale": "y",
               "orient": "left",
               "grid": false,
-              "tickCount": {"signal": "length(data(\"leaves\"))"},
-              "labels": true,
-              "title": "seq_id",
-              "zindex": 1
+              "tickCount": {"signal": "leaves_len+1"},
+              // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
+              "labels": false,
+              "zindex": 1,
             },
+            // y grid
             {
               "scale": "y",
               "orient": "left",
               "gridScale": "x",
               "grid": true,
-              "tickCount": {"signal": "length(data(\"leaves\"))"},
+              "tickCount": {"signal": "leaves_len+1"},
               // "domain": false,
               "labels": false,
               "maxExtent": 0,
@@ -1149,8 +1171,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
           "name": "x",
           "type": "linear",
           "domain": {"data": "data_1", "field": "position"},
-          "range": [0, {"signal": "width"}],
-          "nice": true,
+          "range": [5, {"signal": "width"}],
           "zero": true
         },
         {
@@ -1162,10 +1183,20 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
           "zero": true
         },
         {
+          // https://vega.github.io/vega/docs/scales/#quantize-scales
           "name": "y",
-          "type": "linear",
+          "type": "quantize",
+          // according to the above link,  "Using a number value for this parameter 
+          //                               (representing a desired tick count) allows
+          //                               greater control over the step size used to
+          //                               extend the bounds, guaranteeing that the returned
+          //                               ticks will exactly cover the domain."
+          // This is not true in practice: why not?
+          // "nice": {"signal": "leaves_len"},
+          "zero": true,
           "domain": {"data": "leaves", "field": "y"},
-          "range": [0, {"signal": "heightScale* length(data(\"leaves\"))"}],
+          // this creates an array of range values - one for each leaf; scaledHeight is heightScale * (len_leaves+1)
+          "range": {"signal": "sequence(0, scaledHeight, heightScale)"}, 
         },
         {
           "name": "color",
@@ -1178,7 +1209,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
         {
           "fill": "color",
           "title": "mut_to",
-          // "orient":"left",
           "encode": {
             "symbols": {
               "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
@@ -1238,7 +1268,7 @@ const seqAlignSpec = (data) => {
               "xc": {"scale": "x", "field": "position"},
               "yc": {"scale": "y", "field": "seq_id"},
               "height": {"signal": "8"},
-              "width": {"signal": "ceil(width/128)"}
+              "width": {"signal": "ceil(width/150)"}
             }
           }
         }
