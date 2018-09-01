@@ -29,24 +29,35 @@ const getMutations = (naive_seq, tree, seq_record) =>{
   return mutations;
 }
 
-const followLineage = (family, leaf) => {
+const followLineage = (family, leaf, naive_seq) => {
   var lineage = [leaf];
   var curr_node = leaf;
+  var seq_counter = 1;
   while (curr_node.parent){
     let parent_id = curr_node.parent;
     let parent = _.find(family["asr_tree"], {"id": parent_id});
     lineage.push(parent);
     curr_node = parent;
+    // seeing many sequences near naive with no mutations,
+    // so check to make sure we are counting seqs with muts
+    // for lineage viz scaling
+    if(curr_node.seq!==naive_seq){
+      seq_counter++;
+    }
   }
-  return lineage
+  return [lineage, seq_counter]
 }
 
 const computeSelectedFamilyData = (family, seq) => {  
   if (family["cluster_aa"] && family["cluster_aa"].length > 0){
     let data = family["cluster_aa"].slice(0);
     var mode_key;
+    let naive = _.find(data, {"id": ["naive"]});
+    let naive_seq = naive.seq[0];
     if (!_.isEmpty(seq)){
-      let lineage = followLineage(family, seq)
+      let lineage_data = followLineage(family, seq, naive_seq);
+      let lineage = lineage_data[0]
+      family["lineage_seq_counter"] = lineage_data[1];
       data = _
               .map(lineage,
                     function(node) {
@@ -69,8 +80,7 @@ const computeSelectedFamilyData = (family, seq) => {
               )
       mode_key = "tips_alignment";
     }
-    let naive = _.find(data, {"id": "naive"});
-    let naive_seq = naive.seq;
+    
     let mutations_by_seq = _.map(data,  _.partial(getMutations, naive_seq, family["asr_tree"]))
     let all_mutations = _.flatten(mutations_by_seq)
     // reverse so that that we get the naive sequence at the top of the viz

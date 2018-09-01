@@ -1220,19 +1220,21 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
   )
 }
 
-const seqAlignSpec = (data) => {
+const seqAlignSpec = (family) => {
+  let padding = 20;
+  let mark_height = 8
+  let height = family["lineage_seq_counter"]*mark_height+padding;
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
-      "autosize": {"type": "fit", "resize": true},
       "padding": 5,
+      "height": height,
       "width": 1000,
-      "height": 400,
       "style": "cell",
       "data": [
         {
           "name": "source_0",
-          "values": data
+          "values": family["lineage_alignment"]
         },
         {
           "name": "data_0",
@@ -1244,6 +1246,16 @@ const seqAlignSpec = (data) => {
               "as": "position"
             }
           ]
+        }
+      ],
+      "signals": [
+        {
+          "name": "mark_height",
+          "value": mark_height
+        },
+        {
+          "name": "lineage_seqs",
+          "value": family["lineage_seq_counter"]
         }
       ],
       "marks": [
@@ -1267,7 +1279,7 @@ const seqAlignSpec = (data) => {
               },
               "xc": {"scale": "x", "field": "position"},
               "yc": {"scale": "y", "field": "seq_id"},
-              "height": {"signal": "8"},
+              "height": {"signal": "mark_height"},
               "width": {"signal": "ceil(width/150)"}
             }
           }
@@ -1278,7 +1290,7 @@ const seqAlignSpec = (data) => {
           "name": "x",
           "type": "linear",
           "domain": {"data": "data_0", "field": "position"},
-          "range": [0, {"signal": "width"}],
+          "range": "width",
           "nice": true,
           "zero": true
         },
@@ -1286,7 +1298,7 @@ const seqAlignSpec = (data) => {
           "name": "y",
           "type": "point",
           "domain": {"data": "data_0", "field": "seq_id"},
-          "range": [0, {"signal": "height"}],
+          "range": [0, {"signal": "mark_height*lineage_seqs + 20"}],
           "padding": 0.5
         },
         {
@@ -1352,7 +1364,6 @@ const seqAlignSpec = (data) => {
           }
         }
       ],
-      "config": {"axisY": {"minExtent": 30}}
     }
   )
 }

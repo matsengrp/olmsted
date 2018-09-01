@@ -188,18 +188,15 @@ class TreeViz extends React.Component {
             onSignalBranchScale={(...args) => {
               let branch_scale = args.slice(1)[0];
               if(!this.initializing.branch_scale){
-                console.log("updating branch scale", branch_scale)
                 this.treeScale.branch_scale = branch_scale
               }
               else{
                 this.initializing.branch_scale = false
-                console.log("initializing branch scale")
               }
             }}
             onSignalHeightScale={(...args) => {
               let height_scale = args.slice(1)[0];
               if(!this.initializing.height_scale){
-                console.log("updating height scale", height_scale)
                 this.treeScale.height_scale = height_scale
               }
               else{
@@ -211,7 +208,6 @@ class TreeViz extends React.Component {
               let node = args.slice(1)[0]
               if(node.parent){
                 // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                console.log(node)
                 if(!this.initializing.height_scale && !this.initializing.branch_scale){
                   this.props.dispatchTreeScale(this.treeScale)
                 }
@@ -231,7 +227,7 @@ class Lineage extends React.Component {
           <Vega
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ false}
-          spec={seqAlignSpec(this.props.selectedFamily["lineage_alignment"])}
+          spec={seqAlignSpec(this.props.selectedFamily)}
           />
         </div>
         }};
