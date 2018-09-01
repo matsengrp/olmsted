@@ -1,7 +1,9 @@
 import { createSelector } from 'reselect';
 import * as _ from 'lodash';
 
-const getSelectedFamily = (state) => state.selectedFamily
+const getSelectedFamily = (state) => {
+  return  _.find(state.availableClonalFamilies, {"ident": state.selectedFamily});
+}
 
 const getSelectedSeq = (state) => state.selectedSeq
 
@@ -10,16 +12,13 @@ const getMutations = (naive_seq, tree, seq_record) =>{
   let seq_id = seq_record['id'];
 
   let is_naive = seq_id == 'naive';
-  console.log(is_naive)
   let mutations = []
   let pairs = _.toPairs(seq);
   let node = _.find(tree, {"id": seq_id})
-  let node_index = _.findIndex(tree, {"id": seq_id})
   _.forEach(pairs, function(pair) {
     let i = pair[0]
     let aa = pair[1]
     if (aa != naive_seq[i] ){
-      // console.log(node.height)
       mutations.push( { 'height': node.height, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_record['id'], 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
     }
     else if(is_naive){
@@ -27,7 +26,6 @@ const getMutations = (naive_seq, tree, seq_record) =>{
 
     }
   });
-  //let node_with_muts = _.merge(node, {"mutations": mutations})
   return mutations;
 }
 

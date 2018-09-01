@@ -1,14 +1,14 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
 
-
 const clonalFamilies = (state = {
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
   visibleClonalFamilies: [],
   availableClonalFamilies: [],
-  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity}
+  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity},
+  treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
     case types.CLONAL_FAMILIES_RECEIVED: {
@@ -82,19 +82,20 @@ const clonalFamilies = (state = {
         pagination: new_pagination
       });
     } case types.TOGGLE_FAMILY: {
-      console.log(state);
       return Object.assign({}, state, {
-        selectedFamily: action.family,
-        selectedSeq: {}
+        selectedFamily: action.family_id,
+        selectedSeq: {},
+        treeScale: {branch_scale:950, height_scale:10}
       });
-    } 
-    case types.UPDATE_SELECTED_SEQ: {
-      if(action.seq.parent){
-        return Object.assign({}, state, {
-          selectedSeq: action.seq,
-        });
-      }
-      return state;
+    } case types.UPDATE_SELECTED_SEQ: {
+      return Object.assign({}, state, {
+        selectedSeq: action.seq,
+      });
+    } case types.UPDATE_TREE_SCALE: {
+      let new_tree_scale = Object.assign({}, state.treeScale, action.val);
+      return Object.assign({}, state, {
+        treeScale: new_tree_scale
+      });
     } default: {
       return state;
     }

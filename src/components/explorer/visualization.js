@@ -7,6 +7,7 @@ import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
 import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/vega_specs.js';
 import getSelectedFamilySelector from "../../selectors/selectedFamily";
+import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 
 const MyVegaLite = args => {
@@ -152,7 +153,7 @@ class ClonalFamiliesVizCustom extends React.Component {
       spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
   }
 };
-    
+
 const makeMapStateToProps = () => {
   const getSelectedFamily = getSelectedFamilySelector()
   const mapStateToProps = (state) => {
@@ -164,31 +165,63 @@ const makeMapStateToProps = () => {
   return mapStateToProps
 }
 
-@connect(makeMapStateToProps)
+const mapDispatchToProps = (dispatch) => ( {
+  dispatchTreeScale: (val) => {
+    dispatch(explorerActions.updateTreeScale(val))
+  },
+  dispatchSelectedSeq: (seq) => {
+    console.log("disp")
+    dispatch(explorerActions.updateSelectedSeq(seq))
+  }
+})
+
+
+@connect(makeMapStateToProps, mapDispatchToProps)
 class TreeViz extends React.Component {
-  constructor(props) {
-    super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.updateSelectedSeq = this.updateSelectedSeq.bind(this);
-    this.furthestNode = Math.floor(200/_.maxBy(this.props.selectedFamily["asr_tree"], "distance").distance)
-  }
-
-  updateSelectedSeq(seq){
-    this.props.dispatch({type: types.UPDATE_SELECTED_SEQ, seq: seq});
-  }
-
   render() {
-       return <Vega
-        onParseError={(...args) => console.error("parse error:", args)}
-        onSignalPts_tuple={(...args) => {
-          let node = args.slice(1)[0]
-          this.updateSelectedSeq(node)
-        }}
-        debug={/* true for debugging */ false}
-        // spec={treeSpec(this.props.selectedFamily.asr_tree)}
-        spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.furthestNode)}
-        />;
-        }};
+    // this is necessary because vega signals update on initialization,
+    // so they will overwrite our branch scale stored in state which is the one we want to use
+    // see issue #22
+    this.initializing = {branch_scale: true, height_scale: true};
+    this.treeScale = this.props.treeScale;
+    return <Vega onParseError={(...args) => console.error("parse error:", args)}
+            onSignalBranchScale={(...args) => {
+              let branch_scale = args.slice(1)[0];
+              if(!this.initializing.branch_scale){
+                console.log("updating branch scale", branch_scale)
+                this.treeScale.branch_scale = branch_scale
+              }
+              else{
+                this.initializing.branch_scale = false
+                console.log("initializing branch scale")
+              }
+            }}
+            onSignalHeightScale={(...args) => {
+              let height_scale = args.slice(1)[0];
+              if(!this.initializing.height_scale){
+                console.log("updating height scale", height_scale)
+                this.treeScale.height_scale = height_scale
+              }
+              else{
+                this.initializing.height_scale = false
+              }
+              
+            }}
+            onSignalPts_tuple={(...args) => {
+              let node = args.slice(1)[0]
+              if(node.parent){
+                // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
+                console.log(node)
+                if(!this.initializing.height_scale && !this.initializing.branch_scale){
+                  this.props.dispatchTreeScale(this.treeScale)
+                }
+                this.props.dispatchSelectedSeq(node)
+              }
+            }}
+            debug={/* true for debugging */ false}
+            spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.treeScale)}
+            />
+            }};
 
 @connect(makeMapStateToProps)
 class Lineage extends React.Component {
@@ -199,7 +232,7 @@ class Lineage extends React.Component {
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ false}
           spec={seqAlignSpec(this.props.selectedFamily["lineage_alignment"])}
-          />;
+          />
         </div>
         }};
 

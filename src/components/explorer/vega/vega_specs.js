@@ -885,7 +885,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
   )
 }
 
-const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
+const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -937,11 +937,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
           "update": "length(data(\"leaves\"))"
         },
         // BRANCHSCALE - scales up width of tree
-        {"value": 0,
+        {"value": treeScale.branch_scale,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         // HEIGHTSCALE - scales up height of tree
-        {"value": 10,
+        {"value": treeScale.height_scale,
          "name": "heightScale",
          "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
         },
@@ -974,8 +974,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, furthestNode) => {
          "on": [
            {
              "events": [{"source": "scope", "type": "click"}],
-             "update": "datum && item().mark.marktype !== 'group' ? datum : null",
-             "force": true
+             "update": "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol') ? datum : null",
+            //  "force": true
            }
          ]
         },

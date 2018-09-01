@@ -1,24 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
-import * as types from "../../actions/types";
 import * as explorerActions from "../../actions/explorer.js"
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 import {NaiveSequence} from './visualization';
-
-const MyVegaLite = args => {
-  if (args.debug) {
-    console.log("compiling vega-lite", args.spec)
-    try {
-      console.log("resulting vega", vl.compile(args.spec).spec)
-    } catch (e) {
-      console.error("couldn't parse vega-lite:", e)
-    }
-  }
-  return <VegaLite {...args}/>}
-
-const tableStyle = {fontSize: '15px'};
-
 
 @connect()
 class PaginationControls extends React.Component {
@@ -63,8 +48,8 @@ class Table extends React.Component {
 @connect(
   (store) => ({}),
   (dispatch) => ({
-    dispatchSelect: (family) => {
-      dispatch(explorerActions.selectFamily(family))}}))
+    dispatchSelect: (family_id) => {
+      dispatch(explorerActions.selectFamily(family_id))}}))
 class SelectAttribute extends React.Component {
   render () {
     return (
@@ -72,7 +57,7 @@ class SelectAttribute extends React.Component {
         type="checkbox"
         style={{marginLeft: "5px"}}
         checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
-        onClick={() => this.props.dispatchSelect(this.props.datum)}/>)}}
+        onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>)}}
 
 
 const makeMapStateToProps = () => {
@@ -90,6 +75,7 @@ const makeMapStateToProps = () => {
 class ClonalFamiliesTable extends React.Component {
 
   render() {
+    this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={
@@ -105,7 +91,7 @@ class ClonalFamiliesTable extends React.Component {
            ["Subject ID", "subject.id"]
           ]}
         pagination = {this.props.pagination}
-        selectedFamily = {this.props.selectedFamily}/>
+        selectedFamily = {this.selectedFamily}/>
     )
   }       
 }

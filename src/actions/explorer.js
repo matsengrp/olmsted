@@ -8,7 +8,17 @@ export const pageUp = {type: types.PAGE_UP}
 export const toggleSort = (attribute) => {
   return {type: types.TOGGLE_SORT, column: attribute}}
 
-// TODO Right now this is taking the entire family record, but should really just be taking the ident
-export const selectFamily = (family) => {
-  return {type: types.TOGGLE_FAMILY, family: family}}
+export const selectFamily = (id) => {
+  return {type: types.TOGGLE_FAMILY, family_id: id}}
+
+export const updateTreeScale = (val) => {
+  return {type: types.UPDATE_TREE_SCALE, val: val}}
+
+export const updateSelectedSeq = (seq) => {
+  return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
+
+
+
+
+
 
