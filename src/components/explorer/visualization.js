@@ -223,12 +223,12 @@ class TreeViz extends React.Component {
 @connect(makeMapStateToProps)
 class Lineage extends React.Component {
   render() {
-        console.log(this.props.selectedSeq.nucleotide_seq)
+        console.log(this.props.selectedSeq.nt_seq)
         return <div>
           <h2>{this.props.selectedSeq.label}</h2>
           <h3>Amino acid sequence:</h3>
-          <h3>{this.props.selectedSeq.seq}</h3>
-          <Copy value={this.props.selectedSeq.nucleotide_seq ? this.props.selectedSeq.nucleotide_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
+          <h3>{this.props.selectedSeq.aa_seq}</h3>
+          <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
           <h3>Lineage</h3>
           <Vega
           onParseError={(...args) => console.error("parse error:", args)}
