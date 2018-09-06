@@ -9,6 +9,7 @@ import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec,
 import getSelectedFamilySelector from "../../selectors/selectedFamily";
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
+import Copy from "./copy";
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -159,7 +160,7 @@ const makeMapStateToProps = () => {
   const mapStateToProps = (state) => {
     let newSelectedFamily = getSelectedFamily(state.clonalFamilies)
     return Object.assign({}, state.clonalFamilies, {
-      selectedFamily: newSelectedFamily
+      selectedFamily: newSelectedFamily,
     })
   }
   return mapStateToProps
@@ -222,8 +223,13 @@ class TreeViz extends React.Component {
 @connect(makeMapStateToProps)
 class Lineage extends React.Component {
   render() {
+        console.log(this.props.selectedSeq.nucleotide_seq)
         return <div>
-          <h2>Lineage</h2>
+          <h2>{this.props.selectedSeq.label}</h2>
+          <h3>Amino acid sequence:</h3>
+          <h3>{this.props.selectedSeq.seq}</h3>
+          <Copy value={this.props.selectedSeq.nucleotide_seq ? this.props.selectedSeq.nucleotide_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
+          <h3>Lineage</h3>
           <Vega
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ false}
