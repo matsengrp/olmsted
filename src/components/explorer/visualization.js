@@ -159,9 +159,11 @@ const makeMapStateToProps = () => {
   const getSelectedFamily = getSelectedFamilySelector()
   const mapStateToProps = (state) => {
     let newSelectedFamily = getSelectedFamily(state.clonalFamilies)
-    return Object.assign({}, state.clonalFamilies, {
+    return {
       selectedFamily: newSelectedFamily,
-    })
+      selectedSeq: state.clonalFamilies.selectedSeq,
+      treeScale: state.clonalFamilies.treeScale
+    }
   }
   return mapStateToProps
 }
@@ -223,7 +225,6 @@ class TreeViz extends React.Component {
 @connect(makeMapStateToProps)
 class Lineage extends React.Component {
   render() {
-        console.log(this.props.selectedSeq.nt_seq)
         return <div>
           <h2>{this.props.selectedSeq.label}</h2>
           <h3>Amino acid sequence:</h3>

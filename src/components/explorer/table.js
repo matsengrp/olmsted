@@ -64,9 +64,11 @@ const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
   const mapStateToProps = (state) => {
     let newClonalFamiliesPage = getClonalFamiliesPage(state.clonalFamilies)
-    return Object.assign({}, state.clonalFamilies, {
-      visibleClonalFamilies: newClonalFamiliesPage
-    })
+    return {
+      visibleClonalFamilies: newClonalFamiliesPage,
+      pagination: state.clonalFamilies.pagination,
+      selectedFamily: state.clonalFamilies.selectedFamily
+    }
   }
   return mapStateToProps
 }
