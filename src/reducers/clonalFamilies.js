@@ -55,7 +55,7 @@ const clonalFamilies = (state = {
     } case types.PAGE_DOWN: {
       if(state.pagination.page+1 <= state.pagination.last_page){
         let new_pagination = Object.assign({}, state.pagination, {
-          page: state.pagination.page += 1
+          page: state.pagination.page + 1
         });
         return Object.assign({}, state, {
           pagination: new_pagination
@@ -65,7 +65,7 @@ const clonalFamilies = (state = {
     } case types.PAGE_UP: {
       if(state.pagination.page > 0){
         let new_pagination = Object.assign({}, state.pagination, {
-          page: state.pagination.page -= 1
+          page: state.pagination.page - 1
         });
         return Object.assign({}, state, {
           pagination: new_pagination
