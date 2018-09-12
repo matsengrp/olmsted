@@ -65,7 +65,6 @@ const computeSelectedFamilyData = (family, seq) => {
     if (!_.isEmpty(seq)){
       let lineage_data = followLineage(data, seq, naive_seq);
       let lineage = lineage_data[0]
-      console.log(lineage_data[1])
       family["lineage_seq_counter"] = lineage_data[1];
       //reversing the postorder ordering of nodes for lineage mode
       data = _.reverse(lineage)

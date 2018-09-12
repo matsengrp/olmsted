@@ -26,11 +26,22 @@ class Table extends React.Component {
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\""
                }}>
+            {/* Pagination controls */}
             <div className="grid-item pagination-controls" style={{gridArea: "controls"}}>
               <PaginationControls pagination={this.props.pagination} />
             </div>
-            { _.map(this.props.mappings, ([name, attribute]) =>
-              <div className="grid-item" key={name} onClick={ ()=> this.props.dispatch(explorerActions.toggleSort(attribute))}>{name}</div>) }
+            {/* Table Headers */}
+            { _.map(this.props.mappings, ([name, AttrOrComponent]) => {
+              // check to make sure its an attribute so we can sort by it (onclick)
+              let isAttr = ((typeof AttrOrComponent) == "string");
+              return <div className="grid-item"
+                          key={name} 
+                          onClick={ ()=> {isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent))}}
+                     >
+                        {name}
+                     </div>
+            })}
+            {/* Table Items */}
             {this.props.data.map((datum) => {
               return _.map(this.props.mappings, ([name, AttrOrComponent]) => {
                 let isAttr = ((typeof AttrOrComponent) == "string")
@@ -45,11 +56,13 @@ class Table extends React.Component {
           </div>)}}
 
 
-@connect(
-  (store) => ({}),
-  (dispatch) => ({
-    dispatchSelect: (family_id) => {
-      dispatch(explorerActions.selectFamily(family_id))}}))
+@connect((store) => ({}),
+        (dispatch) => ({
+          dispatchSelect: (family_id) => {
+            dispatch(explorerActions.selectFamily(family_id))
+          }
+        })
+      )
 class SelectAttribute extends React.Component {
   render () {
     return (
@@ -57,7 +70,10 @@ class SelectAttribute extends React.Component {
         type="checkbox"
         style={{marginLeft: "5px"}}
         checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
-        onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>)}}
+        onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>
+    )
+  }
+}
 
 
 const makeMapStateToProps = () => {
