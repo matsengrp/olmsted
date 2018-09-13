@@ -6,7 +6,7 @@ import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
 import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/vega_specs.js';
-import getSelectedFamilySelector from "../../selectors/selectedFamily";
+import { getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import Copy from "./copy";
@@ -72,7 +72,7 @@ const getNaiveVizData = (datum) => {
 const NaiveViz = createClassFromSpec(naiveVegaSpec)
 
 const NaiveSequence = ({datum}) => {
-      return <NaiveViz data = {getNaiveVizData(datum)} />;
+  return <NaiveViz data = {getNaiveVizData(datum)} />;
 }
 
 @connect((state) => ({
@@ -155,17 +155,11 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
 };
 
-const makeMapStateToProps = () => {
-  const getSelectedFamily = getSelectedFamilySelector()
-  const mapStateToProps = (state) => {
-    let newSelectedFamily = getSelectedFamily(state.clonalFamilies)
-    return {
-      selectedFamily: newSelectedFamily,
-      selectedSeq: state.clonalFamilies.selectedSeq,
-      treeScale: state.clonalFamilies.treeScale
-    }
+const mapStateToPropsTips = (state) => {
+  return {
+    selectedFamily: getTipsDataSelector(state.clonalFamilies),
+    treeScale: state.clonalFamilies.treeScale
   }
-  return mapStateToProps
 }
 
 const mapDispatchToProps = (dispatch) => ( {
@@ -173,47 +167,31 @@ const mapDispatchToProps = (dispatch) => ( {
     dispatch(explorerActions.updateTreeScale(val))
   },
   dispatchSelectedSeq: (seq) => {
-    console.log("disp")
     dispatch(explorerActions.updateSelectedSeq(seq))
   }
 })
 
-
-@connect(makeMapStateToProps, mapDispatchToProps)
+@connect(mapStateToPropsTips, mapDispatchToProps , null,
+  {areStatesEqual: (next, prev) => {
+    return _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) && _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale)}})
 class TreeViz extends React.Component {
   render() {
-    // this is necessary because vega signals update on initialization,
-    // so they will overwrite our branch scale stored in state which is the one we want to use
-    // see issue #22
-    this.initializing = {branch_scale: true, height_scale: true};
-    this.treeScale = this.props.treeScale;
+    // clone for assign by value
+    this.treeScale = _.clone(this.props.treeScale);
     return <Vega onParseError={(...args) => console.error("parse error:", args)}
             onSignalBranchScale={(...args) => {
               let branch_scale = args.slice(1)[0];
-              if(!this.initializing.branch_scale){
-                this.treeScale.branch_scale = branch_scale
-              }
-              else{
-                this.initializing.branch_scale = false
-              }
+              this.treeScale.branch_scale = branch_scale
             }}
             onSignalHeightScale={(...args) => {
               let height_scale = args.slice(1)[0];
-              if(!this.initializing.height_scale){
-                this.treeScale.height_scale = height_scale
-              }
-              else{
-                this.initializing.height_scale = false
-              }
-              
+              this.treeScale.height_scale = height_scale
             }}
             onSignalPts_tuple={(...args) => {
               let node = args.slice(1)[0]
               if(node.parent){
                 // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                if(!this.initializing.height_scale && !this.initializing.branch_scale){
-                  this.props.dispatchTreeScale(this.treeScale)
-                }
+                this.props.dispatchTreeScale(this.treeScale)
                 this.props.dispatchSelectedSeq(node)
               }
             }}
@@ -222,7 +200,16 @@ class TreeViz extends React.Component {
             />
             }};
 
-@connect(makeMapStateToProps)
+const mapStateToPropsLineage = (state) => {
+    return {
+      selectedFamily: getLineageDataSelector(state.clonalFamilies),
+      selectedSeq: state.clonalFamilies.selectedSeq,
+    }
+}
+
+@connect(mapStateToPropsLineage, null, null, 
+  {areStatesEqual: (next, prev) => {
+    return _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) && _.isEqual(prev.clonalFamilies.selectedSeq, next.clonalFamilies.selectedSeq)}})
 class Lineage extends React.Component {
   render() {
         return <div>

@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
 import * as _ from 'lodash';
 
 const getSelectedFamily = (state) => {
@@ -55,29 +55,20 @@ const followLineage = (asr_tree, leaf, naive_seq) => {
   return [lineage, seq_counter]
 }
 
-const computeSelectedFamilyData = (family, seq) => {  
+const findNaiveAASeq = (data) => {
+  let naive = _.find(data, {"id": "naive"});
+  return naive.aa_seq;
+}
+
+// tips mode 
+const computeTipsData = (family_input) => { 
+  let family = _.clone(family_input)   //clone for assign by value
   if (family["asr_tree"] && family["asr_tree"].length > 0){
     let data = family["asr_tree"].slice(0);
-    var mode_key;
-    let naive = _.find(data, {"id": "naive"});
-    let naive_seq = naive.aa_seq;
-    // lineage mode
-    if (!_.isEmpty(seq)){
-      let lineage_data = followLineage(data, seq, naive_seq);
-      let lineage = lineage_data[0]
-      family["lineage_seq_counter"] = lineage_data[1];
-      //reversing the postorder ordering of nodes for lineage mode
-      data = _.reverse(lineage)
-      mode_key = "lineage_alignment";
-    }
-    // tips mode
-    else {   
-      data = _.filter(data, function(o) { return o.type == "root" || o.type == "leaf"; })
-      mode_key = "tips_alignment";
-    }
-    
+    let naive_seq = findNaiveAASeq(data);    
+    data = _.filter(data, function(o) { return o.type == "root" || o.type == "leaf"; })
     let all_mutations = getMutations(naive_seq, data)
-    family[mode_key] = all_mutations;
+    family["tips_alignment"] = all_mutations;
     return family;
   }
   else{
@@ -85,23 +76,38 @@ const computeSelectedFamilyData = (family, seq) => {
   }
 }
 
-// lineage mode works like this: 
-// We have a slice of store that is "selectedSeq"
-//        if it is empty:
-//          then we do tips mode
-//        if it is not:
-//          then we use it for lineage mode
-//        *just means we have to reset it to null when we want to go back to tips mode 
-//        (this problem already exists in the scope of the tree for selected family)
-//        below we could pass leaf in to the selector from a state getter on "selectedSeq"
-const getSelectedFamilySelector = () => {
-
-  return createSelector(
-    [getSelectedFamily, getSelectedSeq],
-    (family, seq) => {
-      return computeSelectedFamilyData(family, seq);
-    }
-  )
+// lineage mode
+const computeLineageData = (family_input, seq) => { 
+  let family = _.clone(family_input)   //clone for assign by value
+  if (family["asr_tree"] && family["asr_tree"].length > 0 && !_.isEmpty(seq)){
+    let data = family["asr_tree"].slice(0);
+    let naive_seq = findNaiveAASeq(data);
+    let lineage_data = followLineage(data, seq, naive_seq);
+    let lineage = lineage_data[0]
+    family["lineage_seq_counter"] = lineage_data[1];
+    //reversing the postorder ordering of nodes for lineage mode
+    data = _.reverse(lineage)  
+    let all_mutations = getMutations(naive_seq, data)
+    family["lineage_alignment"] = all_mutations;
+    return family;
+  }
+  else{
+    return family
+  }
 }
 
-export default getSelectedFamilySelector
+const getTipsDataSelector = createSelector(
+    [getSelectedFamily],
+    (family) => {
+      return computeTipsData(family);
+    }
+  )
+
+const getLineageDataSelector =  createSelector(
+    [getSelectedFamily, getSelectedSeq],
+    (family, seq) => {
+      return computeLineageData(family, seq);
+    }
+  )
+
+export {getTipsDataSelector, getLineageDataSelector}
