@@ -141,11 +141,11 @@ class ClonalFamiliesVizCustom extends React.Component {
         let result = args.slice(1)[0]
         this.yField = result
       }}
-      onSignalBrush_n_seqs={(...args) => {
+      onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
         this.updateBrushSelection("x", this.xField, result)
       }}
-      onSignalBrush_mean_mut_freq={(...args) => {
+      onSignalBrush_y_field={(...args) => {
         let result = args.slice(1)[0]
         this.updateBrushSelection("y", this.yField, result)
       }}

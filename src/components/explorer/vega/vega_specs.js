@@ -271,7 +271,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "events": {
             "signal": "brush_scale_trigger"
           },
-          "update": "[scale(\"x\", brush_n_seqs[0]), scale(\"x\", brush_n_seqs[1])]"
+          "update": "[scale(\"x\", brush_x_field[0]), scale(\"x\", brush_x_field[1])]"
         },
         {
           "events": {
@@ -288,7 +288,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     {
-      "name": "brush_n_seqs",
+      "name": "brush_x_field",
       "on": [
         {
           "events": {
@@ -337,7 +337,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "events": {
             "signal": "brush_scale_trigger"
           },
-          "update": "[scale(\"y\", brush_mean_mut_freq[0]), scale(\"y\", brush_mean_mut_freq[1])]"
+          "update": "[scale(\"y\", brush_y_field[0]), scale(\"y\", brush_y_field[1])]"
         },
         {
           "events": {
@@ -354,7 +354,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     {
-      "name": "brush_mean_mut_freq",
+      "name": "brush_y_field",
       "on": [
         {
           "events": {
@@ -366,7 +366,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
     },
     {
       "name": "brush_scale_trigger",
-      "update": "(!isArray(brush_n_seqs) || (+invert(\"x\", brush_x)[0] === +brush_n_seqs[0] && +invert(\"x\", brush_x)[1] === +brush_n_seqs[1])) && (!isArray(brush_mean_mut_freq) || (+invert(\"y\", brush_y)[0] === +brush_mean_mut_freq[0] && +invert(\"y\", brush_y)[1] === +brush_mean_mut_freq[1])) ? brush_scale_trigger : {}"
+      "update": "(!isArray(brush_x_field) || (+invert(\"x\", brush_x)[0] === +brush_x_field[0] && +invert(\"x\", brush_x)[1] === +brush_x_field[1])) && (!isArray(brush_y_field) || (+invert(\"y\", brush_y)[0] === +brush_y_field[0] && +invert(\"y\", brush_y)[1] === +brush_y_field[1])) ? brush_scale_trigger : {}"
     },
     {
       "name": "brush_tuple",
@@ -374,13 +374,13 @@ const clonalFamiliesVizCustomSpec = (data) => {
         {
           "events": [
             {
-              "signal": "brush_n_seqs"
+              "signal": "brush_x_field"
             },
             {
-              "signal": "brush_mean_mut_freq"
+              "signal": "brush_y_field"
             }
           ],
-          "update": "brush_n_seqs && brush_mean_mut_freq ? {unit: \"\", intervals: [{encoding: \"x\", field: \"n_seqs\", extent: brush_n_seqs}, {encoding: \"y\", field: \"mean_mut_freq\", extent: brush_mean_mut_freq}]} : null"
+          "update": "brush_x_field && brush_y_field ? {unit: \"\", intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
         }
       ]
     },
