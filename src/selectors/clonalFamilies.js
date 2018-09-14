@@ -4,16 +4,20 @@ import * as fun from '../components/framework/fun';
 
 const getClonalFamilies = (state) => state.availableClonalFamilies
 
-const getPagination = (state) => state.pagination
+const getPagination = (state, props) => props.pagination ? props.pagination : state.pagination
 
 const getBrushSelection = state => state.brushSelection
 
-const computeClonalFamiliesPage = (data, pagination) =>
-  fun.threadf(data,
+const computeClonalFamiliesPage = (data, pagination) => {
+  let lastPage = Math.floor(data.length/pagination.per_page)
+  let tableData = fun.threadf(data,
     [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
     [_.drop,     pagination.page * pagination.per_page],
     [_.take,     pagination.per_page])
+  return [tableData, lastPage]
 
+}
+  
 const checkInRange = (axis, datum, brushSelection) => {
   return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
 }

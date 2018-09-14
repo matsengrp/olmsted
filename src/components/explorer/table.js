@@ -5,14 +5,28 @@ import * as explorerActions from "../../actions/explorer.js"
 import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
 import {NaiveSequence} from './visualization';
 
-@connect()
+
+@connect(null,
+        (dispatch, ownProps) => ({
+          dispatchPageUp: () => {
+            if (ownProps.pagination.page > 0){
+              dispatch(explorerActions.pageUp)
+            }
+          },
+          dispatchPageDown: () => {
+            if (ownProps.pagination.page+1 <= ownProps.pagination.last_page){
+              dispatch(explorerActions.pageDown)
+            }
+          }
+        })
+      )
 class PaginationControls extends React.Component {
   render () {
     return (
       <span>
-        <span style={{padding:10}}><a onClick={() => this.props.dispatch(explorerActions.pageUp)}>page up</a></span>
+        <span style={{padding:10}}><a onClick={() => this.props.dispatchPageUp()}>page up</a></span>
         <span style={{padding:10}}>{this.props.pagination.page}</span>
-        <span style={{padding:10}}><a onClick={() => this.props.dispatch(explorerActions.pageDown)}>page down</a></span>
+        <span style={{padding:10}}><a onClick={() => this.props.dispatchPageDown()}>page down</a></span>
       </span>)}}
 
 
@@ -78,11 +92,15 @@ class SelectAttribute extends React.Component {
 
 const makeMapStateToProps = () => {
   const getClonalFamiliesPage = getClonalFamiliesPageSelector()
-  const mapStateToProps = (state) => {
-    let newClonalFamiliesPage = getClonalFamiliesPage(state.clonalFamilies)
+  const mapStateToProps = (state, props) => {
+    let clonalFamiliesPageInfo = getClonalFamiliesPage(state.clonalFamilies, props)
+    let newClonalFamiliesPage = clonalFamiliesPageInfo[0]
+    let newPagination = Object.assign({}, state.clonalFamilies.pagination, {
+      last_page: clonalFamiliesPageInfo[1]
+    })
     return {
       visibleClonalFamilies: newClonalFamiliesPage,
-      pagination: state.clonalFamilies.pagination,
+      pagination: newPagination,
       selectedFamily: state.clonalFamilies.selectedFamily
     }
   }
@@ -91,7 +109,7 @@ const makeMapStateToProps = () => {
 
 @connect(makeMapStateToProps)
 class ClonalFamiliesTable extends React.Component {
-
+  
   render() {
     this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
     return (
