@@ -1,11 +1,32 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
 
+const checkInRange = (axis, datum, brushSelection) => {
+  return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
+}
+
+const checkBrushSelection = (brushSelection, datum) => {
+  if(brushSelection["x"] && brushSelection["y"]){
+    if(brushSelection["x"]["range"] && brushSelection["y"]["range"]){
+      return (checkInRange("x", datum, brushSelection)) && (checkInRange("y", datum, brushSelection))
+    }
+  }
+  return true
+}
+
+const applyFilters = (data, brushSelection) => {
+  if (brushSelection) {
+    let newdata =  _.filter(data, _.partial(checkBrushSelection, brushSelection))
+    return newdata
+  }
+  return data
+}
+
 const clonalFamilies = (state = {
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
-  visibleClonalFamilies: [],
+  brushedClonalFamilies: [],
   availableClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity},
   treeScale: {branch_scale:950, height_scale:10}
@@ -19,12 +40,7 @@ const clonalFamilies = (state = {
         availableClonalFamilies: action.availableClonalFamilies,
         pagination: new_pagination
       });
-    } case types.UPDATE_BRUSH_SELECTION: {
-      //Update the page to send it back to page 0
-      //TODO: Find a way to limit last page once final updates are made for table (other than maybe through the view)
-      let new_pagination = Object.assign({}, state.pagination, {
-        page: 0
-      });
+    } case types.UPDATE_BRUSH_SELECTION: { 
       // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
       let attr = action.updatedBrushData[1] //.replace("brush_", "")
       let range
@@ -39,33 +55,48 @@ const clonalFamilies = (state = {
         range = undefined
       }
 
-      // We can now change the axes, so we are just keeping track of which brush data comes
-      // from where to replace what
+      // define new brushselection
       let brushDelta = {};
       let axis = action.updatedBrushData[0];
       brushDelta[axis] = {};
       brushDelta[axis]["fieldName"] = attr;
       brushDelta[axis]["range"] = range;
-
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
+
+      //Compute which families are in the brush selection: brushedFamilies
+      let new_brushedFamilies = applyFilters(state.availableClonalFamilies, new_brushSelection)
+
+      //Compute new last page based on selection and update the page to send it back to page 0
+      let new_pagination = Object.assign({}, state.pagination, {
+        page: 0,
+        last_page: Math.floor(new_brushedFamilies.length/state.pagination.per_page) // use floor because we start at page 0
+      });
+
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
-        pagination: new_pagination
+        pagination: new_pagination,
+        brushedClonalFamilies: new_brushedFamilies
       });
     } case types.PAGE_DOWN: {
-      let new_pagination = Object.assign({}, state.pagination, {
-        page: state.pagination.page + 1
-      });
-      return Object.assign({}, state, {
-        pagination: new_pagination
-      });
+      if (state.pagination.page+1 <= state.pagination.last_page){
+        let new_pagination = Object.assign({}, state.pagination, {
+          page: state.pagination.page + 1
+        });
+        return Object.assign({}, state, {
+          pagination: new_pagination
+        });
+      }
+      return state
     } case types.PAGE_UP: {
-      let new_pagination = Object.assign({}, state.pagination, {
-        page: state.pagination.page - 1
-      });
-      return Object.assign({}, state, {
-        pagination: new_pagination
-      });
+      if (state.pagination.page-1 >= 0){
+        let new_pagination = Object.assign({}, state.pagination, {
+          page: state.pagination.page - 1
+        });
+        return Object.assign({}, state, {
+          pagination: new_pagination
+        });
+      }
+      return state
     } case types.TOGGLE_SORT: {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0,

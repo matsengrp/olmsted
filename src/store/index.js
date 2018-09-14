@@ -12,12 +12,19 @@ export default function configureStore(initialState) {
     // loggingMiddleware
   ]
 
-  const actionSanitizer = (action) => (
-    action.type === 'CLONAL_FAMILIES_RECEIVED' && action.availableClonalFamilies ?
-    { ...action, availableClonalFamilies: 'LARGE PAYLOAD' } : action
-  );
+  const actionSanitizer = (action) => {
+    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.availableClonalFamilies ){
+      return { ...action, availableClonalFamilies: 'LARGE PAYLOAD' } 
+    }
+    else{
+      return action
+    }
+  }
   const stateSanitizer = (state) => {
-    return state.clonalFamilies.availableClonalFamilies ? { ...state, clonalFamilies: {...state.clonalFamilies, availableClonalFamilies:'LARGE PAYLOAD' }} : state;
+    if ( state.clonalFamilies.availableClonalFamilies ){
+      return { ...state, clonalFamilies: {...state.clonalFamilies, availableClonalFamilies:'LARGE PAYLOAD', brushedClonalFamilies:'LARGE PAYLOAD'  }}
+    }
+    return state
   }
   let composeEnhancers = compose;
   /* eslint-disable no-underscore-dangle */ 
