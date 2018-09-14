@@ -178,7 +178,9 @@ class TreeViz extends React.Component {
   render() {
     // clone for assign by value
     this.treeScale = _.clone(this.props.treeScale);
-    return <Vega onParseError={(...args) => console.error("parse error:", args)}
+    return <div>
+            <h2>Clonal family details</h2>
+            <Vega onParseError={(...args) => console.error("parse error:", args)}
             onSignalBranchScale={(...args) => {
               let branch_scale = args.slice(1)[0];
               this.treeScale.branch_scale = branch_scale
@@ -198,6 +200,7 @@ class TreeViz extends React.Component {
             debug={/* true for debugging */ false}
             spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.treeScale)}
             />
+          </div>
             }};
 
 const mapStateToPropsLineage = (state) => {

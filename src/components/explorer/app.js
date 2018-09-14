@@ -30,7 +30,6 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}
       <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
         <ClonalFamiliesTable/>
       </div>
-      <h2>Clonal Family details</h2>
       <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
         {selectedFamily? <viz.TreeViz/> : ""}
         {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
