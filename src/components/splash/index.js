@@ -44,7 +44,19 @@ class Splash extends React.Component {
               Select datasets below and click "Explore!" to visualize clonal families.
             </p>
             <button
-              style={{marginLeft: "100%"}}
+              style={{
+                border: "0px",
+                backgroundColor: "#05337f",
+                marginLeft: 0,
+                borderRadius: 5,
+                cursor: "pointer",
+                padding: 20,
+                fontFamily: "Lato",
+                color: "white",
+                fontWeight: 400,
+                fontSize: 18,
+                outline: 0
+              }}
               onClick={
                 (e) => this.props.dispatch(
                   changePage(
@@ -56,7 +68,7 @@ class Splash extends React.Component {
                   )
                 )
                 }>
-              Explore!
+                Explore!
             </button>
             {/*This only happens when the app loads up, not when we change the state.*/}
             {console.log("displayAvailableDatasets being called on: ", this.props.availableDatasets)}
