@@ -75,8 +75,7 @@ const clonalFamilies = (state = {
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination,
-        brushedClonalFamilies: new_brushedFamilies,
-        selectedFamily: undefined
+        brushedClonalFamilies: new_brushedFamilies
       });
     } case types.PAGE_DOWN: {
       if (state.pagination.page+1 <= state.pagination.last_page){
