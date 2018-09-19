@@ -1035,6 +1035,10 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                     "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
                   }
                 },
+                // For #11 we need to
+                //  1) add another set of marks like these for the leaves so that leaves have circles AND labels
+                //  2) change this value:25 to a field: {signal: X} for the leaf circle marks.
+                //                 The signal should be the value of a dropdown select between "multiplicity" and "cluster multiplicity"
                 "enter": {
                   "size": {"value": 25},
                   "stroke": {"value": "#000"},
@@ -1206,6 +1210,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "name": "color",
           "type": "ordinal",
           "domain": {"data": "data_1", "field": "mut_to", "sort": true},
+          // for #48 change this range to the range of color outputs we'd like to allow. Steal this from https://github.com/matsengrp/cftweb/blob/master/cftweb/static/dashboard.css
           "range": "category"
         }
       ],
