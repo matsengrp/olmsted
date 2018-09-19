@@ -476,7 +476,11 @@ const clonalFamiliesVizCustomSpec = (data) => {
     { "name": "xField", "value": "n_seqs",
       "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
-    { "name": "nullGap", "update": "nullSize + 10" }
+    { "name": "nullGap", "update": "nullSize + 10" },
+    { "name": "colorBy", "value": "subject.id",
+      "bind": {"input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+    { "name": "shapeBy", "value": "sample.timepoint",
+      "bind": {"input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
     {
@@ -569,7 +573,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "type": "ordinal",
       "domain": {
         "data": "data_0",
-        "field": "subject\\.id",
+        "field": {"signal": "colorBy"},
         "sort": true
       },
       "range": "category"
@@ -579,7 +583,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "type": "ordinal",
       "domain": {
         "data": "data_0",
-        "field": "sample\\.timepoint",
+        "field": {"signal": "shapeBy"},
         "sort": true
       },
       "range": "symbol"
@@ -711,11 +715,11 @@ const clonalFamiliesVizCustomSpec = (data) => {
           },
           "stroke": {
             "scale": "color",
-            "field": "subject\\.id"
+            "field": {"signal": "colorBy"}
           },
           "shape": {
             "scale": "shape",
-            "field": "sample\\.timepoint"
+            "field": {"signal": "shapeBy"}
           }
         }
       }
@@ -841,7 +845,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
   "legends": [
     {
       "stroke": "color",
-      "title": "subject.id",
+      "title": {"signal": "colorBy"},
       "encode": {
         "symbols": {
           "update": {
@@ -857,7 +861,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
     },
     {
       "shape": "shape",
-      "title": "sample.timepoint",
+      "title": {"signal": "shapeBy"},
       "encode": {
         "symbols": {
           "update": {
