@@ -38,21 +38,27 @@ const getMutations = (naive_seq, tree) =>{
 
 const followLineage = (asr_tree, leaf, naive_seq) => {
   var lineage = [leaf];
+  var downloadSeqs = [leaf];
   var curr_node = leaf;
   var seq_counter = 1; //needed to set the viz height based on the number of seqs
   while (curr_node.parent){
     let parent_id = curr_node.parent;
     let parent = _.find(asr_tree, {"id": parent_id});
     lineage.push(parent);
-    curr_node = parent;
     // seeing many sequences near naive with no mutations,
+    // (these sequences would be part of the lineage but not
+    //  from the perspective of the mutations viz)
     // so check to make sure we are counting seqs with muts
-    // for lineage viz scaling
+    // for lineage viz scaling 
     if(curr_node.aa_seq!==naive_seq){
       seq_counter++;
     }
+    if(parent.nt_seq !== curr_node.nt_seq){
+      downloadSeqs.push(parent)
+    }
+    curr_node = parent;
   }
-  return [lineage, seq_counter]
+  return [lineage, downloadSeqs, seq_counter]
 }
 
 const findNaiveAASeq = (data) => {
@@ -69,6 +75,7 @@ const computeTipsData = (family_input) => {
     data = _.filter(data, function(o) { return o.type == "root" || o.type == "leaf"; })
     let all_mutations = getMutations(naive_seq, data)
     family["tips_alignment"] = all_mutations;
+    family["download_unique_family_seqs"] = _.uniqBy(family.asr_tree, 'nt_seq')
     return family;
   }
   else{
@@ -84,7 +91,8 @@ const computeLineageData = (family_input, seq) => {
     let naive_seq = findNaiveAASeq(data);
     let lineage_data = followLineage(data, seq, naive_seq);
     let lineage = lineage_data[0]
-    family["lineage_seq_counter"] = lineage_data[1];
+    family["download_lineage_seqs"] = lineage_data[1];
+    family["lineage_seq_counter"] = lineage_data[2];
     //reversing the postorder ordering of nodes for lineage mode
     data = _.reverse(lineage)  
     let all_mutations = getMutations(naive_seq, data)

@@ -10,6 +10,7 @@ import { getTipsDataSelector, getLineageDataSelector} from "../../selectors/sele
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import Copy from "./copy";
+import DownloadFasta from "./downloadfasta";
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -200,6 +201,9 @@ class TreeViz extends React.Component {
             debug={/* true for debugging */ false}
             spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.treeScale)}
             />
+            <DownloadFasta sequencesSet={this.props.selectedFamily.download_unique_family_seqs.slice()}
+                           filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
+                           label="Download Fasta: Unique Sequences In This Family"/>
           </div>
             }};
 
@@ -220,6 +224,9 @@ class Lineage extends React.Component {
           <h3>Amino acid sequence:</h3>
           <h3>{this.props.selectedSeq.aa_seq}</h3>
           <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
+          <DownloadFasta sequencesSet={this.props.selectedFamily.download_lineage_seqs.slice()}
+                           filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
+                           label="Download Fasta: Lineage Sequences"/>
           <h3>Lineage</h3>
           <Vega
           onParseError={(...args) => console.error("parse error:", args)}
