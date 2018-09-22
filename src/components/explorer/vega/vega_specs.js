@@ -935,6 +935,12 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         },
       ],
       "signals": [
+        // Size of leaves
+        {
+          "name": "leaf_size",
+          "value": "cluster_multiplicity",
+          "bind": {"input": "select", "options": ["cluster_multiplicity", "multiplicity"]} 
+        },
         // Number of leaves
         {
           "name": "leaves_len",
@@ -1029,25 +1035,22 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "encode": {
                 "update": {
                   "y": {"field": "y"},
-                  "fill": {"value": "#000"},
+                  "fill": {"value": "transparent"},
                   "x": {"field": "x"},
                   "tooltip": {
                     "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
                   }
                 },
-                // For #11 we need to
-                //  1) add another set of marks like these for the leaves so that leaves have circles AND labels
-                //  2) change this value:25 to a field: {signal: X} for the leaf circle marks.
-                //                 The signal should be the value of a dropdown select between "multiplicity" and "cluster multiplicity"
                 "enter": {
-                  "size": {"value": 25},
-                  "stroke": {"value": "#000"},
+                  "size": {"value": 10},
+                  "stroke": {"value": "transparent"},
                 }
               },
               "type": "symbol",
               "from": {"data": "nodes"}
             },
             // LEAVES
+            // labels
             {
               "type": "text",
               "encode": {
@@ -1058,7 +1061,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                 },
                 "update": {
                   "y": {"scale": "y", "field": "y"},
-                  "dx": {"value": 2},
+                  "dx": {"field": "scaled_cluster_multiplicity"},
                   "dy": {"value": 3}, 
                   "x": {"field": "x"},
                   "tooltip": {
@@ -1066,6 +1069,24 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   }
                 }  
               },
+              "from": {"data": "leaves"}
+            },
+            // circles: size depends on multiplicity 
+            {
+              "name": "leaf",
+              "encode": {
+                "update": {
+                  "y": {"field": "y"},
+                  "fill": {"value": "transparent"},
+                  "x": {"field": "x"},
+                  "tooltip": {
+                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                  },
+                  "size": {"field": {"signal": "leaf_size"}},
+                  "stroke": {"value": "#000"}
+                },
+              },
+              "type": "symbol",
               "from": {"data": "leaves"}
             }
           ],
