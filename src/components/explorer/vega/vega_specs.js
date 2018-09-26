@@ -942,8 +942,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         },
         {
           "name": "leaf_size",
-          "value": "cluster_multiplicity",
-          "bind": {"input": "select", "options": ["cluster_multiplicity", "multiplicity"]} 
+          "value": "multiplicity",
+          "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
         },
         // Number of leaves
         {
