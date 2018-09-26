@@ -917,7 +917,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
         {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}, 
-        
         // Mutations Data
         {"name": "source_1",
          "values":selectedFamily["tips_alignment"] 
@@ -936,6 +935,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       ],
       "signals": [
         // Size of leaves
+        {
+          "name": "max_leaf_size",
+          "value": 1000,
+          "bind": {"max": 7000, "step": 50, "input": "range", "min": 1}
+        },
         {
           "name": "leaf_size",
           "value": "cluster_multiplicity",
@@ -1061,11 +1065,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                 },
                 "update": {
                   "y": {"scale": "y", "field": "y"},
-                  "dx": {"field": "scaled_cluster_multiplicity"},
-                  "dy": {"value": 3}, 
+                  "dx": {"scale": "leaf_label_offset", "field": {"signal": "leaf_size"}},
+                  "dy": {"value": 3},
                   "x": {"field": "x"},
                   "tooltip": {
-                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
                   }
                 }  
               },
@@ -1077,13 +1081,28 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "encode": {
                 "update": {
                   "y": {"field": "y"},
-                  "fill": {"value": "transparent"},
+                  "fill": {"value": "#000"},
+                  "fillOpacity": {"value": "0.05"},
                   "x": {"field": "x"},
                   "tooltip": {
-                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
                   },
-                  "size": {"field": {"signal": "leaf_size"}},
-                  "stroke": {"value": "#000"}
+                  "size": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
+                  "stroke": {"value": "#000"},
+                  "strokeWidth": {"value": 0.5}
+                },
+              },
+              "type": "symbol",
+              "from": {"data": "leaves"}
+            },
+            {
+              "name": "leaf_center",
+              "encode": {
+                "update": {
+                  "y": {"field": "y"},
+                  "fill": {"value": "#000"},
+                  "x": {"field": "x"},
+                  "size": {"value": 1},
                 },
               },
               "type": "symbol",
@@ -1196,6 +1215,18 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       ],
       
       "scales": [
+        {
+          "name": "leaf_label_offset",
+          "type": "linear",
+          "domain": {"data": "leaves", "field": {"signal": "leaf_size"}},
+          "range": [4,{"signal": "max_leaf_size/55"}]
+        },
+        {
+          "name": "leaf_size_scale",
+          "type": "linear",
+          "domain": {"data": "leaves", "field": {"signal": "leaf_size"}},
+          "range": [0,{"signal": "max_leaf_size"}]
+        },
         {
           "name": "x",
           "type": "linear",
