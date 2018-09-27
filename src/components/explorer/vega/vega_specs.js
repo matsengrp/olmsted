@@ -894,8 +894,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
-      "autosize": {"type": "pad", "resize": true},
-      "padding": 5,
+      // "autosize": {"type": "pad", "resize": false},
+      // "padding": 5,
       "height": 800,
       "width": 1000,
       "data": [
@@ -906,9 +906,15 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
          "values":selectedFamily["asr_tree"] 
         },
         {"name": "tree", 
-         "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
-                       {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
-                       {"expr": "datum.height * heightScale", "type": "formula", "as": "y"}],
+         "transform": [
+                       {"expr": "datum.distance", "type": "formula", "as": "x"}, 
+                       {"expr": "datum.height * heightScale", "type": "formula", "as": "y"},                   
+                       { "type": "extent", "field": "x", "signal": "xext" },
+                       { "type": "extent", "field": "y", "signal": "yext" },
+                       {"key": "id", "type": "stratify", "parentKey": "parent"},
+                       {"expr": "scale(\"xscale\", datum.distance)", "type": "formula", "as": "x"}, 
+
+                      ],
          "source": "source_0"},
         {"name": "links",
          "transform": [{"key": "id", "type": "treelinks"},
@@ -934,6 +940,125 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         },
       ],
       "signals": [
+        //ZOOOOOOM
+        {
+          "name": "hover",
+          "on": [
+            {"events": "*:mouseover", "encode": "hover"},
+            {"events": "*:mouseout",  "encode": "leave"},
+            {"events": "*:mousedown", "encode": "select"},
+            {"events": "*:mouseup",   "encode": "release"}
+          ]
+        },
+        { "name": "xrange", "update": "[0, scaledWidth]" },
+        { "name": "yrange", "update": "[height, 0]" },
+    
+        {
+          "name": "down", "value": null,
+          "on": [
+            {"events": "touchend", "update": "null"},
+            {"events": "mousedown, touchstart", "update": "xy()"}
+          ]
+        },
+        {
+          "name": "xcur", "value": null,
+          "on": [
+            {
+              "events": "mousedown, touchstart, touchend",
+              "update": "slice(xdom)"
+            }
+          ]
+        },
+        {
+          "name": "delta", "value": [0, 0],
+          "on": [
+            {
+              "events": [
+                {
+                  "source": "window", "type": "mousemove", "consume": true,
+                  "between": [{"type": "mousedown"}, {"source": "window", "type": "mouseup"}]
+                },
+                {
+                  "type": "touchmove", "consume": true,
+                  "filter": "event.touches.length === 1"
+                }
+              ],
+              "update": "down ? [down[0]-x(), y()-down[1]] : [0,0]"
+            }
+          ]
+        },
+        // This is the anchor from which zoom happens.
+        // It's set to the place you scroll at now but my best 
+        // shot at scrolling only in the positive x direction so 
+        // far is to set it to always be [0,0]. This generally works,
+        // but might not be perfect for zooming on clades far from root
+        // We need a way to just limit zoom out to not go past zero?
+        {
+          "name": "anchor", "value": [0, 0],
+          "on": [
+            {
+              "events": "wheel",
+              "update": "[invert('xscale', x()), 0]"
+            },
+            {
+              "events": {"type": "touchstart", "filter": "event.touches.length===2"},
+              "update": "[(xdom[0] + xdom[1]) / 2, y()]"
+            }
+          ]
+        },
+        {
+          "name": "zoom", "value": 1,
+          "on": [
+            {
+              "events": "wheel!",
+              "force": true,
+              "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+            },
+            {
+              "events": {"signal": "dist2"},
+              "force": true,
+              "update": "dist1 / dist2"
+            }
+          ]
+        },
+        {
+          "name": "dist1", "value": 0,
+          "on": [
+            {
+              "events": {"type": "touchstart", "filter": "event.touches.length===2"},
+              "update": "pinchDistance(event)"
+            },
+            {
+              "events": {"signal": "dist2"},
+              "update": "dist2"
+            }
+          ]
+        },
+        {
+          "name": "dist2", "value": 0,
+          "on": [{
+            "events": {"type": "touchmove", "consume": true, "filter": "event.touches.length===2"},
+            "update": "pinchDistance(event)"
+          }]
+        },
+    
+        {
+          "name": "xdom", "update": "slice(xext)", "react": false,
+          "on": [
+            {
+              "events": {"signal": "delta"},
+              "update": "[xcur[0] + span(xcur) * delta[0] / scaledWidth, xcur[1] + span(xcur) * delta[0] / scaledWidth]"
+            },
+            {
+              "events": {"signal": "zoom"},
+              "update": "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
+            }
+          ]
+        },
+        {
+          "name": "size",
+          "update": "clamp(20 / span(xdom), 1, 1000)"
+        },
         // Size of leaves
         {
           "name": "max_leaf_size",
@@ -962,14 +1087,17 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         // Height of viz scaled by number of leaves 
         {
           "name": "scaledHeight",
+          // "value": 500,
           "update": "heightScale*(leaves_len+1)"
         },
         {"value": "datum",
          "name": "cladify",
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
-        {"name": "concat_0_width",
-         "update": "branchScale/80"
+        {
+          "name": "scaledWidth",
+          // "value": 500,
+         "update": "branchScale"
         },
         {"name": "concat_1_width", "value": 200},
         {"name": "unit",
@@ -1016,8 +1144,9 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "style": "cell",
           "encode": {
            "update": {
-            //  "width": {"signal": "concat_0_width"},
-             "height": {"signal": "scaledHeight"}
+              "clip": {"value": true},
+              "width": {"signal": "scaledWidth"},
+              "height": {"signal": "scaledHeight"}
            }
           },
           "marks": [
@@ -1111,13 +1240,13 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           ],
           // Tree axes
           "axes": [{
-            "scale": "time",
+            "scale": "xscale",
             "orient": "bottom",
             "grid": false,
             "title": "evolutionary time",
             "labelFlush": true,
             "labelOverlap": true,
-            "tickCount": {"signal": "ceil(width/40)"},
+            "tickCount": {"signal": "ceil(scaledWidth/40)"},
             "zindex": 1
           }]
         },
@@ -1128,7 +1257,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "style": "cell",
           "encode": {
             "update": {
-              // "width": {"signal": "concat_1_width"},
+              "width": {"signal": "concat_1_width"},
               "height": {"signal": "scaledHeight"}
             }
           },
@@ -1235,10 +1364,12 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "zero": true
         },
         {
-          "name": "time",
+          "name": "xscale",
           "type": "linear",
-          "domain": {"data": "tree", "field": "x"},
-          "range": [0, {"signal": "concat_0_width"}],
+          "domain": {"signal": "xdom"},
+          "range": {"signal": "xrange"},
+          // "domain": {"data": "tree", "field": "x"},
+          // "range": [0, {"signal": "scaledWidth"}],
           "nice": true,
           "zero": true
         },
