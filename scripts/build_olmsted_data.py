@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import division
 import argparse
 import json
 import csv
@@ -14,7 +15,6 @@ def get_args():
     parser.add_argument('-d', '--datasets-out')
     parser.add_argument('-s', '--sequences-out')
     return parser.parse_args()
-
 
 # Some generic data processing helpers helpers
 
@@ -71,7 +71,10 @@ def pull_datasets(t):
 
 clonal_family_pull_pattern = [
    {    
+     "cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity"]}],
+     "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
      "cft.reconstruction:asr_tree": ["*"],
+     "cft.reconstruction:asr_seqs": [{'bio.seq:set': ['bio.seq:id', 'bio.seq:seq']}],
      "cft.reconstruction:cluster": 
      [
       "db:ident",
@@ -97,46 +100,85 @@ clonal_family_pull_pattern = [
       "cft.cluster:naive_seq",
       "cft.cluster:mean_mut_freq",
       {"cft.cluster:sample": ["cft.sample:id", "cft.sample:timepoint"],
-      "cft.cluster:dataset": ["cft.dataset:id"],
-      "cft.cluster:partition": ["cft.partition:id", "cft.partition:logprob", "cft.partition:step"],
-      "cft.cluster:subject": ["cft.subject:id"],
-      "cft.cluster:v_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
-      "cft.cluster:d_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
-      "cft.cluster:j_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
+       "cft.cluster:dataset": ["cft.dataset:id"],
+       "cft.cluster:partition": ["cft.partition:id", "cft.partition:logprob", "cft.partition:step"],
+       "cft.cluster:subject": ["cft.subject:id"],
+       "cft.cluster:v_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
+       "cft.cluster:d_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
+       "cft.cluster:j_per_gene_support": ["cft.gene_support:gene", "cft.gene_support:prob"],
       }
      ]
    } 
 ]
 
-def createNodeRecords(node):
-    data = []
-    node_datum = {}
-    node_datum["label"] = node_datum["id"] = node.name
-    if not node.is_leaf():
-        node_datum["type"] = "node"
-        for n in node.children:
-            children = createNodeRecords(n)
-            data = data + children
-    else:
-        node_datum["type"] = "leaf"
-    if node.up:
-        node_datum["parent"] = node.up.name
-        node_datum["length"] = node.get_distance(node.up)
-        node_datum["distance"] = node.get_distance("naive")
-    else:
-        node_datum["type"] = "root"
-    data.append(node_datum)
-    return data
+def create_node_records(tree, nt_seqs_dict, aa_seqs_dict, seqmeta_dict):
+    records = []
+    leaves_counter = 1
+    for n in tree.traverse('postorder'):
+        n.label = n.id = n.name
+        n.nt_seq = nt_seqs_dict[n.name]
+        n.aa_seq = aa_seqs_dict[n.name]
+        mult = None
+        cluster_mult = None
+        if n.name in seqmeta_dict.keys():
+            mult = seqmeta_dict[n.name]["cft.seq:multiplicity"].pop()
+            clust_mult = seqmeta_dict[n.name]["cft.seq:cluster_multiplicity"].pop()
+        n.multiplicity = int(mult) if mult else mult
+        n.cluster_multiplicity = int(clust_mult) if clust_mult else clust_mult
+        n.type = "node"
+        if n.is_leaf():
+            # get height for leaves
+            n.type = "leaf"
+            n.height = leaves_counter
+            leaves_counter +=1
+        else:
+            # get height for non leaves
+            total_height = 0
+            for child in n.children:
+                total_height += child.height
+            avg_height = total_height/len(n.children)
+            n.height = avg_height
+        if n.up:
+            # get parent info, distance for non root
+            n.parent = n.up.name
+            n.length = n.get_distance(n.up)
+            n.distance = n.get_distance("naive")
+        else:
+            # n is root
+            n.type = "root"
+            n.parent = None
+            n.length = 0.0
+            n.distance = 0.0
+        records.append({'id': n.id, 'label': n.label, 'type': n.type, 'parent': n.parent, 'length': n.length, 'distance': n.distance, 'height': n.height, 'nt_seq': n.nt_seq, 'aa_seq': n.aa_seq, 'multiplicity': n.multiplicity, 'cluster_multiplicity': n.cluster_multiplicity})
 
-def parseTreeData(s):
+    return records
+
+def parse_tree_data(s, nt_seqs_dict, aa_seqs_dict, seqmeta_dict):
     t = PhyloTree(s, format=1)
-    return createNodeRecords(t)
+    return create_node_records(t, nt_seqs_dict, aa_seqs_dict, seqmeta_dict)
+
+def create_seqs_dict(seq_records):
+    d = dict()
+    for record in seq_records:
+        d[record["bio.seq:id"].pop()] = record["bio.seq:seq"].pop()
+    return d
+
+def create_seqmeta_dict(seqmeta_records):
+    d = dict()
+    for record in seqmeta_records:
+        seq_id = record["bio.seq:id"].pop()
+        d[seq_id] = record
+    return d
 
 def clean_clonal_family_record(d):
     c = d.copy()
     c['cft.reconstruction:cluster'] = c['cft.reconstruction:cluster'][0]
+    #c['cft.reconstruction:cluster']['cft.reconstruction:seqmeta'] = c['cft.reconstruction:seqmeta']
+    aa_seqs_dict = create_seqs_dict(list(c['cft.reconstruction:cluster_aa'])[0]['bio.seq:set'])
+    nt_seqs_dict = create_seqs_dict(list(c['cft.reconstruction:asr_seqs'])[0]['bio.seq:set'])
+    seqmeta_dict = create_seqmeta_dict(list(c['cft.reconstruction:seqmeta'])[0]['tripl.csv:data'])
     if(c['cft.reconstruction:asr_tree'][0].get('tripl.file:contents')):
-        c['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parseTreeData(list(c['cft.reconstruction:asr_tree'][0]['tripl.file:contents'])[0])
+        c['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(c['cft.reconstruction:asr_tree'][0]['tripl.file:contents'])[0], nt_seqs_dict, aa_seqs_dict, seqmeta_dict)
     c = c['cft.reconstruction:cluster']
     try:
         del c['cft.cluster:unique_ids']
@@ -147,8 +189,8 @@ def clean_clonal_family_record(d):
 def pull_clonal_families(t):
     result = map(comp(clean_record, clean_clonal_family_record),
             t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.reconstruction'}))
+    #result[0]['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(result['cft.reconstruction:cluster']['cft.reconstruction:asr_tree']['tripl.file:contents'])[0])
     return result
-
 
 def write_out(data, filename, args):
     with open(filename, 'w') as fh:
