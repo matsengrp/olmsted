@@ -133,8 +133,12 @@ button:focus {outline:0;}
 }
 
 .grid-item {
-  /*border: 1px solid rgb(45, 45, 150);*/
-  place-self: center stretch;
+  /* options: <number> | <name> | span <number> | span <name> | auto */
+    grid-column-start:  auto;
+    grid-column-end: auto;
+    grid-row-start: auto;
+    grid-row-end: auto;
+    /* place-self: center stretch; */
 }
 
 .item-filler{

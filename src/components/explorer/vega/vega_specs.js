@@ -216,12 +216,32 @@ const clonalFamiliesVizCustomSpec = (data) => {
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v3.json",
-  "autosize": "pad",
+  "autosize": {"type": "pad", "resize": true, "contains": "padding"},
   "padding": 5,
-  "width": 900,
+  // "width": 200,
   "height": 700,
   "style": "cell",
   "signals": [
+    {
+      "name": "width",
+      "update": "containerSize()[0]",
+          "on": [
+            {
+              "events": { "source": "window", "type": "resize" },
+              "update": "containerSize()[0]"
+            }
+          ]
+    },
+    // {
+    //     "name": "height",
+    //     "update": "containerSize()[1]",
+    //       // "on": [
+    //       // {
+    //       // "events": { "source": "window", "type": "resize" },
+    //       // "update": "containerSize()[1]-20"
+    //       // }
+    //       // ]
+    // },
     {
       "name": "unit",
       "value": {},
@@ -235,6 +255,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "brush_x",
       "value": [],
+      // "value": props.brushX,
       "on": [
         {
           "events": {
@@ -301,6 +322,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "brush_y",
       "value": [],
+      // "value": props.brushY,
       "on": [
         {
           "events": {
@@ -472,14 +494,18 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     { "name": "yField", "value": "mean_mut_freq",
+    // { "name": "yField", "value": props.yField,
       "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
+    // { "name": "xField", "value": props.xField,
       "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
     { "name": "nullGap", "update": "nullSize + 10" },
     { "name": "colorBy", "value": "subject.id",
+    // { "name": "colorBy", "value": props.colorBy,
       "bind": {"input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
+    // { "name": "shapeBy", "value": props.shapeBy,
       "bind": {"input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
