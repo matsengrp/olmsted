@@ -25,16 +25,15 @@ import * as _ from 'lodash';
 // 
 // Think of pushing the data here through a series of transformations, 
 
-
 const _thread = (isThreadFirst, init, ...forms) =>
   forms.reduce((prev, next) => {
-      if (Array.isArray(next)) {
-          const [head, ...tail] = next;
-          return isThreadFirst ? head.apply(this, [prev, ...tail]) : head.apply(this, tail.concat(prev));
-      }
-      else {
-          return next.call(this, prev);
-      }
+    if (Array.isArray(next)) {
+      let [head, ...tail] = next;
+      return isThreadFirst ? head.apply(this, [prev, ...tail]) : head.apply(this, tail.concat(prev));
+    } else {
+      console.log("next is:", next, "prev is:", prev)
+      return next.call(this, prev);
+    }
   }, init);
 
 
