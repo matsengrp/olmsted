@@ -143,8 +143,12 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
-    console.log('rerender')
+    // console.log('rerender')
     return <Vega
+      onSignalWidth={(...args) => {
+        let result = args.slice(1)[0]
+        console.log("width", result)
+      }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
@@ -173,23 +177,23 @@ class ClonalFamiliesVizCustom extends React.Component {
       //     this.setState({shapeBy: result})
       //   }
       // }}
-      // onSignalBrush_x={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log(result, this.state.brushX)
-      //   if(result !== this.state.brushX){
-      //     this.setState({brushX: result})
-      //   }
-      // }}
-      // onSignalBrush_y={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log(result, this.state.brushY)
-      //   if(result !== this.state.brushY){
-      //     this.setState({brushY: result})
-      //   }
-      // }}
+      onSignalBrush_x={(...args) => {
+        let result = args.slice(1)[0]
+        // console.log('brushx: ', result)
+        // if(result !== this.state.brushX){
+        //   this.setState({brushX: result})
+        // }
+      }}
+      onSignalBrush_y={(...args) => {
+        let result = args.slice(1)[0]
+        // console.log('brushy: ', result)
+        // if(result !== this.state.brushY){
+        //   this.setState({brushY: result})
+        // }
+      }}
       onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
-        console.log(result)
+        // console.log(result)
         this.updateBrushSelection("x", this.xField, result)
         // this.updateBrushSelection("x", this.state.xField, result)
       }}

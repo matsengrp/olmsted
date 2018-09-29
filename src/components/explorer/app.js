@@ -13,11 +13,30 @@ import { hot } from 'react-hot-loader';
 /* <Contents> contains the header, tree, map, footer components etc.
  * here is where the panel sizes are decided, as well as which components are displayed.
  */
+  
+const PADDING_FRACTION = 0.05
+// We'd like to be able to just use the padding fraction to 
+// compute the padding for each side of the screen from the total
+// available screeen width, and then use the remaining available
+// screen width for our vega component. This DOES work when using 
+// vega's autosize: fit which does some math to make sure every part
+// of the viz fits into the width of it's container. However, this recalculation
+// adds some discrepency between the signal updating the width and the autosize
+// vega code updating the width and yields two different values. This (we suspect)
+// introduces a bug with the first brush select and then resize the screen 
+// (see  <PUT VEGA ISSUE HERE>)
+// So we are using autosize: pad, instead which does not fit the vega exactly into
+// its container, which is why wee need PADDING_BUFFER to adjust for the amount
+// it exceeds its container.
+const PADDING_BUFFER = 150
 
-const grid_container_style = (availableWidth) => {
+const gridContainerStyle = (availableWidth) => {
   return {
+    width: availableWidth*(1-2*PADDING_FRACTION)-PADDING_BUFFER,
+    paddingLeft: availableWidth*PADDING_FRACTION,
+    paddingRight: availableWidth*PADDING_FRACTION,
     display: "grid",
-    gridTemplateColumns: availableWidth*0.6 + 'px',
+    gridTemplateColumns: "auto",
     gridTemplateRows: "auto",
     justifyItems: "center"
   }
@@ -30,16 +49,16 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
   //}
   /* TODO */
   return (
-    <div style={{margin: 50}}>
+    <div >
       
-      {/* <div style={grid_container_style(availableWidth)}> */}
-      <div className="grid-container">
+      <div style={gridContainerStyle(availableWidth)}>
+      {/* <div className="grid-container"> */}
         <div className="grid-item">
           <h2>Clonal Families</h2>
           <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         </div>
-        {console.log(availableWidth)}
-        <div style={{width: availableWidth*0.5}} className="grid-item">
+        {/* {console.log(availableWidth)} */}
+        <div style={{width: 'inherit'}} className="grid-item">
         {/* <div  className="grid-item"> */}
           {/* <viz.ClonalFamiliesVizCustom availableWidth={availableWidth}/> */}
           <viz.ClonalFamiliesVizCustom/>
@@ -74,18 +93,8 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // console.log('state', props);
-    /* window listener to see when width changes cross threshold to toggle sidebar */
-    // const mql = window.matchMedia(`(min-width: ${controlsHiddenWidth}px)`);
-    // mql.addListener(() => this.setState({
-    //   sidebarOpen: this.state.mql.matches,
-    //   mobileDisplay: !this.state.mql.matches
-    // }));
-    // this.state = {
-    //   mql,
-    //   sidebarOpen: false,
-    //   mobileDisplay: !mql.matches
-    // };
+    // For resize media query listener see this link (helps resize for mobile etc):
+    //https://github.com/nextstrain/auspice/blob/master/src/components/app.js#L112-L122
   }
   static propTypes = {
     dispatch: PropTypes.func.isRequired

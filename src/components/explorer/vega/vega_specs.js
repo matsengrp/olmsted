@@ -216,8 +216,9 @@ const clonalFamiliesVizCustomSpec = (data) => {
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v3.json",
-  "autosize": {"type": "pad", "resize": true, "contains": "padding"},
-  "padding": 5,
+  // "autosize": {"type": "fit-x", "resize": true, "contains": "padding"},
+  // "padding": 50,
+  // "autosize": {"type": "pad"},
   // "width": 200,
   "height": 700,
   "style": "cell",
@@ -232,6 +233,10 @@ const clonalFamiliesVizCustomSpec = (data) => {
             }
           ]
     },
+    // {
+    //   "name": "height",
+    //   "update": "span(range('y'))"
+    // },
     // {
     //     "name": "height",
     //     "update": "containerSize()[1]",
@@ -495,18 +500,18 @@ const clonalFamiliesVizCustomSpec = (data) => {
     },
     { "name": "yField", "value": "mean_mut_freq",
     // { "name": "yField", "value": props.yField,
-      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
     // { "name": "xField", "value": props.xField,
-      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
     { "name": "nullGap", "update": "nullSize + 10" },
     { "name": "colorBy", "value": "subject.id",
     // { "name": "colorBy", "value": props.colorBy,
-      "bind": {"input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+      "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
     // { "name": "shapeBy", "value": props.shapeBy,
-      "bind": {"input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
+      "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
     {
@@ -583,15 +588,15 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "y",
       "type": "linear",
-      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
       "domain": {"data": "valid", "field": {"signal": "yField"}},
+      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
       "nice": true,
     },
     {
       "name": "x",
       "type": "linear",
-      "range": [{"signal": "nullGap"}, {"signal": "width"}],
       "domain": {"data": "valid", "field": {"signal": "xField"}},
+      "range": [{"signal": "nullGap"}, {"signal": "width"}],
       "nice": true,
     },
     {

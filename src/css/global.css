@@ -134,6 +134,7 @@ button:focus {outline:0;}
 
 .grid-item {
   /* options: <number> | <name> | span <number> | span <name> | auto */
+    /* width: inherit; */
     grid-column-start:  auto;
     grid-column-end: auto;
     grid-row-start: auto;
