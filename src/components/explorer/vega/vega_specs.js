@@ -907,6 +907,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
+                       {"type": "extent", "field": "distance", "signal": "distance_extent"},
                        {"expr": "datum.distance * branchScale", "type": "formula", "as": "x"}, 
                        {"expr": "datum.height * heightScale", "type": "formula", "as": "y"}],
          "source": "source_0"},
@@ -969,7 +970,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
         {"name": "concat_0_width",
-         "update": "branchScale/80"
+         "update": "branchScale*distance_extent[1] + 100"
         },
         {"name": "concat_1_width", "value": 200},
         {"name": "unit",
@@ -1016,7 +1017,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "style": "cell",
           "encode": {
            "update": {
-            //  "width": {"signal": "concat_0_width"},
+             "width": {"signal": "concat_0_width"},
              "height": {"signal": "scaledHeight"}
            }
           },
@@ -1114,7 +1115,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
             "scale": "time",
             "orient": "bottom",
             "grid": false,
-            "title": "evolutionary time",
+            "title": "Distance from root",
             "labelFlush": true,
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(width/40)"},
@@ -1237,7 +1238,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {
           "name": "time",
           "type": "linear",
-          "domain": {"data": "tree", "field": "x"},
+          "domain": {"data": "tree", "field": "distance"},
           "range": [0, {"signal": "concat_0_width"}],
           "nice": true,
           "zero": true
