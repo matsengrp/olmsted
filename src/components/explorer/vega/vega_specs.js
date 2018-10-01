@@ -218,7 +218,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
   "$schema": "https://vega.github.io/schema/vega/v3.json",
   // "autosize": {"type": "fit-x", "resize": true, "contains": "padding"},
   // "padding": 50,
-  // "autosize": {"type": "pad"},
+  "autosize": {"type": "pad"},
   // "width": 200,
   "height": 700,
   "style": "cell",

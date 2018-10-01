@@ -125,16 +125,6 @@ class ClonalFamiliesVizCustom extends React.Component {
     this.updateBrushSelection = this.updateBrushSelection.bind(this);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
-    // this.state = { xField: "n_seqs",
-    //                yField: "mean_mut_freq",
-    //               //  colorBy: "subject.id",
-    //               //  shapeBy: "sample.timepoint",
-    //                brushX: [],
-    //                brushY: [],
-    //               };
-
-    // How much of the width available to it should this component take up
-    // this.widthFraction = 0.6
   }
 
   updateBrushSelection(dim, attr, data){
@@ -143,69 +133,40 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
-    // console.log('rerender')
     return <Vega
-      onSignalWidth={(...args) => {
-        let result = args.slice(1)[0]
-        console.log("width", result)
-      }}
+      // onSignalWidth={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log("width", result)
+      // }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
-
-        // if(result !== this.state.xField){
-        //   this.setState({xField: result})
-        // }
       }}
       onSignalYField={(...args) => {
         let result = args.slice(1)[0]
         this.yField = result
-        // if(result !== this.state.yField){
-        //   this.setState({yField: result})
-        // }
       }}
-      // onSignalColorBy={(...args) => {
-      //   let result = args.slice(1)[0];
-      //   if(result !== this.state.colorBy){
-      //     this.setState({colorBy: result})
-      //   }
-      // }}
-      // onSignalShapeBy={(...args) => {
+      // onSignalBrush_x={(...args) => {
       //   let result = args.slice(1)[0]
-
-      //   if(result !== this.state.shapeBy){
-      //     this.setState({shapeBy: result})
-      //   }
+      //   console.log('brushx: ', result)
       // }}
-      onSignalBrush_x={(...args) => {
-        let result = args.slice(1)[0]
-        // console.log('brushx: ', result)
-        // if(result !== this.state.brushX){
-        //   this.setState({brushX: result})
-        // }
-      }}
-      onSignalBrush_y={(...args) => {
-        let result = args.slice(1)[0]
-        // console.log('brushy: ', result)
-        // if(result !== this.state.brushY){
-        //   this.setState({brushY: result})
-        // }
-      }}
+      // onSignalBrush_y={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushy: ', result)  
+      // }}
       onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
-        // console.log(result)
+        // console.log('x field: ', result)
         this.updateBrushSelection("x", this.xField, result)
-        // this.updateBrushSelection("x", this.state.xField, result)
       }}
       onSignalBrush_y_field={(...args) => {
         let result = args.slice(1)[0]
+        // console.log('y field: ', result)
         this.updateBrushSelection("y", this.yField, result)
-        // this.updateBrushSelection("y", this.state.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
-      // spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies, this.state, this.props.availableWidth*this.widthFraction)}/>;
-      spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies, null, null)}/>;
+      spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
     }
 };
 

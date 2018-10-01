@@ -10,9 +10,8 @@ import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 
-/* <Contents> contains the header, tree, map, footer components etc.
- * here is where the panel sizes are decided, as well as which components are displayed.
- */
+
+// STYLES
   
 const PADDING_FRACTION = 0.05
 // We'd like to be able to just use the padding fraction to 
@@ -30,45 +29,52 @@ const PADDING_FRACTION = 0.05
 // it exceeds its container.
 const PADDING_BUFFER = 150
 
-const gridContainerStyle = (availableWidth) => {
+const usableWidthStyle = (availableWidth) => {
+  return {
+    width: availableWidth*(1-2*PADDING_FRACTION),
+    paddingLeft: availableWidth*PADDING_FRACTION,
+    paddingRight: availableWidth*PADDING_FRACTION,
+  }
+}
+
+const usableVegaWidthStyle = (availableWidth) => {
   return {
     width: availableWidth*(1-2*PADDING_FRACTION)-PADDING_BUFFER,
     paddingLeft: availableWidth*PADDING_FRACTION,
     paddingRight: availableWidth*PADDING_FRACTION,
-    display: "grid",
-    gridTemplateColumns: "auto",
-    gridTemplateRows: "auto",
-    justifyItems: "center"
   }
 }
 
+const gridContainerStyle = {
+    display: "grid",
+    gridTemplateColumns: "auto",
+    gridTemplateRows: "auto",
+    justifyItems: "left"
+}
+
+const tableStyle = {paddingBottom: 20, height:440, maxWidth: 700, overflow:'scroll'};
+
 const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
 
-//const Contents = ({availableDatasets}) => {
-  //if (showSpinner) {
-  //}
-  /* TODO */
   return (
     <div >
       
-      <div style={gridContainerStyle(availableWidth)}>
-      {/* <div className="grid-container"> */}
-        <div className="grid-item">
+      <div style={usableVegaWidthStyle(availableWidth)}>
+        <div>
           <h2>Clonal Families</h2>
           <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         </div>
-        {/* {console.log(availableWidth)} */}
-        <div style={{width: 'inherit'}} className="grid-item">
-        {/* <div  className="grid-item"> */}
-          {/* <viz.ClonalFamiliesVizCustom availableWidth={availableWidth}/> */}
+        <div style={{width: 'inherit'}}>
           <viz.ClonalFamiliesVizCustom/>
         </div>
       </div>
-      <h2>Selected clonal families</h2>
-      <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
-        <ClonalFamiliesTable/>
+      <div style={usableWidthStyle(availableWidth)}>
+        <h2>Selected clonal families:</h2>
+        <div style={tableStyle}>
+          <ClonalFamiliesTable/>
+        </div>
       </div>
-      <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
+      <div style={Object.assign({}, usableVegaWidthStyle(availableWidth), {overflowX:'scroll'})}>
         {selectedFamily? <viz.TreeViz/> : ""}
         {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
       </div>
