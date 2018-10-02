@@ -1262,9 +1262,62 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {
           "name": "color",
           "type": "ordinal",
-          "domain": {"data": "data_1", "field": "mut_to", "sort": true},
-          // for #48 change this range to the range of color outputs we'd like to allow. Steal this from https://github.com/matsengrp/cftweb/blob/master/cftweb/static/dashboard.css
-          "range": "category"
+          // "domain": {"data": "data_1", "field": "mut_to", "sort": false},
+          "domain":  [ 
+            '-',
+            'A', 
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H', 
+            'I', 
+            'K', 
+            'L',
+            'M',
+            'N', 
+            'P', 
+            'Q', 
+            'R', 
+            'S', 
+            'T',
+            'V', 
+            'X',
+            'W',
+            'Y' 
+           ],
+          //tableau20 colorset of unique colors, with black and transparent added 
+          "range": ["transparent", "#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "black", "#17becf", "#9edae5"]
+          // Alternatively: 
+          // As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
+          // (EH) these are pretty vibrant and hard to look at
+          // "range": [
+          //   'transparent', // '-' del?
+          //   '#CCFFFF', //	A - Ala - Alanine
+          //   '#00FFFF', //	C - Cys - Cysteine
+          //   '#FFCC99', // D - Asp - Aspartic Acid
+          //   '#FFCC00', // E - Glu - Glutamic Acid
+          //   '#00CCFF', //	F - Phe - Phenylalanine
+          //   '#00FF00', //	G - Gly - Glycine
+          //   '#FFFF99', // H - His - Histidine
+          //   '#000080', //	I - Ile - Isoleucine
+          //   '#C64200', // K - Lys - Lysine
+          //   '#3366FF', //	L - Leu - Leucine
+          //   '#99CCFF', //	M - Met - Methionine
+          //   '#FF9900', // N - Asn - Asparagine
+          //   '#FFFF00', //	P - Pro - Proline
+          //   '#FF6600', // Q - Gln - Glutamine
+          //   '#E60606', // R - Arg - Arginine
+          //   '#CCFF99', //	S - Ser - Serine
+          //   '#00FF99', //	T - Thr - Threonine
+          //   '#0000FF', //	V - Val - Valine
+          //   'black',        // X
+          //   '#CC99FF', //	W - Trp - Tryptophan
+          //   '#CCFFCC', //	Y - Tyr - Tyrosine
+
+            
+          // ]
         }
       ],
       "legends": [
