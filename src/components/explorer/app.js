@@ -52,7 +52,7 @@ const gridContainerStyle = {
     justifyItems: "left"
 }
 
-const tableStyle = {paddingBottom: 20, height:440, maxWidth: 700, overflow:'scroll'};
+const tableStyle = {paddingBottom: 20, height:440, overflow:'scroll'};
 
 const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
 

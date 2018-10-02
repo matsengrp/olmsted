@@ -128,7 +128,7 @@ button:focus {outline:0;}
   /*grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];*/
   grid-template-columns: auto;
   grid-template-rows: auto; 
-  justify-items: center;
+  justify-items: left;
   /*align-content: stretch;*/
 }
 

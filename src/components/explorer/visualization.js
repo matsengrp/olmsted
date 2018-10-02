@@ -134,9 +134,19 @@ class ClonalFamiliesVizCustom extends React.Component {
   
   render() {
     return <Vega
+      // TURN THESE ON TO DEBUG SIGNALS
+      // SEE https://github.com/matsengrp/olmsted/issues/65
       // onSignalWidth={(...args) => {
       //   let result = args.slice(1)[0]
       //   console.log("width", result)
+      // }}
+      // onSignalBrush_x={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushx: ', result)
+      // }}
+      // onSignalBrush_y={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushy: ', result)  
       // }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
@@ -146,22 +156,12 @@ class ClonalFamiliesVizCustom extends React.Component {
         let result = args.slice(1)[0]
         this.yField = result
       }}
-      // onSignalBrush_x={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log('brushx: ', result)
-      // }}
-      // onSignalBrush_y={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log('brushy: ', result)  
-      // }}
       onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
-        // console.log('x field: ', result)
         this.updateBrushSelection("x", this.xField, result)
       }}
       onSignalBrush_y_field={(...args) => {
         let result = args.slice(1)[0]
-        // console.log('y field: ', result)
         this.updateBrushSelection("y", this.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
