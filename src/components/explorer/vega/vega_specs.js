@@ -896,6 +896,62 @@ const clonalFamiliesVizCustomSpec = (data) => {
   )
 }
 
+// AMINO ACID COLORS
+//tableau20 colorset of unique colors, with black and yellow added for gaps and X (any), respectively 
+const tableau20plusColors = [
+  "black", // '-' Gap (insertion / deletion)
+  "#1f77b4",    //	A - Ala - Alanine
+  "#aec7e8",    //	C - Cys - Cysteine
+  "#ff7f0e",    // D - Asp - Aspartic Acid
+  "#ffbb78",    // E - Glu - Glutamic Acid
+  "#2ca02c",    //	F - Phe - Phenylalanine
+  "#98df8a",    //	G - Gly - Glycine
+  "#d62728",    // H - His - Histidine
+  "#ff9896",    //	I - Ile - Isoleucine
+  "#9467bd",    // K - Lys - Lysine
+  "#c5b0d5",    //	L - Leu - Leucine
+  "#8c564b",    //	M - Met - Methionine
+  "#c49c94",    // N - Asn - Asparagine
+  "#e377c2",    //	P - Pro - Proline
+  "#f7b6d2",    // Q - Gln - Glutamine
+  "#7f7f7f",    // R - Arg - Arginine
+  "#c7c7c7",    //	S - Ser - Serine
+  "#bcbd22",    //	T - Thr - Threonine
+  "#dbdb8d",    //	V - Val - Valine
+  "yellow",      // X - (Any amino acid)
+  "#17becf",    //	W - Trp - Tryptophan
+  "#9edae5"     //	Y - Tyr - Tyrosine
+]
+// Alternatively: 
+
+// As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
+// again, with black and yellow added for gaps and X (any), respectively 
+// (EH) these are pretty vibrant and hard to look at
+const IMGTScientificChartColors = [
+  '#black', // '-' Gap (insertion / deletion)
+  '#CCFFFF', //	A - Ala - Alanine
+  '#00FFFF', //	C - Cys - Cysteine
+  '#FFCC99', //  D - Asp - Aspartic Acid
+  '#FFCC00', //  E - Glu - Glutamic Acid
+  '#00CCFF', //	F - Phe - Phenylalanine
+  '#00FF00', //	G - Gly - Glycine
+  '#FFFF99', //  H - His - Histidine
+  '#000080', //	I - Ile - Isoleucine
+  '#C64200', //  K - Lys - Lysine
+  '#3366FF', //	L - Leu - Leucine
+  '#99CCFF', //	M - Met - Methionine
+  '#FF9900', //  N - Asn - Asparagine
+  '#FFFF00', //	P - Pro - Proline
+  '#FF6600', //  Q - Gln - Glutamine
+  '#E60606', //  R - Arg - Arginine
+  '#CCFF99', //	S - Ser - Serine
+  '#00FF99', //	T - Thr - Threonine
+  '#0000FF', //	V - Val - Valine
+  'yellow',   //  X - (Any amino acid)
+  '#CC99FF', //	W - Trp - Tryptophan
+  '#CCFFCC', //	Y - Tyr - Tyrosine    
+]
+
 const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
   return(
     {
@@ -1292,37 +1348,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
             'W',
             'Y' 
            ],
-          //tableau20 colorset of unique colors, with black and transparent added 
-          "range": ["transparent", "#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "black", "#17becf", "#9edae5"]
-          // Alternatively: 
-          // As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
-          // (EH) these are pretty vibrant and hard to look at
-          // "range": [
-          //   'transparent', // '-' del?
-          //   '#CCFFFF', //	A - Ala - Alanine
-          //   '#00FFFF', //	C - Cys - Cysteine
-          //   '#FFCC99', // D - Asp - Aspartic Acid
-          //   '#FFCC00', // E - Glu - Glutamic Acid
-          //   '#00CCFF', //	F - Phe - Phenylalanine
-          //   '#00FF00', //	G - Gly - Glycine
-          //   '#FFFF99', // H - His - Histidine
-          //   '#000080', //	I - Ile - Isoleucine
-          //   '#C64200', // K - Lys - Lysine
-          //   '#3366FF', //	L - Leu - Leucine
-          //   '#99CCFF', //	M - Met - Methionine
-          //   '#FF9900', // N - Asn - Asparagine
-          //   '#FFFF00', //	P - Pro - Proline
-          //   '#FF6600', // Q - Gln - Glutamine
-          //   '#E60606', // R - Arg - Arginine
-          //   '#CCFF99', //	S - Ser - Serine
-          //   '#00FF99', //	T - Thr - Threonine
-          //   '#0000FF', //	V - Val - Valine
-          //   'black',        // X
-          //   '#CC99FF', //	W - Trp - Tryptophan
-          //   '#CCFFCC', //	Y - Tyr - Tyrosine
-
-            
-          // ]
+           "range": tableau20plusColors
         }
       ],
       "legends": [
@@ -1424,8 +1450,31 @@ const seqAlignSpec = (family) => {
         {
           "name": "color",
           "type": "ordinal",
-          "domain": {"data": "data_0", "field": "mut_to", "sort": true},
-          "range": "category"
+          "domain":  [ 
+            '-',
+            'A', 
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H', 
+            'I', 
+            'K', 
+            'L',
+            'M',
+            'N', 
+            'P', 
+            'Q', 
+            'R', 
+            'S', 
+            'T',
+            'V', 
+            'X',
+            'W',
+            'Y' 
+           ],
+          "range": tableau20plusColors
         }
       ],
       "axes": [
