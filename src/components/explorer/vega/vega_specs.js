@@ -1,5 +1,5 @@
 const naiveVegaSpec = {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
+  "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": "pad",
   "padding": 5,
   "width": 250,
@@ -203,8 +203,7 @@ const naiveVegaSpec = {
         "#2c12ea"
       ]
     }
-  ],
- 
+  ], 
   "config": {
     "axisY": {
       "minExtent": 30
@@ -215,13 +214,56 @@ const naiveVegaSpec = {
 const clonalFamiliesVizCustomSpec = (data) => {
   return(       
   {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
-  "autosize": "pad",
-  "padding": 5,
-  "width": 900,
-  "height": 700,
+  "$schema": "https://vega.github.io/schema/vega/v4.json",
+  "autosize": {"type": "pad"},
   "style": "cell",
   "signals": [
+    {
+      "name": "PADDING_FRACTION",
+      "value": 0.05
+    },
+    // Explanation of buffer:
+    // We'd like to be able to just use the padding fraction to 
+    // compute the padding for each side of the screen from the total
+    // available screeen width, and then use the remaining available
+    // screen width for our vega component. This DOES work when using 
+    // vega's autosize: fit which does some math to make sure every part
+    // of the viz fits into the width of it's container. However, this recalculation
+    // adds some discrepency between the signal updating the width and the autosize
+    // vega code updating the width and yields two different values. This (we suspect)
+    // introduces a bug with the first brush select and then resize the screen 
+    // (see  https://github.com/vega/vega/issues/1421)
+    // So we are using autosize: pad, instead which does not fit the vega exactly into
+    // its container, which is why wee need PADDING_BUFFER to adjust for the amount
+    // it exceeds its container.
+    {
+      "name": "PADDING_BUFFER_WIDTH",
+      "value": 150
+    },
+    {
+      "name": "PADDING_BUFFER_HEIGHT",
+      "value": 125
+    },
+    {
+      "name": "width",
+      "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
+          "on": [
+            {
+              "events": { "source": "window", "type": "resize" },
+              "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
+            }
+          ]
+    },
+    {
+      "name": "height",
+      "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
+      "on": [
+        {
+          "events": { "source": "window", "type": "resize" },
+          "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
+        }
+      ]
+    },
     {
       "name": "unit",
       "value": {},
@@ -472,15 +514,15 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
-      "bind": {"input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
     { "name": "nullGap", "update": "nullSize + 10" },
     { "name": "colorBy", "value": "subject.id",
-      "bind": {"input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+      "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
-      "bind": {"input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
+      "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
     {
@@ -557,15 +599,15 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "y",
       "type": "linear",
-      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
       "domain": {"data": "valid", "field": {"signal": "yField"}},
+      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
       "nice": true,
     },
     {
       "name": "x",
       "type": "linear",
-      "range": [{"signal": "nullGap"}, {"signal": "width"}],
       "domain": {"data": "valid", "field": {"signal": "xField"}},
+      "range": [{"signal": "nullGap"}, {"signal": "width"}],
       "nice": true,
     },
     {
@@ -593,51 +635,21 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "x",
       "orient": "bottom",
-      "grid": false,
+      "grid": true,
       "title": {"signal": "xField"},
       "tickCount": {
         "signal": "ceil(width/40)"
       },
-      "zindex": 1
-    },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": true,
-      "tickCount": {
-        "signal": "ceil(width/40)"
-      },
-      "gridScale": "y",
-      "domain": false,
-      "labels": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
       "zindex": 0
     },
     {
       "scale": "y",
       "orient": "left",
-      "grid": false,
+      "grid": true,
       "title": {"signal": "yField"},
       "tickCount": {
         "signal": "ceil(height/40)"
       },
-      "zindex": 1
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": true,
-      "tickCount": {
-        "signal": "ceil(height/40)"
-      },
-      "gridScale": "x",    
-      "domain": false,
-      "labels": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
       "zindex": 0
     }
   ],
@@ -841,7 +853,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
       }
     }
   ],
-  
   "legends": [
     {
       "stroke": "color",
@@ -881,10 +892,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "minExtent": 30
     }
   }
-
-
-  
-  
     }
   )
 }
@@ -895,12 +902,10 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "padding": 5,
       "height": 800,
       "width": 1000,
       "data": [
         {"name": "pts_store"},
-
         // Tree Data
         {"name": "source_0",
          "values":selectedFamily["asr_tree"] 

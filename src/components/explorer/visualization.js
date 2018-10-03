@@ -133,7 +133,26 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
+    console.log('reraindeer')
     return <Vega
+      // TURN THESE ON TO DEBUG SIGNALS
+      // SEE https://github.com/matsengrp/olmsted/issues/65
+      // onSignalWidth={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log("width", result)
+      // }}
+      // onSignalHeight={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log("height", result)
+      // }}
+      // onSignalBrush_x={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushx: ', result)
+      // }}
+      // onSignalBrush_y={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushy: ', result)  
+      // }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
@@ -153,7 +172,7 @@ class ClonalFamiliesVizCustom extends React.Component {
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
       spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
-  }
+    }
 };
 
 const mapStateToPropsTips = (state) => {
