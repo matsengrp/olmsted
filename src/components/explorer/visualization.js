@@ -133,7 +133,6 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
-    console.log('reraindeer')
     return <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65

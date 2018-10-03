@@ -896,60 +896,90 @@ const clonalFamiliesVizCustomSpec = (data) => {
   )
 }
 
-// AMINO ACID COLORS
-//tableau20 colorset of unique colors, with black and yellow added for gaps and X (any), respectively 
-const tableau20plusColors = [
-  "black", // '-' Gap (insertion / deletion)
-  "#1f77b4",    //	A - Ala - Alanine
-  "#aec7e8",    //	C - Cys - Cysteine
-  "#ff7f0e",    // D - Asp - Aspartic Acid
-  "#ffbb78",    // E - Glu - Glutamic Acid
-  "#2ca02c",    //	F - Phe - Phenylalanine
-  "#98df8a",    //	G - Gly - Glycine
-  "#d62728",    // H - His - Histidine
-  "#ff9896",    //	I - Ile - Isoleucine
-  "#9467bd",    // K - Lys - Lysine
-  "#c5b0d5",    //	L - Leu - Leucine
-  "#8c564b",    //	M - Met - Methionine
-  "#c49c94",    // N - Asn - Asparagine
-  "#e377c2",    //	P - Pro - Proline
-  "#f7b6d2",    // Q - Gln - Glutamine
-  "#7f7f7f",    // R - Arg - Arginine
-  "#c7c7c7",    //	S - Ser - Serine
-  "#bcbd22",    //	T - Thr - Threonine
-  "#dbdb8d",    //	V - Val - Valine
-  "yellow",      // X - (Any amino acid)
-  "#17becf",    //	W - Trp - Tryptophan
-  "#9edae5"     //	Y - Tyr - Tyrosine
-]
-// Alternatively: 
+// Defines the order in which we specify corresponding colors
+const aminoAcidDomain = [ 
+  '-',
+  'X',
+  'A', 
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H', 
+  'I', 
+  'K', 
+  'L',
+  'M',
+  'N', 
+  'P', 
+  'Q', 
+  'R', 
+  'S', 
+  'T',
+  'V', 
+  'W',
+  'Y' 
+ ]
 
+// AMINO ACID COLORS
+// tableau20 colorset of unique colors, with transparent added for gaps and X (any).
+// We are using text rather than color to distinguish these characters 
+// See https://github.com/matsengrp/olmsted/issues/48
+// Also note that this order of characters is IMPORTANT because
+// it maps directly to the order of the domain (see above aminoAcidDomain) of the mutations marks
+const tableau20plusColors = [
+  "transparent", // '-' Gap (insertion / deletion)
+  "transparent", //  X - (Any amino acid)
+  "#1f77b4",     //  A - Ala - Alanine
+  "#aec7e8",     //	 C - Cys - Cysteine
+  "#ff7f0e",     //  D - Asp - Aspartic Acid
+  "#ffbb78",     //  E - Glu - Glutamic Acid
+  "#2ca02c",     //	 F - Phe - Phenylalanine
+  "#98df8a",     //	 G - Gly - Glycine
+  "#d62728",     //  H - His - Histidine
+  "#ff9896",     //	 I - Ile - Isoleucine
+  "#9467bd",     //  K - Lys - Lysine
+  "#c5b0d5",     //	 L - Leu - Leucine
+  "#8c564b",     //	 M - Met - Methionine
+  "#c49c94",     //  N - Asn - Asparagine
+  "#e377c2",     //	 P - Pro - Proline
+  "#f7b6d2",     //  Q - Gln - Glutamine
+  "#7f7f7f",     //  R - Arg - Arginine
+  "#c7c7c7",     //	 S - Ser - Serine
+  "#bcbd22",     //	 T - Thr - Threonine
+  "#dbdb8d",     //	 V - Val - Valine
+  "#17becf",     //	 W - Trp - Tryptophan
+  "#9edae5"      //	 Y - Tyr - Tyrosine
+]
+
+// Alternatively: 
 // As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
-// again, with black and yellow added for gaps and X (any), respectively 
+// again, with transparent added for gaps and X (any) see https://github.com/matsengrp/olmsted/issues/48
 // (EH) these are pretty vibrant and hard to look at
 const IMGTScientificChartColors = [
-  '#black', // '-' Gap (insertion / deletion)
-  '#CCFFFF', //	A - Ala - Alanine
-  '#00FFFF', //	C - Cys - Cysteine
-  '#FFCC99', //  D - Asp - Aspartic Acid
-  '#FFCC00', //  E - Glu - Glutamic Acid
-  '#00CCFF', //	F - Phe - Phenylalanine
-  '#00FF00', //	G - Gly - Glycine
-  '#FFFF99', //  H - His - Histidine
-  '#000080', //	I - Ile - Isoleucine
-  '#C64200', //  K - Lys - Lysine
-  '#3366FF', //	L - Leu - Leucine
-  '#99CCFF', //	M - Met - Methionine
-  '#FF9900', //  N - Asn - Asparagine
-  '#FFFF00', //	P - Pro - Proline
-  '#FF6600', //  Q - Gln - Glutamine
-  '#E60606', //  R - Arg - Arginine
-  '#CCFF99', //	S - Ser - Serine
-  '#00FF99', //	T - Thr - Threonine
-  '#0000FF', //	V - Val - Valine
-  'yellow',   //  X - (Any amino acid)
-  '#CC99FF', //	W - Trp - Tryptophan
-  '#CCFFCC', //	Y - Tyr - Tyrosine    
+  'transparent', // '-' Gap (insertion / deletion)
+  'transparent', //  X - (Any amino acid)
+  '#CCFFFF',     //	 A - Ala - Alanine
+  '#00FFFF',     //	 C - Cys - Cysteine
+  '#FFCC99',     //  D - Asp - Aspartic Acid
+  '#FFCC00',     //  E - Glu - Glutamic Acid
+  '#00CCFF',     //	 F - Phe - Phenylalanine
+  '#00FF00',     //	 G - Gly - Glycine
+  '#FFFF99',     //  H - His - Histidine
+  '#000080',     //	 I - Ile - Isoleucine
+  '#C64200',     //  K - Lys - Lysine
+  '#3366FF',     //	 L - Leu - Leucine
+  '#99CCFF',     //	 M - Met - Methionine
+  '#FF9900',     //  N - Asn - Asparagine
+  '#FFFF00',     //	 P - Pro - Proline
+  '#FF6600',     //  Q - Gln - Glutamine
+  '#E60606',     //  R - Arg - Arginine
+  '#CCFF99',     //	 S - Ser - Serine
+  '#00FF99',     //	 T - Thr - Threonine
+  '#0000FF',     //	 V - Val - Valine
+  '#CC99FF',     //	 W - Trp - Tryptophan
+  '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
 const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
@@ -994,10 +1024,30 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
            {"expr": "datum.height * heightScale", "type": "formula", "as": "y"}
          ]
         },
+        // Separate dataset for just gap characters and Xs to label them with text marks
+        {"name": "x_and_gaps",
+         "source": "data_1",
+         "transform": [
+            {
+              "type": "filter",
+              "expr": "datum.mut_to == \"-\" || datum.mut_to == \"X\""
+            }
+          ]
+        }
       ],
       "signals": [
-        // Size of leaves
-        {
+        // TREE SIGNALS
+        // BRANCHSCALE - scales up width of tree
+        {"value": treeScale.branch_scale,
+         "name": "branchScale",
+         "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
+        // HEIGHTSCALE - scales up height the ENTIRE VIZ
+        {"value": treeScale.height_scale,
+         "name": "heightScale",
+         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
+        },
+         // Size of leaves
+         {
           "name": "max_leaf_size",
           "value": 1000,
           "bind": {"max": 7000, "step": 50, "input": "range", "min": 1}
@@ -1012,15 +1062,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "name": "leaves_len",
           "update": "length(data(\"leaves\"))"
         },
-        // BRANCHSCALE - scales up width of tree
-        {"value": treeScale.branch_scale,
-         "name": "branchScale",
-         "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
-        // HEIGHTSCALE - scales up height of tree
-        {"value": treeScale.height_scale,
-         "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
-        },
         // Height of viz scaled by number of leaves 
         {
           "name": "scaledHeight",
@@ -1033,7 +1074,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {"name": "concat_0_width",
          "update": "branchScale*distance_extent[1] + 100"
         },
-        {"name": "concat_1_width", "value": 200},
         {"name": "unit",
          "value": {},
          "on": [
@@ -1051,7 +1091,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
            {
              "events": [{"source": "scope", "type": "click"}],
              "update": "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol') ? datum : null",
-            //  "force": true
            }
          ]
         },
@@ -1063,7 +1102,17 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "update": "modify(\"pts_store\", pts_tuple, true)"
             }
           ]
-        }
+        },
+        // ALIGNMENT SIGNALS
+        {
+          "name": "mutation_mark_height",
+          "update": "ceil(height/100)"
+        },
+        {
+          "name": "mutation_mark_width",
+          "update": "ceil(width/150)"
+        },
+        {"name": "concat_1_width", "value": 200}
       ],
       "layout": {
         "padding": {"row": 10, "column": 10},
@@ -1203,7 +1252,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "from": {"data": "data_1"},
               "encode": {
                 "update": {
-                  "opacity": {"value": 0.7},
+                  "opacity": {"value": 0.9},
                   "fill": [
                     {
                       "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
@@ -1216,10 +1265,36 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   },
                   "xc": {"scale": "x", "field": "position"},
                   "yc": {"scale": "y", "field": "y"},
-                  "height": {"signal": "ceil(height/100)"},
-                  "width": {"signal": "ceil(width/150)"}
+                  "height": {"signal": "mutation_mark_height"},
+                  "width": {"signal": "mutation_mark_width"}
                 }
               }
+            },
+            // Gap character labels
+            {
+              "name": "x_and_gaps_labels",
+              "type": "text",
+              "from": {"data": "x_and_gaps"},
+              "encode": {
+                "enter": {
+                  "text": {"field": "mut_to"},
+                  "fill": {"value": "#000"},
+                  // fontSize must be increased for gap character '-' to make it visible
+                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
+                },
+                "update": {
+                  "opacity": {"value": 0.7},
+                  "y": {"scale": "y", "field": "y"},
+                  "dx": {"value": -2},
+                  // See above "fontSize must be increased for gap character '-' to make it visible"
+                  // This means y offset needs to be larger for these marks
+                  "dy": {"signal": "datum.mut_to == \"-\" ? mutation_mark_height/2+2 : mutation_mark_height/2"},
+                  "x": {"scale": "x", "field": "position"},
+                  "tooltip": {
+                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                  }
+                }  
+              },
             }
           ],
           // MUTATIONS AXES
@@ -1323,32 +1398,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {
           "name": "color",
           "type": "ordinal",
-          // "domain": {"data": "data_1", "field": "mut_to", "sort": false},
-          "domain":  [ 
-            '-',
-            'A', 
-            'C',
-            'D',
-            'E',
-            'F',
-            'G',
-            'H', 
-            'I', 
-            'K', 
-            'L',
-            'M',
-            'N', 
-            'P', 
-            'Q', 
-            'R', 
-            'S', 
-            'T',
-            'V', 
-            'X',
-            'W',
-            'Y' 
-           ],
-           "range": tableau20plusColors
+          "domain": aminoAcidDomain,
+          "range": tableau20plusColors
         }
       ],
       "legends": [
@@ -1392,6 +1443,16 @@ const seqAlignSpec = (family) => {
               "as": "position"
             }
           ]
+        },
+        {
+          "name": "x_and_gaps",
+          "source": "data_0",
+          "transform": [
+              {
+                "type": "filter",
+                "expr": "datum.mut_to == \"-\" || datum.mut_to == \"X\""
+              }
+            ]
         }
       ],
       "signals": [
@@ -1402,9 +1463,14 @@ const seqAlignSpec = (family) => {
         {
           "name": "lineage_seqs",
           "value": family["lineage_seq_counter"]
+        },
+        {
+          "name": "mark_width",
+          "update": "ceil(width/150)"
         }
       ],
       "marks": [
+        // Mutation squares
         {
           "name": "marks",
           "type": "rect",
@@ -1412,7 +1478,7 @@ const seqAlignSpec = (family) => {
           "from": {"data": "data_0"},
           "encode": {
             "update": {
-              "opacity": {"value": 0.7},
+              "opacity": {"value": 0.9},
               "fill": [
                 {
                   "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
@@ -1426,9 +1492,35 @@ const seqAlignSpec = (family) => {
               "xc": {"scale": "x", "field": "position"},
               "yc": {"scale": "y", "field": "seq_id"},
               "height": {"signal": "mark_height"},
-              "width": {"signal": "ceil(width/150)"}
+              "width": {"signal": "mark_width"}
             }
           }
+        },
+        // Gap character labels
+        {
+          "name": "x_and_gap_labels",
+          "type": "text",
+          "from": {"data": "x_and_gaps"},
+          "encode": {
+            "enter": {
+              "text": {"field": "mut_to"},
+              "fill": {"value": "#000"},
+              // fontSize must be increased for gap character '-' to make it visible
+              "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
+            },
+            "update": {
+              "opacity": {"value": 0.7},
+              "y": {"scale": "y", "field": "seq_id"},
+              "dx": {"value": -3},
+              // See above "fontSize must be increased for gap character '-' to make it visible"
+              // This means y offset needs to be larger for these marks
+              "dy": {"signal": "datum.mut_to == \"-\" ? mark_height/2+2 : mark_height/2"},
+              "x": {"scale": "x", "field": "position"},
+              "tooltip": {
+                "signal": "{\"position\": format(datum[\"position\"], \"\"),  \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+              }
+            }  
+          },
         }
       ],
       "scales": [
@@ -1436,7 +1528,7 @@ const seqAlignSpec = (family) => {
           "name": "x",
           "type": "linear",
           "domain": {"data": "data_0", "field": "position"},
-          "range": "width",
+          "range": [5, {"signal": "width"}],
           "nice": true,
           "zero": true
         },
@@ -1450,30 +1542,7 @@ const seqAlignSpec = (family) => {
         {
           "name": "color",
           "type": "ordinal",
-          "domain":  [ 
-            '-',
-            'A', 
-            'C',
-            'D',
-            'E',
-            'F',
-            'G',
-            'H', 
-            'I', 
-            'K', 
-            'L',
-            'M',
-            'N', 
-            'P', 
-            'Q', 
-            'R', 
-            'S', 
-            'T',
-            'V', 
-            'X',
-            'W',
-            'Y' 
-           ],
+          "domain": aminoAcidDomain,
           "range": tableau20plusColors
         }
       ],
