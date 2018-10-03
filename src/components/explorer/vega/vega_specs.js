@@ -1072,8 +1072,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
         {"name": "concat_0_width",
-         "update": "branchScale*distance_extent[1] + 100"
-        },
+        "update": "branchScale*distance_extent[1]"
+      },
         {"name": "unit",
          "value": {},
          "on": [
@@ -1114,8 +1114,12 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         },
         {"name": "concat_1_width", "value": 200}
       ],
+      //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
-        "padding": {"row": 10, "column": 10},
+        "padding": {"column": 0},
+        // Ideally we'd set bounds: flush to get the leaf labels flush with the tick marks
+        // for the alignment viz, but the leaf labels are not always the same length so 
+        // we can't correct for them with padding. See hack in evolutionary axis title
         "bounds": "full",
         "align": "each"
       },
@@ -1124,7 +1128,6 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         {
           "type": "group",
           "name": "concat_0_group",
-          "style": "cell",
           "encode": {
            "update": {
              "width": {"signal": "concat_0_width"},
@@ -1225,7 +1228,13 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
             "scale": "time",
             "orient": "bottom",
             "grid": false,
-            "title": "Evolutionary distance from naive",
+            // See layout section: the axes get included in the group width when you have 
+            // bound: full. We need bounf: full to account for the leaf labels going beyond
+            // the exact width; this setting allows them to be included in our width. However,
+            // since this setting also includes the axis title in the overall width, we collapse
+            // it when the branch scale is 0 because we want to be able to have the leaf labels 
+            // flush with the tick marks for the alignment viz.
+            "title": {"signal": "branchScale > 0 ? 'Evolutionary distance from naive' : ''"},
             "labelFlush": true,
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(width/40)"},
