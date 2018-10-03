@@ -12,10 +12,10 @@ import { hot } from 'react-hot-loader';
 
 
 // STYLES
-  
 const PADDING_FRACTION = 0.03
 
-
+// Compute how much padding the page should have.
+// Use above percentage of available width for padding on either side
 const usableWidthStyle = (availableWidth) => {
   return {
     width: availableWidth*(1-2*PADDING_FRACTION),
@@ -30,30 +30,23 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
 
   return (
     <div style={usableWidthStyle(availableWidth)}>
-      {/* <div> */}
       <div>
         <div>
           <h2>Clonal Families</h2>
           <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         </div>
-        {/* <div style={{width: 'inherit'}}> */}
         <viz.ClonalFamiliesVizCustom/>
-        {/* </div> */}
       </div>
-      <div style={usableWidthStyle(availableWidth)}>
-        <h2>Selected clonal families:</h2>
-        <div style={tableStyle}>
+      <h2>Selected clonal families:</h2>
+      <div style={tableStyle}>
           <ClonalFamiliesTable/>
-        </div>
       </div>
-      <div style={Object.assign({}, usableWidthStyle(availableWidth), {overflowX:'scroll'})}>
+      <div style={{overflowX:'scroll'}}>
         {selectedFamily? <viz.TreeViz/> : ""}
       </div>
-      <div style={Object.assign({}, usableWidthStyle(availableWidth), {overflowX:'scroll'})}>
+      <div style={{overflowX:'scroll'}}>
         {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
       </div>
-
-
     </div>
   );
 };

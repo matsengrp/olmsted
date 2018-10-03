@@ -203,8 +203,7 @@ const naiveVegaSpec = {
         "#2c12ea"
       ]
     }
-  ],
- 
+  ], 
   "config": {
     "axisY": {
       "minExtent": 30
@@ -278,7 +277,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "brush_x",
       "value": [],
-      // "value": props.brushX,
       "on": [
         {
           "events": {
@@ -345,7 +343,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "name": "brush_y",
       "value": [],
-      // "value": props.brushY,
       "on": [
         {
           "events": {
@@ -517,18 +514,14 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     { "name": "yField", "value": "mean_mut_freq",
-    // { "name": "yField", "value": props.yField,
       "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
-    // { "name": "xField", "value": props.xField,
       "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "nullSize", "value": 8 },
     { "name": "nullGap", "update": "nullSize + 10" },
     { "name": "colorBy", "value": "subject.id",
-    // { "name": "colorBy", "value": props.colorBy,
       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
-    // { "name": "shapeBy", "value": props.shapeBy,
       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
@@ -647,23 +640,8 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "tickCount": {
         "signal": "ceil(width/40)"
       },
-      "zindex": 1
+      "zindex": 0
     },
-    // {
-    //   "scale": "x",
-    //   "orient": "bottom",
-    //   "grid": true,
-    //   "tickCount": {
-    //     "signal": "ceil(width/40)"
-    //   },
-    //   // "gridScale": "y",
-    //   "domain": false,
-    //   "labels": false,
-    //   "maxExtent": 0,
-    //   "minExtent": 0,
-    //   "ticks": false,
-    //   "zindex": 0
-    // },
     {
       "scale": "y",
       "orient": "left",
@@ -672,23 +650,8 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "tickCount": {
         "signal": "ceil(height/40)"
       },
-      "zindex": 1
-    },
-    // {
-    //   "scale": "y",
-    //   "orient": "left",
-    //   "grid": true,
-    //   "tickCount": {
-    //     "signal": "ceil(height/40)"
-    //   },
-    //   // "gridScale": "x",    
-    //   "domain": false,
-    //   "labels": false,
-    //   "maxExtent": 0,
-    //   "minExtent": 0,
-    //   "ticks": false,
-    //   "zindex": 0
-    // }
+      "zindex": 0
+    }
   ],
   "marks": [
     {
@@ -890,7 +853,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
       }
     }
   ],
-  
   "legends": [
     {
       "stroke": "color",
@@ -930,10 +892,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "minExtent": 30
     }
   }
-
-
-  
-  
     }
   )
 }
@@ -944,12 +902,10 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "padding": 5,
       "height": 800,
       "width": 1000,
       "data": [
         {"name": "pts_store"},
-
         // Tree Data
         {"name": "source_0",
          "values":selectedFamily["asr_tree"] 
