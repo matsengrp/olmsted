@@ -178,6 +178,7 @@ def clean_clonal_family_record(d):
     nt_seqs_dict = create_seqs_dict(list(c['cft.reconstruction:asr_seqs'])[0]['bio.seq:set'])
     seqmeta_dict = create_seqmeta_dict(list(c['cft.reconstruction:seqmeta'])[0]['tripl.csv:data'])
     if(c['cft.reconstruction:asr_tree'][0].get('tripl.file:contents')):
+        c['cft.reconstruction:cluster']['cft.reconstruction:newick_string'] = list(c['cft.reconstruction:asr_tree'][0]['tripl.file:contents'])[0]
         c['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(c['cft.reconstruction:asr_tree'][0]['tripl.file:contents'])[0], nt_seqs_dict, aa_seqs_dict, seqmeta_dict)
     c = c['cft.reconstruction:cluster']
     try:
