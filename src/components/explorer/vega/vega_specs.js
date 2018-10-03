@@ -1,5 +1,5 @@
 const naiveVegaSpec = {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
+  "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": "pad",
   "padding": 5,
   "width": 250,
@@ -215,38 +215,56 @@ const naiveVegaSpec = {
 const clonalFamiliesVizCustomSpec = (data) => {
   return(       
   {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
-  // "autosize": {"type": "fit-x", "resize": true, "contains": "padding"},
-  // "padding": 50,
+  "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": {"type": "pad"},
-  // "width": 200,
-  "height": 700,
   "style": "cell",
   "signals": [
     {
+      "name": "PADDING_FRACTION",
+      "value": 0.05
+    },
+    // Explanation of buffer:
+    // We'd like to be able to just use the padding fraction to 
+    // compute the padding for each side of the screen from the total
+    // available screeen width, and then use the remaining available
+    // screen width for our vega component. This DOES work when using 
+    // vega's autosize: fit which does some math to make sure every part
+    // of the viz fits into the width of it's container. However, this recalculation
+    // adds some discrepency between the signal updating the width and the autosize
+    // vega code updating the width and yields two different values. This (we suspect)
+    // introduces a bug with the first brush select and then resize the screen 
+    // (see  https://github.com/vega/vega/issues/1421)
+    // So we are using autosize: pad, instead which does not fit the vega exactly into
+    // its container, which is why wee need PADDING_BUFFER to adjust for the amount
+    // it exceeds its container.
+    {
+      "name": "PADDING_BUFFER_WIDTH",
+      "value": 150
+    },
+    {
+      "name": "PADDING_BUFFER_HEIGHT",
+      "value": 125
+    },
+    {
       "name": "width",
-      "update": "containerSize()[0]",
+      "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
           "on": [
             {
               "events": { "source": "window", "type": "resize" },
-              "update": "containerSize()[0]"
+              "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
             }
           ]
     },
-    // {
-    //   "name": "height",
-    //   "update": "span(range('y'))"
-    // },
-    // {
-    //     "name": "height",
-    //     "update": "containerSize()[1]",
-    //       // "on": [
-    //       // {
-    //       // "events": { "source": "window", "type": "resize" },
-    //       // "update": "containerSize()[1]-20"
-    //       // }
-    //       // ]
-    // },
+    {
+      "name": "height",
+      "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
+      "on": [
+        {
+          "events": { "source": "window", "type": "resize" },
+          "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
+        }
+      ]
+    },
     {
       "name": "unit",
       "value": {},
@@ -624,53 +642,53 @@ const clonalFamiliesVizCustomSpec = (data) => {
     {
       "scale": "x",
       "orient": "bottom",
-      "grid": false,
+      "grid": true,
       "title": {"signal": "xField"},
       "tickCount": {
         "signal": "ceil(width/40)"
       },
       "zindex": 1
     },
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": true,
-      "tickCount": {
-        "signal": "ceil(width/40)"
-      },
-      "gridScale": "y",
-      "domain": false,
-      "labels": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
+    // {
+    //   "scale": "x",
+    //   "orient": "bottom",
+    //   "grid": true,
+    //   "tickCount": {
+    //     "signal": "ceil(width/40)"
+    //   },
+    //   // "gridScale": "y",
+    //   "domain": false,
+    //   "labels": false,
+    //   "maxExtent": 0,
+    //   "minExtent": 0,
+    //   "ticks": false,
+    //   "zindex": 0
+    // },
     {
       "scale": "y",
       "orient": "left",
-      "grid": false,
+      "grid": true,
       "title": {"signal": "yField"},
       "tickCount": {
         "signal": "ceil(height/40)"
       },
       "zindex": 1
     },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": true,
-      "tickCount": {
-        "signal": "ceil(height/40)"
-      },
-      "gridScale": "x",    
-      "domain": false,
-      "labels": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    }
+    // {
+    //   "scale": "y",
+    //   "orient": "left",
+    //   "grid": true,
+    //   "tickCount": {
+    //     "signal": "ceil(height/40)"
+    //   },
+    //   // "gridScale": "x",    
+    //   "domain": false,
+    //   "labels": false,
+    //   "maxExtent": 0,
+    //   "minExtent": 0,
+    //   "ticks": false,
+    //   "zindex": 0
+    // }
   ],
   "marks": [
     {

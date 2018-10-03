@@ -133,13 +133,19 @@ class ClonalFamiliesVizCustom extends React.Component {
   }
   
   render() {
+    console.log('reraindeer')
     return <Vega
+      // style={{width: 'inherit'}}
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65
-      // onSignalWidth={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log("width", result)
-      // }}
+      onSignalWidth={(...args) => {
+        let result = args.slice(1)[0]
+        console.log("width", result)
+      }}
+      onSignalHeight={(...args) => {
+        let result = args.slice(1)[0]
+        console.log("height", result)
+      }}
       // onSignalBrush_x={(...args) => {
       //   let result = args.slice(1)[0]
       //   console.log('brushx: ', result)

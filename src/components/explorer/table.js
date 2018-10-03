@@ -36,7 +36,7 @@ class Table extends React.Component {
           <div className="grid-container"
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\"",
-                       maxWidth: nCols*100
+                       maxWidth: nCols*80 + 400
                }}>
             {/* Pagination controls */}
             <div className="grid-item pagination-controls" style={{gridArea: "controls"}}>
