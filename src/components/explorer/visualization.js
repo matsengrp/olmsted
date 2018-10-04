@@ -13,6 +13,7 @@ import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import Copy from "./copy";
 import DownloadFasta from "./downloadfasta";
+import DownloadText from "./downloadtext";
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -224,6 +225,9 @@ class TreeViz extends React.Component {
             <DownloadFasta sequencesSet={this.props.selectedFamily.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
                            label="Download Fasta: Unique Sequences In This Family"/>
+            <DownloadText  text={this.props.selectedFamily.newick_string}
+                           filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
+                           label="Download Clonal Family Tree Newick String"/>
           </div>
             }};
 
