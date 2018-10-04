@@ -187,6 +187,7 @@ def clean_reconstruction_record(d):
     nt_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])
     seqmeta_dict = create_seqmeta_dict(c['cft.reconstruction:seqmeta']['tripl.csv:data'])
     if c['cft.reconstruction:asr_tree'].get('tripl.file:contents'):
+        c['cft.reconstruction:newick_string'] = c['cft.reconstruction:asr_tree']['tripl.file:contents']
         c['cft.reconstruction:asr_tree'] = parse_tree_data(c['cft.reconstruction:asr_tree']['tripl.file:contents'], nt_seqs_dict, aa_seqs_dict, seqmeta_dict)
     # Do we want to remove the raw data to keep size down?
     for var in ['cft.reconstruction:cluster_aa', 'cft.reconstruction:asr_seqs', 'cft.reconstruction:seqmeta']:

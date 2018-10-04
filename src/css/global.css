@@ -128,13 +128,18 @@ button:focus {outline:0;}
   /*grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];*/
   grid-template-columns: auto;
   grid-template-rows: auto; 
-  justify-items: center;
+  justify-items: left;
   /*align-content: stretch;*/
 }
 
 .grid-item {
-  /*border: 1px solid rgb(45, 45, 150);*/
-  place-self: center stretch;
+  /* options: <number> | <name> | span <number> | span <name> | auto */
+    /* width: inherit; */
+    grid-column-start:  auto;
+    grid-column-end: auto;
+    grid-row-start: auto;
+    grid-row-end: auto;
+    /* place-self: center stretch; */
 }
 
 .item-filler{

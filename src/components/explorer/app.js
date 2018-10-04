@@ -10,28 +10,42 @@ import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 
-/* <Contents> contains the header, tree, map, footer components etc.
- * here is where the panel sizes are decided, as well as which components are displayed.
- */
 
-const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}) => {
+// STYLES
+const PADDING_FRACTION = 0.03
 
-//const Contents = ({availableDatasets}) => {
-  //if (showSpinner) {
-  //}
-  /* TODO */
+// Compute how much padding the page should have.
+// Use above percentage of available width for padding on either side
+const usableWidthStyle = (availableWidth) => {
+  return {
+    width: availableWidth*(1-2*PADDING_FRACTION),
+    paddingLeft: availableWidth*PADDING_FRACTION,
+    paddingRight: availableWidth*PADDING_FRACTION,
+  }
+}
+
+const tableStyle = {paddingBottom: 20, height:440, overflow:'scroll'};
+
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
+
   return (
-    <div style={{margin: 50}}>
-      <h2>Clonal Families</h2>
-      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
-      <viz.ClonalFamiliesViz/>
-      <h2>Selected clonal families</h2>
-      <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
-        <ClonalFamiliesTable/>
+    <div style={usableWidthStyle(availableWidth)}>
+      <div>
+        <div>
+          <h2>Clonal Families</h2>
+          <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
+        </div>
+        <viz.ClonalFamiliesViz/>
       </div>
-      <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
-        {selectedFamily ? <viz.TreeViz/> : ""}
-        {_.isEmpty(selectedSeq) ? "" : <viz.Lineage/>}
+      <h2>Selected clonal families:</h2>
+      <div style={tableStyle}>
+          <ClonalFamiliesTable/>
+      </div>
+      <div style={{overflowX:'scroll'}}>
+        {selectedFamily? <viz.TreeViz/> : ""}
+      </div>
+      <div style={{overflowX:'scroll'}}>
+        {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
       </div>
     </div>
   );
@@ -54,18 +68,8 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // console.log('state', props);
-    /* window listener to see when width changes cross threshold to toggle sidebar */
-    const mql = window.matchMedia(`(min-width: ${controlsHiddenWidth}px)`);
-    mql.addListener(() => this.setState({
-      sidebarOpen: this.state.mql.matches,
-      mobileDisplay: !this.state.mql.matches
-    }));
-    this.state = {
-      mql,
-      sidebarOpen: false,
-      mobileDisplay: !mql.matches
-    };
+    // For resize media query listener see this link (helps resize for mobile etc):
+    //https://github.com/nextstrain/auspice/blob/master/src/components/app.js#L112-L122
   }
   static propTypes = {
     dispatch: PropTypes.func.isRequired
@@ -84,16 +88,16 @@ class App extends React.Component {
     let availableWidth = this.props.browserDimensions.width;
     const availableHeight = this.props.browserDimensions.height;
 
-    let sidebarWidth = 0;
+    // let sidebarWidth = 0;
     
-    sidebarWidth = controlsWidth;
+    // sidebarWidth = controlsWidth;
     
-    sidebarWidth += controlsPadding;
+    // sidebarWidth += controlsPadding;
 
-    const visibleSidebarWidth = this.state.sidebarOpen ? sidebarWidth : 0;
-    if (!this.state.mobileDisplay) {
-      availableWidth -= visibleSidebarWidth;
-    }
+    // const visibleSidebarWidth = this.state.sidebarOpen ? sidebarWidth : 0;
+    // if (!this.state.mobileDisplay) {
+    //   availableWidth -= visibleSidebarWidth;
+    // }
 
 
     /* S T Y L E S */
@@ -110,16 +114,14 @@ class App extends React.Component {
       display: "block",
       width: availableWidth,
       height: availableHeight,
-      left: this.state.sidebarOpen ? visibleSidebarWidth : 0,
-      opacity: this.state.sidebarOpen ? 1 : 0,
-      visibility: this.state.sidebarOpen ? "visible" : "hidden",
+      left:  0,
+      opacity: 0,
+      visibility: "hidden",
       zIndex: 8000,
       backgroundColor: "rgba(0,0,0,0.5)",
       cursor: "pointer",
       overflow: "scroll",
-      transition: this.state.sidebarOpen ?
-        'visibility 0s ease-out, left 0.3s ease-out, opacity 0.3s ease-out' :
-        'left 0.3s ease-out, opacity 0.3s ease-out, visibility 0s ease-out 0.3s'
+      transition: 'left 0.3s ease-out, opacity 0.3s ease-out, visibility 0s ease-out 0.3s'
     };
     const contentStyles = {
     };
@@ -128,7 +130,7 @@ class App extends React.Component {
       <span>
         {/* <DownloadModal/> */}
         <Contents
-          sidebarOpen={this.state.sidebarOpen}
+          // sidebarOpen={this.state.sidebarOpen}
           styles={contentStyles}
           availableWidth={availableWidth}
           availableHeight={availableHeight}
@@ -138,9 +140,9 @@ class App extends React.Component {
         />
         <Overlay
           styles={overlayStyles}
-          sidebarOpen={this.state.sidebarOpen}
-          mobileDisplay={this.state.mobileDisplay}
-          handler={() => {this.setState({sidebarOpen: false});}}
+          // sidebarOpen={this.state.sidebarOpen}
+          // mobileDisplay={this.state.mobileDisplay}
+          // handler={() => {this.setState({sidebarOpen: false});}}
         />
       </span>
     );

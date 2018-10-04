@@ -5,12 +5,15 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/vega_specs.js';
 import { getSelectedFamily, getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
+import naiveVegaSpec from './vega/naive.js';
+import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
+import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import Copy from "./copy";
 import DownloadFasta from "./downloadfasta";
+import DownloadText from "./downloadtext";
 
 
 
@@ -114,6 +117,24 @@ class ClonalFamiliesViz extends React.Component {
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <Vega
+      // TURN THESE ON TO DEBUG SIGNALS
+      // SEE https://github.com/matsengrp/olmsted/issues/65
+      // onSignalWidth={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log("width", result)
+      // }}
+      // onSignalHeight={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log("height", result)
+      // }}
+      // onSignalBrush_x={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushx: ', result)
+      // }}
+      // onSignalBrush_y={(...args) => {
+      //   let result = args.slice(1)[0]
+      //   console.log('brushy: ', result)  
+      // }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
@@ -133,7 +154,7 @@ class ClonalFamiliesViz extends React.Component {
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
       spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
-  }
+    }
 };
 
 
@@ -199,6 +220,9 @@ class TreeViz extends React.Component {
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
                            label="Download Fasta: Unique Sequences In This Family"/>
+            <DownloadText  text={this.props.selectedFamily.newick_string}
+                           filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
+                           label="Download Clonal Family Tree Newick String"/>
           </div>
             }};
 
