@@ -1,11 +1,32 @@
 import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
 import * as _ from 'lodash';
 
-const getSelectedFamily = (state) => {
+// The naming structure here needs to be cleaned up; 
+
+// selector for clonal family record
+export const getSelectedFamily = (state) => {
   return  _.find(state.availableClonalFamilies, {"ident": state.selectedFamily});
 }
 
+// selector for selected tree
+const getSelectedReconstructionIdent = (state) => {
+  return state.selectedReconstruction
+}
+
+// combine these to select out the actual selected reconstruction entity
+export const getSelectedReconstruction = createSelector(
+  [getSelectedFamily, getSelectedReconstructionIdent],
+  (family, reconstructionIdent) => reconstructionIdent ?
+    _.find(family.reconstructions, {"ident": reconstructionIdent}) :
+    family.reconstructions[0])
+
+
+// selector for sequence
+
 const getSelectedSeq = (state) => state.selectedSeq
+
+
+// computing mutations for tree node records relative to naive_seq
 
 const getMutations = (naive_seq, tree) =>{
   var all_mutations = []
@@ -33,8 +54,8 @@ const getMutations = (naive_seq, tree) =>{
   });
 
   return all_mutations
-  
 }
+
 
 const followLineage = (asr_tree, leaf, naive) => {
   //lineage are seqs to go in the viz
@@ -102,55 +123,54 @@ const findNaive = (data) => {
 }
 
 // tips mode 
-const computeTipsData = (family_input) => { 
-  let family = _.clone(family_input)   //clone for assign by value
-  if (family["asr_tree"] && family["asr_tree"].length > 0){
-    let data = family["asr_tree"].slice(0);
+const computeTipsData = (reconstruction) => { 
+  let recon = _.clone(reconstruction)   //clone for assign by value
+  if (recon["asr_tree"] && recon["asr_tree"].length > 0){
+    let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);    
-    data = _.filter(data, function(o) { return o.type == "root" || o.type == "leaf"; })
+    data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
     let all_mutations = getMutations(naive.aa_seq, data)
-    family["tips_alignment"] = all_mutations;
-    family["download_unique_family_seqs"] = uniqueFamilySeqs(family.asr_tree)
-    return family;
+    recon["tips_alignment"] = all_mutations;
+    recon["download_unique_family_seqs"] = uniqueFamilySeqs(recon.asr_tree)
+    return recon;
   }
   else{
-    return family
+    return recon;
   }
 }
 
 // lineage mode
-const computeLineageData = (family_input, seq) => { 
-  let family = _.clone(family_input)   //clone for assign by value
-  if (family["asr_tree"] && family["asr_tree"].length > 0 && !_.isEmpty(seq)){
-    let data = family["asr_tree"].slice(0);
+const computeLineageData = (reconstruction, seq) => { 
+  let recon = _.clone(reconstruction)   //clone for assign by value
+  if (recon["asr_tree"] && recon["asr_tree"].length > 0 && !_.isEmpty(seq)){
+    let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);
     let lineage_data = followLineage(data, seq, naive);
     let lineage = lineage_data[0]
-    family["download_lineage_seqs"] = lineage_data[1];
-    family["lineage_seq_counter"] = lineage_data[2];
+    recon["download_lineage_seqs"] = lineage_data[1];
+    recon["lineage_seq_counter"] = lineage_data[2];
     //reversing the postorder ordering of nodes for lineage mode
     data = _.reverse(lineage)  
     let all_mutations = getMutations(naive.aa_seq, data)
-    family["lineage_alignment"] = all_mutations;
-    return family;
+    recon["lineage_alignment"] = all_mutations;
+    return recon;
   }
   else{
-    return family
+    return recon
   }
 }
 
-const getTipsDataSelector = createSelector(
-    [getSelectedFamily],
-    (family) => {
-      return computeTipsData(family);
+export const getTipsDataSelector = createSelector(
+    [getSelectedReconstruction],
+    (reconstruction) => {
+      return computeTipsData(reconstruction);
     }
   )
 
-const getLineageDataSelector =  createSelector(
-    [getSelectedFamily, getSelectedSeq],
-    (family, seq) => {
-      return computeLineageData(family, seq);
+export const getLineageDataSelector =  createSelector(
+    [getSelectedReconstruction, getSelectedSeq],
+    (reconstruction, seq) => {
+      return computeLineageData(reconstruction, seq);
     }
   )
 
-export {getTipsDataSelector, getLineageDataSelector}

@@ -74,6 +74,9 @@ reconstruction_pull_pattern = [
     "db:ident",
     "tripl:type",
     "cft.reconstruction:id",
+    "cft.reconstruction:prune_strategy",
+    "cft.reconstruction:prune_count",
+    "cft.reconstruction:prune_count",
     {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity"]}],
      "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
      "cft.reconstruction:asr_tree": ["*"],
@@ -102,7 +105,8 @@ clonal_family_pull_pattern = [
       "cft.cluster:cdr3_start",
       "cft.cluster:naive_seq",
       "cft.cluster:mean_mut_freq",
-      {"cft.cluster:sample": ["db:ident", "cft.sample:id", "cft.sample:timepoint"],
+      {"cft.cluster:seed": ["db:ident", "cft.seed:id"],
+       "cft.cluster:sample": ["db:ident", "cft.sample:id", "cft.sample:timepoint"],
        "cft.cluster:dataset": ["db:ident", "cft.dataset:id"],
        "cft.cluster:partition": ["db:ident", "cft.partition:id", "cft.partition:logprob", "cft.partition:step"],
        "cft.cluster:subject": ["db:ident", "cft.subject:id"],
@@ -173,7 +177,7 @@ def create_seqmeta_dict(seqmeta_records):
 
 def try_del(d, attr):
     try:
-        del c[attr]
+        del d[attr]
     except Exception:
         pass
 

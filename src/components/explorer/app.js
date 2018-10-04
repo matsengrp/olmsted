@@ -24,15 +24,14 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq}
     <div style={{margin: 50}}>
       <h2>Clonal Families</h2>
       <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
-      {/* <viz.ClonalFamiliesViz/> */}
-      <viz.ClonalFamiliesVizCustom/>
+      <viz.ClonalFamiliesViz/>
       <h2>Selected clonal families</h2>
       <div style={{paddingBottom: 20, width: 800, height:410, overflow:'scroll'}}>
         <ClonalFamiliesTable/>
       </div>
       <div style={{paddingBottom: 20, width: 1700, overflowX:'scroll'}}>
-        {selectedFamily? <viz.TreeViz/> : ""}
-        {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
+        {selectedFamily ? <viz.TreeViz/> : ""}
+        {_.isEmpty(selectedSeq) ? "" : <viz.Lineage/>}
       </div>
     </div>
   );
