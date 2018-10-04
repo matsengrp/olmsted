@@ -17,8 +17,8 @@ export const updateTreeScale = (val) => {
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-
-
+export const updateSelectedReconstruction = (reconIdent) => {
+  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent}}
 
 
 

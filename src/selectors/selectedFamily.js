@@ -4,21 +4,24 @@ import * as _ from 'lodash';
 // The naming structure here needs to be cleaned up; 
 
 // selector for clonal family record
-export const getSelectedFamily = (state) => {
-  return  _.find(state.availableClonalFamilies, {"ident": state.selectedFamily});
-}
+export const getSelectedFamily = (state) =>
+   _.find(state.availableClonalFamilies, {"ident": state.selectedFamily})
 
 // selector for selected tree
-const getSelectedReconstructionIdent = (state) => {
-  return state.selectedReconstruction
-}
+const getSelectedReconstructionIdent = (state) =>
+  state.selectedReconstruction
+
+const defaultReconstruction = (reconstructions) =>
+  // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
+  _.find(reconstructions, {prune_strategy: "seed_lineage"}) || _.find(reconstructions, {prune_strategy: "min_adcl"}) || reconstructions[0]
+
 
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
   [getSelectedFamily, getSelectedReconstructionIdent],
   (family, reconstructionIdent) => reconstructionIdent ?
-    _.find(family.reconstructions, {"ident": reconstructionIdent}) :
-    family.reconstructions[0])
+    _.find(family.reconstructions, {ident: reconstructionIdent}) :
+    defaultReconstruction(family.reconstructions))
 
 
 // selector for sequence

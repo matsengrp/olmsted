@@ -181,6 +181,9 @@ const mapDispatchToProps = (dispatch) => ( {
   },
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
+  },
+  dispatchSelectedReconstruction: (reconIdent) => {
+    dispatch(explorerActions.updateSelectedReconstruction(reconIdent))
   }
 })
 
@@ -196,7 +199,13 @@ class TreeViz extends React.Component {
     // clone for assign by value
     this.treeScale = _.clone(this.props.treeScale);
     return <div>
-            <h2>Clonal family details</h2>
+            <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
+            <label>Ancestral reconstruction method: </label>
+            <select value={this.props.treeNodes.ident}
+              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value)}>
+              {this.props.selectedFamily.reconstructions.map((recon) =>
+                <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
+            </select>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
               onSignalBranchScale={(...args) => {
                 let branch_scale = args.slice(1)[0];
