@@ -5,7 +5,9 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import {naiveVegaSpec, clonalFamiliesVizCustomSpec, concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/vega_specs.js';
+import naiveVegaSpec from './vega/naive.js';
+import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
+import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import { getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
