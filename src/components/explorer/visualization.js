@@ -5,15 +5,20 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
+import { getSelectedFamily, getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
-import { getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import Copy from "./copy";
 import DownloadFasta from "./downloadfasta";
 import DownloadText from "./downloadtext";
+
+
+
+// A simple wrapper around the vega-lite-react lib's VegaLite module which prints compilation errors as
+// appropriate
 
 const MyVegaLite = args => {
   if (args.debug) {
@@ -26,6 +31,10 @@ const MyVegaLite = args => {
   }
   return <VegaLite {...args}/>
 }
+
+
+// Naive gene reassortment viz component
+// =====================================
 
 const getNaiveVizData = (datum) => {
   let result = {
@@ -79,49 +88,18 @@ const NaiveSequence = ({datum}) => {
   return <NaiveViz data = {getNaiveVizData(datum)} />;
 }
 
+
+
+// Clonal Families Viz
+// ===================
+//
+// This is the main view in the entire vizualization as it's the first thing we always see once we explore,
+// and it's the top level entry point for us in exploring datasets/clonal-families in gerater detail.
+// Goal is to be super configurable and powerful.
+
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
 class ClonalFamiliesViz extends React.Component {
-  constructor(props) {
-    super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.updateBrushSelection = this.updateBrushSelection.bind(this);
-  }
-
-  updateBrushSelection(args){
-    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: args});
-  }
-  
-
-  render() {
-    return <MyVegaLite data={{values: this.props.availableClonalFamilies}}
-      onSignalTooltip={/* doesn't work yet */ (...args) => console.log("Tooltip:", args)}
-      onSignalHover={/* doesn't work yet */ (...args) => console.log("Hover:", args)}
-      onSignalBrush_n_seqs={(...args) => {
-        this.updateBrushSelection(args)
-      }}
-      onSignalBrush_mean_mut_freq={(...args) => {
-        this.updateBrushSelection(args)
-      }}
-      onParseError={(...args) => console.error("parse error:", args)}
-      debug={/* true for debugging */ true}
-      spec={{
-          width: 900,
-          height: 700,
-          mark: "point",
-          selection: {brush: {type: "interval"}},
-          encoding: {
-            x: {field: "n_seqs", type: "quantitative"},
-            y: {field: "mean_mut_freq", type: "quantitative"},
-            color: {field: "subject.id", type: "nominal"},
-            shape: {field: "sample.timepoint", type: "nominal"},
-            opacity: {value: 0.35},
-            }}}/>;
-      }};
-
-@connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
-class ClonalFamiliesVizCustom extends React.Component {
   constructor(props) {
     super(props);
     // This binding is necessary to make `this` work in the callback
@@ -130,12 +108,14 @@ class ClonalFamiliesVizCustom extends React.Component {
     this.yField = "mean_mut_freq";
   }
 
+  // this method dispatches an action to redux, and is called in the signal handlers below
   updateBrushSelection(dim, attr, data){
     let updateBrushData = [dim, attr, data]
     this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData});
   }
   
   render() {
+    // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65
@@ -177,9 +157,20 @@ class ClonalFamiliesVizCustom extends React.Component {
     }
 };
 
+
+
+// Phylogenetic tree & alignment viz
+// =================================
+//
+// We show this for the given selected clonal family and reconstruction (in case there are multiple such
+// reconstructions).
+
+// First some redux connection functions
+
 const mapStateToPropsTips = (state) => {
   return {
-    selectedFamily: getTipsDataSelector(state.clonalFamilies),
+    selectedFamily: getSelectedFamily(state.clonalFamilies),
+    treeNodes: getTipsDataSelector(state.clonalFamilies),
     treeScale: state.clonalFamilies.treeScale
   }
 }
@@ -193,9 +184,13 @@ const mapDispatchToProps = (dispatch) => ( {
   }
 })
 
+// now for the actual component definition
+
 @connect(mapStateToPropsTips, mapDispatchToProps , null,
-  {areStatesEqual: (next, prev) => {
-    return _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) && _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale)}})
+  {areStatesEqual: (next, prev) => (
+      _.isEqual(prev.clonalFamilies.selectedReconstruction, next.clonalFamilies.selectedReconstruction) &&
+      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) &&
+      _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale))})
 class TreeViz extends React.Component {
   render() {
     // clone for assign by value
@@ -203,26 +198,26 @@ class TreeViz extends React.Component {
     return <div>
             <h2>Clonal family details</h2>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
-            onSignalBranchScale={(...args) => {
-              let branch_scale = args.slice(1)[0];
-              this.treeScale.branch_scale = branch_scale
-            }}
-            onSignalHeightScale={(...args) => {
-              let height_scale = args.slice(1)[0];
-              this.treeScale.height_scale = height_scale
-            }}
-            onSignalPts_tuple={(...args) => {
-              let node = args.slice(1)[0]
-              if(node.parent){
-                // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                this.props.dispatchTreeScale(this.treeScale)
-                this.props.dispatchSelectedSeq(node)
-              }
-            }}
-            debug={/* true for debugging */ false}
-            spec={concatTreeWithAlignmentSpec(this.props.selectedFamily, this.treeScale)}
-            />
-            <DownloadFasta sequencesSet={this.props.selectedFamily.download_unique_family_seqs.slice()}
+              onSignalBranchScale={(...args) => {
+                let branch_scale = args.slice(1)[0];
+                this.treeScale.branch_scale = branch_scale
+              }}
+              onSignalHeightScale={(...args) => {
+                let height_scale = args.slice(1)[0];
+                this.treeScale.height_scale = height_scale
+              }}
+              onSignalPts_tuple={(...args) => {
+                let node = args.slice(1)[0]
+                if(node.parent){
+                  // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
+                  this.props.dispatchTreeScale(this.treeScale)
+                  this.props.dispatchSelectedSeq(node)
+                }
+              }}
+              debug={/* true for debugging */ false}
+              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, this.treeScale)}
+              />
+            <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
                            label="Download Fasta: Unique Sequences In This Family"/>
             <DownloadText  text={this.props.selectedFamily.newick_string}
@@ -231,12 +226,22 @@ class TreeViz extends React.Component {
           </div>
             }};
 
+
+// Lineage focus viz
+// =================
+//
+// This is the alignment viz showing the mutation history for a particular lineage
+
+// First some redux props whathaveyou
+
 const mapStateToPropsLineage = (state) => {
     return {
       selectedFamily: getLineageDataSelector(state.clonalFamilies),
       selectedSeq: state.clonalFamilies.selectedSeq,
     }
 }
+
+// Compoent definition
 
 @connect(mapStateToPropsLineage, null, null, 
   {areStatesEqual: (next, prev) => {
@@ -253,11 +258,14 @@ class Lineage extends React.Component {
                            label="Download Fasta: Lineage Sequences"/>
           <h3>Lineage</h3>
           <Vega
-          onParseError={(...args) => console.error("parse error:", args)}
-          debug={/* true for debugging */ false}
-          spec={seqAlignSpec(this.props.selectedFamily)}
+            onParseError={(...args) => console.error("parse error:", args)}
+            debug={/* true for debugging */ false}
+            spec={seqAlignSpec(this.props.selectedFamily)}
           />
         </div>
         }};
 
-export {ClonalFamiliesViz, ClonalFamiliesVizCustom, TreeViz, NaiveSequence, Lineage}
+
+// export compoents
+export {ClonalFamiliesViz, TreeViz, NaiveSequence, Lineage}
+

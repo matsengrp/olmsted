@@ -35,7 +35,7 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
           <h2>Clonal Families</h2>
           <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         </div>
-        <viz.ClonalFamiliesVizCustom/>
+        <viz.ClonalFamiliesViz/>
       </div>
       <h2>Selected clonal families:</h2>
       <div style={tableStyle}>
