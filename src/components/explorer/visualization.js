@@ -258,9 +258,9 @@ const mapStateToPropsLineage = (state) => {
 class Lineage extends React.Component {
   render() {
         return <div>
-          <h2>{this.props.selectedSeq.label}</h2>
+          <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
           <h3>Amino acid sequence:</h3>
-          <h3>{this.props.selectedSeq.aa_seq}</h3>
+          <p>{this.props.selectedSeq.aa_seq}</p>
           <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
           <DownloadFasta sequencesSet={this.props.selectedFamily.download_lineage_seqs.slice()}
                            filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
