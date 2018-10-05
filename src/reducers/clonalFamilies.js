@@ -109,12 +109,17 @@ const clonalFamilies = (state = {
     } case types.TOGGLE_FAMILY: {
       return Object.assign({}, state, {
         selectedFamily: action.family_id,
+        selectedReconstruction: null,
         selectedSeq: {},
         treeScale: {branch_scale:950, height_scale:10}
       });
     } case types.UPDATE_SELECTED_SEQ: {
       return Object.assign({}, state, {
         selectedSeq: action.seq,
+      });
+    } case types.UPDATE_SELECTED_RECONSTRUCTION: {
+      return Object.assign({}, state, {
+        selectedReconstruction: action.reconstruction,
       });
     } case types.UPDATE_TREE_SCALE: {
       let new_tree_scale = Object.assign({}, state.treeScale, action.val);
