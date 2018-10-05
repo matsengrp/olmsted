@@ -123,7 +123,7 @@ def create_node_records(tree, nt_seqs_dict, aa_seqs_dict, seqmeta_dict):
         n.nt_seq = nt_seqs_dict[n.name]
         n.aa_seq = aa_seqs_dict[n.name]
         mult = None
-        cluster_mult = None
+        clust_mult = None
         if n.name in seqmeta_dict.keys():
             mult = seqmeta_dict[n.name]["cft.seq:multiplicity"]
             clust_mult = seqmeta_dict[n.name]["cft.seq:cluster_multiplicity"]
