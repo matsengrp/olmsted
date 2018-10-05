@@ -34,7 +34,7 @@ const clonalFamilies = (state = {
   switch (action.type) {
     case types.CLONAL_FAMILIES_RECEIVED: {
       let new_pagination = Object.assign({}, state.pagination, {
-        last_page: Math.floor(action.availableClonalFamilies.length/state.pagination.per_page)
+        last_page: Math.ceil(action.availableClonalFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
       });
       return Object.assign({}, state, {
         availableClonalFamilies: action.availableClonalFamilies,
@@ -69,7 +69,7 @@ const clonalFamilies = (state = {
       //Compute new last page based on selection and update the page to send it back to page 0
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0,
-        last_page: Math.floor(new_brushedFamilies.length/state.pagination.per_page) // use floor because we start at page 0
+        last_page: Math.ceil(new_brushedFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
       });
 
       return Object.assign({}, state, {
