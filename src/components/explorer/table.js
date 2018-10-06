@@ -80,7 +80,6 @@ class SelectAttribute extends React.Component {
     return (
       <input
         type="checkbox"
-        style={{marginLeft: "6px", marginTop: "12px"}}
         checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
         onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>
     )
@@ -119,7 +118,7 @@ class ClonalFamiliesTable extends React.Component {
            ["J gene", "j_gene"],
            ["Seed run", "has_seed"],
            ["Subject ID", "subject.id"]
-          ]}
+        ]}
         pagination = {this.props.pagination}
         selectedFamily = {this.selectedFamily}/>
     )
