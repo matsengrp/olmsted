@@ -98,7 +98,8 @@ const NaiveSequence = ({datum}) => {
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies}))
+  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
+  selectedFamily: state.clonalFamilies.selectedFamily}))
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
@@ -106,6 +107,7 @@ class ClonalFamiliesViz extends React.Component {
     this.updateBrushSelection = this.updateBrushSelection.bind(this);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
+    this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
   }
 
   // this method dispatches an action to redux, and is called in the signal handlers below
@@ -153,7 +155,12 @@ class ClonalFamiliesViz extends React.Component {
       }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
-      spec={clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)}/>;
+      data={{source: this.props.availableClonalFamilies,
+             // Here we create a separate dataset only containing the id of the
+             // selected family so as to check quickly for this id within the 
+             // viz to highlight the selected family.
+             selected: [{'ident': this.props.selectedFamily}] }}
+      spec={this.spec}/>;
     }
 };
 

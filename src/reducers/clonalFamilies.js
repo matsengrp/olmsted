@@ -37,6 +37,7 @@ const clonalFamilies = (state = {
         last_page: Math.ceil(action.availableClonalFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
       });
       return Object.assign({}, state, {
+        brushedClonalFamilies: action.availableClonalFamilies,
         availableClonalFamilies: action.availableClonalFamilies,
         pagination: new_pagination
       });

@@ -313,6 +313,9 @@ const clonalFamiliesVizCustomSpec = (data) => {
   ],
   "data": [
     {
+      "name": "selected"
+    },
+    {
       "name": "brush_store"
     },
     {
@@ -348,8 +351,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
         }
       ],
-      
-
     },
     {
       "name": "valid",
@@ -506,9 +507,10 @@ const clonalFamiliesVizCustomSpec = (data) => {
         "update": {
           "x": {"scale": "x", "field": {"signal": "xField"}},
           "y": {"scale": "y", "field": {"signal": "yField"}},
-          "opacity": {
-            "value": 0.35
-          },
+          "opacity": [
+            {"test": "indata('selected', 'ident', datum.ident)", "value": 1},
+            {"value": 0.35}
+          ],
           "fill": {
             "value": "transparent"
           },
@@ -519,7 +521,11 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "shape": {
             "scale": "shape",
             "field": {"signal": "shapeBy"}
-          }
+          },
+          "size": [
+            {"test": "indata('selected', 'ident', datum.ident)", "value": 600},
+            {"value": 20}
+          ]
         }
       }
     },
