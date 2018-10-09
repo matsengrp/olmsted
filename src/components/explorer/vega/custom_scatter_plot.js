@@ -61,6 +61,39 @@ const clonalFamiliesVizCustomSpec = (data) => {
         }
       ]
     },
+    //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
+    {
+      "name": "mouseDown",
+      "on": [
+        {
+          "events": {
+            "source": "scope",
+            "type": "mousedown",
+            "consume": true,
+            "filter": [
+              "!event.item || event.item.mark.name !== \"brush_brush\""
+            ]
+          },
+          "update": "[x(unit), y(unit)]"
+        }
+      ]
+    },
+    {
+      "name": "mouseUp",
+      "on": [
+        {
+          "events": {
+            "source": "window",
+            "type": "mouseup",
+            "consume": true,
+            "filter": [
+              "!event.item || event.item.mark.name !== \"brush_brush\""
+            ]
+          },
+          "update": "[x(unit), y(unit)]"
+        }
+      ]
+    },
     {
       "name": "brush_x",
       "value": [],

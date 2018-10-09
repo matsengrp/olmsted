@@ -99,23 +99,20 @@ const NaiveSequence = ({datum}) => {
 
 @connect((state) => ({
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
-  selectedFamily: state.clonalFamilies.selectedFamily}))
+  selectedFamily: state.clonalFamilies.selectedFamily}),
+  //This is a shorthand way of specifying mapDispatchToProps
+  {
+    autoselectFamily: explorerActions.autoselectFamily,
+    updateBrushSelection: explorerActions.updateBrushSelection
+  })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.updateBrushSelection = this.updateBrushSelection.bind(this);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
     this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
   }
 
-  // this method dispatches an action to redux, and is called in the signal handlers below
-  updateBrushSelection(dim, attr, data){
-    let updateBrushData = [dim, attr, data]
-    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData});
-  }
-  
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <Vega
@@ -137,6 +134,15 @@ class ClonalFamiliesViz extends React.Component {
       //   let result = args.slice(1)[0]
       //   console.log('brushy: ', result)  
       // }}
+      onSignalMouseDown={(...args) => {
+        this.mouseDown = true
+      }}
+      onSignalMouseUp={(...args) => {
+        if(this.mouseDown){
+          this.props.autoselectFamily()
+        }
+        this.mouseDown = false
+      }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
@@ -147,11 +153,11 @@ class ClonalFamiliesViz extends React.Component {
       }}
       onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
-        this.updateBrushSelection("x", this.xField, result)
+        this.props.updateBrushSelection("x", this.xField, result)
       }}
       onSignalBrush_y_field={(...args) => {
         let result = args.slice(1)[0]
-        this.updateBrushSelection("y", this.yField, result)
+        this.props.updateBrushSelection("y", this.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
