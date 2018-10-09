@@ -1,5 +1,6 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
+import * as fun from '../components/framework/fun';
 
 const checkInRange = (axis, datum, brushSelection) => {
   return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
@@ -21,6 +22,12 @@ const applyFilters = (data, brushSelection) => {
   }
   return data
 }
+
+const computeClonalFamiliesPage = (data, pagination) => 
+  fun.threadf(data,
+    [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
+    [_.drop,     pagination.page * pagination.per_page],
+    [_.take,     pagination.per_page])
 
 const clonalFamilies = (state = {
   brushSelection: undefined,
@@ -106,6 +113,14 @@ const clonalFamilies = (state = {
       });
       return Object.assign({}, state, {
         pagination: new_pagination
+      });
+    } case types.AUTOSELECT_FAMILY: {
+      let first_page = computeClonalFamiliesPage(state.brushedClonalFamilies, state.pagination)
+      return Object.assign({}, state, {
+        selectedFamily: first_page[0].ident,
+        selectedReconstruction: null,
+        selectedSeq: {},
+        treeScale: {branch_scale:950, height_scale:10}
       });
     } case types.TOGGLE_FAMILY: {
       return Object.assign({}, state, {

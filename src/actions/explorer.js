@@ -20,5 +20,13 @@ export const updateSelectedSeq = (seq) => {
 export const updateSelectedReconstruction = (reconIdent) => {
   return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent}}
 
+export const autoselectFamily = () => {
+  return {type: types.AUTOSELECT_FAMILY}}
+
+export const updateBrushSelection = (dim, attr, data) => {
+    let updateBrushData = [dim, attr, data]
+    return {type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData}}
+      
+
 
 
