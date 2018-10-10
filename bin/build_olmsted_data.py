@@ -80,7 +80,8 @@ reconstruction_pull_pattern = [
     "cft.reconstruction:prune_strategy",
     "cft.reconstruction:prune_count",
     "cft.reconstruction:prune_count",
-    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity"]}],
+    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["*"]}],
+#["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity", "cft.seq:timepoints", "cft.seq:timepoint_multiplicities"]}],
      "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
      "cft.reconstruction:asr_tree": ["*"],
      "cft.reconstruction:asr_seqs": [{'bio.seq:set': ['bio.seq:id', 'bio.seq:seq']}]}]
@@ -158,11 +159,18 @@ def parse_tree_data(args, c):
         n.aa_seq = aa_seqs_dict[n.name]
         mult = None
         clust_mult = None
+        #timepoint_mults = None
+        #timepoint_clust_mults = None
         if n.name in seqmeta_dict.keys():
+            #timepoint_mults = seqmeta_dict[n.name]["cft.seq:multiplicities"]
+            #timepoint_clust_mults = seqmeta_dict[n.name]["cft.seq:cluster_multiplicities"]
+
             mult = seqmeta_dict[n.name]["cft.seq:multiplicity"]
             clust_mult = seqmeta_dict[n.name]["cft.seq:cluster_multiplicity"]
         n.multiplicity = int(mult) if mult else mult
         n.cluster_multiplicity = int(clust_mult) if clust_mult else clust_mult
+        #n.timepoint_multiplicities = int(timepoint_mults) if timepoint_mults else timepoint_mults
+        #n.timepoint_cluster_multiplicities = int(timepoint_clust_mults) if timepoint_clust_mults else timepoint_clust_mults
         n.type = "node"
         if n.is_leaf():
             # get height for leaves
@@ -191,7 +199,23 @@ def parse_tree_data(args, c):
             n.parent = None
             n.length = 0.0
             n.distance = 0.0
-        return {'id': n.id, 'label': n.label, 'type': n.type, 'parent': n.parent, 'length': n.length, 'distance': n.distance, 'height': n.height, 'nt_seq': n.nt_seq, 'aa_seq': n.aa_seq, 'multiplicity': n.multiplicity, 'cluster_multiplicity': n.cluster_multiplicity}
+        records.append({'id': n.id,
+                        'label': n.label,
+                        'type': n.type,
+                        'parent': n.parent,
+                        'length': n.length,
+                        'distance': n.distance,
+                        'height': n.height,
+                        'nt_seq': n.nt_seq,
+                        'aa_seq': n.aa_seq,
+                        'multiplicity': n.multiplicity,
+                        'cluster_multiplicity': n.cluster_multiplicity,
+                        'timepoint_multiplicities': [
+                                                     {'timepoint':'test', 'multiplicity':7}, 
+                                                     {'timepoint':'test2', 'multiplicity':13}
+                                                    ] 
+                        #'timepoint_cluster_multiplicities': n.timepoint_cluster_multiplicities
+                       })
 
     # map through and process the nodes
     return map(process_node, tree.traverse('postorder'))
