@@ -69,10 +69,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "events": {
             "source": "scope",
             "type": "mousedown",
-            "consume": true,
-            "filter": [
-              "!event.item || event.item.mark.name !== \"brush_brush\""
-            ]
+            "consume": true
           },
           "update": "[x(unit), y(unit)]"
         }
@@ -85,10 +82,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "events": {
             "source": "window",
             "type": "mouseup",
-            "consume": true,
-            "filter": [
-              "!event.item || event.item.mark.name !== \"brush_brush\""
-            ]
+            "consume": true
           },
           "update": "[x(unit), y(unit)]"
         }
