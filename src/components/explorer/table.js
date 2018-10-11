@@ -50,11 +50,14 @@ class Table extends React.Component {
                 let sorting_arrow = this.props.pagination.desc ? ' \u25BC' : ' \u25B2'
                 name = name + sorting_arrow
               }
-              let style = is_sorting ? {fontSize:  "12px", fontWeight: "bold"}: {}
+              let style = is_sorting ? {fontSize:  "12px", fontWeight: "bold"} : {}
 
               // check to make sure its an attribute so we can sort by it (onclick)
               let isAttr = ((typeof AttrOrComponent) == "string");
-
+              // set to click cursor if we can sort on it
+              if(isAttr){
+                style.cursor = "pointer"
+              }
               return <div className="grid-item"
                           key={name} 
                           style={style}
@@ -90,6 +93,7 @@ class SelectAttribute extends React.Component {
     return (
       <input
         type="checkbox"
+        style={{cursor: "pointer"}}
         checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
         onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>
     )
