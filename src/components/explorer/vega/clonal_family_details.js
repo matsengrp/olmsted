@@ -307,51 +307,27 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               },
               "from": {"data": "leaves"}
             },
-            // circles: size depends on multiplicity 
+            // Pie charts: size depends on multiplicity 
             { "name": "pie",
               "type": "arc",
               "from": {"data": "leaf_pies"},
               "encode": {
-                "enter": {
-                  "fill": {"scale": "simple_color", "field": "timepoint_multiplicity_key"},
-                  "x": {"field": "x"},
-                  "y": {"field": "y"}
-                },
                 "update": {
+                  "fill": {"scale": "simple_color", "field": "timepoint_multiplicity_key"},
+                  "fillOpacity": {"value": "0.5"},
+                  "x": {"field": "x"},
+                  "y": {"field": "y"},
                   "startAngle": {"field": "startAngle"},
                   "endAngle": {"field": "endAngle"},
-                  // "padAngle": {"signal": "padAngle"},
+                  // Set inner radius to get donuts instead of pie charts
                   // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
-                  // "outerRadius": {"value": 20},
-                  // "cornerRadius": {"signal": "cornerRadius"}
-                  "fillOpacity": {"value": "0.5"},
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   },
                   "outerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
                 }
               }
             },
-
-            // {
-            //   "name": "leaf",
-            //   "encode": {
-            //     "update": {
-            //       "y": {"field": "y"},
-            //       "fill": {"value": "#000"},
-            //       "fillOpacity": {"value": "0.05"},
-            //       "x": {"field": "x"},
-            //       "tooltip": {
-            //         "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
-            //       },
-            //       "size": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
-            //       "stroke": {"value": "#000"},
-            //       "strokeWidth": {"value": 0.5}
-            //     },
-            //   },
-            //   "type": "symbol",
-            //   "from": {"data": "leaves"}
-            // },
             {
               "name": "leaf_center",
               "encode": {
