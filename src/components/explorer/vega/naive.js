@@ -81,7 +81,7 @@ const naiveVegaSpec = {
       "encode": {
         "update": {
           "fill": {
-            "value": "yellow"
+            "value": "firebrick"
           },
           "tooltip": {
             "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\")}"
@@ -196,11 +196,11 @@ const naiveVegaSpec = {
         "J gene"
       ],
       "range": [
-        "#db2c0d",
-        "#36db0d",
-        "#000000",
-        "#36db0d",
-        "#2c12ea"
+        "#1f78b4",
+        "#a6cee3",
+        "black",
+        "#b2df8a",
+        "#33a02c"
       ]
     }
   ], 
