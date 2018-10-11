@@ -61,39 +61,29 @@ const getMutations = (naive_seq, tree) =>{
 
 
 const followLineage = (asr_tree, leaf, naive) => {
-  //lineage are seqs to go in the viz
-  var lineage = [leaf];
-  //this tracks unique intermediate nodes to be downloaded bewtween naive and leaf
-  var uniq_int_nodes = [];
-
+  // this tracks unique intermediate nodes to be downloaded bewtween naive and leaf
   var curr_node = leaf;
-  var seq_counter = 1; //needed to set the viz height based on the number of seqs
-  //Prioritize leaf and naive
+  var uniq_int_nodes = [];
+  // Prioritize leaf and naive
   let taken_seqs = new Set([leaf.nt_seq, naive.nt_seq])
+  // Loop through the intermediate nodes to find unique sequences, keeping back mutations,
+  // prioritizing the closest to naive in a series of duplicates
   while (curr_node.parent){
     let parent_id = curr_node.parent;
     let parent = _.find(asr_tree, {"id": parent_id});
-    lineage.push(parent);
-    // seeing many sequences near naive with no mutations,
-    // (these sequences would be part of the lineage but not
-    //  from the perspective of the mutations viz)
-    // so check to make sure we are counting seqs with muts
-    // for lineage viz scaling 
-    if(curr_node.aa_seq!==naive.aa_seq){
-      seq_counter++;
-    }
     //Prioritize the seq closest to root if two are identical and make sure it isnt the same as leaf or naive
     if(parent.nt_seq !== curr_node.nt_seq && !taken_seqs.has(curr_node.nt_seq)){
       uniq_int_nodes.push(curr_node)
     }
     curr_node = parent;
   }
-  //put the fasta seqs in order naive -> leaf
-  let download_seqs = [naive]
+  //put the lineage seqs in order naive -> leaf
+  let lineage = [naive]
   //this relies on node records having been added in postorder
-  download_seqs = download_seqs.concat(_.reverse(uniq_int_nodes))
-  download_seqs.push(leaf)
-  return [lineage, download_seqs, seq_counter]
+  lineage = lineage.concat(_.reverse(uniq_int_nodes))
+  //add the leaf in question at the end
+  lineage.push(leaf)
+  return lineage
 }
 
 const uniqueFamilySeqs = (asr_tree) => {
@@ -102,13 +92,14 @@ const uniqueFamilySeqs = (asr_tree) => {
   //remove from a copy so that we dont loop through the whole thing several times filtering
   let naive = _.remove(seq_records, function(o) { return o.type == "root" })[0]
   let leaves = _.remove(seq_records, function(o) { return o.type == "leaf" })
-  //seq_records should now just have internal nodes
+  //seq_records should now just have internal nodes, reassign for readability
+  let internal_nodes = seq_records
 
   let taken_seqs = new Set([_.map(leaves, (leaf) => {leaf.nt_seq}).concat([naive.nt_seq])]) 
   var download_seqs = [];
   let uniq_int_nodes = _.filter(
                           _.uniqBy(
-                              _.reverse(seq_records),
+                              _.reverse(internal_nodes),
                               'nt_seq'
                           ),
                           function(node) {return !taken_seqs.has(node.nt_seq)}
@@ -148,13 +139,11 @@ const computeLineageData = (reconstruction, seq) => {
   if (recon["asr_tree"] && recon["asr_tree"].length > 0 && !_.isEmpty(seq)){
     let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);
-    let lineage_data = followLineage(data, seq, naive);
-    let lineage = lineage_data[0]
-    recon["download_lineage_seqs"] = lineage_data[1];
-    recon["lineage_seq_counter"] = lineage_data[2];
-    //reversing the postorder ordering of nodes for lineage mode
-    data = _.reverse(lineage)  
-    let all_mutations = getMutations(naive.aa_seq, data)
+    let lineage = followLineage(data, seq, naive);
+    recon["download_lineage_seqs"] = lineage;
+    //Count unique aa sequences to set the height of the lineage viz accordingly
+    recon["lineage_seq_counter"] = _.uniqBy(lineage, "aa_seq").length;
+    let all_mutations = getMutations(naive.aa_seq, lineage)
     recon["lineage_alignment"] = all_mutations;
     return recon;
   }
