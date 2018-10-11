@@ -135,12 +135,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           },
           "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, width)"
         },
-        {
-          "events": {
-            "signal": "brush_zoom_delta"
-          },
-          "update": "clampRange(zoomLinear(brush_x, brush_zoom_anchor.x, brush_zoom_delta), 0, width)"
-        }
       ]
     },
     {
@@ -201,12 +195,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           },
           "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, height)"
         },
-        {
-          "events": {
-            "signal": "brush_zoom_delta"
-          },
-          "update": "clampRange(zoomLinear(brush_y, brush_zoom_anchor.y, brush_zoom_delta), 0, height)"
-        }
       ]
     },
     {
@@ -280,39 +268,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
             }
           ],
           "update": "{x: brush_translate_anchor.x - x(unit), y: brush_translate_anchor.y - y(unit)}"
-        }
-      ]
-    },
-    {
-      "name": "brush_zoom_anchor",
-      "on": [
-        {
-          "events": [
-            {
-              "source": "scope",
-              "type": "wheel",
-              "consume": true,
-              "markname": "brush_brush"
-            }
-          ],
-          "update": "{x: x(unit), y: y(unit)}"
-        }
-      ]
-    },
-    {
-      "name": "brush_zoom_delta",
-      "on": [
-        {
-          "events": [
-            {
-              "source": "scope",
-              "type": "wheel",
-              "consume": true,
-              "markname": "brush_brush"
-            }
-          ],
-          "force": true,
-          "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
         }
       ]
     },
