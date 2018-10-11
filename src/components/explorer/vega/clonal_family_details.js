@@ -707,7 +707,7 @@ const seqAlignSpec = (family) => {
           "scale": "y",
           "orient": "left",
           "grid": false,
-          "title": "seq_id",
+          "title": "seq id",
           "zindex": 1
         },
         {
@@ -726,8 +726,10 @@ const seqAlignSpec = (family) => {
       ],
       "legends": [
         {
+          "orient": "bottom",
+          "direction": "horizontal",
           "fill": "color",
-          "title": "mut_to",
+          "title": "Amino acid color scale:",
           "encode": {
             "symbols": {
               "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
