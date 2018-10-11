@@ -198,23 +198,23 @@ def parse_tree_data(args, c):
             n.parent = None
             n.length = 0.0
             n.distance = 0.0
-        records.append({'id': n.id,
-                        'label': n.label,
-                        'type': n.type,
-                        'parent': n.parent,
-                        'length': n.length,
-                        'distance': n.distance,
-                        'height': n.height,
-                        'nt_seq': n.nt_seq,
-                        'aa_seq': n.aa_seq,
-                        'multiplicity': n.multiplicity,
-                        'cluster_multiplicity': n.cluster_multiplicity,
-                        # change this to real list of key value objects for timepoint multiplicities for #56
-                        'timepoint_multiplicities': [
-                                                     {'timepoint':'test', 'multiplicity':7}, 
-                                                     {'timepoint':'test2', 'multiplicity':13}
-                                                    ] 
-                       })
+        return ({'id': n.id,
+                 'label': n.label,
+                 'type': n.type,
+                 'parent': n.parent,
+                 'length': n.length,
+                 'distance': n.distance,
+                 'height': n.height,
+                 'nt_seq': n.nt_seq,
+                 'aa_seq': n.aa_seq,
+                 'multiplicity': n.multiplicity,
+                 'cluster_multiplicity': n.cluster_multiplicity,
+                 # change this to real list of key value objects for timepoint multiplicities for #56
+                 'timepoint_multiplicities': [
+                                              {'timepoint':'test', 'multiplicity':7}, 
+                                              {'timepoint':'test2', 'multiplicity':13}
+                                             ] 
+              })
 
     # map through and process the nodes
     return map(process_node, tree.traverse('postorder'))
