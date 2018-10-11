@@ -81,6 +81,8 @@ reconstruction_pull_pattern = [
     "cft.reconstruction:prune_count",
     "cft.reconstruction:prune_count",
     {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity"]}],
+# comment this in and make necessary changes to properly read out timepoint multiplicity metadata when we can for #56
+#    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity", "cft.seq:timepoints", "cft.seq:timepoint_multiplicities"]}],
      "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
      "cft.reconstruction:asr_tree": ["*"],
      "cft.reconstruction:asr_seqs": [{'bio.seq:set': ['bio.seq:id', 'bio.seq:seq']}]}]
@@ -130,6 +132,7 @@ def create_seqs_dict(seq_records):
 def create_seqmeta_dict(seqmeta_records):
     d = dict()
     for record in seqmeta_records:
+        #insert some code here to parse the colon separated values and nest the timepoint multiplicities as objects (see below for other comments mentioning #56) 
         seq_id = record["bio.seq:id"]
         d[seq_id] = record
     return d
@@ -158,11 +161,15 @@ def parse_tree_data(args, c):
         n.aa_seq = aa_seqs_dict[n.name]
         mult = None
         clust_mult = None
+        # change this (and the next few commented out bits) to get the array of timepoint multiplicity objects from the seqmeta dict for #56 
+        #timepoint_mults = None
         if n.name in seqmeta_dict.keys():
+            #timepoint_mults = seqmeta_dict[n.name]["cft.seq:multiplicities"]
             mult = seqmeta_dict[n.name]["cft.seq:multiplicity"]
             clust_mult = seqmeta_dict[n.name]["cft.seq:cluster_multiplicity"]
         n.multiplicity = int(mult) if mult else mult
         n.cluster_multiplicity = int(clust_mult) if clust_mult else clust_mult
+        #n.timepoint_multiplicities = int(timepoint_mults) if timepoint_mults else timepoint_mults
         n.type = "node"
         if n.is_leaf():
             # get height for leaves
@@ -191,7 +198,23 @@ def parse_tree_data(args, c):
             n.parent = None
             n.length = 0.0
             n.distance = 0.0
-        return {'id': n.id, 'label': n.label, 'type': n.type, 'parent': n.parent, 'length': n.length, 'distance': n.distance, 'height': n.height, 'nt_seq': n.nt_seq, 'aa_seq': n.aa_seq, 'multiplicity': n.multiplicity, 'cluster_multiplicity': n.cluster_multiplicity}
+        return ({'id': n.id,
+                 'label': n.label,
+                 'type': n.type,
+                 'parent': n.parent,
+                 'length': n.length,
+                 'distance': n.distance,
+                 'height': n.height,
+                 'nt_seq': n.nt_seq,
+                 'aa_seq': n.aa_seq,
+                 'multiplicity': n.multiplicity,
+                 'cluster_multiplicity': n.cluster_multiplicity,
+                 # change this to real list of key value objects for timepoint multiplicities for #56
+                 'timepoint_multiplicities': [
+                                              {'timepoint':'test', 'multiplicity':7}, 
+                                              {'timepoint':'test2', 'multiplicity':13}
+                                             ] 
+              })
 
     # map through and process the nodes
     return map(process_node, tree.traverse('postorder'))
