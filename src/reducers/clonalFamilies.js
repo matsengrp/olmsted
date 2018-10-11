@@ -106,10 +106,11 @@ const clonalFamilies = (state = {
       }
       return state
     } case types.TOGGLE_SORT: {
+      let same_column = action.column == state.pagination.order_by
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0,
         order_by: action.column,
-        desc: !state.pagination.desc
+        desc: same_column ? !state.pagination.desc : true
       });
       return Object.assign({}, state, {
         pagination: new_pagination

@@ -44,10 +44,20 @@ class Table extends React.Component {
             </div>
             {/* Table Headers */}
             { _.map(this.props.mappings, ([name, AttrOrComponent]) => {
+              // if we are sorting by this column show asc or desc arrow
+              let is_sorting = this.props.pagination.order_by == AttrOrComponent
+              if(is_sorting){
+                let sorting_arrow = this.props.pagination.desc ? ' \u25BC' : ' \u25B2'
+                name = name + sorting_arrow
+              }
+              let style = is_sorting ? {fontSize:  "12px", fontWeight: "bold"}: {}
+
               // check to make sure its an attribute so we can sort by it (onclick)
               let isAttr = ((typeof AttrOrComponent) == "string");
+
               return <div className="grid-item"
                           key={name} 
+                          style={style}
                           onClick={ ()=> {isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent))}}
                      >
                         {name}
