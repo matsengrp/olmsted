@@ -241,7 +241,7 @@ class TreeViz extends React.Component {
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
-                           label="Download Fasta: Unique Sequences In This Family"/>
+                           label="Download Fasta: Unique Sequences In This Tree"/>
             <DownloadText  text={this.props.selectedFamily.newick_string}
                            filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
                            label="Download Clonal Family Tree Newick String"/>
