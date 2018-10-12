@@ -293,9 +293,14 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                 "enter": {
                   "text": {"field": "label"},
                   "fill": {"value": "#000"},
-                  "fontSize": {"value": 10},
+                  "fontSize": {"value": 10}    
                 },
                 "update": {
+                  "fontWeight": [
+                    {"test": "indata('pts_store', 'id', datum.id)", "value": "bold"},
+                    {"value": "normal"}
+                  ],
+                  "cursor": {"value": "pointer"},
                   "y": {"scale": "y", "field": "y"},
                   "dx": {"scale": "leaf_label_offset", "field": {"signal": "leaf_size"}},
                   "dy": {"value": 3},
