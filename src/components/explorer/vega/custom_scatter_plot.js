@@ -61,6 +61,29 @@ const clonalFamiliesVizCustomSpec = (data) => {
         }
       ]
     },
+    // On click stuff
+    {"name": "pts",
+    "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
+   },
+   {
+    "name": "pts_tuple",
+    "value": {},
+    "on": [
+      {
+        "events": [{"source": "scope", "type": "click"}],
+        "update": "datum && item().mark.marktype == 'symbol' ? datum : null",
+      }
+    ]
+   },
+   {
+     "name": "pts_modify",
+     "on": [
+       {
+         "events": {"signal": "pts_tuple"},
+         "update": "modify(\"pts_store\", pts_tuple, true)"
+       }
+     ]
+   },
     //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
     {
       "name": "mouseDown",
@@ -294,6 +317,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
+    {"name": "pts_store"},
     {
       "name": "selected"
     },

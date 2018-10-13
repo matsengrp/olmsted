@@ -103,7 +103,8 @@ const NaiveSequence = ({datum}) => {
   //This is a shorthand way of specifying mapDispatchToProps
   {
     autoselectFamily: explorerActions.autoselectFamily,
-    updateBrushSelection: explorerActions.updateBrushSelection
+    updateBrushSelection: explorerActions.updateBrushSelection,
+    selectFamily: explorerActions.selectFamily
   })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
@@ -134,11 +135,27 @@ class ClonalFamiliesViz extends React.Component {
       //   let result = args.slice(1)[0]
       //   console.log('brushy: ', result)  
       // }}
+      onSignalPts_tuple={(...args) => {
+
+        let family = args.slice(1)[0]
+        if(family.ident){
+          console.log(family.ident)
+          this.props.selectFamily(family.ident)
+        }
+      }}
       onSignalMouseDown={(...args) => {
-        this.mouseDown = true
+        let coords = args.slice(1)[0]
+        if(coords){
+          console.log(coords)
+          this.mouseDownCoords = coords
+          this.mouseDown = true
+        }
       }}
       onSignalMouseUp={(...args) => {
-        if(this.mouseDown){
+        let coords = args.slice(1)[0]
+        if(this.mouseDown && !_.isEqual(this.mouseDownCoords, coords)){
+        // if(this.mouseDown && coords){
+            console.log(coords)
           this.props.autoselectFamily()
         }
         this.mouseDown = false
@@ -290,4 +307,3 @@ class Lineage extends React.Component {
 
 // export compoents
 export {ClonalFamiliesViz, TreeViz, NaiveSequence, Lineage}
-
