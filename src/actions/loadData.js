@@ -12,9 +12,8 @@ const charonErrorHandler = () => {
 };
 
 export const getClonalFamilies = (dispatch, s3bucket = "live") => {
-  const processData = (data) => {
+  const processData = (data, query) => {
     const availableClonalFamilies = JSON.parse(data);
-    //const availableClonalFamilies = data;
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
       getDatapath(window.location.pathname, availableClonalFamilies) :
       undefined;
@@ -22,6 +21,14 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
       type: types.CLONAL_FAMILIES_RECEIVED,
       availableClonalFamilies
     });
+
+    const selectedDatasets = [].concat(query.selectedDatasets);
+    if(selectedDatasets[0]){
+      dispatch({
+        type: types.TOGGLE_DATASETS,
+        dataset_ids: selectedDatasets
+      });
+    }
   };
 
   const query = queryString.parse(window.location.search);
@@ -30,7 +37,7 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onload = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText);
+      processData(xmlHttp.responseText, query);
     } else {
       charonErrorHandler();
     }

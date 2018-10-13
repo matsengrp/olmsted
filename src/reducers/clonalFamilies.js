@@ -29,24 +29,51 @@ const computeClonalFamiliesPage = (data, pagination) =>
     [_.drop,     pagination.page * pagination.per_page],
     [_.take,     pagination.per_page])
 
+const computeAvailableClonalFamilies = (allClonalFamilies, selectedDatasetIds) => {
+  let result = allClonalFamilies
+  if(selectedDatasetIds.size > 0){ 
+    result = _.filter(allClonalFamilies, (family) => {
+      return selectedDatasetIds.has(family.dataset.id)}
+    ) 
+  }
+  return result
+}
+    
+
 const clonalFamilies = (state = {
+  selectedDatasets: [],
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
   brushedClonalFamilies: [],
   availableClonalFamilies: [],
+  allClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity},
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
     case types.CLONAL_FAMILIES_RECEIVED: {
+      // cant pass global state including datasets info here 
       let new_pagination = Object.assign({}, state.pagination, {
         last_page: Math.ceil(action.availableClonalFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
       });
       return Object.assign({}, state, {
         brushedClonalFamilies: action.availableClonalFamilies,
+        allClonalFamilies: action.availableClonalFamilies,
         availableClonalFamilies: action.availableClonalFamilies,
         pagination: new_pagination
+      });
+    } case types.TOGGLE_DATASETS: {
+      var selectedSet = new Set(state.selectedDatasets)
+      action.dataset_ids.forEach( (dataset_id) => {
+        selectedSet.has(dataset_id) ? selectedSet.delete(dataset_id) : selectedSet.add(dataset_id)
+      })
+      let newAvailableClonalFamilies = computeAvailableClonalFamilies(state.allClonalFamilies, selectedSet)
+      let updatedSelectedDatasets = Array.from(selectedSet)
+      console.log("TOGGLING", updatedSelectedDatasets, newAvailableClonalFamilies.length)
+      return Object.assign({}, state, {
+        selectedDatasets: updatedSelectedDatasets,
+        availableClonalFamilies: newAvailableClonalFamilies
       });
     } case types.UPDATE_BRUSH_SELECTION: { 
       // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
@@ -72,6 +99,7 @@ const clonalFamilies = (state = {
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
 
       //Compute which families are in the brush selection: brushedFamilies
+      // cant pass global state including datasets info here ; this wont work
       let new_brushedFamilies = applyFilters(state.availableClonalFamilies, new_brushSelection)
 
       //Compute new last page based on selection and update the page to send it back to page 0
@@ -117,6 +145,8 @@ const clonalFamilies = (state = {
       });
     } case types.AUTOSELECT_FAMILY: {
       let first_page = computeClonalFamiliesPage(state.brushedClonalFamilies, state.pagination)
+      console.log("AUTOSELECT_FAMILY", first_page[0].ident)
+
       return Object.assign({}, state, {
         selectedFamily: first_page[0].ident,
         selectedReconstruction: null,
@@ -124,6 +154,7 @@ const clonalFamilies = (state = {
         treeScale: {branch_scale:950, height_scale:10}
       });
     } case types.TOGGLE_FAMILY: {
+      console.log("TOGGLE_FAMILY", action.family_id)
       return Object.assign({}, state, {
         selectedFamily: action.family_id,
         selectedReconstruction: null,

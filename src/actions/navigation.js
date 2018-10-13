@@ -31,13 +31,13 @@ In this way, the URL query is "used".
 */
 export const changePage = ({path, query = undefined, push = true}) => (dispatch, getState) => {
   if (!path) {console.error("changePage called without a path"); return;}
-  const { datasets } = getState();
+  const { clonalFamilies } = getState();
   const d = {
     type: PAGE_CHANGE,
     displayComponent: chooseDisplayComponentFromPathname(path),
     errorMessage: undefined
   };
-  d.datapath = d.displayComponent === "app" ? getDatapath(path, datasets.availableDatasets) : undefined;
+  d.datapath = d.displayComponent === "app" ? getDatapath(path, clonalFamilies.selectedDatasets) : undefined;
   if (query !== undefined) { d.query = query; }
   if (push) { d.pushState = true; }
   /* check if this is "valid" - we can change it here before it is dispatched */

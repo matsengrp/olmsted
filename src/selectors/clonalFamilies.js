@@ -14,7 +14,7 @@ const computeClonalFamiliesPage = (data, pagination) =>
 
 
 
-const getClonalFamiliesPageSelector = () => {
+export const getClonalFamiliesPageSelector = () => {
   return createSelector(
     [getBrushedClonalFamilies, getPagination],
     (data, pagination) => {
@@ -23,4 +23,32 @@ const getClonalFamiliesPageSelector = () => {
   )
 }
 
-export default getClonalFamiliesPageSelector
+const getAvailableClonalFamilies = (state) => state.clonalFamilies.availableClonalFamilies
+
+const getAvailableDatasets = (state) => state.datasets.availableDatasets
+
+// #77 at some point instead of the filtering every single family on its dataset.id
+// we will probably want to nest the clonal families for each dataset by a key
+// so that we can just get all the clonal families for one dataset from one large
+// object by doing allClonalFamilies[selected_dataset_id]
+const computeAvailableClonalFamilies = (families, datasets) => {
+  let selectedDatasetIds = new Set();
+  _.forEach(datasets, (dataset) => {
+    dataset.selected && selectedDatasetIds.add(dataset.id)
+  })
+  let availableClonalFamilies = families
+  if(selectedDatasetIds.size > 0){ availableClonalFamilies = _.filter(families, (family) => {
+      return selectedDatasetIds.has(family.dataset.id)}
+    
+    ) 
+  }
+  return availableClonalFamilies
+}
+
+export const availableClonalFamiliesSelector = createSelector(
+    [getAvailableClonalFamilies, getAvailableDatasets],
+    (families, datasets) => {
+      console.log("SEELECTOR")
+      return computeAvailableClonalFamilies(families, datasets)
+    }
+  )

@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as explorerActions from "../../actions/explorer.js"
-import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
+import {getClonalFamiliesPageSelector} from "../../selectors/clonalFamilies";
 import {NaiveSequence} from './visualization';
 
 

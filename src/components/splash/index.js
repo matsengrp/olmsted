@@ -12,6 +12,7 @@ import { Provider } from 'react-redux';
 import {filterDatasets } from "../../reducers/datasets"
 
 @connect((state) => ({
+  selectedDatasets: state.clonalFamilies.selectedDatasets,
   availableDatasets: state.datasets.availableDatasets,
   availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
   errorMessage: state.datasets.errorMessage
@@ -61,9 +62,7 @@ class Splash extends React.Component {
                 (e) => this.props.dispatch(
                   changePage(
                     {path: "/app",query: 
-                      {selectedDatasets: filterDatasets(
-                              this.props.availableDatasets).map(dataset => dataset.id)
-                      }
+                      {selectedDatasets: this.props.selectedDatasets}
                     }
                   )
                 )
@@ -72,7 +71,7 @@ class Splash extends React.Component {
             </button>
             {/*This only happens when the app loads up, not when we change the state.*/}
             {console.log("displayAvailableDatasets being called on: ", this.props.availableDatasets)}
-            {displayAvailableDatasets(this.props.availableDatasets, this.props.dispatch)}
+            {displayAvailableDatasets(this.props.availableDatasets, this.props.selectedDatasets, this.props.dispatch)}
           </CenterContent>
           {/* hack; insert line */}
         </div>

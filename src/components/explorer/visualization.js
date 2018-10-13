@@ -138,7 +138,9 @@ class ClonalFamiliesViz extends React.Component {
         this.mouseDown = true
       }}
       onSignalMouseUp={(...args) => {
-        if(this.mouseDown){
+        let coords = args.slice(1)[0]
+        // if(this.mouseDown && !_.isEqual(this.mouseDownCoords, coords)){
+        if(this.mouseDown && coords){
           this.props.autoselectFamily()
         }
         this.mouseDown = false
