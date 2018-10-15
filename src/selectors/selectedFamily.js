@@ -1,20 +1,28 @@
 import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
+import { getAvailableClonalFamilies } from './clonalFamilies';
 import * as _ from 'lodash';
 
 // The naming structure here needs to be cleaned up; 
 
+// selector for selected family ident
+const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
+
 // selector for clonal family record
-export const getSelectedFamily = (state) =>
-   _.find(state.availableClonalFamilies, {"ident": state.selectedFamily})
+export const getSelectedFamily = createSelector(
+  [getAvailableClonalFamilies, getSelectedFamilyIdent],
+  (availableClonalFamilies, selectedIdent) => {
+    let result = _.find(availableClonalFamilies, {"ident": selectedIdent})
+    return result
+  }
+)
 
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
-  state.selectedReconstruction
+  state.clonalFamilies.selectedReconstruction
 
 const defaultReconstruction = (reconstructions) =>
   // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
   _.find(reconstructions, {prune_strategy: "seed_lineage"}) || _.find(reconstructions, {prune_strategy: "min_adcl"}) || reconstructions[0]
-
 
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
@@ -26,12 +34,11 @@ export const getSelectedReconstruction = createSelector(
 
 // selector for sequence
 
-const getSelectedSeq = (state) => state.selectedSeq
-
+const getSelectedSeq = (state) => state.clonalFamilies.selectedSeq
 
 // computing mutations for tree node records relative to naive_seq
 
-const getMutations = (naive_seq, tree) =>{
+const createAlignment = (naive_seq, tree) => {
   var all_mutations = []
   // compute mutations for each node in the tree
   _.forEach(tree, (node) => {
@@ -86,7 +93,7 @@ const followLineage = (asr_tree, leaf, naive) => {
   return lineage
 }
 
-const uniqueFamilySeqs = (asr_tree) => {
+const uniqueSeqs = (asr_tree) => {
   //this relies on node records having been added in postorder
   let seq_records = asr_tree.slice()
   //remove from a copy so that we dont loop through the whole thing several times filtering
@@ -116,16 +123,18 @@ const findNaive = (data) => {
   return _.find(data, {"id": "naive"});
 }
 
-// tips mode 
-const computeTipsData = (reconstruction) => { 
+// Create an alignment for naive + all of the leaves of the tree (reconstruction)
+// and find unique set of sequences (giving preference to leaves, naive, and duplicate
+// internal nodes that are closer to naive)
+const computeReconstructionData = (reconstruction) => { 
   let recon = _.clone(reconstruction)   //clone for assign by value
   if (recon["asr_tree"] && recon["asr_tree"].length > 0){
     let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);    
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
-    let all_mutations = getMutations(naive.aa_seq, data)
-    recon["tips_alignment"] = all_mutations;
-    recon["download_unique_family_seqs"] = uniqueFamilySeqs(recon.asr_tree)
+    let alignment = createAlignment(naive.aa_seq, data)
+    recon["tips_alignment"] = alignment;
+    recon["download_unique_family_seqs"] = uniqueSeqs(recon.asr_tree)
     return recon;
   }
   else{
@@ -133,7 +142,8 @@ const computeTipsData = (reconstruction) => {
   }
 }
 
-// lineage mode
+// Create an alignment for the lineage of a particular sequence from naive
+// and find lineage sequences, removing repeat sequences but preserving back mutations.
 const computeLineageData = (reconstruction, seq) => { 
   let recon = _.clone(reconstruction)   //clone for assign by value
   if (recon["asr_tree"] && recon["asr_tree"].length > 0 && !_.isEmpty(seq)){
@@ -143,8 +153,8 @@ const computeLineageData = (reconstruction, seq) => {
     recon["download_lineage_seqs"] = lineage;
     //Count unique aa sequences to set the height of the lineage viz accordingly
     recon["lineage_seq_counter"] = _.uniqBy(lineage, "aa_seq").length;
-    let all_mutations = getMutations(naive.aa_seq, lineage)
-    recon["lineage_alignment"] = all_mutations;
+    let alignment = createAlignment(naive.aa_seq, lineage)
+    recon["lineage_alignment"] = alignment;
     return recon;
   }
   else{
@@ -152,14 +162,14 @@ const computeLineageData = (reconstruction, seq) => {
   }
 }
 
-export const getTipsDataSelector = createSelector(
+export const getReconstructionData = createSelector(
     [getSelectedReconstruction],
     (reconstruction) => {
-      return computeTipsData(reconstruction);
+      return computeReconstructionData(reconstruction);
     }
   )
 
-export const getLineageDataSelector =  createSelector(
+export const getLineageData =  createSelector(
     [getSelectedReconstruction, getSelectedSeq],
     (reconstruction, seq) => {
       return computeLineageData(reconstruction, seq);

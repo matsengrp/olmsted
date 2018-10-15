@@ -1,52 +1,23 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
-import * as fun from '../components/framework/fun';
-
-const checkInRange = (axis, datum, brushSelection) => {
-  return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
-}
-
-const checkBrushSelection = (brushSelection, datum) => {
-  if(brushSelection["x"] && brushSelection["y"]){
-    if(brushSelection["x"]["range"] && brushSelection["y"]["range"]){
-      return (checkInRange("x", datum, brushSelection)) && (checkInRange("y", datum, brushSelection))
-    }
-  }
-  return true
-}
-
-const applyFilters = (data, brushSelection) => {
-  if (brushSelection) {
-    let newdata =  _.filter(data, _.partial(checkBrushSelection, brushSelection))
-    return newdata
-  }
-  return data
-}
-
-const computeClonalFamiliesPage = (data, pagination) => 
-  fun.threadf(data,
-    [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
-    [_.drop,     pagination.page * pagination.per_page],
-    [_.take,     pagination.per_page])
 
 const clonalFamilies = (state = {
+  brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
-  brushedClonalFamilies: [],
-  availableClonalFamilies: [],
-  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true, last_page: Infinity},
+  allClonalFamilies: [],
+  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
     case types.CLONAL_FAMILIES_RECEIVED: {
-      let new_pagination = Object.assign({}, state.pagination, {
-        last_page: Math.ceil(action.availableClonalFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
-      });
       return Object.assign({}, state, {
-        brushedClonalFamilies: action.availableClonalFamilies,
-        availableClonalFamilies: action.availableClonalFamilies,
-        pagination: new_pagination
+        allClonalFamilies: action.allClonalFamilies
+      });
+    } case types.SELECTING_STATUS: {
+      return Object.assign({}, state, {
+        brushSelecting: !state.brushSelecting
       });
     } case types.UPDATE_BRUSH_SELECTION: { 
       // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
@@ -71,31 +42,27 @@ const clonalFamilies = (state = {
       brushDelta[axis]["range"] = range;
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
 
-      //Compute which families are in the brush selection: brushedFamilies
-      let new_brushedFamilies = applyFilters(state.availableClonalFamilies, new_brushSelection)
-
-      //Compute new last page based on selection and update the page to send it back to page 0
+      //Send it back to page 0
       let new_pagination = Object.assign({}, state.pagination, {
-        page: 0,
-        last_page: Math.ceil(new_brushedFamilies.length/state.pagination.per_page)-1 // use ceil-1 because we start at page 0
+        page: 0
       });
 
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
-        pagination: new_pagination,
-        brushedClonalFamilies: new_brushedFamilies
+        pagination: new_pagination
       });
     } case types.PAGE_DOWN: {
-      if (state.pagination.page+1 <= state.pagination.last_page){
-        let new_pagination = Object.assign({}, state.pagination, {
-          page: state.pagination.page + 1
-        });
-        return Object.assign({}, state, {
-          pagination: new_pagination
-        });
-      }
-      return state
+      // Note that this DOES NOT check that this page down operation is legal
+      // We check that whether it is a legal page down inside the table
+      // because the last page is derived from a selector that updates the props of the table
+      let new_pagination = Object.assign({}, state.pagination, {
+        page: state.pagination.page + 1
+      });
+      return Object.assign({}, state, {
+        pagination: new_pagination
+      });     
     } case types.PAGE_UP: {
+      // We could move check this into the table to be consistent. Otherwise we can leave it as is.
       if (state.pagination.page-1 >= 0){
         let new_pagination = Object.assign({}, state.pagination, {
           page: state.pagination.page - 1
@@ -106,6 +73,7 @@ const clonalFamilies = (state = {
       }
       return state
     } case types.TOGGLE_SORT: {
+      // We default to descending order when sorting by a new column
       let same_column = action.column == state.pagination.order_by
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0,
@@ -114,14 +82,6 @@ const clonalFamilies = (state = {
       });
       return Object.assign({}, state, {
         pagination: new_pagination
-      });
-    } case types.AUTOSELECT_FAMILY: {
-      let first_page = computeClonalFamiliesPage(state.brushedClonalFamilies, state.pagination)
-      return Object.assign({}, state, {
-        selectedFamily: first_page[0].ident,
-        selectedReconstruction: null,
-        selectedSeq: {},
-        treeScale: {branch_scale:950, height_scale:10}
       });
     } case types.TOGGLE_FAMILY: {
       return Object.assign({}, state, {

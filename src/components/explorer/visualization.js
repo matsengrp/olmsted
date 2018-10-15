@@ -3,9 +3,9 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
-import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import { getSelectedFamily, getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
+import { getSelectedFamily, getReconstructionData, getLineageData} from "../../selectors/selectedFamily";
+import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
@@ -98,13 +98,14 @@ const NaiveSequence = ({datum}) => {
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
-  selectedFamily: state.clonalFamilies.selectedFamily}),
+  availableClonalFamilies: getAvailableClonalFamilies(state),
+  selectedFamily: state.clonalFamilies.selectedFamily
+}),
   //This is a shorthand way of specifying mapDispatchToProps
   {
-    autoselectFamily: explorerActions.autoselectFamily,
+    selectFamily: explorerActions.selectFamily,
     updateBrushSelection: explorerActions.updateBrushSelection,
-    selectFamily: explorerActions.selectFamily
+    updateSelectingStatus: explorerActions.updateSelectingStatus
   })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
@@ -145,18 +146,18 @@ class ClonalFamiliesViz extends React.Component {
       }}
       onSignalMouseDown={(...args) => {
         let coords = args.slice(1)[0]
+        // Must check to see if there are actual mouse coordinates
+        // here and in the mouseup signal handler just below because
+        // they are triggered with undefined upon rendering the viz
         if(coords){
-          console.log(coords)
-          this.mouseDownCoords = coords
+          this.props.updateSelectingStatus()
           this.mouseDown = true
         }
       }}
       onSignalMouseUp={(...args) => {
         let coords = args.slice(1)[0]
-        if(this.mouseDown && !_.isEqual(this.mouseDownCoords, coords)){
-        // if(this.mouseDown && coords){
-            console.log(coords)
-          this.props.autoselectFamily()
+        if(this.mouseDown && coords){
+          this.props.updateSelectingStatus()
         }
         this.mouseDown = false
       }}
@@ -199,8 +200,8 @@ class ClonalFamiliesViz extends React.Component {
 
 const mapStateToPropsTips = (state) => {
   return {
-    selectedFamily: getSelectedFamily(state.clonalFamilies),
-    treeNodes: getTipsDataSelector(state.clonalFamilies),
+    selectedFamily: getSelectedFamily(state),
+    treeNodes: getReconstructionData(state),
     treeScale: state.clonalFamilies.treeScale
   }
 }
@@ -275,7 +276,7 @@ class TreeViz extends React.Component {
 
 const mapStateToPropsLineage = (state) => {
     return {
-      selectedFamily: getLineageDataSelector(state.clonalFamilies),
+      selectedFamily: getLineageData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
     }
 }
