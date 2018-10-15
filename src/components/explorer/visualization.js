@@ -4,7 +4,7 @@ import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import {createClassFromSpec} from 'react-vega';
-import { getSelectedFamily, getReconstructionData, getLineageData} from "../../selectors/selectedFamily";
+import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction} from "../../selectors/selectedFamily";
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
@@ -202,7 +202,8 @@ const mapStateToPropsTips = (state) => {
   return {
     selectedFamily: getSelectedFamily(state),
     treeNodes: getReconstructionData(state),
-    treeScale: state.clonalFamilies.treeScale
+    treeScale: state.clonalFamilies.treeScale,
+    selectedReconstruction: getSelectedReconstruction(state)
   }
 }
 
@@ -260,7 +261,7 @@ class TreeViz extends React.Component {
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
                            label="Download Fasta: Unique Sequences In This Tree"/>
-            <DownloadText  text={this.props.selectedFamily.newick_string}
+            <DownloadText  text={this.props.selectedReconstruction.newick_string}
                            filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
                            label="Download Clonal Family Tree Newick String"/>
           </div>
