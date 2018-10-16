@@ -84,7 +84,7 @@ const IMGTScientificChartColors = [
   '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
-const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
+const concatTreeWithAlignmentSpec  = (reconstruction) => {
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -94,9 +94,12 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       "width": 1000,
       "data": [
         {"name": "pts_store"},
+        {
+          "name": "seed"
+        },
         // Tree Data
         {"name": "source_0",
-         "values":selectedFamily["asr_tree"] 
+         "values":reconstruction["asr_tree"] 
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -129,7 +132,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "source": "leaves"},
         // Mutations Data
         {"name": "source_1",
-         "values":selectedFamily["tips_alignment"] 
+         "values":reconstruction["tips_alignment"] 
         },
         {"name": "data_1",
          "source": "source_1",
@@ -156,11 +159,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       "signals": [
         // TREE SIGNALS
         // BRANCHSCALE - scales up width of tree
-        {"value": treeScale.branch_scale,
+        {"value": 950,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         // HEIGHTSCALE - scales up height the ENTIRE VIZ
-        {"value": treeScale.height_scale,
+        {"value": 10,
          "name": "heightScale",
          "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
         },
@@ -278,7 +281,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   }
                 },
                 "enter": {
-                  "size": {"value": 10},
+                  "size": {"value": 20},
+                  // Change this to black to see internal nodes
                   "stroke": {"value": "transparent"},
                 }
               },
@@ -296,6 +300,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   "fontSize": {"value": 10}    
                 },
                 "update": {
+                  // Color the seed blue #78
+                  "fill": [
+                    {"test": "indata('seed', 'id', datum.id)", "value": "blue"},
+                    {"value": "black"}
+                  ],
                   "fontWeight": [
                     {"test": "indata('pts_store', 'id', datum.id)", "value": "bold"},
                     {"value": "normal"}

@@ -203,15 +203,11 @@ const mapStateToPropsTips = (state) => {
   return {
     selectedFamily: getSelectedFamily(state),
     treeNodes: getReconstructionData(state),
-    treeScale: state.clonalFamilies.treeScale,
     selectedReconstruction: getSelectedReconstruction(state)
   }
 }
 
 const mapDispatchToProps = (dispatch) => ( {
-  dispatchTreeScale: (val) => {
-    dispatch(explorerActions.updateTreeScale(val))
-  },
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
   },
@@ -225,12 +221,14 @@ const mapDispatchToProps = (dispatch) => ( {
 @connect(mapStateToPropsTips, mapDispatchToProps , null,
   {areStatesEqual: (next, prev) => (
       _.isEqual(prev.clonalFamilies.selectedReconstruction, next.clonalFamilies.selectedReconstruction) &&
-      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) &&
-      _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale))})
+      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily))})
 class TreeViz extends React.Component {
+  constructor(props) {
+    super(props);
+    this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
+  }
+
   render() {
-    // clone for assign by value
-    this.treeScale = _.clone(this.props.treeScale);
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -240,24 +238,21 @@ class TreeViz extends React.Component {
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
-              onSignalBranchScale={(...args) => {
-                let branch_scale = args.slice(1)[0];
-                this.treeScale.branch_scale = branch_scale
-              }}
-              onSignalHeightScale={(...args) => {
-                let height_scale = args.slice(1)[0];
-                this.treeScale.height_scale = height_scale
-              }}
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
                   // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                  this.props.dispatchTreeScale(this.treeScale)
                   this.props.dispatchSelectedSeq(node)
                 }
               }}
               debug={/* true for debugging */ false}
-              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, this.treeScale)}
+              data={{source_0: this.props.treeNodes.asr_tree,
+                    // Here we create a separate dataset only containing the id of the
+                    // seed sequence so as to check quickly for this id within the 
+                    // viz to color the seed blue
+                     seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
+                  }}
+              spec={this.spec}
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
