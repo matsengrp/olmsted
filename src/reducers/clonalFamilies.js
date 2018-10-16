@@ -40,13 +40,17 @@ const clonalFamilies = (state = {
       brushDelta[axis] = {};
       brushDelta[axis]["fieldName"] = attr;
       brushDelta[axis]["range"] = range;
+      // brushSelection.clicked is set to the ident of a particular family if 
+      // we have clicked to select that family instead of doing a brush selection
+      // Set it false here so we can have default brush selection filtering
+      brushDelta.clicked = false;
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
 
       //Send it back to page 0
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-
+      
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination
@@ -84,12 +88,17 @@ const clonalFamilies = (state = {
         pagination: new_pagination
       });
     } case types.TOGGLE_FAMILY: {
-      return Object.assign({}, state, {
+      let updates = {
         selectedFamily: action.family_id,
         selectedReconstruction: null,
         selectedSeq: {},
         treeScale: {branch_scale:950, height_scale:10}
-      });
+      }
+      // action.updateBrushSelection specifies whether we would like to 
+      // include just this family in our brush selection
+      // and therefore in the table since we have clicked it
+      updates.brushSelection = action.updateBrushSelection ? {clicked: action.family_id} : state.brushSelection
+      return Object.assign({}, state, updates);
     } case types.UPDATE_SELECTED_SEQ: {
       return Object.assign({}, state, {
         selectedSeq: action.seq,

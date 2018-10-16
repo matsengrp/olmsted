@@ -56,7 +56,11 @@ const checkBrushSelection = (brushSelection, datum) => {
 
 const applyFilters = (data, brushSelection) => {
   if (brushSelection) {
-    data =  _.filter(data, _.partial(checkBrushSelection, brushSelection))
+    // If we have clicked a family instead of doing a brush selection, that
+    // family's ident should be the value of brushSelection.clicked
+    // Otherwise, we should filter as always on the bounds of the brush selection
+    data = brushSelection.clicked ? [_.find(data, {"ident": brushSelection.clicked})] :
+                                          _.filter(data, _.partial(checkBrushSelection, brushSelection))
   }
   return data
 }

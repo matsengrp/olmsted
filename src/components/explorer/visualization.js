@@ -137,11 +137,12 @@ class ClonalFamiliesViz extends React.Component {
       //   console.log('brushy: ', result)  
       // }}
       onSignalPts_tuple={(...args) => {
-
         let family = args.slice(1)[0]
         if(family.ident){
-          console.log(family.ident)
-          this.props.selectFamily(family.ident)
+          // Second argument specifies that we would like to 
+          // include just this family in our brush selection
+          // and therefore in the table since we have clicked it
+          this.props.selectFamily(family.ident, true)
         }
       }}
       onSignalMouseDown={(...args) => {
