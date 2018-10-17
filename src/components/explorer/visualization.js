@@ -247,6 +247,7 @@ class TreeViz extends React.Component {
               }}
               debug={/* true for debugging */ false}
               data={{source_0: this.props.treeNodes.asr_tree,
+                     source_1: this.props.treeNodes.tips_alignment,
                     // Here we create a separate dataset only containing the id of the
                     // seed sequence so as to check quickly for this id within the 
                     // viz to color the seed blue
