@@ -4,6 +4,81 @@ const clonalFamiliesVizCustomSpec = (data) => {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": {"type": "pad"},
   "style": "cell",
+  // DATA
+  "data": [
+    {"name": "pts_store"},
+    {
+      "name": "selected"
+    },
+    {
+      "name": "brush_store"
+    },
+    {
+      "name": "source",
+      "values":data
+    },
+    {
+      "name": "data_0",
+      "source": "source",
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "toNumber(datum[\"n_seqs\"])",
+          "as": "n_seqs"
+        },
+        {
+          "type": "formula",
+          "expr": "toNumber(datum[\"mean_mut_freq\"])",
+          "as": "mean_mut_freq"
+        },
+        {
+          "type": "formula",
+          "expr": "datum[\"subject\"] && datum[\"subject\"][\"id\"]",
+          "as": "subject.id"
+        },
+        {
+          "type": "formula",
+          "expr": "datum[\"sample\"] && datum[\"sample\"][\"timepoint\"]",
+          "as": "sample.timepoint"
+        },
+        {
+          "type": "filter",
+          "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
+        }
+      ],
+    },
+    {
+      "name": "valid",
+      "source": "data_0",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum[xField] != null && datum[yField] != null"
+        }
+      ]
+    },
+    {
+      "name": "nullY",
+      "source": "source",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum[xField] != null && datum[yField] == null"
+        }
+      ]
+    },
+    {
+      "name": "nullX",
+      "source": "source",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum[xField] == null && datum[yField] != null"
+        }
+      ]
+    }
+  ],
+  // SIGNALS
   "signals": [
     {
       "name": "PADDING_FRACTION",
@@ -316,137 +391,7 @@ const clonalFamiliesVizCustomSpec = (data) => {
     { "name": "shapeBy", "value": "sample.timepoint",
       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
-  "data": [
-    {"name": "pts_store"},
-    {
-      "name": "selected"
-    },
-    {
-      "name": "brush_store"
-    },
-    {
-      "name": "source",
-      "values":data
-    },
-    {
-      "name": "data_0",
-      "source": "source",
-      "transform": [
-        {
-          "type": "formula",
-          "expr": "toNumber(datum[\"n_seqs\"])",
-          "as": "n_seqs"
-        },
-        {
-          "type": "formula",
-          "expr": "toNumber(datum[\"mean_mut_freq\"])",
-          "as": "mean_mut_freq"
-        },
-        {
-          "type": "formula",
-          "expr": "datum[\"subject\"] && datum[\"subject\"][\"id\"]",
-          "as": "subject.id"
-        },
-        {
-          "type": "formula",
-          "expr": "datum[\"sample\"] && datum[\"sample\"][\"timepoint\"]",
-          "as": "sample.timepoint"
-        },
-        {
-          "type": "filter",
-          "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
-        }
-      ],
-    },
-    {
-      "name": "valid",
-      "source": "data_0",
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "datum[xField] != null && datum[yField] != null"
-        }
-      ]
-    },
-    {
-      "name": "nullY",
-      "source": "source",
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "datum[xField] != null && datum[yField] == null"
-        }
-      ]
-    },
-    {
-      "name": "nullX",
-      "source": "source",
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "datum[xField] == null && datum[yField] != null"
-        }
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "y",
-      "type": "linear",
-      "domain": {"data": "valid", "field": {"signal": "yField"}},
-      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
-      "nice": true,
-    },
-    {
-      "name": "x",
-      "type": "linear",
-      "domain": {"data": "valid", "field": {"signal": "xField"}},
-      "range": [{"signal": "nullGap"}, {"signal": "width"}],
-      "nice": true,
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "domain": {
-        "data": "data_0",
-        "field": {"signal": "colorBy"},
-        "sort": true
-      },
-      "range": "category"
-    },
-    {
-      "name": "shape",
-      "type": "ordinal",
-      "domain": {
-        "data": "data_0",
-        "field": {"signal": "shapeBy"},
-        "sort": true
-      },
-      "range": "symbol"
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "bottom",
-      "grid": true,
-      "title": {"signal": "xField"},
-      "tickCount": {
-        "signal": "ceil(width/40)"
-      },
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": true,
-      "title": {"signal": "yField"},
-      "tickCount": {
-        "signal": "ceil(height/40)"
-      },
-      "zindex": 0
-    }
-  ],
+  // MARKS
   "marks": [
     {
       "name": "brush_brush_bg",
@@ -652,6 +597,67 @@ const clonalFamiliesVizCustomSpec = (data) => {
       }
     }
   ],
+  // SCALES
+  "scales": [
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": {"data": "valid", "field": {"signal": "yField"}},
+      "range": [{"signal": "height - nullGap"}, {"signal": "nullGap"}],
+      "nice": true,
+    },
+    {
+      "name": "x",
+      "type": "linear",
+      "domain": {"data": "valid", "field": {"signal": "xField"}},
+      "range": [{"signal": "nullGap"}, {"signal": "width"}],
+      "nice": true,
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {
+        "data": "data_0",
+        "field": {"signal": "colorBy"},
+        "sort": true
+      },
+      "range": "category"
+    },
+    {
+      "name": "shape",
+      "type": "ordinal",
+      "domain": {
+        "data": "data_0",
+        "field": {"signal": "shapeBy"},
+        "sort": true
+      },
+      "range": "symbol"
+    }
+  ],
+  // AXES
+  "axes": [
+    {
+      "scale": "x",
+      "orient": "bottom",
+      "grid": true,
+      "title": {"signal": "xField"},
+      "tickCount": {
+        "signal": "ceil(width/40)"
+      },
+      "zindex": 0
+    },
+    {
+      "scale": "y",
+      "orient": "left",
+      "grid": true,
+      "title": {"signal": "yField"},
+      "tickCount": {
+        "signal": "ceil(height/40)"
+      },
+      "zindex": 0
+    }
+  ],
+  // LEGENDS
   "legends": [
     {
       "stroke": "color",

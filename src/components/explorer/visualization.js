@@ -8,6 +8,7 @@ import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedRe
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
+import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
@@ -112,7 +113,8 @@ class ClonalFamiliesViz extends React.Component {
     super(props);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
-    this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
+    // this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
+    this.spec=facetClonalFamiliesVizSpec(props.availableClonalFamilies);
   }
 
   render() {
