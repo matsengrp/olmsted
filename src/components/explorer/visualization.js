@@ -225,7 +225,7 @@ const mapDispatchToProps = (dispatch) => ( {
 class TreeViz extends React.Component {
   constructor(props) {
     super(props);
-    this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
+    this.spec=concatTreeWithAlignmentSpec(props.treeNodes)
   }
 
   render() {

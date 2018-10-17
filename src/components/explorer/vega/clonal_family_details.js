@@ -90,7 +90,6 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "height": 800,
       "width": 1000,
       "data": [
         {"name": "pts_store"},
@@ -99,7 +98,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
         },
         // Tree Data
         {"name": "source_0",
-         "values":reconstruction["asr_tree"] 
+         "values":reconstruction["asr_tree"]
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -165,7 +164,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
         // HEIGHTSCALE - scales up height the ENTIRE VIZ
         {"value": 10,
          "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
+         "bind": {"max": 20, "step": 1, "input": "range", "min": 1}
         },
          // Size of leaves
          {
@@ -185,7 +184,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
         },
         // Height of viz scaled by number of leaves 
         {
-          "name": "scaledHeight",
+          "name": "height",
           "update": "heightScale*(leaves_len+1)"
         },
         {"value": "datum",
@@ -227,7 +226,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
         // ALIGNMENT SIGNALS
         {
           "name": "mutation_mark_height",
-          "update": "ceil(height/100)"
+          "update": "heightScale*0.9"
         },
         {
           "name": "mutation_mark_width",
@@ -252,7 +251,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "encode": {
            "update": {
              "width": {"signal": "concat_0_width"},
-             "height": {"signal": "scaledHeight"}
+             "height": {"signal": "height"}
            }
           },
           "marks": [
@@ -382,7 +381,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "encode": {
             "update": {
               // "width": {"signal": "concat_1_width"},
-              "height": {"signal": "scaledHeight"}
+              "height": {"signal": "height"}
             }
           },
           "marks": [
@@ -422,15 +421,17 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
                   "text": {"field": "mut_to"},
                   "fill": {"value": "#000"},
                   // fontSize must be increased for gap character '-' to make it visible
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
                 },
                 "update": {
+                  //center the text on x, y properties
+                  "align": {"value": "center"},
+                  "baseline": {"value": "middle"},
+                  // Style the '-' and 'X' differently to make them equally visible
+                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                  "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
                   "opacity": {"value": 0.7},
                   "y": {"scale": "y", "field": "y"},
-                  "dx": {"value": -2},
-                  // See above "fontSize must be increased for gap character '-' to make it visible"
-                  // This means y offset needs to be larger for these marks
-                  "dy": {"signal": "datum.mut_to == \"-\" ? mutation_mark_height/2+2 : mutation_mark_height/2"},
                   "x": {"scale": "x", "field": "position"},
                   "tooltip": {
                     "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -489,7 +490,21 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
               "minExtent": 0,
               "zindex": 0
             }
-          ]
+          ],
+          // Color legend
+          "legends": [
+            {
+              "orient": "top",
+              "direction": "horizontal",
+              "fill": "color",
+              "title": "Amino acid color scale",
+              "encode": {
+                "symbols": {
+                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
+                }
+              }
+            }
+          ],
         }
       ],
       
@@ -539,8 +554,8 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           // "nice": {"signal": "leaves_len"},
           "zero": true,
           "domain": {"data": "leaves", "field": "y"},
-          // this creates an array of range values - one for each leaf; scaledHeight is heightScale * (len_leaves+1)
-          "range": {"signal": "sequence(0, scaledHeight, heightScale)"}, 
+          // this creates an array of range values - one for each leaf; height is heightScale * (len_leaves+1)
+          "range": {"signal": "sequence(0, height, heightScale)"}, 
         },
         {
           "name": "color",
@@ -548,18 +563,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
         }
-      ],
-      "legends": [
-        {
-          "fill": "color",
-          "title": "mut_to",
-          "encode": {
-            "symbols": {
-              "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
-            }
-          }
-        }
-      ],
+      ],   
     }
   )
 }
@@ -652,16 +656,16 @@ const seqAlignSpec = (family) => {
             "enter": {
               "text": {"field": "mut_to"},
               "fill": {"value": "#000"},
-              // fontSize must be increased for gap character '-' to make it visible
-              "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
             },
             "update": {
+              "align": {"value": "center"},
+              "baseline": {"value": "middle"},
+              // Style the '-' and 'X' differently to make them equally visible
+              "fontSize": {"signal": "datum.mut_to == \"-\" ? mark_height*2 : mark_height*1.5"},
+              "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+              "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
               "opacity": {"value": 0.7},
               "y": {"scale": "y", "field": "seq_id"},
-              "dx": {"value": -3},
-              // See above "fontSize must be increased for gap character '-' to make it visible"
-              // This means y offset needs to be larger for these marks
-              "dy": {"signal": "datum.mut_to == \"-\" ? mark_height/2+2 : mark_height/2"},
               "x": {"scale": "x", "field": "position"},
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"),  \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
