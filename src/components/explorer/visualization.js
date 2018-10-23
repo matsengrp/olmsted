@@ -199,11 +199,13 @@ class ClonalFamiliesViz extends React.Component {
 
 // First some redux connection functions
 
-const mapStateToPropsTips = (state) => {
+const mapStateToPropsTips = (state, ownProps) => {
+  let treeNodes = getReconstructionData(state)
   return {
     selectedFamily: getSelectedFamily(state),
-    treeNodes: getReconstructionData(state),
-    selectedReconstruction: getSelectedReconstruction(state)
+    treeNodes,
+    selectedReconstruction: getSelectedReconstruction(state),
+    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight)
   }
 }
 
@@ -218,14 +220,18 @@ const mapDispatchToProps = (dispatch) => ( {
 
 // now for the actual component definition
 
-@connect(mapStateToPropsTips, mapDispatchToProps , null,
-  {areStatesEqual: (next, prev) => (
-      _.isEqual(prev.clonalFamilies.selectedReconstruction, next.clonalFamilies.selectedReconstruction) &&
-      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily))})
+@connect(mapStateToPropsTips, mapDispatchToProps)
 class TreeViz extends React.Component {
-  constructor(props) {
-    super(props);
-    this.spec=concatTreeWithAlignmentSpec(props.treeNodes)
+
+  shouldComponentUpdate(nextProps, nextState){
+    // This is here because we don't want to rerender when the component gets new props
+    // except these ones. This includes when it recieves a new availableHeight prop
+    // Before we were using areStatesEqual, but that just checks incoming state values,
+    // and so we would still rerender on some new props. Hence the implementation here.
+
+    //      NOTE this '!' in front means if either of them are not equal, we DO rerender
+    return !(_.isEqual(this.props.selectedReconstruction, nextProps.selectedReconstruction) &&
+           _.isEqual(this.props.selectedFamily, nextProps.selectedFamily))
   }
 
   render() {
@@ -253,7 +259,7 @@ class TreeViz extends React.Component {
                     // viz to color the seed blue
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
-              spec={this.spec}
+              spec={this.props.spec}
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}

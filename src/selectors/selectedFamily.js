@@ -132,6 +132,7 @@ const computeReconstructionData = (reconstruction) => {
     let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);    
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
+    recon["leaves_count_incl_naive"] = data.length;
     let alignment = createAlignment(naive.aa_seq, data)
     recon["tips_alignment"] = alignment;
     recon["download_unique_family_seqs"] = uniqueSeqs(recon.asr_tree)

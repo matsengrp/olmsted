@@ -1,3 +1,6 @@
+
+import * as _ from "lodash";
+
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [ 
   '-',
@@ -84,7 +87,12 @@ const IMGTScientificChartColors = [
   '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
-const concatTreeWithAlignmentSpec  = (reconstruction) => {
+const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
+  let max_leaf_size = 25
+
+  let leaves_count_incl_naive = reconstruction["leaves_count_incl_naive"]
+  let init_height_scale = Math.floor(availableHeight*0.9/leaves_count_incl_naive)
+  init_height_scale = _.clamp(init_height_scale, max_leaf_size*2)
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -157,40 +165,51 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
       ],
       "signals": [
         // TREE SIGNALS
+        // Number of leaves
+        {
+          "name": "leaves_count_incl_naive",
+          "update": leaves_count_incl_naive
+        },
         // BRANCHSCALE - scales up width of tree
         {"value": 950,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         // HEIGHTSCALE - scales up height the ENTIRE VIZ
-        {"value": 10,
+        // this is initially set to fit the screen (see https://github.com/matsengrp/olmsted/issues/83)
+        {
+         "value": init_height_scale,
          "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 1}
+         "bind": {"max": max_leaf_size*2, "step": 1, "input": "range", "min": 1}
         },
-         // Size of leaves
+         // Size of leaves - they are mapped to a range with
+         // the value of this signal as the maximum
          {
           "name": "max_leaf_size",
-          "value": 30,
-          "bind": {"max": 100, "step": 1, "input": "range", "min": 1}
+          "value": Math.floor(init_height_scale/2),
+          "bind": {"max": max_leaf_size, "step": 1, "input": "range", "min": 1}
         },
         {
           "name": "leaf_size",
           "value": "multiplicity",
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
         },
-        // Number of leaves
         {
-          "name": "leaves_len",
-          "update": "length(data(\"leaves\"))"
+          "value": true,
+          "name": "show_labels",
+          "bind": {"input": "radio", "options": [true, false]}
         },
+        {"name": "label_size",
+        "update": "clamp(heightScale, 0, 10)"},        
         // Height of viz scaled by number of leaves 
         {
           "name": "height",
-          "update": "heightScale*(leaves_len+1)"
+          "update": "heightScale*(leaves_count_incl_naive)"
         },
         {"value": "datum",
          "name": "cladify",
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
+        // #59 this will need to be controlled by slider 
         {"name": "concat_0_width",
         "update": "branchScale*distance_extent[1]"
       },
@@ -232,7 +251,8 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "name": "mutation_mark_width",
           "update": "ceil(width/150)"
         },
-        {"name": "concat_1_width", "value": 200}
+        // #59 this will need to be controlled by slider 
+        {"name": "concat_1_width", "update": "width - concat_0_width"}
       ],
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
@@ -250,6 +270,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "name": "concat_0_group",
           "encode": {
            "update": {
+             // #59 this will need to be controlled by slider 
              "width": {"signal": "concat_0_width"},
              "height": {"signal": "height"}
            }
@@ -293,12 +314,12 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
             {
               "type": "text",
               "encode": {
-                "enter": {
-                  "text": {"field": "label"},
-                  "fill": {"value": "#000"},
-                  "fontSize": {"value": 10}    
-                },
                 "update": {
+                  "text": [
+                    {"test": "show_labels", "field": "label"},
+                    {"value": null}
+                  ],
+                  "fontSize":  {"signal": "label_size"},
                   // Color the seed blue #78
                   "fill": [
                     {"test": "indata('seed', 'id', datum.id)", "value": "blue"},
@@ -380,6 +401,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "style": "cell",
           "encode": {
             "update": {
+              // #59 this will need to be controlled by slider 
               // "width": {"signal": "concat_1_width"},
               "height": {"signal": "height"}
             }
@@ -472,7 +494,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
               "scale": "y",
               "orient": "left",
               "grid": false,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
               "labels": false,
               "zindex": 1,
@@ -483,14 +505,14 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
               "orient": "left",
               "gridScale": "x",
               "grid": true,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // "domain": false,
               "labels": false,
               "maxExtent": 0,
               "minExtent": 0,
               "zindex": 0
             }
-          ],
+          ], 
           // Color legend
           "legends": [
             {
@@ -498,13 +520,14 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
               "direction": "horizontal",
               "fill": "color",
               "title": "Amino acid color scale",
+              "offset": {"signal": "mutation_mark_height"},
               "encode": {
                 "symbols": {
                   "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
                 }
               }
             }
-          ],
+          ],       
         }
       ],
       
@@ -563,7 +586,7 @@ const concatTreeWithAlignmentSpec  = (reconstruction) => {
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
         }
-      ],   
+      ],     
     }
   )
 }
