@@ -137,11 +137,12 @@ class ClonalFamiliesViz extends React.Component {
       //   console.log('brushy: ', result)  
       // }}
       onSignalPts_tuple={(...args) => {
-
         let family = args.slice(1)[0]
         if(family.ident){
-          console.log(family.ident)
-          this.props.selectFamily(family.ident)
+          // Second argument specifies that we would like to 
+          // include just this family in our brush selection
+          // and therefore in the table since we have clicked it
+          this.props.selectFamily(family.ident, true)
         }
       }}
       onSignalMouseDown={(...args) => {
@@ -198,19 +199,17 @@ class ClonalFamiliesViz extends React.Component {
 
 // First some redux connection functions
 
-const mapStateToPropsTips = (state) => {
+const mapStateToPropsTips = (state, ownProps) => {
+  let treeNodes = getReconstructionData(state)
   return {
     selectedFamily: getSelectedFamily(state),
-    treeNodes: getReconstructionData(state),
-    treeScale: state.clonalFamilies.treeScale,
-    selectedReconstruction: getSelectedReconstruction(state)
+    treeNodes,
+    selectedReconstruction: getSelectedReconstruction(state),
+    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight)
   }
 }
 
 const mapDispatchToProps = (dispatch) => ( {
-  dispatchTreeScale: (val) => {
-    dispatch(explorerActions.updateTreeScale(val))
-  },
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
   },
@@ -221,15 +220,21 @@ const mapDispatchToProps = (dispatch) => ( {
 
 // now for the actual component definition
 
-@connect(mapStateToPropsTips, mapDispatchToProps , null,
-  {areStatesEqual: (next, prev) => (
-      _.isEqual(prev.clonalFamilies.selectedReconstruction, next.clonalFamilies.selectedReconstruction) &&
-      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) &&
-      _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale))})
+@connect(mapStateToPropsTips, mapDispatchToProps)
 class TreeViz extends React.Component {
+
+  shouldComponentUpdate(nextProps, nextState){
+    // This is here because we don't want to rerender when the component gets new props
+    // except these ones. This includes when it recieves a new availableHeight prop
+    // Before we were using areStatesEqual, but that just checks incoming state values,
+    // and so we would still rerender on some new props. Hence the implementation here.
+
+    //      NOTE this '!' in front means if either of them are not equal, we DO rerender
+    return !(_.isEqual(this.props.selectedReconstruction, nextProps.selectedReconstruction) &&
+           _.isEqual(this.props.selectedFamily, nextProps.selectedFamily))
+  }
+
   render() {
-    // clone for assign by value
-    this.treeScale = _.clone(this.props.treeScale);
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -239,24 +244,22 @@ class TreeViz extends React.Component {
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
-              onSignalBranchScale={(...args) => {
-                let branch_scale = args.slice(1)[0];
-                this.treeScale.branch_scale = branch_scale
-              }}
-              onSignalHeightScale={(...args) => {
-                let height_scale = args.slice(1)[0];
-                this.treeScale.height_scale = height_scale
-              }}
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
                   // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                  this.props.dispatchTreeScale(this.treeScale)
                   this.props.dispatchSelectedSeq(node)
                 }
               }}
               debug={/* true for debugging */ false}
-              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, this.treeScale)}
+              data={{source_0: this.props.treeNodes.asr_tree,
+                     source_1: this.props.treeNodes.tips_alignment,
+                    // Here we create a separate dataset only containing the id of the
+                    // seed sequence so as to check quickly for this id within the 
+                    // viz to color the seed blue
+                     seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
+                  }}
+              spec={this.props.spec}
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}

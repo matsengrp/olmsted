@@ -1,3 +1,6 @@
+
+import * as _ from "lodash";
+
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [ 
   '-',
@@ -84,19 +87,26 @@ const IMGTScientificChartColors = [
   '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
-const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
+const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
+  let max_leaf_size = 25
+
+  let leaves_count_incl_naive = reconstruction["leaves_count_incl_naive"]
+  let init_height_scale = Math.floor(availableHeight*0.9/leaves_count_incl_naive)
+  init_height_scale = _.clamp(init_height_scale, max_leaf_size*2)
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "height": 800,
       "width": 1000,
       "data": [
         {"name": "pts_store"},
+        {
+          "name": "seed"
+        },
         // Tree Data
         {"name": "source_0",
-         "values":selectedFamily["asr_tree"] 
+         "values":reconstruction["asr_tree"]
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -129,7 +139,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "source": "leaves"},
         // Mutations Data
         {"name": "source_1",
-         "values":selectedFamily["tips_alignment"] 
+         "values":reconstruction["tips_alignment"] 
         },
         {"name": "data_1",
          "source": "source_1",
@@ -155,40 +165,51 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       ],
       "signals": [
         // TREE SIGNALS
+        // Number of leaves
+        {
+          "name": "leaves_count_incl_naive",
+          "update": leaves_count_incl_naive
+        },
         // BRANCHSCALE - scales up width of tree
-        {"value": treeScale.branch_scale,
+        {"value": 950,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         // HEIGHTSCALE - scales up height the ENTIRE VIZ
-        {"value": treeScale.height_scale,
+        // this is initially set to fit the screen (see https://github.com/matsengrp/olmsted/issues/83)
+        {
+         "value": init_height_scale,
          "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
+         "bind": {"max": max_leaf_size*2, "step": 1, "input": "range", "min": 1}
         },
-         // Size of leaves
+         // Size of leaves - they are mapped to a range with
+         // the value of this signal as the maximum
          {
           "name": "max_leaf_size",
-          "value": 30,
-          "bind": {"max": 100, "step": 1, "input": "range", "min": 1}
+          "value": Math.floor(init_height_scale/2),
+          "bind": {"max": max_leaf_size, "step": 1, "input": "range", "min": 1}
         },
         {
           "name": "leaf_size",
           "value": "multiplicity",
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
         },
-        // Number of leaves
         {
-          "name": "leaves_len",
-          "update": "length(data(\"leaves\"))"
+          "value": true,
+          "name": "show_labels",
+          "bind": {"input": "radio", "options": [true, false]}
         },
+        {"name": "label_size",
+        "update": "clamp(heightScale, 0, 10)"},        
         // Height of viz scaled by number of leaves 
         {
-          "name": "scaledHeight",
-          "update": "heightScale*(leaves_len+1)"
+          "name": "height",
+          "update": "heightScale*(leaves_count_incl_naive)"
         },
         {"value": "datum",
          "name": "cladify",
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
+        // #59 this will need to be controlled by slider 
         {"name": "concat_0_width",
         "update": "branchScale*distance_extent[1]"
       },
@@ -224,13 +245,14 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         // ALIGNMENT SIGNALS
         {
           "name": "mutation_mark_height",
-          "update": "ceil(height/100)"
+          "update": "heightScale*0.9"
         },
         {
           "name": "mutation_mark_width",
           "update": "ceil(width/150)"
         },
-        {"name": "concat_1_width", "value": 200}
+        // #59 this will need to be controlled by slider 
+        {"name": "concat_1_width", "update": "width - concat_0_width"}
       ],
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
@@ -248,8 +270,9 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "name": "concat_0_group",
           "encode": {
            "update": {
+             // #59 this will need to be controlled by slider 
              "width": {"signal": "concat_0_width"},
-             "height": {"signal": "scaledHeight"}
+             "height": {"signal": "height"}
            }
           },
           "marks": [
@@ -278,7 +301,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   }
                 },
                 "enter": {
-                  "size": {"value": 10},
+                  "size": {"value": 20},
+                  // Change this to black to see internal nodes
                   "stroke": {"value": "transparent"},
                 }
               },
@@ -290,12 +314,17 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
             {
               "type": "text",
               "encode": {
-                "enter": {
-                  "text": {"field": "label"},
-                  "fill": {"value": "#000"},
-                  "fontSize": {"value": 10}    
-                },
                 "update": {
+                  "text": [
+                    {"test": "show_labels", "field": "label"},
+                    {"value": null}
+                  ],
+                  "fontSize":  {"signal": "label_size"},
+                  // Color the seed blue #78
+                  "fill": [
+                    {"test": "indata('seed', 'id', datum.id)", "value": "blue"},
+                    {"value": "black"}
+                  ],
                   "fontWeight": [
                     {"test": "indata('pts_store', 'id', datum.id)", "value": "bold"},
                     {"value": "normal"}
@@ -372,8 +401,9 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "style": "cell",
           "encode": {
             "update": {
+              // #59 this will need to be controlled by slider 
               // "width": {"signal": "concat_1_width"},
-              "height": {"signal": "scaledHeight"}
+              "height": {"signal": "height"}
             }
           },
           "marks": [
@@ -413,15 +443,17 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   "text": {"field": "mut_to"},
                   "fill": {"value": "#000"},
                   // fontSize must be increased for gap character '-' to make it visible
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
                 },
                 "update": {
+                  //center the text on x, y properties
+                  "align": {"value": "center"},
+                  "baseline": {"value": "middle"},
+                  // Style the '-' and 'X' differently to make them equally visible
+                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                  "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
                   "opacity": {"value": 0.7},
                   "y": {"scale": "y", "field": "y"},
-                  "dx": {"value": -2},
-                  // See above "fontSize must be increased for gap character '-' to make it visible"
-                  // This means y offset needs to be larger for these marks
-                  "dy": {"signal": "datum.mut_to == \"-\" ? mutation_mark_height/2+2 : mutation_mark_height/2"},
                   "x": {"scale": "x", "field": "position"},
                   "tooltip": {
                     "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -462,7 +494,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "scale": "y",
               "orient": "left",
               "grid": false,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
               "labels": false,
               "zindex": 1,
@@ -473,14 +505,29 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "orient": "left",
               "gridScale": "x",
               "grid": true,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // "domain": false,
               "labels": false,
               "maxExtent": 0,
               "minExtent": 0,
               "zindex": 0
             }
-          ]
+          ], 
+          // Color legend
+          "legends": [
+            {
+              "orient": "top",
+              "direction": "horizontal",
+              "fill": "color",
+              "title": "Amino acid color scale",
+              "offset": {"signal": "mutation_mark_height"},
+              "encode": {
+                "symbols": {
+                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
+                }
+              }
+            }
+          ],       
         }
       ],
       
@@ -530,8 +577,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           // "nice": {"signal": "leaves_len"},
           "zero": true,
           "domain": {"data": "leaves", "field": "y"},
-          // this creates an array of range values - one for each leaf; scaledHeight is heightScale * (len_leaves+1)
-          "range": {"signal": "sequence(0, scaledHeight, heightScale)"}, 
+          // this creates an array of range values - one for each leaf; height is heightScale * (len_leaves+1)
+          "range": {"signal": "sequence(0, height, heightScale)"}, 
         },
         {
           "name": "color",
@@ -539,18 +586,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
         }
-      ],
-      "legends": [
-        {
-          "fill": "color",
-          "title": "mut_to",
-          "encode": {
-            "symbols": {
-              "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
-            }
-          }
-        }
-      ],
+      ],     
     }
   )
 }
@@ -643,16 +679,16 @@ const seqAlignSpec = (family) => {
             "enter": {
               "text": {"field": "mut_to"},
               "fill": {"value": "#000"},
-              // fontSize must be increased for gap character '-' to make it visible
-              "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
             },
             "update": {
+              "align": {"value": "center"},
+              "baseline": {"value": "middle"},
+              // Style the '-' and 'X' differently to make them equally visible
+              "fontSize": {"signal": "datum.mut_to == \"-\" ? mark_height*2 : mark_height*1.5"},
+              "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+              "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
               "opacity": {"value": 0.7},
               "y": {"scale": "y", "field": "seq_id"},
-              "dx": {"value": -3},
-              // See above "fontSize must be increased for gap character '-' to make it visible"
-              // This means y offset needs to be larger for these marks
-              "dy": {"signal": "datum.mut_to == \"-\" ? mark_height/2+2 : mark_height/2"},
               "x": {"scale": "x", "field": "position"},
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"),  \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
