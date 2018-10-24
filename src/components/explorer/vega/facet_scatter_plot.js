@@ -1,11 +1,11 @@
 const facetClonalFamiliesVizSpec = (data) => {
+  console.log('olmsted facet spec')
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": "pad",
   "padding": 5,
-//   "width":400,
-//   "height":300,
+  // "width": 400,
   // DATA
   "data": [
     {"name": "pts_store"},
@@ -62,10 +62,10 @@ const facetClonalFamiliesVizSpec = (data) => {
   ],
   // SIGNALS
   "signals": [
-    {
-      "name": "PADDING_FRACTION",
-      "value": 0.05
-    },
+    // {
+    //   "name": "PADDING_FRACTION",
+    //   "value": 0.05
+    // },
     // Explanation of buffer:
     // We'd like to be able to just use the padding fraction to 
     // compute the padding for each side of the screen from the total
@@ -80,14 +80,14 @@ const facetClonalFamiliesVizSpec = (data) => {
     // So we are using autosize: pad, instead which does not fit the vega exactly into
     // its container, which is why wee need PADDING_BUFFER to adjust for the amount
     // it exceeds its container.
-    {
-      "name": "PADDING_BUFFER_WIDTH",
-      "value": 150
-    },
-    {
-      "name": "PADDING_BUFFER_HEIGHT",
-      "value": 125
-    },
+    // {
+    //   "name": "PADDING_BUFFER_WIDTH",
+    //   "value": 150
+    // },
+    // {
+    //   "name": "PADDING_BUFFER_HEIGHT",
+    //   "value": 125
+    // },
     // {
     //   "name": "width",
     //   "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
@@ -366,16 +366,16 @@ const facetClonalFamiliesVizSpec = (data) => {
 //         }
 //       ]
 //     },
-    { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-    { "name": "xField", "value": "n_seqs",
-      "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-    { "name": "nullSize", "value": 8 },
-    { "name": "nullGap", "update": "nullSize + 10" },
-    { "name": "colorBy", "value": "subject.id",
-      "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-    { "name": "shapeBy", "value": "sample.timepoint",
-      "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
+    { "name": "yField", "value": "mean_mut_freq"},
+      // "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+    { "name": "xField", "value": "n_seqs"},
+      // "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+    // { "name": "nullSize", "value": 8 },
+    // { "name": "nullGap", "update": "nullSize + 10" },
+    { "name": "colorBy", "value": "subject.id"},
+      // "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+    { "name": "shapeBy", "value": "sample.timepoint"},
+      // "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   // LAYOUT
   "layout": {
@@ -473,14 +473,14 @@ const facetClonalFamiliesVizSpec = (data) => {
         //  put nested signals here
         { "name": "yField", "value": "mean_mut_freq"},
         // "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-      { "name": "xField", "value": "n_seqs"},
+        { "name": "xField", "value": "n_seqs"},
         // "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
       
-      { "name": "colorBy", "value": "subject.id"},
+        { "name": "colorBy", "value": "subject.id"},
         // "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-      { "name": "shapeBy", "value": "sample.timepoint"},
+        { "name": "shapeBy", "value": "sample.timepoint"},
         // "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-                {
+        {
                 "name": "brush_x",
                 "value": [],
                 "on": [
@@ -538,21 +538,19 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ]
                 },
                 {
-                "name": "brush_x_field",
-                "on": [
-                    {
-                    "events": {
-                        "signal": "brush_x"
-                    },
-                    "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
+                  "name": "brush_x_field",
+                  "on": [
+                      {
+                      "events": { "signal": "brush_x"},
+                      "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
                     }
-                ]
+                  ]
                 },
                 {
                 "name": "brush_y",
                 "value": [],
                 "on": [
-                    {
+                  {
                     "events": {
                         "source": "scope",
                         "type": "mousedown",
@@ -609,9 +607,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 "name": "brush_y_field",
                 "on": [
                     {
-                    "events": {
-                        "signal": "brush_y"
-                    },
+                    "events": { "signal": "brush_y" },
                     "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
                     }
                 ]
@@ -625,12 +621,8 @@ const facetClonalFamiliesVizSpec = (data) => {
                 "on": [
                     {
                     "events": [
-                        {
-                        "signal": "brush_x_field"
-                        },
-                        {
-                        "signal": "brush_y_field"
-                        }
+                        {"signal": "brush_x_field"},
+                        {"signal": "brush_y_field"}
                     ],
                     "update": "brush_x_field && brush_y_field ? {unit: \"child\" + '_' + (facet[\"has_seed\"]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
                     }
@@ -683,9 +675,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 "name": "brush_modify",
                 "on": [
                     {
-                    "events": {
-                        "signal": "brush_tuple"
-                    },
+                    "events": {"signal": "brush_tuple"},
                     "update": "modify(\"brush_store\", brush_tuple, true)"
                     }
                 ]
@@ -881,6 +871,8 @@ const facetClonalFamiliesVizSpec = (data) => {
         "domain": {"data": "data_0", "field": {"signal": "xField"}},
         "range": [0, {"signal": "child_width"}],
         "nice": true,
+        "zero": true
+
     },
     {
       "name": "y",
@@ -888,6 +880,8 @@ const facetClonalFamiliesVizSpec = (data) => {
       "domain": {"data": "data_0", "field": {"signal": "yField"}},
       "range": [{"signal": "child_height"}, 0],
       "nice": true,
+      "zero": true
+
     },
     
     {
