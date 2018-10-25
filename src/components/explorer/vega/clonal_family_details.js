@@ -319,14 +319,17 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
                     {"test": "show_labels", "field": "label"},
                     {"value": null}
                   ],
-                  "fontSize":  {"signal": "label_size"},
-                  // Color the seed blue #78
-                  "fill": [
-                    {"test": "indata('seed', 'id', datum.id)", "value": "blue"},
-                    {"value": "black"}
+                  // Show selected sequence #80
+                  "fill": 
+                  [
+                    {"test": "pts_tuple.id == null || datum.id == pts_tuple.id", "value": "black"},
+                    {"value": "grey"}
                   ],
+                  "fontSize":  {"signal": "label_size"},
+                  // Bold the seed #78
+                 
                   "fontWeight": [
-                    {"test": "indata('pts_store', 'id', datum.id)", "value": "bold"},
+                    {"test": "indata('seed', 'id', datum.id)", "value": "bold"},
                     {"value": "normal"}
                   ],
                   "cursor": {"value": "pointer"},
@@ -416,6 +419,11 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
               "encode": {
                 "update": {
                   "opacity": {"value": 0.9},
+                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // [
+                  //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.seq_id == 'inferred_naive'", "value": 0.9},
+                  //   {"value": 0.1}
+                  // ],
                   "fill": [
                     {
                       "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
@@ -452,7 +460,12 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
                   "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
                   "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
                   "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
-                  "opacity": {"value": 0.7},
+                  "opacity": {"value": 0.9},
+                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // [
+                  //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.seq_id == 'inferred_naive'"", "value": 0.9},
+                  //   {"value": 0.1}
+                  // ],
                   "y": {"scale": "y", "field": "y"},
                   "x": {"scale": "x", "field": "position"},
                   "tooltip": {
