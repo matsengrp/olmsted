@@ -119,17 +119,17 @@ class ClonalFamiliesViz extends React.Component {
 
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
-    return <Vega
+    return this.props.availableClonalFamilies.length > 0 ? <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65
-      // onSignalWidth={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log("width", result)
-      // }}
-      // onSignalHeight={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log("height", result)
-      // }}
+      onSignalWidth={(...args) => {
+        let result = args.slice(1)[0]
+        console.log("width", result)
+      }}
+      onSignalHeight={(...args) => {
+        let result = args.slice(1)[0]
+        console.log("height", result)
+      }}
       // onSignalBrush_x={(...args) => {
       //   let result = args.slice(1)[0]
       //   console.log('brushx: ', result)
@@ -172,12 +172,14 @@ class ClonalFamiliesViz extends React.Component {
         let result = args.slice(1)[0]
         this.yField = result
       }}
-      onSignalBrush_x_field={(...args) => {
+      onSignalBrush_x_field_outer={(...args) => {
         let result = args.slice(1)[0]
+        console.log(result)
         this.props.updateBrushSelection("x", this.xField, result)
       }}
-      onSignalBrush_y_field={(...args) => {
+      onSignalBrush_y_field_outer={(...args) => {
         let result = args.slice(1)[0]
+        console.log(result)
         this.props.updateBrushSelection("y", this.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
@@ -187,7 +189,8 @@ class ClonalFamiliesViz extends React.Component {
              // selected family so as to check quickly for this id within the 
              // viz to highlight the selected family.
              selected: [{'ident': this.props.selectedFamily}] }}
-      spec={this.spec}/>;
+      spec={this.spec}/> :
+      <h1>Loading</h1>
     }
 };
 

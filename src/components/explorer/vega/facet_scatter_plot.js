@@ -5,7 +5,6 @@ const facetClonalFamiliesVizSpec = (data) => {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": "pad",
   "padding": 5,
-  // "width": 400,
   // DATA
   "data": [
     {"name": "pts_store"},
@@ -62,10 +61,10 @@ const facetClonalFamiliesVizSpec = (data) => {
   ],
   // SIGNALS
   "signals": [
-    // {
-    //   "name": "PADDING_FRACTION",
-    //   "value": 0.05
-    // },
+    {
+      "name": "PADDING_FRACTION",
+      "value": 0.05
+    },
     // Explanation of buffer:
     // We'd like to be able to just use the padding fraction to 
     // compute the padding for each side of the screen from the total
@@ -80,34 +79,34 @@ const facetClonalFamiliesVizSpec = (data) => {
     // So we are using autosize: pad, instead which does not fit the vega exactly into
     // its container, which is why wee need PADDING_BUFFER to adjust for the amount
     // it exceeds its container.
-    // {
-    //   "name": "PADDING_BUFFER_WIDTH",
-    //   "value": 150
-    // },
-    // {
-    //   "name": "PADDING_BUFFER_HEIGHT",
-    //   "value": 125
-    // },
-    // {
-    //   "name": "width",
-    //   "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
-    //       "on": [
-    //         {
-    //           "events": { "source": "window", "type": "resize" },
-    //           "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
-    //         }
-    //       ]
-    // },
-    // {
-    //   "name": "height",
-    //   "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
-    //   "on": [
-    //     {
-    //       "events": { "source": "window", "type": "resize" },
-    //       "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
-    //     }
-    //   ]
-    // },
+    {
+      "name": "PADDING_BUFFER_WIDTH",
+      "value": 150
+    },
+    {
+      "name": "PADDING_BUFFER_HEIGHT",
+      "value": 125
+    },
+    {
+      "name": "width",
+      "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH",
+          "on": [
+            {
+              "events": { "source": "window", "type": "resize" },
+              "update": "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
+            }
+          ]
+    },
+    {
+      "name": "height",
+      "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
+      "on": [
+        {
+          "events": { "source": "window", "type": "resize" },
+          "update": "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
+        }
+      ]
+    },
     {
         "name": "unit",
         "value": {},
@@ -118,8 +117,10 @@ const facetClonalFamiliesVizSpec = (data) => {
           }
         ]
     },
-    {"name": "child_width", "value": 200},
-    {"name": "child_height", "value": 200},
+    {"name": "layout_padding", "value": 10},
+    { "name": "len_col_domain", "update": "length(data('column_domain'))" },
+    {"name": "child_width", "update": "width/len_col_domain-layout_padding"},
+    {"name": "child_height", "update": "height"},
 
     // Put below in nested signals?
     // On click stuff
@@ -172,216 +173,27 @@ const facetClonalFamiliesVizSpec = (data) => {
         }
       ]
     },
-//     {
-//       "name": "brush_x",
-//       "value": [],
-//       "on": [
-//         {
-//           "events": {
-//             "source": "scope",
-//             "type": "mousedown",
-//             "filter": [
-//               "!event.item || event.item.mark.name !== \"brush_brush\""
-//             ]
-//           },
-//           "update": "[x(unit), x(unit)]"
-//         },
-//         {
-//           "events": {
-//             "source": "window",
-//             "type": "mousemove",
-//             "consume": true,
-//             "between": [
-//               {
-//                 "source": "scope",
-//                 "type": "mousedown",
-//                 "filter": [
-//                   "!event.item || event.item.mark.name !== \"brush_brush\""
-//                 ]
-//               },
-//               {
-//                 "source": "window",
-//                 "type": "mouseup"
-//               }
-//             ]
-//           },
-//           "update": "[brush_x[0], clamp(x(unit), 0, width)]"
-//         },
-//         {
-//           "events": {
-//             "signal": "brush_scale_trigger"
-//           },
-//           "update": "[scale(\"x\", brush_x_field[0]), scale(\"x\", brush_x_field[1])]"
-//         },
-//         {
-//           "events": {
-//             "signal": "brush_translate_delta"
-//           },
-//           "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, width)"
-//         },
-//       ]
-//     },
-//     {
-//       "name": "brush_x_field",
-//       "on": [
-//         {
-//           "events": {
-//             "signal": "brush_x"
-//           },
-//           "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
-//         }
-//       ]
-//     },
-//     {
-//       "name": "brush_y",
-//       "value": [],
-//       "on": [
-//         {
-//           "events": {
-//             "source": "scope",
-//             "type": "mousedown",
-//             "filter": [
-//               "!event.item || event.item.mark.name !== \"brush_brush\""
-//             ]
-//           },
-//           "update": "[y(unit), y(unit)]"
-//         },
-//         {
-//           "events": {
-//             "source": "window",
-//             "type": "mousemove",
-//             "consume": true,
-//             "between": [
-//               {
-//                 "source": "scope",
-//                 "type": "mousedown",
-//                 "filter": [
-//                   "!event.item || event.item.mark.name !== \"brush_brush\""
-//                 ]
-//               },
-//               {
-//                 "source": "window",
-//                 "type": "mouseup"
-//               }
-//             ]
-//           },
-//           "update": "[brush_y[0], clamp(y(unit), 0, height)]"
-//         },
-//         {
-//           "events": {
-//             "signal": "brush_scale_trigger"
-//           },
-//           "update": "[scale(\"y\", brush_y_field[0]), scale(\"y\", brush_y_field[1])]"
-//         },
-//         {
-//           "events": {
-//             "signal": "brush_translate_delta"
-//           },
-//           "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, height)"
-//         },
-//       ]
-//     },
-//     {
-//       "name": "brush_y_field",
-//       "on": [
-//         {
-//           "events": {
-//             "signal": "brush_y"
-//           },
-//           "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
-//         }
-//       ]
-//     },
-//     {
-//       "name": "brush_scale_trigger",
-//       "update": "(!isArray(brush_x_field) || (+invert(\"x\", brush_x)[0] === +brush_x_field[0] && +invert(\"x\", brush_x)[1] === +brush_x_field[1])) && (!isArray(brush_y_field) || (+invert(\"y\", brush_y)[0] === +brush_y_field[0] && +invert(\"y\", brush_y)[1] === +brush_y_field[1])) ? brush_scale_trigger : {}"
-//     },
-//     {
-//       "name": "brush_tuple",
-//       "on": [
-//         {
-//           "events": [
-//             {
-//               "signal": "brush_x_field"
-//             },
-//             {
-//               "signal": "brush_y_field"
-//             }
-//           ],
-//           "update": "brush_x_field && brush_y_field ? {unit: \"\", intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
-//         }
-//       ]
-//     },
-//     {
-//       "name": "brush_translate_anchor",
-//       "value": {},
-//       "on": [
-//         {
-//           "events": [
-//             {
-//               "source": "scope",
-//               "type": "mousedown",
-//               "markname": "brush_brush"
-//             }
-//           ],
-//           "update": "{x: x(unit), y: y(unit), extent_x: slice(brush_x), extent_y: slice(brush_y)}"
-//         }
-//       ]
-//     },
-//     {
-//       "name": "brush_translate_delta",
-//       "value": {},
-//       "on": [
-//         {
-//           "events": [
-//             {
-//               "source": "window",
-//               "type": "mousemove",
-//               "consume": true,
-//               "between": [
-//                 {
-//                   "source": "scope",
-//                   "type": "mousedown",
-//                   "markname": "brush_brush"
-//                 },
-//                 {
-//                   "source": "window",
-//                   "type": "mouseup"
-//                 }
-//               ]
-//             }
-//           ],
-//           "update": "{x: brush_translate_anchor.x - x(unit), y: brush_translate_anchor.y - y(unit)}"
-//         }
-//       ]
-//     },
-//     {
-//       "name": "brush_modify",
-//       "on": [
-//         {
-//           "events": {
-//             "signal": "brush_tuple"
-//           },
-//           "update": "modify(\"brush_store\", brush_tuple, true)"
-//         }
-//       ]
-//     },
-    { "name": "yField", "value": "mean_mut_freq"},
-      // "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-    { "name": "xField", "value": "n_seqs"},
-      // "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-    // { "name": "nullSize", "value": 8 },
-    // { "name": "nullGap", "update": "nullSize + 10" },
-    { "name": "colorBy", "value": "subject.id"},
-      // "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-    { "name": "shapeBy", "value": "sample.timepoint"},
-      // "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
+
+    { "name": "yField", "value": "mean_mut_freq",
+      "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+    { "name": "xField", "value": "n_seqs",
+       "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+    { "name": "colorBy", "value": "subject.id",
+       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+    { "name": "shapeBy", "value": "sample.timepoint",
+       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+    {
+      "name": "brush_x_field_outer",
+    },
+    {
+      "name": "brush_y_field_outer",     
+    },
   ],
   // LAYOUT
   "layout": {
-    "padding": {"row": 10, "column": 10},
+    "padding": {"row": {"signal": "layout_padding"}, "column": {"signal": "layout_padding"}},
     "offset": {"columnTitle": 10},
-    "columns": {"signal": "length(data('column_domain'))"},
+    "columns": {"signal": "len_col_domain"},
     "bounds": "full",
     "align": "all"
   },
@@ -403,7 +215,7 @@ const facetClonalFamiliesVizSpec = (data) => {
             "scale": "y",
             "orient": "left",
             "grid": false,
-            "title": "row header",
+            "title": {"signal": "yField"},
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(child_height/40)"},
             "zindex": 1
@@ -436,7 +248,7 @@ const facetClonalFamiliesVizSpec = (data) => {
             "scale": "x",
             "orient": "bottom",
             "grid": false,
-            "title": "column footer",
+            "title": {"signal": "xField"},
             "labelFlush": true,
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(child_width/40)"},
@@ -470,17 +282,7 @@ const facetClonalFamiliesVizSpec = (data) => {
               }
             ]
          },
-        //  put nested signals here
-        { "name": "yField", "value": "mean_mut_freq"},
-        // "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-        { "name": "xField", "value": "n_seqs"},
-        // "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
-      
-        { "name": "colorBy", "value": "subject.id"},
-        // "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-        { "name": "shapeBy", "value": "sample.timepoint"},
-        // "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
-        {
+         {
                 "name": "brush_x",
                 "value": [],
                 "on": [
@@ -538,13 +340,24 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ]
                 },
                 {
+                  "name": "brush_x_field_outer",
+                  "on": [
+                      {
+                      "events": { "signal": "brush_x"},
+                      "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
+                    }
+                  ],
+                  "push": "outer"
+                },
+                {
                   "name": "brush_x_field",
                   "on": [
                       {
                       "events": { "signal": "brush_x"},
                       "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
                     }
-                  ]
+                  ],
+                  // "push": "outer"
                 },
                 {
                 "name": "brush_y",
@@ -604,14 +417,25 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ]
                 },
                 {
-                "name": "brush_y_field",
+                "name": "brush_y_field_outer",
                 "on": [
                     {
                     "events": { "signal": "brush_y" },
                     "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
                     }
-                ]
+                ],
+                "push": "outer"
                 },
+                {
+                  "name": "brush_y_field",
+                  "on": [
+                      {
+                      "events": { "signal": "brush_y" },
+                      "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
+                      }
+                  ],
+                  // "push": "outer"
+                  },
                 {
                 "name": "brush_scale_trigger",
                 "update": "(!isArray(brush_x_field) || (+invert(\"x\", brush_x)[0] === +brush_x_field[0] && +invert(\"x\", brush_x)[1] === +brush_x_field[1])) && (!isArray(brush_y_field) || (+invert(\"y\", brush_y)[0] === +brush_y_field[0] && +invert(\"y\", brush_y)[1] === +brush_y_field[1])) ? brush_scale_trigger : {}"
@@ -672,13 +496,13 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ]
                 },
                 {
-                "name": "brush_modify",
-                "on": [
-                    {
-                    "events": {"signal": "brush_tuple"},
-                    "update": "modify(\"brush_store\", brush_tuple, true)"
-                    }
-                ]
+                  "name": "brush_modify",
+                  "on": [
+                        {
+                        "events": {"signal": "brush_tuple"},
+                        "update": "modify(\"brush_store\", brush_tuple, true)"
+                        }
+                  ]
                 }
         ],
         // put marks here
@@ -756,10 +580,14 @@ const facetClonalFamiliesVizSpec = (data) => {
                     "fill": {
                         "value": "transparent"
                     },
-                    "stroke": {
+                    "stroke": [
+                      {
+                        "test": "!(length(data(\"brush_store\"))) || (vlInterval(\"brush_store\", datum))",
                         "scale": "color",
                         "field": {"signal": "colorBy"}
-                    },
+                      },
+                      {"value": "grey"}
+                    ],
                     "shape": {
                         "scale": "shape",
                         "field": {"signal": "shapeBy"}
@@ -836,7 +664,8 @@ const facetClonalFamiliesVizSpec = (data) => {
             {
             "scale": "x",
             "orient": "bottom",
-            "gridScale": "y",
+            // This is important to leave the grid scale as x to limit this to the x range?? Why does this work when they are both x
+            // "gridScale": "y",
             "grid": true,
             "tickCount": {"signal": "ceil(child_width/40)"},
             "domain": false,
@@ -905,29 +734,6 @@ const facetClonalFamiliesVizSpec = (data) => {
       "range": "symbol"
     }
   ],
-//   // AXES
-//   "axes": [
-//     {
-//       "scale": "x",
-//       "orient": "bottom",
-//       "grid": true,
-//       "title": {"signal": "xField"},
-//       "tickCount": {
-//         "signal": "ceil(width/40)"
-//       },
-//       "zindex": 0
-//     },
-//     {
-//       "scale": "y",
-//       "orient": "left",
-//       "grid": true,
-//       "title": {"signal": "yField"},
-//       "tickCount": {
-//         "signal": "ceil(height/40)"
-//       },
-//       "zindex": 0
-//     }
-//   ],
   // LEGENDS
   "legends": [
     {
