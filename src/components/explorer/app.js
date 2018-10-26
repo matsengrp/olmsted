@@ -21,7 +21,8 @@ const usableWidthStyle = (availableWidth) => {
     width: availableWidth*(1-2*PADDING_FRACTION),
     paddingLeft: availableWidth*PADDING_FRACTION,
     paddingRight: availableWidth*PADDING_FRACTION,
-    paddingBottom: 250
+    paddingTop: 40,
+    paddingBottom: 220
   }
 }
 
