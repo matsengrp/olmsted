@@ -319,15 +319,19 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
                     {"test": "show_labels", "field": "label"},
                     {"value": null}
                   ],
-                  // Show selected sequence #80
-                  "fill": 
+                  // Show selected sequence as darker, default to all grey #80
+                  "opacity":
                   [
-                    {"test": "pts_tuple.id == null || datum.id == pts_tuple.id", "value": "black"},
-                    {"value": "grey"}
+                    {"test": "pts_tuple.id == null || datum.id !== pts_tuple.id", "value": 0.5},
+                    {"value": 1}
                   ],
-                  "fontSize":  {"signal": "label_size"},
+                  // Make seed larger #78
+                  "fontSize":
+                  [
+                    {"test": "indata('seed', 'id', datum.id)",  "signal": "label_size*1.5"},
+                    {"signal": "label_size"}
+                  ]  ,
                   // Bold the seed #78
-                 
                   "fontWeight": [
                     {"test": "indata('seed', 'id', datum.id)", "value": "bold"},
                     {"value": "normal"}
