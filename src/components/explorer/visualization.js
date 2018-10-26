@@ -118,7 +118,9 @@ class ClonalFamiliesViz extends React.Component {
   
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
-    return <Vega
+    return <div>
+      <p>Number of clonal families: {this.props.availableClonalFamilies.length}</p>
+      <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65
       // onSignalWidth={(...args) => {
@@ -160,7 +162,8 @@ class ClonalFamiliesViz extends React.Component {
              // selected family so as to check quickly for this id within the 
              // viz to highlight the selected family.
              selected: [{'ident': this.props.selectedFamily}] }}
-      spec={this.spec}/>;
+      spec={this.spec}/>
+    </div>;
     }
 };
 
