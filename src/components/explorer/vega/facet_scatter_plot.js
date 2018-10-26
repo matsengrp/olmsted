@@ -63,6 +63,9 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
     {
       "name": "facet_by_field",
       "value": facet_by_field,
+      // UPDATING DOESN"T WORK
+      // "value": "dataset.id",
+      // "bind": {"name": "Facet by (VEGA)", "input": "select", "options": ["has_seed", "dataset.id", "subject.id", "sample.timepoint" ]}
     },
     {
       "name": "PADDING_FRACTION",
