@@ -3,9 +3,9 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
-import * as types from '../../actions/types';
 import {createClassFromSpec} from 'react-vega';
-import { getSelectedFamily, getTipsDataSelector, getLineageDataSelector} from "../../selectors/selectedFamily";
+import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction} from "../../selectors/selectedFamily";
+import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
@@ -98,24 +98,23 @@ const NaiveSequence = ({datum}) => {
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-  availableClonalFamilies: state.clonalFamilies.availableClonalFamilies,
-  selectedFamily: state.clonalFamilies.selectedFamily}))
+  availableClonalFamilies: getAvailableClonalFamilies(state),
+  selectedFamily: state.clonalFamilies.selectedFamily
+}),
+  //This is a shorthand way of specifying mapDispatchToProps
+  {
+    selectFamily: explorerActions.selectFamily,
+    updateBrushSelection: explorerActions.updateBrushSelection,
+    updateSelectingStatus: explorerActions.updateSelectingStatus
+  })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.updateBrushSelection = this.updateBrushSelection.bind(this);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
     this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
   }
 
-  // this method dispatches an action to redux, and is called in the signal handlers below
-  updateBrushSelection(dim, attr, data){
-    let updateBrushData = [dim, attr, data]
-    this.props.dispatch({type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData});
-  }
-  
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <div>
@@ -139,6 +138,32 @@ class ClonalFamiliesViz extends React.Component {
       //   let result = args.slice(1)[0]
       //   console.log('brushy: ', result)  
       // }}
+      onSignalPts_tuple={(...args) => {
+        let family = args.slice(1)[0]
+        if(family.ident){
+          // Second argument specifies that we would like to 
+          // include just this family in our brush selection
+          // and therefore in the table since we have clicked it
+          this.props.selectFamily(family.ident, true)
+        }
+      }}
+      onSignalMouseDown={(...args) => {
+        let coords = args.slice(1)[0]
+        // Must check to see if there are actual mouse coordinates
+        // here and in the mouseup signal handler just below because
+        // they are triggered with undefined upon rendering the viz
+        if(coords){
+          this.props.updateSelectingStatus()
+          this.mouseDown = true
+        }
+      }}
+      onSignalMouseUp={(...args) => {
+        let coords = args.slice(1)[0]
+        if(this.mouseDown && coords){
+          this.props.updateSelectingStatus()
+        }
+        this.mouseDown = false
+      }}
       onSignalXField={(...args) => {
         let result = args.slice(1)[0]
         this.xField = result
@@ -149,11 +174,11 @@ class ClonalFamiliesViz extends React.Component {
       }}
       onSignalBrush_x_field={(...args) => {
         let result = args.slice(1)[0]
-        this.updateBrushSelection("x", this.xField, result)
+        this.props.updateBrushSelection("x", this.xField, result)
       }}
       onSignalBrush_y_field={(...args) => {
         let result = args.slice(1)[0]
-        this.updateBrushSelection("y", this.yField, result)
+        this.props.updateBrushSelection("y", this.yField, result)
       }}
       onParseError={(...args) => console.error("parse error:", args)}
       debug={/* true for debugging */ true}
@@ -177,18 +202,17 @@ class ClonalFamiliesViz extends React.Component {
 
 // First some redux connection functions
 
-const mapStateToPropsTips = (state) => {
+const mapStateToPropsTips = (state, ownProps) => {
+  let treeNodes = getReconstructionData(state)
   return {
-    selectedFamily: getSelectedFamily(state.clonalFamilies),
-    treeNodes: getTipsDataSelector(state.clonalFamilies),
-    treeScale: state.clonalFamilies.treeScale
+    selectedFamily: getSelectedFamily(state),
+    treeNodes,
+    selectedReconstruction: getSelectedReconstruction(state),
+    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight)
   }
 }
 
 const mapDispatchToProps = (dispatch) => ( {
-  dispatchTreeScale: (val) => {
-    dispatch(explorerActions.updateTreeScale(val))
-  },
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
   },
@@ -199,15 +223,21 @@ const mapDispatchToProps = (dispatch) => ( {
 
 // now for the actual component definition
 
-@connect(mapStateToPropsTips, mapDispatchToProps , null,
-  {areStatesEqual: (next, prev) => (
-      _.isEqual(prev.clonalFamilies.selectedReconstruction, next.clonalFamilies.selectedReconstruction) &&
-      _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) &&
-      _.isEqual(prev.clonalFamilies.treeScale, next.clonalFamilies.treeScale))})
+@connect(mapStateToPropsTips, mapDispatchToProps)
 class TreeViz extends React.Component {
+
+  shouldComponentUpdate(nextProps, nextState){
+    // This is here because we don't want to rerender when the component gets new props
+    // except these ones. This includes when it recieves a new availableHeight prop
+    // Before we were using areStatesEqual, but that just checks incoming state values,
+    // and so we would still rerender on some new props. Hence the implementation here.
+
+    //      NOTE this '!' in front means if either of them are not equal, we DO rerender
+    return !(_.isEqual(this.props.selectedReconstruction, nextProps.selectedReconstruction) &&
+           _.isEqual(this.props.selectedFamily, nextProps.selectedFamily))
+  }
+
   render() {
-    // clone for assign by value
-    this.treeScale = _.clone(this.props.treeScale);
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -217,29 +247,27 @@ class TreeViz extends React.Component {
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
-              onSignalBranchScale={(...args) => {
-                let branch_scale = args.slice(1)[0];
-                this.treeScale.branch_scale = branch_scale
-              }}
-              onSignalHeightScale={(...args) => {
-                let height_scale = args.slice(1)[0];
-                this.treeScale.height_scale = height_scale
-              }}
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
                   // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                  this.props.dispatchTreeScale(this.treeScale)
                   this.props.dispatchSelectedSeq(node)
                 }
               }}
               debug={/* true for debugging */ false}
-              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, this.treeScale)}
+              data={{source_0: this.props.treeNodes.asr_tree,
+                     source_1: this.props.treeNodes.tips_alignment,
+                    // Here we create a separate dataset only containing the id of the
+                    // seed sequence so as to check quickly for this id within the 
+                    // viz to color the seed blue
+                     seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
+                  }}
+              spec={this.props.spec}
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
-                           label="Download Fasta: Unique Sequences In This Family"/>
-            <DownloadText  text={this.props.selectedFamily.newick_string}
+                           label="Download Fasta: Unique Sequences In This Tree"/>
+            <DownloadText  text={this.props.selectedReconstruction.newick_string}
                            filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
                            label="Download Clonal Family Tree Newick String"/>
           </div>
@@ -255,7 +283,7 @@ class TreeViz extends React.Component {
 
 const mapStateToPropsLineage = (state) => {
     return {
-      selectedFamily: getLineageDataSelector(state.clonalFamilies),
+      selectedFamily: getLineageData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
     }
 }
@@ -287,4 +315,3 @@ class Lineage extends React.Component {
 
 // export compoents
 export {ClonalFamiliesViz, TreeViz, NaiveSequence, Lineage}
-

@@ -1,3 +1,6 @@
+
+import * as _ from "lodash";
+
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [ 
   '-',
@@ -84,19 +87,26 @@ const IMGTScientificChartColors = [
   '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
-const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
+const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
+  let max_leaf_size = 25
+
+  let leaves_count_incl_naive = reconstruction["leaves_count_incl_naive"]
+  let init_height_scale = Math.floor(availableHeight*0.9/leaves_count_incl_naive)
+  init_height_scale = _.clamp(init_height_scale, max_leaf_size*2)
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "height": 800,
       "width": 1000,
       "data": [
         {"name": "pts_store"},
+        {
+          "name": "seed"
+        },
         // Tree Data
         {"name": "source_0",
-         "values":selectedFamily["asr_tree"] 
+         "values":reconstruction["asr_tree"]
         },
         {"name": "tree", 
          "transform": [{"key": "id", "type": "stratify", "parentKey": "parent"},
@@ -110,10 +120,26 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
          "source": "tree"},
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
-        {"name": "leaves", "transform": [{"expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"}, 
+        {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"},
+        {"name": "leaf_pies", "transform": [{ "type": "flatten", "fields": ["timepoint_multiplicities"]},
+                                            {
+                                              "type": "formula",
+                                              "expr": "datum.timepoint_multiplicities.timepoint", "as": "timepoint_multiplicity_key"
+                                            },
+                                            {
+                                              "type": "formula",
+                                              "expr": "datum.timepoint_multiplicities.multiplicity", "as": "timepoint_multiplicity_value"
+                                            },
+                                            {
+                                              "type": "pie",
+                                              "field": "timepoint_multiplicity_value",
+                                              "startAngle": 0,
+                                              "endAngle": {"signal": "length(data('leaves'))*6.29"}
+                                            }],
+          "source": "leaves"},
         // Mutations Data
         {"name": "source_1",
-         "values":selectedFamily["tips_alignment"] 
+         "values":reconstruction["tips_alignment"] 
         },
         {"name": "data_1",
          "source": "source_1",
@@ -139,40 +165,51 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
       ],
       "signals": [
         // TREE SIGNALS
+        // Number of leaves
+        {
+          "name": "leaves_count_incl_naive",
+          "update": leaves_count_incl_naive
+        },
         // BRANCHSCALE - scales up width of tree
-        {"value": treeScale.branch_scale,
+        {"value": 950,
          "name": "branchScale",
          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}},
         // HEIGHTSCALE - scales up height the ENTIRE VIZ
-        {"value": treeScale.height_scale,
+        // this is initially set to fit the screen (see https://github.com/matsengrp/olmsted/issues/83)
+        {
+         "value": init_height_scale,
          "name": "heightScale",
-         "bind": {"max": 20, "step": 1, "input": "range", "min": 0}
+         "bind": {"max": max_leaf_size*2, "step": 1, "input": "range", "min": 1}
         },
-         // Size of leaves
+         // Size of leaves - they are mapped to a range with
+         // the value of this signal as the maximum
          {
           "name": "max_leaf_size",
-          "value": 1000,
-          "bind": {"max": 7000, "step": 50, "input": "range", "min": 1}
+          "value": Math.floor(init_height_scale/2),
+          "bind": {"max": max_leaf_size, "step": 1, "input": "range", "min": 1}
         },
         {
           "name": "leaf_size",
           "value": "multiplicity",
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
         },
-        // Number of leaves
         {
-          "name": "leaves_len",
-          "update": "length(data(\"leaves\"))"
+          "value": true,
+          "name": "show_labels",
+          "bind": {"input": "radio", "options": [true, false]}
         },
+        {"name": "label_size",
+        "update": "clamp(heightScale, 0, 10)"},        
         // Height of viz scaled by number of leaves 
         {
-          "name": "scaledHeight",
-          "update": "heightScale*(leaves_len+1)"
+          "name": "height",
+          "update": "heightScale*(leaves_count_incl_naive)"
         },
         {"value": "datum",
          "name": "cladify",
          "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]},
         {"name": "concat_0_x_step", "value": 0},
+        // #59 this will need to be controlled by slider 
         {"name": "concat_0_width",
         "update": "branchScale*distance_extent[1]"
       },
@@ -208,13 +245,14 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
         // ALIGNMENT SIGNALS
         {
           "name": "mutation_mark_height",
-          "update": "ceil(height/100)"
+          "update": "heightScale*0.9"
         },
         {
           "name": "mutation_mark_width",
           "update": "ceil(width/150)"
         },
-        {"name": "concat_1_width", "value": 200}
+        // #59 this will need to be controlled by slider 
+        {"name": "concat_1_width", "update": "width - concat_0_width"}
       ],
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
@@ -232,8 +270,9 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "name": "concat_0_group",
           "encode": {
            "update": {
+             // #59 this will need to be controlled by slider 
              "width": {"signal": "concat_0_width"},
-             "height": {"signal": "scaledHeight"}
+             "height": {"signal": "height"}
            }
           },
           "marks": [
@@ -262,7 +301,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   }
                 },
                 "enter": {
-                  "size": {"value": 10},
+                  "size": {"value": 20},
+                  // Change this to black to see internal nodes
                   "stroke": {"value": "transparent"},
                 }
               },
@@ -274,12 +314,29 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
             {
               "type": "text",
               "encode": {
-                "enter": {
-                  "text": {"field": "label"},
-                  "fill": {"value": "#000"},
-                  "fontSize": {"value": 10},
-                },
                 "update": {
+                  "text": [
+                    {"test": "show_labels", "field": "label"},
+                    {"value": null}
+                  ],
+                  // Show selected sequence as darker, default to all grey #80
+                  "opacity":
+                  [
+                    {"test": "pts_tuple.id == null || datum.id !== pts_tuple.id", "value": 0.5},
+                    {"value": 1}
+                  ],
+                  // Make seed larger #78
+                  "fontSize":
+                  [
+                    {"test": "indata('seed', 'id', datum.id)",  "signal": "label_size*1.5"},
+                    {"signal": "label_size"}
+                  ]  ,
+                  // Bold the seed #78
+                  "fontWeight": [
+                    {"test": "indata('seed', 'id', datum.id)", "value": "bold"},
+                    {"value": "normal"}
+                  ],
+                  "cursor": {"value": "pointer"},
                   "y": {"scale": "y", "field": "y"},
                   "dx": {"scale": "leaf_label_offset", "field": {"signal": "leaf_size"}},
                   "dy": {"value": 3},
@@ -291,25 +348,26 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               },
               "from": {"data": "leaves"}
             },
-            // circles: size depends on multiplicity 
-            {
-              "name": "leaf",
+            // Pie charts: size depends on multiplicity 
+            { "name": "pie",
+              "type": "arc",
+              "from": {"data": "leaf_pies"},
               "encode": {
                 "update": {
-                  "y": {"field": "y"},
-                  "fill": {"value": "#000"},
-                  "fillOpacity": {"value": "0.05"},
+                  "fill": {"scale": "simple_color", "field": "timepoint_multiplicity_key"},
+                  "fillOpacity": {"value": "0.5"},
                   "x": {"field": "x"},
+                  "y": {"field": "y"},
+                  "startAngle": {"field": "startAngle"},
+                  "endAngle": {"field": "endAngle"},
+                  // Set inner radius to get donuts instead of pie charts
+                  // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   },
-                  "size": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
-                  "stroke": {"value": "#000"},
-                  "strokeWidth": {"value": 0.5}
-                },
-              },
-              "type": "symbol",
-              "from": {"data": "leaves"}
+                  "outerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size"}},
+                }
+              }
             },
             {
               "name": "leaf_center",
@@ -350,8 +408,9 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "style": "cell",
           "encode": {
             "update": {
+              // #59 this will need to be controlled by slider 
               // "width": {"signal": "concat_1_width"},
-              "height": {"signal": "scaledHeight"}
+              "height": {"signal": "height"}
             }
           },
           "marks": [
@@ -364,6 +423,11 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "encode": {
                 "update": {
                   "opacity": {"value": 0.9},
+                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // [
+                  //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.seq_id == 'inferred_naive'", "value": 0.9},
+                  //   {"value": 0.1}
+                  // ],
                   "fill": [
                     {
                       "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
@@ -391,15 +455,22 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
                   "text": {"field": "mut_to"},
                   "fill": {"value": "#000"},
                   // fontSize must be increased for gap character '-' to make it visible
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
                 },
                 "update": {
-                  "opacity": {"value": 0.7},
+                  //center the text on x, y properties
+                  "align": {"value": "center"},
+                  "baseline": {"value": "middle"},
+                  // Style the '-' and 'X' differently to make them equally visible
+                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                  "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
+                  "opacity": {"value": 0.9},
+                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // [
+                  //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.seq_id == 'inferred_naive'"", "value": 0.9},
+                  //   {"value": 0.1}
+                  // ],
                   "y": {"scale": "y", "field": "y"},
-                  "dx": {"value": -2},
-                  // See above "fontSize must be increased for gap character '-' to make it visible"
-                  // This means y offset needs to be larger for these marks
-                  "dy": {"signal": "datum.mut_to == \"-\" ? mutation_mark_height/2+2 : mutation_mark_height/2"},
                   "x": {"scale": "x", "field": "position"},
                   "tooltip": {
                     "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -440,7 +511,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "scale": "y",
               "orient": "left",
               "grid": false,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
               "labels": false,
               "zindex": 1,
@@ -451,18 +522,38 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
               "orient": "left",
               "gridScale": "x",
               "grid": true,
-              "tickCount": {"signal": "leaves_len+1"},
+              "tickCount": {"signal": "leaves_count_incl_naive"},
               // "domain": false,
               "labels": false,
               "maxExtent": 0,
               "minExtent": 0,
               "zindex": 0
             }
-          ]
+          ], 
+          // Color legend
+          "legends": [
+            {
+              "orient": "top",
+              "direction": "horizontal",
+              "fill": "color",
+              "title": "Amino acid color scale",
+              "offset": {"signal": "mutation_mark_height"},
+              "encode": {
+                "symbols": {
+                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
+                }
+              }
+            }
+          ],       
         }
       ],
       
       "scales": [
+        {
+          "name": "simple_color",
+          "type": "ordinal",
+          "range": {"scheme": "category20"}
+        },
         {
           "name": "leaf_label_offset",
           "type": "linear",
@@ -503,8 +594,8 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           // "nice": {"signal": "leaves_len"},
           "zero": true,
           "domain": {"data": "leaves", "field": "y"},
-          // this creates an array of range values - one for each leaf; scaledHeight is heightScale * (len_leaves+1)
-          "range": {"signal": "sequence(0, scaledHeight, heightScale)"}, 
+          // this creates an array of range values - one for each leaf; height is heightScale * (len_leaves+1)
+          "range": {"signal": "sequence(0, height, heightScale)"}, 
         },
         {
           "name": "color",
@@ -512,18 +603,7 @@ const concatTreeWithAlignmentSpec  = (selectedFamily, treeScale) => {
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
         }
-      ],
-      "legends": [
-        {
-          "fill": "color",
-          "title": "mut_to",
-          "encode": {
-            "symbols": {
-              "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
-            }
-          }
-        }
-      ],
+      ],     
     }
   )
 }
@@ -616,16 +696,16 @@ const seqAlignSpec = (family) => {
             "enter": {
               "text": {"field": "mut_to"},
               "fill": {"value": "#000"},
-              // fontSize must be increased for gap character '-' to make it visible
-              "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 10"},
             },
             "update": {
+              "align": {"value": "center"},
+              "baseline": {"value": "middle"},
+              // Style the '-' and 'X' differently to make them equally visible
+              "fontSize": {"signal": "datum.mut_to == \"-\" ? mark_height*2 : mark_height*1.5"},
+              "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+              "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
               "opacity": {"value": 0.7},
               "y": {"scale": "y", "field": "seq_id"},
-              "dx": {"value": -3},
-              // See above "fontSize must be increased for gap character '-' to make it visible"
-              // This means y offset needs to be larger for these marks
-              "dy": {"signal": "datum.mut_to == \"-\" ? mark_height/2+2 : mark_height/2"},
               "x": {"scale": "x", "field": "position"},
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"),  \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -685,7 +765,7 @@ const seqAlignSpec = (family) => {
           "scale": "y",
           "orient": "left",
           "grid": false,
-          "title": "seq_id",
+          "title": "seq id",
           "zindex": 1
         },
         {
@@ -704,8 +784,10 @@ const seqAlignSpec = (family) => {
       ],
       "legends": [
         {
+          "orient": "bottom",
+          "direction": "horizontal",
           "fill": "color",
-          "title": "mut_to",
+          "title": "Amino acid color scale:",
           "encode": {
             "symbols": {
               "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}

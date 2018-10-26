@@ -155,5 +155,7 @@
    "db:valueType": "db.type:ref",
    "db:cardinality": "db.cardinality:many"},
   {"db:ident": "tripl.file:contents",
+   "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "tripl.file:path",
    "db:cardinality": "db.cardinality:one"}
  ]

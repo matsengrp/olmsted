@@ -4,6 +4,7 @@ const naiveVegaSpec = {
   "padding": 5,
   "width": 250,
   "height": 25,
+  // Remove style: cell to get rid of border 
   "style": "cell",
   "data": [
     {
@@ -81,7 +82,7 @@ const naiveVegaSpec = {
       "encode": {
         "update": {
           "fill": {
-            "value": "yellow"
+            "value": "#1b7837"
           },
           "tooltip": {
             "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\")}"
@@ -195,12 +196,13 @@ const naiveVegaSpec = {
         "Insertion 2",
         "J gene"
       ],
+      // COLORS
       "range": [
-        "#db2c0d",
-        "#36db0d",
-        "#000000",
-        "#36db0d",
-        "#2c12ea"
+        "#762a83",
+        "#af8dc3",
+        "black",
+        "#d9f0d3",
+        "#7fbf7b"
       ]
     }
   ], 
