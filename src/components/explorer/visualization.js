@@ -100,98 +100,113 @@ const NaiveSequence = ({datum}) => {
 
 @connect((state) => ({
   availableClonalFamilies: getAvailableClonalFamilies(state),
-  selectedFamily: state.clonalFamilies.selectedFamily
+  selectedFamily: state.clonalFamilies.selectedFamily,
+  facetByField: state.clonalFamilies.facetByField
 }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
     selectFamily: explorerActions.selectFamily,
     updateBrushSelection: explorerActions.updateBrushSelection,
-    updateSelectingStatus: explorerActions.updateSelectingStatus
+    updateSelectingStatus: explorerActions.updateSelectingStatus,
+    updateFacet: explorerActions.updateFacet
+
   })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
-    // this.spec=clonalFamiliesVizCustomSpec(props.availableClonalFamilies);
-    this.spec=facetClonalFamiliesVizSpec(props.availableClonalFamilies);
+    this.facetOptions = [undefined, "has_seed", "sample.timepoint", "dataset.id", "subject.id", "v_gene", "d_gene", "j_gene"]
   }
 
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
-    return this.props.availableClonalFamilies.length > 0 ? <Vega
-      // TURN THESE ON TO DEBUG SIGNALS
-      // SEE https://github.com/matsengrp/olmsted/issues/65
-      onSignalWidth={(...args) => {
-        let result = args.slice(1)[0]
-        console.log("width", result)
-      }}
-      onSignalHeight={(...args) => {
-        let result = args.slice(1)[0]
-        console.log("height", result)
-      }}
-      // onSignalBrush_x={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log('brushx: ', result)
-      // }}
-      // onSignalBrush_y={(...args) => {
-      //   let result = args.slice(1)[0]
-      //   console.log('brushy: ', result)  
-      // }}
-      onSignalPts_tuple={(...args) => {
-        let family = args.slice(1)[0]
-        if(family.ident){
-          // Second argument specifies that we would like to 
-          // include just this family in our brush selection
-          // and therefore in the table since we have clicked it
-          this.props.selectFamily(family.ident, true)
-        }
-      }}
-      onSignalMouseDown={(...args) => {
-        let coords = args.slice(1)[0]
-        // Must check to see if there are actual mouse coordinates
-        // here and in the mouseup signal handler just below because
-        // they are triggered with undefined upon rendering the viz
-        if(coords){
-          this.props.updateSelectingStatus()
-          this.mouseDown = true
-        }
-      }}
-      onSignalMouseUp={(...args) => {
-        let coords = args.slice(1)[0]
-        if(this.mouseDown && coords){
-          this.props.updateSelectingStatus()
-        }
-        this.mouseDown = false
-      }}
-      onSignalXField={(...args) => {
-        let result = args.slice(1)[0]
-        this.xField = result
-      }}
-      onSignalYField={(...args) => {
-        let result = args.slice(1)[0]
-        this.yField = result
-      }}
-      onSignalBrush_x_field_outer={(...args) => {
-        let result = args.slice(1)[0]
-        console.log(result)
-        this.props.updateBrushSelection("x", this.xField, result)
-      }}
-      onSignalBrush_y_field_outer={(...args) => {
-        let result = args.slice(1)[0]
-        console.log(result)
-        this.props.updateBrushSelection("y", this.yField, result)
-      }}
-      onParseError={(...args) => console.error("parse error:", args)}
-      debug={/* true for debugging */ true}
-      data={{source: this.props.availableClonalFamilies,
-             // Here we create a separate dataset only containing the id of the
-             // selected family so as to check quickly for this id within the 
-             // viz to highlight the selected family.
-             selected: [{'ident': this.props.selectedFamily}] }}
-      spec={this.spec}/> :
-      <h1>Loading</h1>
-    }
+    this.spec = this.props.facetByField ? facetClonalFamiliesVizSpec(this.props.availableClonalFamilies, this.props.facetByField) :
+                             clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)
+    return <div>
+            {this.props.availableClonalFamilies.length <= 0 ? 
+                //Render "Loading" if we have no clonal families yet
+                //This needs to be changed later: what if we had no clonal families
+                //and the user just sits there waiting thinking something is broken
+                <h1>Loading</h1> 
+                :
+                <Vega
+                // TURN THESE ON TO DEBUG SIGNALS
+                // SEE https://github.com/matsengrp/olmsted/issues/65
+                // onSignalWidth={(...args) => {
+                //   let result = args.slice(1)[0]
+                //   console.log("width", result)
+                // }}
+                // onSignalHeight={(...args) => {
+                //   let result = args.slice(1)[0]
+                //   console.log("height", result)
+                // }}
+                // onSignalBrush_x={(...args) => {
+                //   let result = args.slice(1)[0]
+                //   console.log('brushx: ', result)
+                // }}
+                // onSignalBrush_y={(...args) => {
+                //   let result = args.slice(1)[0]
+                //   console.log('brushy: ', result)  
+                // }}
+                onSignalPts_tuple={(...args) => {
+                  let family = args.slice(1)[0]
+                  if(family.ident){
+                    // Second argument specifies that we would like to 
+                    // include just this family in our brush selection
+                    // and therefore in the table since we have clicked it
+                    this.props.selectFamily(family.ident, true)
+                  }
+                }}
+                onSignalMouseDown={(...args) => {
+                  let coords = args.slice(1)[0]
+                  // Must check to see if there are actual mouse coordinates
+                  // here and in the mouseup signal handler just below because
+                  // they are triggered with undefined upon rendering the viz
+                  if(coords){
+                    this.props.updateSelectingStatus()
+                    this.mouseDown = true
+                  }
+                }}
+                onSignalMouseUp={(...args) => {
+                  let coords = args.slice(1)[0]
+                  if(this.mouseDown && coords){
+                    this.props.updateSelectingStatus()
+                  }
+                  this.mouseDown = false
+                }}
+                onSignalXField={(...args) => {
+                  let result = args.slice(1)[0]
+                  this.xField = result
+                }}
+                onSignalYField={(...args) => {
+                  let result = args.slice(1)[0]
+                  this.yField = result
+                }}
+                onSignalBrush_x_field_outer={(...args) => {
+                  let result = args.slice(1)[0]
+                  this.props.updateBrushSelection("x", this.xField, result)
+                }}
+                onSignalBrush_y_field_outer={(...args) => {
+                  let result = args.slice(1)[0]
+                  this.props.updateBrushSelection("y", this.yField, result)
+                }}
+                onParseError={(...args) => console.error("parse error:", args)}
+                debug={/* true for debugging */ true}
+                data={{source: this.props.availableClonalFamilies,
+                      // Here we create a separate dataset only containing the id of the
+                      // selected family so as to check quickly for this id within the 
+                      // viz to highlight the selected family.
+                      selected: [{'ident': this.props.selectedFamily}] }}
+                spec={this.spec}/>
+              }
+              <label>Facet by field: </label>
+              <select value={this.props.facetByField}
+                onChange={(event) => this.props.updateFacet(event.target.value) }>
+                {this.facetOptions.map((option) =>
+                  <option key={option} value={option}>{option}</option>)}
+              </select>
+            </div>}
 };
 
 

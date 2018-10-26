@@ -8,6 +8,7 @@ const clonalFamilies = (state = {
   selectedSeq: {},
   allClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  facetByField: undefined,
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
@@ -111,6 +112,10 @@ const clonalFamilies = (state = {
       let new_tree_scale = Object.assign({}, state.treeScale, action.val);
       return Object.assign({}, state, {
         treeScale: new_tree_scale
+      });
+    } case types.UPDATE_FACET: {
+      return Object.assign({}, state, {
+        facetByField: action.facetByField
       });
     } default: {
       return state;

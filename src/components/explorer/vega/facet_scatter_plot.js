@@ -1,5 +1,4 @@
-const facetClonalFamiliesVizSpec = (data) => {
-  console.log('olmsted facet spec')
+const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -56,11 +55,15 @@ const facetClonalFamiliesVizSpec = (data) => {
     {
         "name": "column_domain",
         "source": "data_0",
-        "transform": [{"type": "aggregate", "groupby": ["has_seed"]}]
+        "transform": [{"type": "aggregate", "groupby": [{"signal": "facet_by_field"}]}]
     }
   ],
   // SIGNALS
   "signals": [
+    {
+      "name": "facet_by_field",
+      "value": facet_by_field,
+    },
     {
       "name": "PADDING_FRACTION",
       "value": 0.05
@@ -121,31 +124,30 @@ const facetClonalFamiliesVizSpec = (data) => {
     { "name": "len_col_domain", "update": "length(data('column_domain'))" },
     {"name": "child_width", "update": "width/len_col_domain-layout_padding"},
     {"name": "child_height", "update": "height"},
-
-    // Put below in nested signals?
     // On click stuff
-    {"name": "pts",
-    "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
-   },
-   {
-    "name": "pts_tuple",
-    "value": {},
-    "on": [
-      {
-        "events": [{"source": "scope", "type": "click"}],
-        "update": "datum && item().mark.marktype == 'symbol' ? datum : null",
-      }
-    ]
-   },
-   {
-     "name": "pts_modify",
-     "on": [
-       {
-         "events": {"signal": "pts_tuple"},
-         "update": "modify(\"pts_store\", pts_tuple, true)"
-       }
-     ]
-   },
+    {
+      "name": "pts",
+      "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
+    },
+    {
+      "name": "pts_tuple",
+      "value": {},
+      "on": [
+        {
+          "events": [{"source": "scope", "type": "click"}],
+          "update": "datum && item().mark.marktype == 'symbol' ? datum : null",
+        }
+      ]
+    },
+    {
+      "name": "pts_modify",
+      "on": [
+        {
+          "events": {"signal": "pts_tuple"},
+          "update": "modify(\"pts_store\", pts_tuple, true)"
+        }
+      ]
+    },
     //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
     {
       "name": "mouseDown",
@@ -173,7 +175,7 @@ const facetClonalFamiliesVizSpec = (data) => {
         }
       ]
     },
-
+    // Dropdown menus
     { "name": "yField", "value": "mean_mut_freq",
       "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
@@ -182,6 +184,7 @@ const facetClonalFamiliesVizSpec = (data) => {
        "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
        "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+    // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field_outer",
     },
@@ -203,7 +206,7 @@ const facetClonalFamiliesVizSpec = (data) => {
         "name": "column-title",
         "type": "group",
         "role": "column-title",
-        "title": {"text": "has_seed", "offset": 10, "style": "guide-title"}
+        "title": {"text": {"signal": "facet_by_field"}, "offset": 10, "style": "guide-title"}
     },
     {
         "name": "row_header",
@@ -227,9 +230,9 @@ const facetClonalFamiliesVizSpec = (data) => {
         "type": "group",
         "role": "column-header",
         "from": {"data": "column_domain"},
-        "sort": {"field": "datum[\"has_seed\"]", "order": "ascending"},
+        "sort": {"field": "datum[facet_by_field]", "order": "ascending"},
         "title": {
-            "text": {"signal": "''+parent[\"has_seed\"]"},
+            "text": {"signal": "''+parent[facet_by_field]"},
             "offset": 10,
             "style": "guide-label",
             "baseline": "middle"
@@ -241,7 +244,7 @@ const facetClonalFamiliesVizSpec = (data) => {
         "type": "group",
         "role": "column-footer",
         "from": {"data": "column_domain"},
-        "sort": {"field": "datum[\"has_seed\"]", "order": "ascending"},
+        "sort": {"field": "datum[facet_by_field]", "order": "ascending"},
         "encode": {"update": {"width": {"signal": "child_width"}}},
         "axes": [
         {
@@ -262,9 +265,9 @@ const facetClonalFamiliesVizSpec = (data) => {
         "type": "group",
         "style": "cell",
         "from": {
-          "facet": {"name": "facet", "data": "data_0", "groupby": ["has_seed"]}
+          "facet": {"name": "facet", "data": "data_0", "groupby": [{"signal": "facet_by_field"}]}
         },
-        "sort": {"field": ["datum[\"has_seed\"]"], "order": ["ascending"]},
+        "sort": {"field": ["datum[facet_by_field]"], "order": ["ascending"]},
         "encode": {
           "update": {
             "width": {"signal": "child_width"},
@@ -448,7 +451,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                         {"signal": "brush_x_field"},
                         {"signal": "brush_y_field"}
                     ],
-                    "update": "brush_x_field && brush_y_field ? {unit: \"child\" + '_' + (facet[\"has_seed\"]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
+                    "update": "brush_x_field && brush_y_field ? {unit: \"child\" + '_' + (facet[facet_by_field]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
                     }
                 ]
                 },
@@ -523,7 +526,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 "update": {
                 "x": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_x[0]"
                     },
                     {
@@ -532,7 +535,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "y": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_y[0]"
                     },
                     {
@@ -541,7 +544,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "x2": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_x[1]"
                     },
                     {
@@ -550,7 +553,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "y2": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_y[1]"
                     },
                     {
@@ -612,7 +615,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 "update": {
                 "x": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_x[0]"
                     },
                     {
@@ -621,7 +624,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "y": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_y[0]"
                     },
                     {
@@ -630,7 +633,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "x2": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_x[1]"
                     },
                     {
@@ -639,7 +642,7 @@ const facetClonalFamiliesVizSpec = (data) => {
                 ],
                 "y2": [
                     {
-                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[\"has_seed\"])",
+                    "test": "data(\"brush_store\").length && data(\"brush_store\")[0].unit === \"child\" + '_' + (facet[facet_by_field])",
                     "signal": "brush_y[1]"
                     },
                     {

@@ -30,3 +30,6 @@ export const updateBrushSelection = (dim, attr, data) => {
     let updateBrushData = [dim, attr, data]
     return {type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData}}
 
+export const updateFacet = (facetByField) => {
+  return {type: types.UPDATE_FACET, facetByField}}
+
