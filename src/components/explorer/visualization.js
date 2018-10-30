@@ -201,11 +201,13 @@ class ClonalFamiliesViz extends React.Component {
 
 const mapStateToPropsTips = (state, ownProps) => {
   let treeNodes = getReconstructionData(state)
+  let selectedFamily = getSelectedFamily(state)
+  let geneRegions = getNaiveVizData(selectedFamily)
   return {
-    selectedFamily: getSelectedFamily(state),
+    selectedFamily,
     treeNodes,
     selectedReconstruction: getSelectedReconstruction(state),
-    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight)
+    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight, geneRegions)
   }
 }
 

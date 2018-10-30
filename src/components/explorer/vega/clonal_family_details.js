@@ -87,7 +87,7 @@ const IMGTScientificChartColors = [
   '#CCFFCC',     //	 Y - Tyr - Tyrosine    
 ]
 
-const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
+const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight, gene_regions) => {
   let max_leaf_size = 25
 
   let leaves_count_incl_naive = reconstruction["leaves_count_incl_naive"]
@@ -100,6 +100,20 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
       "autosize": {"type": "pad", "resize": true},
       "width": 1000,
       "data": [
+        {
+          "name": "gene_regions",
+          "values": [{"x": Math.floor(gene_regions.source[0].start/3)-0.5}, {"x": Math.floor(gene_regions.source[0].end/3)+0.5}],
+        },
+        {
+          "name": "gene_regions_avg_x",
+          "source": "gene_regions",
+          "transform": [{
+            "type": "aggregate",
+            "fields": ["x"],
+            "ops": ["mean"],
+            "as": ["avg"]
+          }]
+        },
         {"name": "pts_store"},
         {
           "name": "seed"
@@ -414,6 +428,60 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
             }
           },
           "marks": [
+            {
+              "name": "rect_cdr3",
+              "type": "rect",
+              "style": ["tick"],
+              "encode": {
+                "update": {
+                  "opacity": {"value": 0.1},
+                  
+                  "fill": {"value": "#000"},
+                  "x": {"scale": "x", "signal": "data('gene_regions')[0].x"},
+                  "x2": {"scale": "x", "signal": "data('gene_regions')[1].x"},
+                  "y": {"signal": "-1*mutation_mark_height"},
+                  "y2": {"signal": "height"}
+                }
+              }
+            },
+            {
+              "name": "rule_cdr3",
+              "type": "rule",
+              "from": {"data": "gene_regions"},
+
+              "encode": {
+                "enter": {
+                  "stroke": {"value": "black"},
+                  "fill": {"value": "black"},
+                  "opacity": {"value": 0.6}
+                },
+                "update": {
+                  "x": {"scale": "x", "field": "x"},
+                  "y": {"signal": "-1*mutation_mark_height"},
+                  "y2": {"signal": "height"},
+                  "strokeWidth": {"value": 1},
+                  "strokeDash": {"value": [12,4]},
+                  "strokeCap": {"value": "butt"},
+                  "opacity": {"value": 1},
+                }
+              }
+            },
+            {
+              "name": "text_cdr3",
+              "type": "text",
+              "encode": {
+                "enter": {
+                  "text": {"value": "CDR3"},
+                  "fill": {"value": "#000"},
+                },
+                "update": {
+                  "align": {"value": "center"},
+                  "baseline": {"value": "bottom"},
+                  "y": { "signal": "-1*mutation_mark_height"},
+                  "x": {"scale": "x", "signal": "data('gene_regions_avg_x')[0].avg"},
+                }  
+              },
+            },
             // MUTATIONS MARKS
             {
               "name": "marks",
@@ -481,6 +549,29 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
           ],
           // MUTATIONS AXES
           "axes": [
+            // gene regions
+            // {              
+            //   "scale": "x",
+            //   "orient": "top",
+            //   "values": [25,222],
+            //   "grid": false,
+            //   "labels": {
+            //     "update": {
+            //       "text": {"signal": "gene_regions[toString(datum.value)]"},
+            //     }
+            //   },
+            //   "title": "Gene regions",
+            //   "zindex": 1,
+            //   "offset": {"signal": "mutation_mark_height/2 + 5"}
+            // },
+            // {
+            //   "scale": "gene",
+            //   "orient": "top",
+            //   "grid": false,
+            //   "labels": false,
+            //   "zindex": 1,
+            //   "offset": {"signal": "mutation_mark_height/2 + 5"}
+            // },
             // x
             {
               "scale": "x",
@@ -548,7 +639,21 @@ const concatTreeWithAlignmentSpec  = (reconstruction, availableHeight) => {
         }
       ],
       
-      "scales": [
+      "scales": [      
+        // {
+        //   "name": "gene",
+        //   "type": "bin-linear",
+        //   "domain": [0,50,100],//{"data": "gene_regions", "field": "region"},
+        //   "range": [0, {"signal": "width"}],
+        //   "padding": 0.05,
+        //   "round": true
+        // },
+        // {
+        //   "name": "gene",
+        //   "type": "band",
+        //   "domain": {"data": "data_1", "field": "position"},
+        //   "zero": true
+        // },
         {
           "name": "simple_color",
           "type": "ordinal",
