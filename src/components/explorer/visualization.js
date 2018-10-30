@@ -54,7 +54,7 @@ const getNaiveVizData = (datum) => {
     },
     {
       family: "5p",
-      region: "Insertion 1",
+      region: "5' Insertion",
       start: datum.v_end,
       end: datum.d_start
     },
@@ -67,7 +67,7 @@ const getNaiveVizData = (datum) => {
     },
     {
       family: "5p",
-      region: "Insertion 2",
+      region: "3' Insertion",
       start: datum.d_end,
       end: datum.j_start
     },
