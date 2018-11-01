@@ -411,8 +411,13 @@ const concatTreeWithAlignmentSpec = () => {
                 "update": {
                   "y": {"field": "y"},
                   "fill": {"value": "#000"},
+                  "stroke": {"value": "#000"},
                   "x": {"field": "x"},
-                  "size": {"value": 1},
+                  "size": [
+                    {"test": "show_labels", "value": 1},
+                    {"signal": "leaf_size*2"}
+                  ],
+                  "cursor": {"value": "pointer"}
                 },
               },
               "type": "symbol",
