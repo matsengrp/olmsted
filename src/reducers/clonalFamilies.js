@@ -98,7 +98,10 @@ const clonalFamilies = (state = {
       // action.updateBrushSelection specifies whether we would like to 
       // include just this family in our brush selection
       // and therefore in the table since we have clicked it
-      updates.brushSelection = action.updateBrushSelection ? {clicked: action.family_id} : state.brushSelection
+      if(action.updateBrushSelection){
+        updates.brushSelection = {clicked: action.family_id}
+        updates.pagination = Object.assign({}, state.pagination, {page: 0})
+      }
       return Object.assign({}, state, updates);
     } case types.UPDATE_SELECTED_SEQ: {
       return Object.assign({}, state, {

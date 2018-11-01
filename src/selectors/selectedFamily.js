@@ -45,7 +45,7 @@ const createAlignment = (naive_seq, tree) => {
     let mutations = []
     let seq = node.aa_seq;
     let seq_id = node.id;
-    let is_naive = seq_id == 'naive';
+    let is_naive = seq_id == 'inferred_naive';
     let pairs = _.toPairs(seq);
     // add mutation for each position deviating from the naive aa_seq
     _.forEach(pairs, (pair) => {
@@ -120,7 +120,7 @@ const uniqueSeqs = (asr_tree) => {
 }
 
 const findNaive = (data) => {
-  return _.find(data, {"id": "naive"});
+  return _.find(data, {"id": "inferred_naive"});
 }
 
 // Create an alignment for naive + all of the leaves of the tree (reconstruction)
@@ -132,6 +132,7 @@ const computeReconstructionData = (reconstruction) => {
     let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);    
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
+    recon["leaves_count_incl_naive"] = data.length;
     let alignment = createAlignment(naive.aa_seq, data)
     recon["tips_alignment"] = alignment;
     recon["download_unique_family_seqs"] = uniqueSeqs(recon.asr_tree)

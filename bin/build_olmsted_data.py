@@ -1,4 +1,4 @@
-    #!/usr/bin/env python
+#!/usr/bin/env python
 
 from __future__ import division
 import argparse
@@ -11,12 +11,14 @@ import functools as fun
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-S', '--schema', default='schema.json')
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-c', '--clonal-families-out')
     parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
     parser.add_argument('-d', '--datasets-out')
     parser.add_argument('-s', '--sequences-out')
+    parser.add_argument('-v', '--verbose', action='store_true')
     return parser.parse_args()
 
 # Some generic data processing helpers helpers
@@ -85,7 +87,7 @@ reconstruction_pull_pattern = [
 #    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity", "cft.seq:timepoints", "cft.seq:timepoint_multiplicities"]}],
      "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
      "cft.reconstruction:asr_tree": ["*"],
-     "cft.reconstruction:asr_seqs": [{'bio.seq:set': ['bio.seq:id', 'bio.seq:seq']}]}]
+     "cft.reconstruction:asr_seqs": ['tripl.file:path', {'bio.seq:set': ['bio.seq:id', 'bio.seq:seq']}]}]
 
 clonal_family_pull_pattern = [
       "db:ident",
@@ -147,6 +149,7 @@ def try_del(d, attr):
 def parse_tree_data(args, c):
     # create a phylo tree object
     newick_tree = c['cft.reconstruction:asr_tree']['tripl.file:contents']
+    newick_tree_path = str(c['cft.reconstruction:asr_tree']['tripl.file:path'])
     tree = PhyloTree(newick_tree, format=1)
     # parse out sequences and other sequence metadata
     aa_seqs_dict = create_seqs_dict(c['cft.reconstruction:cluster_aa']['bio.seq:set'])
@@ -190,7 +193,9 @@ def parse_tree_data(args, c):
             try:
                 n.distance = n.get_distance(args.inferred_naive_name)
             except Exception as e:
-                warnings.warn("Unable to find naive sequence: " + str(args.inferred_naive_name))
+                if args.verbose:
+                    warnings.warn("Unable to compute distance to naive '" + str(args.inferred_naive_name) + "' in file " + newick_tree_path)
+                    print("newick tree:", newick_tree)
                 raise e
         else:
             # n is root
@@ -213,7 +218,7 @@ def parse_tree_data(args, c):
                  'timepoint_multiplicities': [
                                               {'timepoint':'test', 'multiplicity':7}, 
                                               {'timepoint':'test2', 'multiplicity':13}
-                                             ] 
+                                             ]
               })
 
     # map through and process the nodes
@@ -231,17 +236,28 @@ def clean_reconstruction_record(args, d):
 
 
 def clean_clonal_family_record(args, d):
-    c = d.copy()
-    c['cft.cluster:reconstructions'] = map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster'])
-    try_del(c, 'cft.reconstruction:_cluster')
-    try_del(c, 'cft.cluster:unique_ids')
-    return c
+    try:
+        c = d.copy()
+        c['cft.cluster:reconstructions'] = map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster'])
+        try_del(c, 'cft.reconstruction:_cluster')
+        try_del(c, 'cft.cluster:unique_ids')
+        return c
+    except Exception as e:
+        if args.verbose:
+            warnings.warn("Failed to process cluster: " + str(d.get('db:ident')))
+        return None
 
 def pull_clonal_families(args, t):
     result = map(comp(clean_record, fun.partial(clean_clonal_family_record, args)),
             t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.cluster'}))
+    bad_families = filter(lambda c: not c, result)
+    good_families = filter(None, result)
+    if bad_families:
+        warnings.warn("{} (of {}) clonal families couldn't be processed".format(len(bad_families), len(result)))
+    else:
+        print("processed {} clonal families successfully".format(len(result)))
     #result[0]['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(result['cft.reconstruction:cluster']['cft.reconstruction:asr_tree']['tripl.file:contents'])[0])
-    return result
+    return good_families
 
 def write_out(data, filename, args):
     with open(filename, 'w') as fh:
@@ -260,11 +276,22 @@ def write_out(data, filename, args):
 
 def main():
     args = get_args()
-    t = tripl.TripleStore.loads(args.inputs)
+    datasets, clonal_families = [], []
+    for infile in args.inputs:
+        print("\nProcessing infile: " + str(infile))
+        t = tripl.TripleStore.loads([args.schema, infile])
+        try:
+            if args.datasets_out:
+                datasets += pull_datasets(t)
+            if args.clonal_families_out:
+                clonal_families += pull_clonal_families(args, t)
+        except Exception as e:
+            warnings.warn("Unable to process infile: " + str(infile))
+            warnings.warn("Processing error: " + str(e))
     if args.datasets_out:
-        write_out(pull_datasets(t), args.datasets_out, args)
+        write_out(datasets, args.datasets_out, args)
     if args.clonal_families_out:
-        write_out(pull_clonal_families(args, t), args.clonal_families_out, args)
+        write_out(clonal_families, args.clonal_families_out, args)
     #if args.sequences_out:
         #write_out(pull_sequences(t), args.sequences_out, args)
 
