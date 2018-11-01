@@ -54,7 +54,7 @@ const getNaiveVizData = (datum) => {
     },
     {
       family: "5p",
-      region: "Insertion 1",
+      region: "5' Insertion",
       start: datum.v_end,
       end: datum.d_start
     },
@@ -67,7 +67,7 @@ const getNaiveVizData = (datum) => {
     },
     {
       family: "5p",
-      region: "Insertion 2",
+      region: "3' Insertion",
       start: datum.d_end,
       end: datum.j_start
     },
@@ -208,7 +208,6 @@ const mapStateToPropsTips = (state, ownProps) => {
     selectedFamily: getSelectedFamily(state),
     treeNodes,
     selectedReconstruction: getSelectedReconstruction(state),
-    spec: concatTreeWithAlignmentSpec(treeNodes, ownProps.availableHeight)
   }
 }
 
@@ -225,6 +224,10 @@ const mapDispatchToProps = (dispatch) => ( {
 
 @connect(mapStateToPropsTips, mapDispatchToProps)
 class TreeViz extends React.Component {
+  constructor(props) {
+    super(props);
+    this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
+  }
 
   shouldComponentUpdate(nextProps, nextState){
     // This is here because we don't want to rerender when the component gets new props
@@ -238,6 +241,10 @@ class TreeViz extends React.Component {
   }
 
   render() {
+
+    let naiveData = getNaiveVizData(this.props.selectedFamily)
+    let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
+
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -254,15 +261,20 @@ class TreeViz extends React.Component {
                   this.props.dispatchSelectedSeq(node)
                 }
               }}
-              debug={/* true for debugging */ false}
+              debug={/* true for debugging */ true}
               data={{source_0: this.props.treeNodes.asr_tree,
                      source_1: this.props.treeNodes.tips_alignment,
+                     naive_data: naiveData.source,
+                     cdr3_bounds: cdr3Bounds,
+                     leaves_count_incl_naive: this.props.treeNodes.leaves_count_incl_naive,
+                     available_height: this.props.availableHeight,
+                     pts_tuple: this.props.selectedFamily,
                     // Here we create a separate dataset only containing the id of the
                     // seed sequence so as to check quickly for this id within the 
                     // viz to color the seed blue
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
-              spec={this.props.spec}
+              spec={this.spec}
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
@@ -283,8 +295,9 @@ class TreeViz extends React.Component {
 
 const mapStateToPropsLineage = (state) => {
     return {
-      selectedFamily: getLineageData(state),
+      lineageData: getLineageData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
+      selectedFamily: getSelectedFamily(state)
     }
 }
 
@@ -292,22 +305,28 @@ const mapStateToPropsLineage = (state) => {
 
 @connect(mapStateToPropsLineage, null, null, 
   {areStatesEqual: (next, prev) => {
-    return _.isEqual(prev.clonalFamilies.selectedFamily, next.clonalFamilies.selectedFamily) && _.isEqual(prev.clonalFamilies.selectedSeq, next.clonalFamilies.selectedSeq)}})
+    return _.isEqual(prev.clonalFamilies.lineageData, next.clonalFamilies.lineageData) && _.isEqual(prev.clonalFamilies.selectedSeq, next.clonalFamilies.selectedSeq)}})
 class Lineage extends React.Component {
   render() {
+        let naiveData = getNaiveVizData(this.props.selectedFamily)
+        let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
         return <div>
           <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
           <h3>Amino acid sequence:</h3>
           <p>{this.props.selectedSeq.aa_seq}</p>
           <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
-          <DownloadFasta sequencesSet={this.props.selectedFamily.download_lineage_seqs.slice()}
+          <DownloadFasta sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
                            filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
                            label="Download Fasta: Lineage Sequences"/>
           <h3>Lineage</h3>
           <Vega
             onParseError={(...args) => console.error("parse error:", args)}
-            debug={/* true for debugging */ false}
-            spec={seqAlignSpec(this.props.selectedFamily)}
+            debug={/* true for debugging */ true}
+            data={{
+              naive_data: naiveData.source,
+              cdr3_bounds: cdr3Bounds,
+            }}
+            spec={seqAlignSpec(this.props.lineageData)}
           />
         </div>
         }};
