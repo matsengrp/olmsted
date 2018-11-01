@@ -562,7 +562,7 @@ const concatTreeWithAlignmentSpec = () => {
                       "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
                       "value": null
                     },
-                    {"scale": "color", "field": "mut_to"}
+                    {"scale": "aa_color", "field": "mut_to"}
                   ],
                   "tooltip": {
                     "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -665,7 +665,7 @@ const concatTreeWithAlignmentSpec = () => {
               "orient": "top",
               "direction": "horizontal",
               "fill": "naive_color",
-              "title": "Gene region color scale",
+              "title": "Gene region color key",
               "offset": {"signal": "2.5*mutation_mark_height"},
               "encode": {
                 "symbols": {
@@ -748,7 +748,7 @@ const concatTreeWithAlignmentSpec = () => {
           "range": {"signal": "sequence(0, height, leaf_size)"}, 
         },
         {
-          "name": "color",
+          "name": "aa_color",
           "type": "ordinal",
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
@@ -758,8 +758,8 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "orient": "right",
           "direction": "vertical",
-          "fill": "color",
-          "title": "Amino acid color scale",
+          "fill": "aa_color",
+          "title": "AA color",
           // "offset": {"signal": "2.5*mutation_mark_height"},
           "encode": {
             "symbols": {
@@ -907,7 +907,7 @@ const seqAlignSpec = (family) => {
                   "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
                   "value": null
                 },
-                {"scale": "color", "field": "mut_to"}
+                {"scale": "aa_color", "field": "mut_to"}
               ],
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -984,7 +984,7 @@ const seqAlignSpec = (family) => {
           "padding": 0.5
         },
         {
-          "name": "color",
+          "name": "aa_color",
           "type": "ordinal",
           "domain": aminoAcidDomain,
           "range": tableau20plusColors
@@ -1040,7 +1040,7 @@ const seqAlignSpec = (family) => {
           "orient": "top",
           "direction": "horizontal",
           "fill": "naive_color",
-          "title": "Gene region color scale",
+          "title": "Gene region color key",
           "offset": {"signal": "2.5*mutation_mark_height"},
           "encode": {
             "symbols": {
@@ -1051,8 +1051,8 @@ const seqAlignSpec = (family) => {
         {
           "orient": "bottom",
           "direction": "horizontal",
-          "fill": "color",
-          "title": "Amino acid color scale:",
+          "fill": "aa_color",
+          "title": "Amino acid color key:",
           "encode": {
             "symbols": {
               "update": {"shape": {"value": "square"}, "opacity": {"value": 0.7}}
