@@ -94,7 +94,7 @@ const concatTreeWithAlignmentSpec = () => {
       "description": "",
       // "autosize": {"type": "pad", "resize": false},
       "height": 800,
-      "width": 1000,
+      "width": 500,
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
       // the initial values of signals through the props 
@@ -323,46 +323,51 @@ const concatTreeWithAlignmentSpec = () => {
           // the spec
           "update": "data(\"leaves_count_incl_naive\")[0].data"
         },
-        // BRANCHSCALE - scales up width of tree
         {
-          "value": 950,
-          "name": "branchScale",
-          "bind": {"max": 7000, "step": 50, "input": "range", "min": 0}
+          "name": "treedata",
+          // This - like other signals we'd like to initialize 
+          // from outside the spec, is passed in dynamically as 
+          // data and read from the data here, so as to not re-initialize
+          // the spec
+          "update": "data(\"tree\")"
         },
+        
 
         // HEIGHTSCALE SIGNALS BEGIN
+        // {
+        //   "name": "available_height",
+        //   // This updates the height based on the initial
+        //   // value passed as data from the react component:
+        //   "update": "floor(data(\"available_height\")[0].data * 0.9)",
+        //   // This updates the height based on the resizing 
+        //   // of the screen without reinitializing the viz:
+        //   "on": [
+        //     {
+        //       "events": {"source": "window", "type": "resize"},
+        //       "update": "floor(windowSize()[1]*0.9)"
+        //     }
+        //   ]
+        // },
         {
-          "name": "available_height",
-          // This updates the height based on the initial
-          // value passed as data from the react component:
-          "update": "floor(data(\"available_height\")[0].data * 0.9)",
-          // This updates the height based on the resizing 
-          // of the screen without reinitializing the viz:
-          "on": [
-            {
-              "events": {"source": "window", "type": "resize"},
-              "update": "floor(windowSize()[1]*0.9)"
-            }
-          ]
+           "name": "height"
         },
         {
-          "value": 1,
-          "name": "heightScale",
-          "bind": {"max": 2, "step": 0.1, "input": "range", "min": 0.1}
+          "name": "width"
         },
         // Height resizes to fit the screen height but is scaled by a
         // a custom factor (see above heightScale slider)
         // also see https://github.com/matsengrp/olmsted/issues/83)
-        {
-          "name": "height",
-          "update": "heightScale * available_height",
-          "on": [
-            {
-              "events": [{"signal": "heightScale"}, {"signal": "available_height"}],
-              "update": "heightScale * available_height"
-            }
-          ]
-        },
+        // {
+        //   "name": "height",
+        //   "value": 1000
+          // "update": "heightScale * available_height",
+          // "on": [
+          //   {
+          //     "events": [{"signal": "heightScale"}, {"signal": "available_height"}],
+          //     "update": "heightScale * available_height"
+          //   }
+          // ]
+        // },
         // This is used through out as the unit defining
         // the vertical spacing of leaves in the tree and 
         // mutation marks in the alignment
@@ -374,8 +379,8 @@ const concatTreeWithAlignmentSpec = () => {
          // the value of this signal as the maximum
         {
           "name": "max_leaf_size",
-          "value": 50,
-          "bind": {"max": 100, "step": 1, "input": "range", "min": 1}
+          "value": 5000,
+          "bind": {"max": 7000, "step": 1, "input": "range", "min": 1}
         },
         // HEIGHTSCALE SIGNALS END
         {
@@ -405,7 +410,7 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "name": "scaledWidth",
           // "value": 500,
-         "update": "branchScale"
+          "update": "950"
         },
         {
           "name": "unit",
@@ -415,10 +420,7 @@ const concatTreeWithAlignmentSpec = () => {
           ]
         },
         // #59 this will need to be controlled by slider 
-        {
-          "name": "concat_0_width",
-          "update": "branchScale*distance_extent[1]"
-        },
+        
         
         // On click stuff
         {
@@ -455,10 +457,7 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "ceil(width/150)"
         },
         // #59 this will need to be controlled by slider 
-        {
-          "name": "concat_1_width",
-          "update": "width - concat_0_width"
-        }
+        
       ],
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
@@ -478,7 +477,7 @@ const concatTreeWithAlignmentSpec = () => {
               "update": {
                 "clip": {"value": true},
                 "width": {"signal": "scaledWidth"},
-                "height": {"signal": "scaledHeight"}
+                "height": {"signal": "height"}
             }
           },
           "marks": [
@@ -605,7 +604,7 @@ const concatTreeWithAlignmentSpec = () => {
             // since this setting also includes the axis title in the overall width, we collapse
             // it when the branch scale is 0 because we want to be able to have the leaf labels 
             // flush with the tick marks for the alignment viz.
-            "title": {"signal": "branchScale > 0 ? 'Evolutionary distance from naive' : ''"},
+            "title": "Evolutionary distance from naive",
             "labelFlush": true,
             "labelOverlap": true,
             "tickCount": {"signal": "ceil(scaledWidth/40)"},
@@ -619,8 +618,8 @@ const concatTreeWithAlignmentSpec = () => {
           "style": "cell",
           "encode": {
             "update": {
-              "width": {"signal": "concat_1_width"},
-              "height": {"signal": "scaledHeight"}
+              "width": {"signal": "width/2"},
+              "height": {"signal": "height"}
             }
           },
           "marks": [
