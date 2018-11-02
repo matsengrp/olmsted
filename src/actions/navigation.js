@@ -1,5 +1,5 @@
 import queryString from "query-string";
-import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
+import * as types from "./types";
 
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
@@ -33,11 +33,23 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
   if (!path) {console.error("changePage called without a path"); return;}
   const { datasets } = getState();
   const d = {
-    type: PAGE_CHANGE,
+    type: types.PAGE_CHANGE,
     displayComponent: chooseDisplayComponentFromPathname(path),
-    errorMessage: undefined
+    errorMessage: undefined,
+    datapath: undefined
   };
-  d.datapath = d.displayComponent === "app" ? getDatapath(path, datasets.availableDatasets) : undefined;
+
+  // Set the new datapath if we are changing to the app page
+  if (d.displayComponent === "app"){
+    d.datapath = getDatapath(path, datasets.availableDatasets)
+  }
+
+  // If we were PREVIOUSLY on the app page and change to a different dataset or go 
+  // back to splash, we want to reset the clonal families state
+  if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath){
+    dispatch({type: types.RESET_CLONAL_FAMILIES_STATE})
+  }
+
   if (query !== undefined) { d.query = query; }
   if (push) { d.pushState = true; }
   /* check if this is "valid" - we can change it here before it is dispatched */
@@ -46,7 +58,7 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
 
 /* a 404 uses the same machinery as changePage, but it's not a thunk */
 export const goTo404 = (errorMessage) => ({
-  type: PAGE_CHANGE,
+  type: types.PAGE_CHANGE,
   displayComponent: "splash",
   errorMessage,
   pushState: true
@@ -61,7 +73,7 @@ ARGUMENTS:
 export const changePageQuery = ({queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
   const state =  getState();
   dispatch({
-    type: URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
+    type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
     ...state,
     pushState: push,
     query: queryToDisplay ? queryToDisplay : queryToUse

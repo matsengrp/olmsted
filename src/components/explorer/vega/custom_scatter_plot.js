@@ -61,6 +61,56 @@ const clonalFamiliesVizCustomSpec = (data) => {
         }
       ]
     },
+    // On click stuff
+    {"name": "pts",
+    "update": "data(\"pts_store\").length && {_vgsid_: data(\"pts_store\")[0]}"
+   },
+   {
+    "name": "pts_tuple",
+    "value": {},
+    "on": [
+      {
+        "events": [{"source": "scope", "type": "click"}],
+        "update": "datum && item().mark.marktype == 'symbol' ? datum : null",
+      }
+    ]
+   },
+   {
+     "name": "pts_modify",
+     "on": [
+       {
+         "events": {"signal": "pts_tuple"},
+         "update": "modify(\"pts_store\", pts_tuple, true)"
+       }
+     ]
+   },
+    //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
+    {
+      "name": "mouseDown",
+      "on": [
+        {
+          "events": {
+            "source": "scope",
+            "type": "mousedown",
+            "consume": true
+          },
+          "update": "[x(unit), y(unit)]"
+        }
+      ]
+    },
+    {
+      "name": "mouseUp",
+      "on": [
+        {
+          "events": {
+            "source": "window",
+            "type": "mouseup",
+            "consume": true
+          },
+          "update": "[x(unit), y(unit)]"
+        }
+      ]
+    },
     {
       "name": "brush_x",
       "value": [],
@@ -108,12 +158,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           },
           "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, width)"
         },
-        {
-          "events": {
-            "signal": "brush_zoom_delta"
-          },
-          "update": "clampRange(zoomLinear(brush_x, brush_zoom_anchor.x, brush_zoom_delta), 0, width)"
-        }
       ]
     },
     {
@@ -174,12 +218,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           },
           "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, height)"
         },
-        {
-          "events": {
-            "signal": "brush_zoom_delta"
-          },
-          "update": "clampRange(zoomLinear(brush_y, brush_zoom_anchor.y, brush_zoom_delta), 0, height)"
-        }
       ]
     },
     {
@@ -257,39 +295,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
       ]
     },
     {
-      "name": "brush_zoom_anchor",
-      "on": [
-        {
-          "events": [
-            {
-              "source": "scope",
-              "type": "wheel",
-              "consume": true,
-              "markname": "brush_brush"
-            }
-          ],
-          "update": "{x: x(unit), y: y(unit)}"
-        }
-      ]
-    },
-    {
-      "name": "brush_zoom_delta",
-      "on": [
-        {
-          "events": [
-            {
-              "source": "scope",
-              "type": "wheel",
-              "consume": true,
-              "markname": "brush_brush"
-            }
-          ],
-          "force": true,
-          "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
-        }
-      ]
-    },
-    {
       "name": "brush_modify",
       "on": [
         {
@@ -312,6 +317,10 @@ const clonalFamiliesVizCustomSpec = (data) => {
       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} }
   ],
   "data": [
+    {"name": "pts_store"},
+    {
+      "name": "selected"
+    },
     {
       "name": "brush_store"
     },
@@ -348,8 +357,6 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
         }
       ],
-      
-
     },
     {
       "name": "valid",
@@ -506,9 +513,10 @@ const clonalFamiliesVizCustomSpec = (data) => {
         "update": {
           "x": {"scale": "x", "field": {"signal": "xField"}},
           "y": {"scale": "y", "field": {"signal": "yField"}},
-          "opacity": {
-            "value": 0.35
-          },
+          "opacity": [
+            {"test": "indata('selected', 'ident', datum.ident)", "value": 1},
+            {"value": 0.35}
+          ],
           "fill": {
             "value": "transparent"
           },
@@ -519,7 +527,11 @@ const clonalFamiliesVizCustomSpec = (data) => {
           "shape": {
             "scale": "shape",
             "field": {"signal": "shapeBy"}
-          }
+          },
+          "size": [
+            {"test": "indata('selected', 'ident', datum.ident)", "value": 600},
+            {"value": 20}
+          ]
         }
       }
     },

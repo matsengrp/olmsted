@@ -129,17 +129,15 @@ button:focus {outline:0;}
   grid-template-columns: auto;
   grid-template-rows: auto; 
   justify-items: left;
-  /*align-content: stretch;*/
 }
 
 .grid-item {
   /* options: <number> | <name> | span <number> | span <name> | auto */
-    /* width: inherit; */
     grid-column-start:  auto;
     grid-column-end: auto;
     grid-row-start: auto;
     grid-row-end: auto;
-    /* place-self: center stretch; */
+    place-self: center stretch;
 }
 
 .item-filler{

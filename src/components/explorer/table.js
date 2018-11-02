@@ -2,11 +2,11 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as explorerActions from "../../actions/explorer.js"
-import getClonalFamiliesPageSelector from "../../selectors/clonalFamilies";
+import {getClonalFamiliesPage, getLastPage} from "../../selectors/clonalFamilies";
 import {NaiveSequence} from './visualization';
 
 
-@connect(null,
+@connect((state) => ({last_page: getLastPage(state)}),
         (dispatch) => ({
           dispatchPageUp: () => {
             dispatch(explorerActions.pageUp)
@@ -23,7 +23,7 @@ class PaginationControls extends React.Component {
         <span style={{padding:10}}><a onClick={() => this.props.dispatchPageUp()}>page up</a></span>
         {/* We compute page based on starting from 0 for our own sake, but for the user's sake we display it as if we start with 1*/}
         <span style={{padding:10}}>{this.props.pagination.page+1}</span>
-        <span style={{padding:10}}><a onClick={() => this.props.dispatchPageDown()}>page down</a></span>
+        <span style={{padding:10}}><a onClick={() => { this.props.pagination.page+1 <= this.props.last_page && this.props.dispatchPageDown()} }>page down</a></span>
       </span>)}}
 
 
@@ -44,10 +44,23 @@ class Table extends React.Component {
             </div>
             {/* Table Headers */}
             { _.map(this.props.mappings, ([name, AttrOrComponent]) => {
+              // if we are sorting by this column show asc or desc arrow
+              let is_sorting = this.props.pagination.order_by == AttrOrComponent
+              if(is_sorting){
+                let sorting_arrow = this.props.pagination.desc ? ' \u25BC' : ' \u25B2'
+                name = name + sorting_arrow
+              }
+              let style = is_sorting ? {fontSize:  "12px", fontWeight: "bold"} : {}
+
               // check to make sure its an attribute so we can sort by it (onclick)
               let isAttr = ((typeof AttrOrComponent) == "string");
+              // set to click cursor if we can sort on it
+              if(isAttr){
+                style.cursor = "pointer"
+              }
               return <div className="grid-item"
                           key={name} 
+                          style={style}
                           onClick={ ()=> {isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent))}}
                      >
                         {name}
@@ -80,29 +93,41 @@ class SelectAttribute extends React.Component {
     return (
       <input
         type="checkbox"
-        style={{marginLeft: "5px"}}
+        style={{cursor: "pointer"}}
         checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
-        onClick={() => this.props.dispatchSelect(this.props.datum.ident)}/>
+        onChange={() => this.props.dispatchSelect(this.props.datum.ident)}/>
     )
   }
 }
 
 
-const makeMapStateToProps = () => {
-  const getClonalFamiliesPage = getClonalFamiliesPageSelector()
-  const mapStateToProps = (state) => {
-    let newClonalFamiliesPage = getClonalFamiliesPage(state.clonalFamilies)
+const mapStateToProps = (state) => {
+    let newClonalFamiliesPage = getClonalFamiliesPage(state)
     return {
       visibleClonalFamilies: newClonalFamiliesPage,
       pagination: state.clonalFamilies.pagination,
-      selectedFamily: state.clonalFamilies.selectedFamily
+      selectedFamily: state.clonalFamilies.selectedFamily,
+      selectingStatus: state.clonalFamilies.brushSelecting
     }
-  }
-  return mapStateToProps
 }
 
-@connect(makeMapStateToProps)
+
+@connect(mapStateToProps,
+  {
+    selectFamily: explorerActions.selectFamily
+  }
+  )
 class ClonalFamiliesTable extends React.Component {
+
+  componentDidUpdate(prevProps) {
+    // Checks:
+    // 1. prevProps.selectingStatus: We were previously doing a brush selection
+    // 2. !this.props.selectingStatus: We are done doing the brush selection
+    // 3. this.props.visibleClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
+    if (prevProps.selectingStatus && !this.props.selectingStatus && this.props.visibleClonalFamilies.length > 0) {
+      this.props.selectFamily(this.props.visibleClonalFamilies[0].ident);
+    }
+  }
 
   render() {
     this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
@@ -119,7 +144,7 @@ class ClonalFamiliesTable extends React.Component {
            ["J gene", "j_gene"],
            ["Seed run", "has_seed"],
            ["Subject ID", "subject.id"]
-          ]}
+        ]}
         pagination = {this.props.pagination}
         selectedFamily = {this.selectedFamily}/>
     )

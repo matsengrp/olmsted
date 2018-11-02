@@ -21,32 +21,40 @@ const usableWidthStyle = (availableWidth) => {
     width: availableWidth*(1-2*PADDING_FRACTION),
     paddingLeft: availableWidth*PADDING_FRACTION,
     paddingRight: availableWidth*PADDING_FRACTION,
+    paddingTop: 40,
+    paddingBottom: 220
   }
 }
 
-const tableStyle = {paddingBottom: 20, height:440, overflow:'scroll'};
+const tableStyle = {marginBottom: 20, overflow:'auto'};
+
+const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
 
   return (
     <div style={usableWidthStyle(availableWidth)}>
-      <div>
-        <div>
-          <h2>Clonal Families</h2>
-          <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
-        </div>
+      <div style={sectionStyle}>
+        <h2>Clonal Families</h2>
+        <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         <viz.ClonalFamiliesViz/>
       </div>
-      <h2>Selected clonal families:</h2>
-      <div style={tableStyle}>
-          <ClonalFamiliesTable/>
+      <div style={{paddingBottom: 40}}>
+        <h2>Selected clonal families:</h2>
+        <div style={tableStyle}>
+            <ClonalFamiliesTable/>
+        </div>
       </div>
-      <div style={{overflowX:'scroll'}}>
-        {selectedFamily? <viz.TreeViz/> : ""}
-      </div>
-      <div style={{overflowX:'scroll'}}>
-        {_.isEmpty(selectedSeq)? "" : <viz.Lineage/>}
-      </div>
+      { selectedFamily ?
+          <div style={sectionStyle}>
+            <viz.TreeViz availableHeight={availableHeight}/>
+          </div> :
+          ""}
+      {_.isEmpty(selectedSeq) ?
+          "" :
+          <div style={sectionStyle}>
+            <viz.Lineage/>
+          </div>}
     </div>
   );
 };

@@ -13,14 +13,13 @@ const charonErrorHandler = () => {
 
 export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   const processData = (data) => {
-    const availableClonalFamilies = JSON.parse(data);
-    //const availableClonalFamilies = data;
+    const allClonalFamilies = JSON.parse(data);
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, availableClonalFamilies) :
+      getDatapath(window.location.pathname, allClonalFamilies) :
       undefined;
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
-      availableClonalFamilies
+      allClonalFamilies
     });
   };
 

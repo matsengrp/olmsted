@@ -13,16 +13,16 @@ export default function configureStore(initialState) {
   ]
 
   const actionSanitizer = (action) => {
-    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.availableClonalFamilies ){
-      return { ...action, availableClonalFamilies: 'LARGE PAYLOAD' } 
+    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.allClonalFamilies ){
+      return { ...action, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + action.allClonalFamilies.length } 
     }
     else{
       return action
     }
   }
   const stateSanitizer = (state) => {
-    if ( state.clonalFamilies.availableClonalFamilies ){
-      return { ...state, clonalFamilies: {...state.clonalFamilies, availableClonalFamilies:'LARGE PAYLOAD', brushedClonalFamilies:'LARGE PAYLOAD'  }}
+    if ( state.clonalFamilies.allClonalFamilies ){
+      return { ...state, clonalFamilies: {...state.clonalFamilies, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + state.clonalFamilies.allClonalFamilies.length  }}
     }
     return state
   }
