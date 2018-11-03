@@ -142,9 +142,7 @@ const concatTreeWithAlignmentSpec = () => {
                         { "type": "extent", "field": "x", "signal": "xext" },
                         { "type": "extent", "field": "y", "signal": "yext" },
 
-                        // Then we can scale by x and y scales for the range (seems mutually
-                        // exclusive with specifying those scales when we add the data in marks)
-                        // THE ABOVE WAY DOESNT WORK BECAUSE THE TREELINKS STUFF DEPENDS ON ACTUAL VALE
+                        // Then we can scale by x and y scales to fit into zoomed domains
                         {"expr": "scale(\"xscale\", datum.distance)", "type": "formula", "as": "x"}, 
                         {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"}, 
 
@@ -205,6 +203,10 @@ const concatTreeWithAlignmentSpec = () => {
         }
       ],
       "signals": [
+        {
+          "name": "naive_offset",
+          "update": "mutation_mark_height*4"
+        },
         // ZOOM
         {
           "name": "hover",
@@ -217,7 +219,7 @@ const concatTreeWithAlignmentSpec = () => {
         },
         
         { "name": "xrange", "update": "[0, tree_group_width]" },
-        { "name": "yrange", "update": "[0, height]" },
+        { "name": "yrange", "update": "[naive_offset, height]" },
     
         {
           "name": "down", "value": null,
@@ -339,11 +341,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-        {
-          "name": "size",
-          "update": "clamp(20 / span(xdom), 1, 1000)"
-        },
-
+       
 
 
         // TREE SIGNALS
@@ -488,18 +486,95 @@ const concatTreeWithAlignmentSpec = () => {
         "bounds": "full",
         "align": "each"
       },
-      "marks": [
+      "marks": [ 
+        {
+          "name": "tree_header",
+          "type": "group",
+          "role": "column-title",
+          "title": {"text": "Tree reconstruction", "align": "left", "style": "guide-title"}
+
+        },
+        // {
+        //   "name": "dummy_header",
+        //   "type": "group",
+        //   "role": "column-header",
+        // },
+        {
+          "name": "alignment header",
+          "type": "group",
+          "role": "column-title",
+          // "title": "Gene region color key",
+
+          // Color legend
+          "legends": [
+            {
+              "orient": "top",
+              "direction": "horizontal",
+              "fill": "naive_color",
+              "title": "Gene region color key",
+              "offset": {"signal": "2.5*mutation_mark_height"},
+              "encode": {
+                "symbols": {
+                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
+                }
+              }
+            }
+          ],   
+        },
+        {
+          "name": "tree_x_axis",
+          "type": "group",
+          "role": "column-footer",
+          "encode": {"update": {"width": {"signal": "tree_group_width"}}},
+          "axes": [
+            {
+              "scale": "xscale",
+              "orient": "bottom",
+              "grid": false,
+              // See layout section: the axes get included in the group width when you have 
+              // bound: full. We need bounf: full to account for the leaf labels going beyond
+              // the exact width; this setting allows them to be included in our width. However,
+              // since this setting also includes the axis title in the overall width, we collapse
+              // it when the branch scale is 0 because we want to be able to have the leaf labels 
+              // flush with the tick marks for the alignment viz.
+              "title": "Evolutionary distance from naive",
+              "labelFlush": true,
+              "labelOverlap": true,
+              "tickCount": {"signal": "ceil(tree_group_width/40)"},
+              "zindex": 1
+            }
+            
+          ]
+        },  
+        // {
+        //   "name": "dummy_footer",
+        //   "type": "group",
+        //   "role": "column-footer"
+        // },
+        {
+          "name": "alignment_x_axis",
+          "type": "group",
+          "role": "column-footer",
+          "encode": {"update": {"width": {"signal": "alignment_group_width+5"}}},
+          "axes": [
+            {
+              "scale": "x",
+              "orient": "bottom",
+              "grid": false,
+              "title": "Amino acid position",
+              "labelFlush": true,
+              "labelOverlap": true,
+              "tickCount": 128,
+              "zindex": 1
+            },                  
+          ]
+        },
         // TREE
         {
           "type": "group",
           "name": "tree_group",
           "style": ["cell"],
-          "padding": {
-            "top":    10,
-            "left":   40,
-            "bottom": 20,
-            "right":  10
-          },
+          
           "encode": {
            "update": {
             "clip": {"value": true},
@@ -594,7 +669,7 @@ const concatTreeWithAlignmentSpec = () => {
                   // Show selected sequence as darker, default to all grey #80
                   "opacity":
                   [
-                    {"test": "pts_tuple.id == null || datum.id !== pts_tuple.id", "value": 0.5},
+                    {"test": "!pts || pts && datum.id !== data(\"pts_store\")[0].id", "value": 0.5},
                     {"value": 1}
                   ],
                   // Make seed larger #78
@@ -621,24 +696,26 @@ const concatTreeWithAlignmentSpec = () => {
               "from": {"data": "leaves"}
             },
           ],
-          // Tree axes
-          "axes": [{
-            "scale": "xscale",
-            "orient": "bottom",
-            "grid": false,
-            // See layout section: the axes get included in the group width when you have 
-            // bound: full. We need bounf: full to account for the leaf labels going beyond
-            // the exact width; this setting allows them to be included in our width. However,
-            // since this setting also includes the axis title in the overall width, we collapse
-            // it when the branch scale is 0 because we want to be able to have the leaf labels 
-            // flush with the tick marks for the alignment viz.
-            "title": {"signal": "branchScale > 0 ? 'Evolutionary distance from naive' : ''"},
-            "labelFlush": true,
-            "labelOverlap": true,
-            "tickCount": {"signal": "ceil(width/40)"},
-            "zindex": 1
-          }]
         },
+        //alignment y axis
+        // {
+        //   "name": "alignment_y_axis",
+        //   "type": "group",
+        //   "encode": {"update": {"height": {"signal": "height"}}},
+        //   "axes": [
+         
+        //     {
+        //       "scale": "yscale",
+        //       "orient": "left",
+        //       "grid": false,
+        //       "tickCount": {"signal": "leaves_count_incl_naive"},
+        //       // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
+        //       "labels": false,
+        //       "zindex": 1,
+        //     },
+        //   ]
+        // },
+
         // SEQUENCE ALIGNMENT
         {
           "type": "group",
@@ -646,7 +723,7 @@ const concatTreeWithAlignmentSpec = () => {
           "style": "cell",
           "encode": {
             "update": {
-              "clip": {"value": false},
+              "clip": {"value": true},
 
               // #59 this will need to be controlled by slider 
               "width": {"signal": "alignment_group_width"},
@@ -677,13 +754,13 @@ const concatTreeWithAlignmentSpec = () => {
                     "scale": "x",
                     "signal": "floor(datum[\"end\"]/3)+0.5"
                   },
-                   "yc":{"signal": "-1.5*mutation_mark_height"},
+                   "yc":{"scale": "yscale", "value": "-2"},
                   "height": [
                     {
                       "test": "datum[\"region\"] == 'CDR3'",
-                      "signal": "mutation_mark_height*2"
+                      "signal": "naive_offset/2"
                     },
-                    {"signal": "mutation_mark_height"}      
+                    {"signal": "naive_offset/4"}      
                 ],
                 }
               }
@@ -774,24 +851,13 @@ const concatTreeWithAlignmentSpec = () => {
               },
             }
           ],
-          // MUTATIONS AXES
+          // MUTATIONS GRIDLINES
           "axes": [
-            // x
-            {
-              "scale": "x",
-              "orient": "bottom",
-              "grid": false,
-              "title": "Amino acid position",
-              "labelFlush": true,
-              "labelOverlap": true,
-              "tickCount": 128,
-              "zindex": 1
-            },
             // x grid
             {
               "scale": "x",
               "orient": "bottom",
-              "gridScale": "y",
+              // "gridScale": "yscale",
               "grid": true,
               "tickCount": 128,
               "domain": false,
@@ -801,16 +867,6 @@ const concatTreeWithAlignmentSpec = () => {
               "ticks": false,
               "zindex": 0
             },
-            // y
-            {
-              "scale": "yscale",
-              "orient": "left",
-              "grid": false,
-              "tickCount": {"signal": "leaves_count_incl_naive"},
-              // TURN THIS ON TO DEBUG THE TICKS / GRID ISSUE
-              "labels": false,
-              "zindex": 1,
-            },
             // y grid
             {
               "scale": "yscale",
@@ -818,28 +874,14 @@ const concatTreeWithAlignmentSpec = () => {
               "gridScale": "x",
               "grid": true,
               "tickCount": {"signal": "leaves_count_incl_naive"},
-              // "domain": false,
+              "offset": 5,
+              "domain": false,
               "labels": true,
               "maxExtent": 0,
               "minExtent": 0,
               "zindex": 0
             }
-          ], 
-          // Color legend
-          "legends": [
-            {
-              "orient": "top",
-              "direction": "horizontal",
-              "fill": "naive_color",
-              "title": "Gene region color key",
-              "offset": {"signal": "2.5*mutation_mark_height"},
-              "encode": {
-                "symbols": {
-                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
-                }
-              }
-            }
-          ],       
+          ],     
         }
       ],
       
@@ -889,19 +931,18 @@ const concatTreeWithAlignmentSpec = () => {
           "domain": {"signal": "xdom"},
           "range": {"signal": "xrange"}
         },
+        
         // To replace y scale
         {
           "name": "yscale",
           "domain": {"signal": "ydom"},
           "range": {"signal": "yrange"}, 
         },
-
-
         {
           "name": "x",
           "type": "linear",
-          "domain": {"data": "data_1", "field": "position"},
-          "range": [5, {"signal": "alignment_group_width"}],
+          "domain": [-1,130],
+          "range": [0, {"signal": "alignment_group_width"}],
           "zero": true
         },
         {
