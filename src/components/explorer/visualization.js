@@ -254,6 +254,22 @@ class TreeViz extends React.Component {
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
             <Vega onParseError={(...args) => console.error("parse error:", args)}
+              onSignalWidth={(...args) => {
+                let result = args.slice(1)[0]
+                console.log("width", result)
+              }}
+              onSignalHeight={(...args) => {
+                let result = args.slice(1)[0]
+                console.log("height", result)
+              }}
+              onSignalXdom={(...args) => {
+                let result = args.slice(1)[0]
+                console.log("X ext", result)
+              }}
+              onSignalYdom={(...args) => {
+                let result = args.slice(1)[0]
+                console.log("Y ext", result)
+              }}
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
@@ -274,7 +290,10 @@ class TreeViz extends React.Component {
                     // viz to color the seed blue
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
-              spec={this.spec}
+              // spec={this.spec}
+              // Reload spec every time for Hot Reloading to work during dev
+              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, null)}
+
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
