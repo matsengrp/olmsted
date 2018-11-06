@@ -143,7 +143,14 @@ class ClonalFamiliesTable extends React.Component {
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],
            ["Seed run", "has_seed"],
-           ["Subject ID", "subject.id"]
+           ["Subject", "subject.id"],
+           ["Sample", "sample.id"],
+           ["Timepoint", "sample.timepoint"],
+           ["Mut freq", "mean_mut_freq"],
+           //["Path", 'path'],
+           //["Entity", ({datum}) => _.toString(_.toPairs(datum))],
+           ["Dataset", "dataset.id"],
+           ["Ident", "ident"]
         ]}
         pagination = {this.props.pagination}
         selectedFamily = {this.selectedFamily}/>
