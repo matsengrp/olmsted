@@ -1,6 +1,16 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
 
+const initialState = {
+  brushSelecting: false,
+  brushSelection: undefined,
+  selectedFamily: undefined,
+  selectedSeq: {},
+  allClonalFamilies: [],
+  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  treeScale: {branch_scale:950, height_scale:10}
+}
+
 const clonalFamilies = (state = {
   brushSelecting: false,
   brushSelection: undefined,
@@ -11,7 +21,13 @@ const clonalFamilies = (state = {
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
-    case types.CLONAL_FAMILIES_RECEIVED: {
+    case types.RESET_CLONAL_FAMILIES_STATE: {
+      // Want to reset the clonal families state without
+      // getting rid of our raw clonal families data
+      let reset_state = _.omit(initialState, 'allClonalFamilies')
+      console.log(reset_state)
+      return Object.assign({}, state, reset_state);
+    } case types.CLONAL_FAMILIES_RECEIVED: {
       return Object.assign({}, state, {
         allClonalFamilies: action.allClonalFamilies
       });

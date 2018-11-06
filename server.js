@@ -4,6 +4,7 @@ const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const charon = require("./src/server/charon");
 const globals = require("./src/server/globals");
+var exec = require('exec');
 
 /* documentation in the static site! */
 
@@ -16,6 +17,21 @@ globals.setGlobals({
 
 const app = express();
 app.set('port', process.env.PORT || 4000);
+
+// gzip data
+exec(['gzip', '-k9f', 'data/clonal_families.json'], function(err, out, code) {
+  if (err instanceof Error)
+    throw err;
+  process.stderr.write(err);
+  process.stdout.write(out);
+});
+
+exec(['gzip', '-k9f', 'data/datasets.json'], function(err, out, code) {
+  if (err instanceof Error)
+    throw err;
+  process.stderr.write(err);
+  process.stdout.write(out);
+});
 
 if (devServer) {
 
@@ -32,7 +48,12 @@ if (devServer) {
     log: console.log, path: '/__webpack_hmr', heartbeat: 10 * 1000
   }));
 
+  // Change this to zip data instead of dist
+  app.use("/charon", expressStaticGzip("data"));
+  app.use(express.static(path.join(__dirname, "dist")));
+
 } else {
+  // zip up the source code for production
   app.use("/dist", expressStaticGzip("dist"));
   app.use(express.static(path.join(__dirname, "dist")));
 }
@@ -44,7 +65,7 @@ app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
 
-charon.applyCharonToApp(app);
+// charon.applyCharonToApp(app);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
