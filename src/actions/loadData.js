@@ -36,7 +36,7 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   };
 
   xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}request=clonalFamilies&user=${user}&s3=${s3bucket}`, true); // true for asynchronous
+  xmlHttp.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
   xmlHttp.send(null);
 };
 
@@ -75,7 +75,7 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     }
   };
   xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}request=datasets&user=${user}&s3=${s3bucket}`, true); // true for asynchronous
+  xmlHttp.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
   xmlHttp.send(null);
 };
 

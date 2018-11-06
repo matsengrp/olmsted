@@ -131,7 +131,7 @@ export const titleColors = ["#4377CD", "#5097BA", "#63AC9A", "#7CB879", "#9ABE5C
 export const notificationDuration = 5000;
 
 /* server init stuff */
-export const charonAPIAddress = "/charon?";
+export const charonAPIAddress = "/charon";
 
 export const colorByMenuPreferredOrdering = [
   "clade_membership",
