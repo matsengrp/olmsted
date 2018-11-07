@@ -95,8 +95,6 @@ const concatTreeWithAlignmentSpec = () => {
       "autosize": {"type": "pad", "resize": true},
       "width": 1000,
       "height": 1000,
-      
-      
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
       // the initial values of signals through the props 
@@ -146,10 +144,7 @@ const concatTreeWithAlignmentSpec = () => {
                         {"expr": "scale(\"xscale\", datum.distance)", "type": "formula", "as": "x"}, 
                         {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"}, 
 
-
                         {"key": "id", "type": "stratify", "parentKey": "parent"},
-
-                       
                       ],
          "source": "source_0"},
         {"name": "links",
@@ -188,7 +183,9 @@ const concatTreeWithAlignmentSpec = () => {
              "expr": "toNumber(datum[\"position\"])",
              "as": "position"
            },
-           {"expr": "datum.height", "type": "formula", "as": "y"}
+           {"expr": "datum.height", "type": "formula", "as": "y"},
+           { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
+
          ]
         },
         // Separate dataset for just gap characters and Xs to label them with text marks
@@ -207,142 +204,18 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "naive_offset",
           "update": "mutation_mark_height*4"
         },
-        // ZOOM
-        {
-          "name": "hover",
-          "on": [
-            {"events": "*:mouseover", "encode": "hover"},
-            {"events": "*:mouseout",  "encode": "leave"},
-            {"events": "*:mousedown", "encode": "select"},
-            {"events": "*:mouseup",   "encode": "release"}
-          ]
-        },
         
+        // ZOOM SIGNALS
         { "name": "xrange", "update": "[0, tree_group_width]" },
-        { "name": "yrange", "update": "[naive_offset, height]" },
-    
+        { "name": "yrange", "update": "[naive_offset, height]" },    
         {
-          "name": "down", "value": null,
-          "on": [
-            {"events": "touchend", "update": "null"},
-            {"events": "mousedown, touchstart", "update": "xy()"}
-          ]
+          "name": "xdom",
+          "update": "slice(xext)",
         },
         {
-          "name": "xcur", "value": null,
-          "on": [
-            {
-              "events": "mousedown, touchstart, touchend",
-              "update": "slice(xdom)"
-            }
-          ]
+          "name": "ydom",
+          "update": "slice(yext)",
         },
-        {
-          "name": "ycur", "value": null,
-          "on": [
-            {
-              "events": "mousedown, touchstart, touchend",
-              "update": "slice(ydom)"
-            }
-          ]
-        },
-        {
-          "name": "delta", "value": [0, 0],
-          "on": [
-            {
-              "events": [
-                {
-                  "source": "window", "type": "mousemove", "consume": true,
-                  "between": [{"type": "mousedown"}, {"source": "window", "type": "mouseup"}]
-                },
-                {
-                  "type": "touchmove", "consume": true,
-                  "filter": "event.touches.length === 1"
-                }
-              ],
-              "update": "down ? [down[0]-x(), down[1]-y()] : [0,0]"
-            }
-          ]
-        },
-    
-        {
-          "name": "anchor", "value": [0, 0],
-          "on": [
-            {
-              "events": "wheel",
-              // Trying to clamp the anchor values here to just work on with the tree area
-              "update": "[invert('xscale', clamp(x(), xrange[0], xrange[1])), invert('yscale', clamp(y(), yrange[0],  yrange[1]))]"
-            },
-            {
-              "events": {"type": "touchstart", "filter": "event.touches.length===2"},
-              "update": "[(xdom[0] + xdom[1]) / 2, (ydom[0] + ydom[1]) / 2]"
-            }
-          ]
-        },
-        {
-          "name": "zoom", "value": 1,
-          "on": [
-            {
-              "events": "wheel!",
-              "force": true,
-              "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
-            },
-            {
-              "events": {"signal": "dist2"},
-              "force": true,
-              "update": "dist1 / dist2"
-            }
-          ]
-        },
-        {
-          "name": "dist1", "value": 0,
-          "on": [
-            {
-              "events": {"type": "touchstart", "filter": "event.touches.length===2"},
-              "update": "pinchDistance(event)"
-            },
-            {
-              "events": {"signal": "dist2"},
-              "update": "dist2"
-            }
-          ]
-        },
-        {
-          "name": "dist2", "value": 0,
-          "on": [{
-            "events": {"type": "touchmove", "consume": true, "filter": "event.touches.length===2"},
-            "update": "pinchDistance(event)"
-          }]
-        },
-    
-        {
-          "name": "xdom", "update": "slice(xext)",
-          "on": [
-            {
-              "events": {"signal": "delta"},
-              "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width, xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-            },
-            {
-              "events": {"signal": "zoom"},
-              "update": "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
-            }
-          ]
-        },
-        {
-          "name": "ydom", "update": "slice(yext)",
-          "on": [
-            {
-              "events": {"signal": "delta"},
-              "update": "[ycur[0] + span(ycur) * delta[1] / height, ycur[1] + span(ycur) * delta[1] / height]"
-            },
-            {
-              "events": {"signal": "zoom"},
-              "update": "[anchor[1] + (ydom[0] - anchor[1]) * zoom, anchor[1] + (ydom[1] - anchor[1]) * zoom]"
-            }
-          ]
-        },
-       
-
 
         // TREE SIGNALS
         // Number of leaves
@@ -540,7 +413,7 @@ const concatTreeWithAlignmentSpec = () => {
               "title": "Evolutionary distance from naive",
               "labelFlush": true,
               "labelOverlap": true,
-              "tickCount": {"signal": "ceil(tree_group_width/40)"},
+              "labelBound": true,
               "zindex": 1
             }
             
@@ -564,7 +437,7 @@ const concatTreeWithAlignmentSpec = () => {
               "title": "Amino acid position",
               "labelFlush": true,
               "labelOverlap": true,
-              "tickCount": 128,
+              "values": {"signal": "sequence(131)"},
               "zindex": 1
             },                  
           ]
@@ -574,7 +447,6 @@ const concatTreeWithAlignmentSpec = () => {
           "type": "group",
           "name": "tree_group",
           "style": ["cell"],
-          
           "encode": {
            "update": {
             "clip": {"value": true},
@@ -583,6 +455,151 @@ const concatTreeWithAlignmentSpec = () => {
              "height": {"signal": "height"}
            }
           },
+          "signals": [        
+            // Zoom signals, xdom and ydom are push: outer to allow access
+            // at the top level other places in the spec
+             {
+              "name": "down",
+              "value": null,
+              "on": [
+                {"events": "touchend", "update": "null"},
+                {"events": "mousedown, touchstart", "update": "xy()"}
+              ]
+            },
+            {
+              "name": "xcur",
+              "value": null,
+              "on": [
+                {
+                  "events": "mousedown, touchstart, touchend",
+                  "update": "slice(xdom)"
+                }
+              ]
+            },
+            {
+              "name": "ycur",
+              "value": null,
+              "on": [
+                {
+                  "events": "mousedown, touchstart, touchend",
+                  "update": "slice(ydom)"
+                }
+              ]
+            },
+            {
+              "name": "delta",
+              "value": [0, 0],
+              "on": [
+                {
+                  "events": [
+                    {
+                      "source": "window", "type": "mousemove", "consume": true,
+                      "between": [{"type": "mousedown"}, {"source": "window", "type": "mouseup"}]
+                    },
+                    {
+                      "type": "touchmove", "consume": true,
+                      "filter": "event.touches.length === 1"
+                    }
+                  ],
+                  "update": "down ? [down[0]-x(), down[1]-y()] : [0,0]"
+                }
+              ]
+            },
+        
+            {
+              "name": "anchor",
+              "value": [0, 0],
+              "on": [
+                {
+                  "events": "wheel",
+                  // Trying to clamp the anchor values here to just work on with the tree area
+                  "update": "[invert('xscale', x()), invert('yscale', y())]"
+                },
+                {
+                  "events": {"type": "touchstart", "filter": "event.touches.length===2"},
+                  "update": "[(xdom[0] + xdom[1]) / 2, (ydom[0] + ydom[1]) / 2]"
+                }
+              ]
+            },
+            {
+              "name": "zoom", 
+              "value": 1,
+              "on": [
+                {
+                  "events": "wheel!",
+                  "force": true,
+                  "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+                },
+                {
+                  "events": {"signal": "dist2"},
+                  "force": true,
+                  "update": "dist1 / dist2"
+                }
+              ]
+            },
+            {
+              "name": "dist1",
+              "value": 0,
+              "on": [
+                {
+                  "events": {"type": "touchstart", "filter": "event.touches.length===2"},
+                  "update": "pinchDistance(event)"
+                },
+                {
+                  "events": {"signal": "dist2"},
+                  "update": "dist2"
+                }
+              ]
+            },
+            {
+              "name": "dist2",
+              "value": 0,
+              "on": [{
+                "events": {"type": "touchmove", "consume": true, "filter": "event.touches.length===2"},
+                "update": "pinchDistance(event)"
+              }]
+            },
+            
+            {
+              "push": "outer",
+              "name": "xdom",
+              "on": [
+                // Figure out a way to limit the bounds of dragging around
+                // This will fix the problem of it "snapping" back into place
+                // when you drag beyond the bounds of the tree and then zoom
+                // Should be something like one of the below updates with clamp or min/max but none quite work 
+                {
+                  "events": {"signal": "delta"},
+                  "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
+                  // "update": "[ max((xcur[0] + span(xcur) * delta[0] / tree_group_width) , xext[0] ),   min( (xcur[1] + span(xcur) * delta[0] / tree_group_width) , xext[1])]"
+                  // "update": "[clamp( (xcur[0] + span(xcur) * delta[0] / tree_group_width), xext[0], xext[1]),    clamp( (xcur[1] + span(xcur) * delta[0] / tree_group_width),  xext[0], xext[1])]"
+                },
+                // Clamp zoom in order to limit max zoom out
+                {
+                  "events": {"signal": "zoom"},
+                  "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
+                }
+              ]
+            },
+            {
+              "push": "outer",
+              "name": "ydom",
+              "on": [
+                {
+                  "events": {"signal": "delta"},
+                  "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
+                  // "update": "[max( (ycur[0] + span(ycur) * delta[1] / height), yext[0]),   min( (ycur[1] + span(ycur) * delta[1] / height), yext[1])]"
+                  // "update": "[clamp( (ycur[0] + span(ycur) * delta[1] / height), yext[0], yext[1]), clamp( (ycur[1] + span(ycur) * delta[1] / height), yext[0], yext[1])]"
+                },
+                // Clamp zoom in order to limit max zoom out
+                {
+                  "events": {"signal": "zoom"},
+                  "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
+                }
+              ]
+            },
+           
+          ],
           "marks": [
             // LINKS
             {
@@ -808,7 +825,7 @@ const concatTreeWithAlignmentSpec = () => {
                     {"scale": "aa_color", "field": "mut_to"}
                   ],
                   "tooltip": {
-                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                    "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                   },
                   "xc": {"scale": "x", "field": "position"},
                   "yc": {"scale": "yscale", "field": "y"},
@@ -873,7 +890,7 @@ const concatTreeWithAlignmentSpec = () => {
               "orient": "left",
               "gridScale": "x",
               "grid": true,
-              "tickCount": {"signal": "leaves_count_incl_naive"},
+              "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
               "offset": 5,
               "domain": false,
               "labels": true,
@@ -927,21 +944,23 @@ const concatTreeWithAlignmentSpec = () => {
 
         // To replace time scale
         {
-          "name": "xscale", 
+          "name": "xscale", "zero": false,
           "domain": {"signal": "xdom"},
-          "range": {"signal": "xrange"}
+          // "range": {"signal":  "xrange"}, 
+          "range": [{"signal": "xrange[0]+max_leaf_size/2"},{"signal": "xrange[1]-max_leaf_size/2"}], 
         },
         
         // To replace y scale
         {
-          "name": "yscale",
+          "name": "yscale", "zero": false,
           "domain": {"signal": "ydom"},
-          "range": {"signal": "yrange"}, 
+          // "range": {"signal": "yrange"}, 
+          "range": [{"signal": "yrange[0]+max_leaf_size/2"},{"signal": "yrange[1]-max_leaf_size/2"}], 
         },
         {
           "name": "x",
           "type": "linear",
-          "domain": [-1,130],
+          "domain": [-1, 130],
           "range": [0, {"signal": "alignment_group_width"}],
           "zero": true
         },
@@ -1134,7 +1153,7 @@ const seqAlignSpec = (family) => {
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
               },
-              "xc": {"scale": "x", "field": "position"},
+              "xc": {"field": "position"},
               "yc": {"scale": "y", "field": "seq_id"},
               "height": {"signal": "mutation_mark_height"},
               "width": {"signal": "mark_width"}
