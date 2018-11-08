@@ -4,6 +4,7 @@ import { charonAPIAddress } from "../util/globals";
 import { getDatapath, goTo404, chooseDisplayComponentFromPathname } from "./navigation";
 import { createStateFromQueryOrJSONs, createTreeTooState } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
+import { timerStart, timerEnd } from "../util/perf";
 
 const charonErrorHandler = () => {
   console.warn("Failed to get manifest JSON from server");
@@ -17,27 +18,38 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
       getDatapath(window.location.pathname, allClonalFamilies) :
       undefined;
+
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
       allClonalFamilies
+    });
+    dispatch({
+      type: types.LOADING_CLONAL_FAMILIES,
+      isLoading: false
     });
   };
 
   const query = queryString.parse(window.location.search);
   const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
-
-  const xmlHttp = new XMLHttpRequest();
-  xmlHttp.onload = () => {
-    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText);
+  const request = new XMLHttpRequest();
+  request.onload = () => {
+    if (request.readyState === 4 && request.status === 200) {
+      timerEnd("LOADING CLONAL FAMILIES")
+      processData(request.responseText);
     } else {
       charonErrorHandler();
     }
   };
 
-  xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
-  xmlHttp.send(null);
+  request.onerror = charonErrorHandler;
+  request.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
+ 
+  request.send();
+  timerStart("LOADING CLONAL FAMILIES")
+  dispatch({
+    type: types.LOADING_CLONAL_FAMILIES,
+    isLoading: true
+  });
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {

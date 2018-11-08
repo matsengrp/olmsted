@@ -30,31 +30,35 @@ const tableStyle = {marginBottom: 20, overflow:'auto'};
 
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
-const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight, loadingClonalFamilies}) => {
 
   return (
-    <div style={usableWidthStyle(availableWidth)}>
-      <div style={sectionStyle}>
-        <h2>Clonal Families</h2>
-        <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
-        <viz.ClonalFamiliesViz/>
-      </div>
-      <div style={{paddingBottom: 40}}>
-        <h2>Selected clonal families:</h2>
-        <div style={tableStyle}>
-            <ClonalFamiliesTable/>
+    <div>
+      {loadingClonalFamilies ? <h1>FETCHING DATA...</h1> : 
+      <div style={usableWidthStyle(availableWidth)}>
+        <div style={sectionStyle}>
+          <h2>Clonal Families</h2>
+          <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
+          <viz.ClonalFamiliesViz/>
         </div>
+        <div style={{paddingBottom: 40}}>
+          <h2>Selected clonal families:</h2>
+          <div style={tableStyle}>
+              <ClonalFamiliesTable/>
+          </div>
+        </div>
+        { selectedFamily ?
+            <div style={sectionStyle}>
+              <viz.TreeViz availableHeight={availableHeight}/>
+            </div> :
+            ""}
+        {_.isEmpty(selectedSeq) ?
+            "" :
+            <div style={sectionStyle}>
+              <viz.Lineage/>
+            </div>}
       </div>
-      { selectedFamily ?
-          <div style={sectionStyle}>
-            <viz.TreeViz availableHeight={availableHeight}/>
-          </div> :
-          ""}
-      {_.isEmpty(selectedSeq) ?
-          "" :
-          <div style={sectionStyle}>
-            <viz.Lineage/>
-          </div>}
+      }
     </div>
   );
 };
@@ -71,7 +75,8 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
   browserDimensions: state.browserDimensions.browserDimensions,
   availableDatasets: state.datasets.availableDatasets,
   selectedFamily: state.clonalFamilies.selectedFamily,
-  selectedSeq: state.clonalFamilies.selectedSeq
+  selectedSeq: state.clonalFamilies.selectedSeq,
+  loadingClonalFamilies: state.clonalFamilies.loadingClonalFamilies
 }))
 class App extends React.Component {
   constructor(props) {
@@ -145,6 +150,7 @@ class App extends React.Component {
           availableDatasets={this.props.availableDatasets}
           selectedFamily={this.props.selectedFamily}
           selectedSeq={this.props.selectedSeq}
+          loadingClonalFamilies={this.props.loadingClonalFamilies}
         />
         <Overlay
           styles={overlayStyles}
