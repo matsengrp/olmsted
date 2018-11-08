@@ -44,7 +44,7 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   request.onerror = charonErrorHandler;
   request.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
  
-  request.send();
+  request.send(null);
   timerStart("LOADING CLONAL FAMILIES")
   dispatch({
     type: types.LOADING_CLONAL_FAMILIES,
@@ -78,17 +78,17 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   const query = queryString.parse(window.location.search);
   const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
 
-  const xmlHttp = new XMLHttpRequest();
-  xmlHttp.onload = () => {
-    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText, query);
+  const request = new XMLHttpRequest();
+  request.onload = () => {
+    if (request.readyState === 4 && request.status === 200) {
+      processData(request.responseText, query);
     } else {
       charonErrorHandler();
     }
   };
-  xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
-  xmlHttp.send(null);
+  request.onerror = charonErrorHandler;
+  request.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
+  request.send(null);
 };
 
 
