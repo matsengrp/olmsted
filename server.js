@@ -33,6 +33,20 @@ exec(['gzip', '-k9f', 'data/datasets.json'], function(err, out, code) {
   process.stdout.write(out);
 });
 
+
+var options = {
+  dotfiles: 'ignore',
+  etag: false,
+  extensions: ['gz'],
+  index: false,
+  maxAge: '1d',
+  redirect: false,
+  setHeaders: function (res, path, stat) {
+    res.set('Cache-Control', 'private, max-age=99')
+  }
+}
+
+
 if (devServer) {
 
   let webpack = require("webpack"); // eslint-disable-line
@@ -49,7 +63,7 @@ if (devServer) {
   }));
 
   // Change this to zip data instead of dist
-  app.use("/charon", expressStaticGzip("data"));
+  app.use("/charon", expressStaticGzip("data", options));
   app.use(express.static(path.join(__dirname, "dist")));
 
 } else {
