@@ -1407,7 +1407,7 @@ const seqAlignSpec = (family) => {
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
               },
-              "xc": {"field": "position"},
+              "xc": {"scale": "x", "field": "position"},
               "yc": {"scale": "y", "field": "seq_id"},
               "height": {"signal": "mutation_mark_height"},
               "width": {"signal": "mark_width"}
