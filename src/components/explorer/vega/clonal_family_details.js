@@ -200,29 +200,68 @@ const concatTreeWithAlignmentSpec = () => {
            },
            {"expr": "datum.height", "type": "formula", "as": "y"},
            { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
+           {
+            "type": "filter",
+            "expr": "datum.seq_id !== 'inferred_naive'"
+          }
 
          ]
         },
         // Separate dataset for just gap characters and Xs to label them with text marks
         {"name": "x_and_gaps",
-         "source": "data_1",
+         "source": "source_1",
          "transform": [
             {
               "type": "filter",
               "expr": "datum.mut_to == \"-\" || datum.mut_to == \"X\""
+            },
+            {"expr": "datum.height", "type": "formula", "as": "y"},
+            {
+              "type": "filter",
+              "expr": "datum.seq_id !== 'inferred_naive'"
             }
           ]
-        }
+        },
+        // Naive mutations data for static plot above alignment
+        {
+          "name": "naive_mutations",
+          "source": "source_1",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "toNumber(datum[\"position\"])",
+              "as": "position"
+            },
+            {
+              "type": "filter",
+              "expr": "datum.seq_id == 'inferred_naive'"
+            }
+          ]
+       },
+       {
+         "name": "naive_mutations_x_and_gaps",
+          "source": "source_1",
+          "transform": [
+            {
+              "type": "filter",
+              "expr": "datum.mut_to == \"-\" || datum.mut_to == \"X\""
+            },
+            {
+              "type": "filter",
+              "expr": "datum.seq_id == 'inferred_naive'"
+            }
+          ]
+      },
       ],
       "signals": [
-        {
-          "name": "naive_offset",
-          "update": "mutation_mark_height*4"
-        },
+        // {
+        //   "name": "naive_offset",
+        //   "update": "mutation_mark_height*4"
+        // },
         
         // ZOOM SIGNALS
-        { "name": "xrange", "update": "[0+max_leaf_size/2, tree_group_width-max_leaf_size/2-label_padding]" },
-        { "name": "yrange", "update": "[naive_offset+max_leaf_size/2, height-max_leaf_size/2]" },    
+        { "name": "xrange", "update": "[0 + (max_leaf_size/2) , tree_group_width - max((max_leaf_size/2),label_padding)]" },
+        { "name": "yrange", "update": "[(max_leaf_size/2) , height - (max_leaf_size/2)]" },    
         {
           "name": "xdom",
           "update": "slice(xext)",
@@ -251,26 +290,25 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "data(\"leaves_count_incl_naive\")[0].data"
         },
         // BRANCHSCALE - scales up width of tree
-        {
-          "value": 1000,
-          "name": "branchScale",
-        },
+        // {
+        //   "value": 1000,
+        //   "name": "branchScale",
+        // },
 
         // HEIGHTSCALE SIGNALS BEGIN
         // Height resizes to fit the screen height but is scaled by a
         // a custom factor (see above heightScale slider)
         // also see https://github.com/matsengrp/olmsted/issues/83)
         {
+          // Update height from window size
           "name": "height",
-          // This updates the height based on the initial
-          // value passed as data from the react component:
-          "update": "floor(data(\"available_height\")[0].data * 0.9)",
-          // This updates the height based on the resizing 
-          // of the screen without reinitializing the viz:
+         
+          "update": "floor(windowSize()[1]*0.8)",
+         
           "on": [
             {
               "events": {"source": "window", "type": "resize"},
-              "update": "floor(windowSize()[1]*0.9)"
+              "update": "floor(windowSize()[1]*0.8)"
             }
           ]
         },
@@ -344,12 +382,21 @@ const concatTreeWithAlignmentSpec = () => {
         //   "value": 1,
         //   "on": [
         //     {
-        //       "events": "wheel!",
+        //       "events": {
+        //         "type": "wheel", 
+        //         "consume": true,
+        //         // Add this filter to only allow shift zoom
+        //         // "filter": "event.shiftKey"
+        //       },
         //       "force": true,
-        //       "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+        //       "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))" 
         //     },
         //     {
-        //       "events": {"signal": "dist2"},
+        //       "events": {
+        //         "signal": "dist2",
+        //         // Add this filter to only allow shift zoom
+        //         // "filter": "event.shiftKey"
+        //       },
         //       "force": true,
         //       "update": "dist1 / dist2"
         //     }
@@ -380,22 +427,22 @@ const concatTreeWithAlignmentSpec = () => {
         // {
         //   "update": "slice(xext)",
         //   "name": "xdom_delta",
-          // "on": [
-          //   {
-          //     "events": {"signal": "delta"},
-          //     "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-          //   }
-          // ]
+        //   "on": [
+        //     {
+        //       "events": {"signal": "delta"},
+        //       "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
+        //     }
+        //   ]
         // },
         // {
         //   "update": "slice(yext)",
         //   "name": "ydom_delta",
-          // "on": [
-          //   {
-          //     "events": {"signal": "delta"},
-          //     "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-          //   }
-          // ]
+        //   "on": [
+        //     {
+        //       "events": {"signal": "delta"},
+        //       "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
+        //     }
+        //   ]
         // },
         
         // {
@@ -409,12 +456,15 @@ const concatTreeWithAlignmentSpec = () => {
         //     {
         //       "events": {"signal": "xdom_delta"},
         //       // "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-        //       "update": "xdom_delta[0] <= xext[0] || xdom_delta[1] >= xext[1] ? slice(xdom) : slice(xdom_delta)"
+        //       "update": "xdom_delta[0] < xext[0] || xdom_delta[1] > xext[1] ? slice(xdom) : slice(xdom_delta)"
         //     },
         //     // Clamp zoom in order to limit max zoom out
         //     {
         //       "events": {"signal": "zoom"},
+        //       // "update": " (anchor[0] + (xdom[0] - anchor[0]) * zoom) < xext[0] ||  (anchor[0] + (xdom[1] - anchor[0]) * zoom) > xext[1] ? slice(xdom) :  [(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
         //       "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
+
+        //       // "update": "[(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
         //     }
         //   ]
         // },
@@ -425,12 +475,15 @@ const concatTreeWithAlignmentSpec = () => {
         //     {
         //       "events": {"signal": "ydom_delta"},
         //       // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-        //       "update": "ydom_delta[0] <= yext[0] || ydom_delta[1] >= yext[1] ? slice(ydom) : slice(ydom_delta)"
+        //       "update": "ydom_delta[0] < yext[0] || ydom_delta[1] > yext[1] ? slice(ydom) : slice(ydom_delta)"
         //     },
         //     // Clamp zoom in order to limit max zoom out
         //     {
         //       "events": {"signal": "zoom"},
+        //       // "update": " (anchor[1] + (ydom[0] - anchor[1]) * zoom) < yext[0] || (anchor[1] + (ydom[1] - anchor[1]) * zoom) > yext[1] ? slice(ydom) : [(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom)] "
         //       "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
+
+        //       // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
         //     }
         //   ]
         // },
@@ -445,10 +498,10 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "width",
         },
        
-        {
-          "value": 100,
-          "name": "heightScale",
-        },
+        // {
+        //   "value": 100,
+        //   "name": "heightScale",
+        // },
         
       
         // This is used through out as the unit defining
@@ -548,6 +601,7 @@ const concatTreeWithAlignmentSpec = () => {
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
         "padding": {"column": 0},
+        "columns": 2,
         // Ideally we'd set bounds: flush to get the leaf labels flush with the tick marks
         // for the alignment viz, but the leaf labels are not always the same length so 
         // we can't correct for them with padding. See hack in evolutionary axis title
@@ -558,20 +612,113 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "name": "tree_header",
           "type": "group",
-          "role": "column-title",
-          "title": {"text": "Tree reconstruction", "align": "left", "style": "guide-title"}
-
+          "title": {
+            "text": "Tree reconstruction",
+            "align": "left", 
+            "style": "guide-title",
+            "offset": {"value": -20}
+          }
         },
-        // {
-        //   "name": "dummy_header",
-        //   "type": "group",
-        //   "role": "column-header",
-        // },
         {
-          "name": "alignment header",
+          "name": "naive_group",
           "type": "group",
-          "role": "column-title",
-          // "title": "Gene region color key",
+          "encode": {
+            "update": {
+
+              // #59 this will need to be controlled by slider 
+              "width": {"signal": "alignment_group_width"},
+              "height": {"value": 30}
+            },
+          },
+          "marks": [
+            {
+              "name": "naive",
+              "type": "rect",
+              "style": [
+                "bar"
+              ],
+              "from": {
+                "data": "naive_data"
+              },
+              "encode": {
+                "update": {
+                  "fill": {"scale": "naive_color", "field": "region"},
+                  "tooltip": {
+                    "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+                  },
+                  "x": {
+                    "scale": "x",
+                    "signal": "floor(datum[\"start\"]/3)-0.5"
+                  },
+                  "x2": {
+                    "scale": "x",
+                    "signal": "floor(datum[\"end\"]/3)+0.5"
+                  },
+                  "yc":{"value": 10},
+                  "height": [
+                    {
+                      "test": "datum[\"region\"] == 'CDR3'",
+                      "value": 20
+                    },
+                    {"value": 10}      
+                ],
+                }
+              }
+            },
+            {
+              "name": "marks",
+              "type": "rect",
+              "style": ["tick"],
+              "from": {"data": "naive_mutations"},
+              "encode": {
+                "update": {
+                  "opacity": {"value": 0.9},
+                  "fill": [
+                    {
+                      "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                      "value": null
+                    },
+                    {"scale": "aa_color", "field": "mut_to"}
+                  ],
+                  "tooltip": {
+                    "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                  },
+                  "xc": {"scale": "x", "field": "position"},
+                  "yc": {"value": 27},
+                  "height": {"signal": "10"},
+                  "width": {"signal": "mutation_mark_width"}
+                }
+              }
+            },
+            // Gap character labels
+            {
+              "name": "x_and_gaps_labels",
+              "type": "text",
+              "from": {"data": "naive_mutations_x_and_gaps"},
+              "encode": {
+                "enter": {
+                  "text": {"field": "mut_to"},
+                  "fill": {"value": "#000"},
+                  // fontSize must be increased for gap character '-' to make it visible
+                },
+                "update": {
+                  //center the text on x, y properties
+                  "align": {"value": "center"},
+                  "baseline": {"value": "middle"},
+                  // Style the '-' and 'X' differently to make them equally visible
+                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 15"},
+                  "opacity": {"value": 0.9},
+                  "y": {"value": 27},
+                  "x": {"scale": "x", "field": "position"},
+                  "tooltip": {
+                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                  }
+                }  
+              },
+            } 
+          ],
 
           // Color legend
           "legends": [
@@ -580,7 +727,7 @@ const concatTreeWithAlignmentSpec = () => {
               "direction": "horizontal",
               "fill": "naive_color",
               "title": "Gene region color key",
-              "offset": {"signal": "2.5*mutation_mark_height"},
+              "offset": {"signal": "25"},
               "encode": {
                 "symbols": {
                   "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
@@ -717,13 +864,17 @@ const concatTreeWithAlignmentSpec = () => {
               ]
             },
             {
+              // Tried filtering the wheel event to allow enforcing holding shift to zoom
+              // This required changing the events field to an object which broke the wheel events
+              // (you can set consume to true - i thought - to make it like wheel! but this made it
+              // not limited to the tree scope anymore)
               "name": "zoom", 
               "value": 1,
               "on": [
                 {
                   "events": "wheel!",
                   "force": true,
-                  "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+                  "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))" 
                 },
                 {
                   "events": {"signal": "dist2"},
@@ -754,7 +905,6 @@ const concatTreeWithAlignmentSpec = () => {
                 "update": "pinchDistance(event)"
               }]
             },
-            // These need 
             {
               "push": "outer",
               "name": "xdom_delta",
@@ -792,7 +942,10 @@ const concatTreeWithAlignmentSpec = () => {
                 // Clamp zoom in order to limit max zoom out
                 {
                   "events": {"signal": "zoom"},
-                  "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
+                  "update": " (anchor[0] + (xdom[0] - anchor[0]) * zoom) < xext[0] ||  (anchor[0] + (xdom[1] - anchor[0]) * zoom) > xext[1] ? slice(xext) :  [(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
+                  // "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
+    
+                  // "update": "[(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
                 }
               ]
             },
@@ -808,7 +961,10 @@ const concatTreeWithAlignmentSpec = () => {
                 // Clamp zoom in order to limit max zoom out
                 {
                   "events": {"signal": "zoom"},
-                  "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
+                  "update": " (anchor[1] + (ydom[0] - anchor[1]) * zoom) < yext[0] || (anchor[1] + (ydom[1] - anchor[1]) * zoom) > yext[1] ? slice(yext) : [(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom)] "
+                  // "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
+    
+                  // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
                 }
               ]
             },
@@ -1002,40 +1158,40 @@ const concatTreeWithAlignmentSpec = () => {
             //     }
             //   }
             // },
-            {
-              "name": "naive",
-              "type": "rect",
-              "style": [
-                "bar"
-              ],
-              "from": {
-                "data": "naive_data"
-              },
-              "encode": {
-                "update": {
-                  "fill": {"scale": "naive_color", "field": "region"},
-                  "tooltip": {
-                    "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
-                  },
-                  "x": {
-                    "scale": "x",
-                    "signal": "floor(datum[\"start\"]/3)-0.5"
-                  },
-                  "x2": {
-                    "scale": "x",
-                    "signal": "floor(datum[\"end\"]/3)+0.5"
-                  },
-                   "yc":{"scale": "yscale", "value": "-2"},
-                  "height": [
-                    {
-                      "test": "datum[\"region\"] == 'CDR3'",
-                      "signal": "naive_offset/2"
-                    },
-                    {"signal": "naive_offset/4"}      
-                ],
-                }
-              }
-            },
+            // {
+            //   "name": "naive",
+            //   "type": "rect",
+            //   "style": [
+            //     "bar"
+            //   ],
+            //   "from": {
+            //     "data": "naive_data"
+            //   },
+            //   "encode": {
+            //     "update": {
+            //       "fill": {"scale": "naive_color", "field": "region"},
+            //       "tooltip": {
+            //         "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+            //       },
+            //       "x": {
+            //         "scale": "x",
+            //         "signal": "floor(datum[\"start\"]/3)-0.5"
+            //       },
+            //       "x2": {
+            //         "scale": "x",
+            //         "signal": "floor(datum[\"end\"]/3)+0.5"
+            //       },
+            //        "yc":{"scale": "yscale", "value": "-2"},
+            //       "height": [
+            //         {
+            //           "test": "datum[\"region\"] == 'CDR3'",
+            //           "signal": "naive_offset/2"
+            //         },
+            //         {"signal": "naive_offset/4"}      
+            //     ],
+            //     }
+            //   }
+            // },
             {
               "name": "rule_cdr3",
               "type": "rule",
