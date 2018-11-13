@@ -47,7 +47,7 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
       </div>
       { selectedFamily ?
           <div style={sectionStyle}>
-            <viz.TreeViz availableHeight={availableHeight}/>
+            <viz.TreeViz/>
           </div> :
           ""}
       {_.isEmpty(selectedSeq) ?

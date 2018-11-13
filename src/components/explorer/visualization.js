@@ -203,11 +203,14 @@ class ClonalFamiliesViz extends React.Component {
 // First some redux connection functions
 
 const mapStateToPropsTips = (state, ownProps) => {
-  let treeNodes = getReconstructionData(state)
+  let selectedFamily = getSelectedFamily(state)
+  let naiveData = getNaiveVizData(selectedFamily)
   return {
-    selectedFamily: getSelectedFamily(state),
-    treeNodes,
+    selectedFamily,
+    treeNodes: getReconstructionData(state),
     selectedReconstruction: getSelectedReconstruction(state),
+    naiveData,
+    cdr3Bounds: [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
   }
 }
 
@@ -229,22 +232,7 @@ class TreeViz extends React.Component {
     this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
   }
 
-  shouldComponentUpdate(nextProps, nextState){
-    // This is here because we don't want to rerender when the component gets new props
-    // except these ones. This includes when it recieves a new availableHeight prop
-    // Before we were using areStatesEqual, but that just checks incoming state values,
-    // and so we would still rerender on some new props. Hence the implementation here.
-
-    //      NOTE this '!' in front means if either of them are not equal, we DO rerender
-    return !(_.isEqual(this.props.selectedReconstruction, nextProps.selectedReconstruction) &&
-           _.isEqual(this.props.selectedFamily, nextProps.selectedFamily))
-  }
-
-  render() {
-
-    let naiveData = getNaiveVizData(this.props.selectedFamily)
-    let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
-
+  render() {    
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -280,19 +268,18 @@ class TreeViz extends React.Component {
               debug={/* true for debugging */ true}
               data={{source_0: this.props.treeNodes.asr_tree,
                      source_1: this.props.treeNodes.tips_alignment,
-                     naive_data: naiveData.source,
-                     cdr3_bounds: cdr3Bounds,
+                     naive_data: this.props.naiveData.source,
+                     cdr3_bounds: this.props.cdr3Bounds,
                      leaves_count_incl_naive: this.props.treeNodes.leaves_count_incl_naive,
-                     available_height: this.props.availableHeight,
                      pts_tuple: this.props.selectedFamily,
                     // Here we create a separate dataset only containing the id of the
                     // seed sequence so as to check quickly for this id within the 
                     // viz to color the seed blue
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
-              // spec={this.spec}
+              spec={this.spec}
               // Reload spec every time for Hot Reloading to work during dev
-              spec={concatTreeWithAlignmentSpec(this.props.treeNodes, null)}
+              // spec={concatTreeWithAlignmentSpec(this.props.treeNodes, null)}
 
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
