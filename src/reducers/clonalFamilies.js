@@ -12,6 +12,7 @@ const initialState = {
 }
 
 const clonalFamilies = (state = {
+  loadingClonalFamilies: false,
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
@@ -21,7 +22,9 @@ const clonalFamilies = (state = {
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
-    case types.RESET_CLONAL_FAMILIES_STATE: {
+    case types.LOADING_CLONAL_FAMILIES: {
+      return Object.assign({}, state, {loadingClonalFamilies: action.isLoading});
+    } case types.RESET_CLONAL_FAMILIES_STATE: {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
       let reset_state = _.omit(initialState, 'allClonalFamilies')
