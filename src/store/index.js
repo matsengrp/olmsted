@@ -14,7 +14,7 @@ export default function configureStore(initialState) {
 
   const actionSanitizer = (action) => {
     if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.allClonalFamilies ){
-      return { ...action, allClonalFamilies: 'LARGE PAYLOAD' } 
+      return { ...action, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + action.allClonalFamilies.length } 
     }
     else{
       return action
@@ -22,7 +22,7 @@ export default function configureStore(initialState) {
   }
   const stateSanitizer = (state) => {
     if ( state.clonalFamilies.allClonalFamilies ){
-      return { ...state, clonalFamilies: {...state.clonalFamilies, allClonalFamilies:'LARGE PAYLOAD'  }}
+      return { ...state, clonalFamilies: {...state.clonalFamilies, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + state.clonalFamilies.allClonalFamilies.length  }}
     }
     return state
   }

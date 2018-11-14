@@ -123,13 +123,8 @@ class ClonalFamiliesViz extends React.Component {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     this.spec = this.props.facetByField ? facetClonalFamiliesVizSpec(this.props.availableClonalFamilies, this.props.facetByField) :
                              clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)
-    return <div>
-            {this.props.availableClonalFamilies.length <= 0 ? 
-                //Render "Loading" if we have no clonal families yet
-                //This needs to be changed later: what if we had no clonal families
-                //and the user just sits there waiting thinking something is broken
-                <h1>Loading</h1> 
-                :
+    return <div> 
+            <p>Number of clonal families: {this.props.availableClonalFamilies.length}</p>
                 <Vega
                 // TURN THESE ON TO DEBUG SIGNALS
                 // SEE https://github.com/matsengrp/olmsted/issues/65
@@ -199,7 +194,7 @@ class ClonalFamiliesViz extends React.Component {
                       // viz to highlight the selected family.
                       selected: [{'ident': this.props.selectedFamily}] }}
                 spec={this.spec}/>
-              }
+              
               <label>Facet by field: </label>
               <select value={this.props.facetByField}
                 onChange={(event) => this.props.updateFacet(event.target.value) }>
