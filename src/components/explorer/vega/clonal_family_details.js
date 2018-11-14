@@ -186,22 +186,22 @@ const concatTreeWithAlignmentSpec = () => {
           // Raw alignment data / mutations records
           "name": "source_1",
         },
-        {"name": "data_1",
-         "source": "source_1",
-         "transform": [
-           {
-             "type": "formula",
-             "expr": "toNumber(datum[\"position\"])",
-             "as": "position"
-           },
-           {"expr": "datum.height", "type": "formula", "as": "y"},
-           { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
-           {
-            "type": "filter",
-            "expr": "datum.seq_id !== 'inferred_naive'"
-          }
-
-         ]
+        {
+          "name": "data_1",
+          "source": "source_1",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "toNumber(datum[\"position\"])",
+              "as": "position"
+            },
+            {"expr": "datum.height", "type": "formula", "as": "y"},
+            { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
+            {
+              "type": "filter",
+              "expr": "datum.seq_id !== 'inferred_naive'"
+            }
+          ]
         },
         // Separate dataset for just gap characters and Xs to label them with text marks
         {"name": "x_and_gaps",
@@ -251,24 +251,28 @@ const concatTreeWithAlignmentSpec = () => {
       ],
       "signals": [
         // ZOOM SIGNALS
-        { "name": "xrange", "update": "[pie_chart_padding , tree_group_width -  leaf_label_length_limit]" },
+        // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
+        // are all visible when fully zoomed out
+        { "name": "xrange", "update": "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
         { "name": "yrange", "update": "[pie_chart_padding , height - pie_chart_padding]" },    
-        // {
-        //   "name": "xdom",
-        //   "update": "slice(xext)",
-        // },
-        // {
-        //   "name": "ydom",
-        //   "update": "slice(yext)",
-        // },
-        // {
-        //   "name": "xdom_delta",
-        //   "update": "slice(xext)",
-        // },
-        // {
-        //   "name": "ydom_delta",
-        //   "update": "slice(yext)",
-        // },
+        // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
+        // in the outer scope to allow scales/axes to update accordingly
+        {
+          "name": "xdom",
+          "update": "slice(xext)",
+        },
+        {
+          "name": "ydom",
+          "update": "slice(yext)",
+        },
+        {
+          "name": "xdom_delta",
+          "update": "slice(xext)",
+        },
+        {
+          "name": "ydom_delta",
+          "update": "slice(yext)",
+        },
 
         // TREE SIGNALS
         // Number of leaves
@@ -293,192 +297,6 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-
-        // TESTING - Keeping these around for react-vega signal listeners' sake
-        // {
-        //   "name": "down",
-        //   "value": null,
-        //   "on": [
-        //     {"events": "touchend", "update": "null"},
-        //     {"events": "mousedown, touchstart", "update": "xy()"}
-        //   ]
-        // },
-        // {
-        //   "name": "xcur",
-        //   "value": null,
-        //   "on": [
-        //     {
-        //       "events": "mousedown, touchstart, touchend",
-        //       "update": "slice(xdom)"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "name": "ycur",
-        //   "value": null,
-        //   "on": [
-        //     {
-        //       "events": "mousedown, touchstart, touchend",
-        //       "update": "slice(ydom)"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "name": "delta",
-        //   "value": [0, 0],
-        //   "on": [
-        //     {
-        //       "events": [
-        //         {
-        //           "source": "window", "type": "mousemove", "consume": true,
-        //           "between": [{"type": "mousedown"}, {"source": "window", "type": "mouseup"}]
-        //         },
-        //         {
-        //           "type": "touchmove", "consume": true,
-        //           "filter": "event.touches.length === 1"
-        //         }
-        //       ],
-        //       "update": "down ? [down[0]-x(), down[1]-y()] : [0,0]"
-        //     }
-        //   ]
-        // },
-
-        // {
-        //   "name": "anchor_test",
-        //   "value": [0, 0],
-        //   "on": [
-        //     {
-        //       "events": "wheel",
-        //       // Trying to clamp the anchor values here to just work on with the tree area
-        //       "update": "[ x(),  y() ]"
-        //     },
-            
-        //   ]
-        // },
-    
-        // {
-        //   "name": "anchor",
-        //   "value": [0, 0],
-        //   "on": [
-        //     {
-        //       "events": "wheel",
-        //       // Trying to clamp the anchor values here to just work on with the tree area
-        //       "update": "[invert('time', x()), invert('yscale', y() )]"
-        //     },
-        //     {
-        //       "events": {"type": "touchstart", "filter": "event.touches.length===2"},
-        //       "update": "[(xdom[0] + xdom[1]) / 2, (ydom[0] + ydom[1]) / 2]"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "name": "zoom", 
-        //   "value": 1,
-        //   "on": [
-        //     {
-        //       "events": "wheel!",
-        //       "force": true,
-        //       "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))" 
-        //     },
-        //     {
-        //       "events": {"signal": "dist2"},
-        //       "force": true,
-        //       "update": "dist1 / dist2"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "name": "dist1",
-        //   "value": 0,
-        //   "on": [
-        //     {
-        //       "events": {"type": "touchstart", "filter": "event.touches.length===2"},
-        //       "update": "pinchDistance(event)"
-        //     },
-        //     {
-        //       "events": {"signal": "dist2"},
-        //       "update": "dist2"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "name": "dist2",
-        //   "value": 0,
-        //   "on": [{
-        //     "events": {"type": "touchmove", "consume": true, "filter": "event.touches.length===2"},
-        //     "update": "pinchDistance(event)"
-        //   }]
-        // },
-        // {
-        //   "update": "slice(xext)",
-        //   "name": "xdom_delta",
-        //   "on": [
-        //     {
-        //       "events": {"signal": "delta"},
-        //       "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "update": "slice(yext)",
-        //   "name": "ydom_delta",
-        //   "on": [
-        //     {
-        //       "events": {"signal": "delta"},
-        //       "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-        //     }
-        //   ]
-        // },
-        
-        // {
-        //   "update": "slice(xext)",
-        //   "name": "xdom",
-        //   "on": [
-        //     // Figure out a way to limit the bounds of dragging around
-        //     // This will fix the problem of it "snapping" back into place
-        //     // when you drag beyond the bounds of the tree and then zoom
-        //     // Should be something like one of the below updates with clamp or min/max but none quite work 
-        //     {
-        //       "events": {"signal": "xdom_delta"},
-        //       // "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-        //       "update": "xdom_delta[0] < xext[0] || xdom_delta[1] > xext[1] ? slice(xdom) : slice(xdom_delta)"
-        //     },
-        //     // Clamp zoom in order to limit max zoom out
-        //     {
-        //       "events": {"signal": "zoom"},
-        //       "update": " (anchor[0] + (xdom[0] - anchor[0]) * zoom) < xext[0] ||  (anchor[0] + (xdom[1] - anchor[0]) * zoom) > xext[1] ? slice(xext) :  [(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
-        //       // "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
-
-        //       // "update": "[(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
-        //     }
-        //   ]
-        // },
-        // {
-        //   "update": "slice(yext)",
-        //   "name": "ydom",
-        //   "on": [
-        //     {
-        //       "events": {"signal": "ydom_delta"},
-        //       // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-        //       "update": "ydom_delta[0] < yext[0] || ydom_delta[1] > yext[1] ? slice(ydom) : slice(ydom_delta)"
-        //     },
-        //     // Clamp zoom in order to limit max zoom out
-        //     {
-        //       "events": {"signal": "zoom"},
-        //       "update": " (anchor[1] + (ydom[0] - anchor[1]) * zoom) < yext[0] || (anchor[1] + (ydom[1] - anchor[1]) * zoom) > yext[1] ? slice(yext) : [(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom)] "
-        //       // "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
-
-        //       // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
-        //     }
-        //   ]
-        // },
-        // END TESTING
-
-
-
-
-
-
         {
           "name": "width",
         },
@@ -487,7 +305,7 @@ const concatTreeWithAlignmentSpec = () => {
         // mutation marks in the alignment
         {
           "name": "leaf_size",
-          "update": "clamp(height/span(ydom)-1, 5, 1000)"
+          "update": "clamp(height/span(ydom), 5, 1000)"
         },
          // Size of leaves - they are mapped to a range with
          // the value of this signal as the maximum
@@ -506,7 +324,7 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "value": true,
           "name": "show_labels",
-          "bind": {"input": "radio", "options": [true, false]}
+          "bind": {"input": "checkbox", "options": [true, false]}
         },
         // Padding to add to the initial tree size to not clip labels
         {
@@ -517,11 +335,6 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "pie_chart_padding",
           "update": "clamp(max_leaf_size, 10, max_leaf_size)"
         },
-        // {
-        //   "name": "label_padding",
-        //   // Approx width of longest label
-        //   "update": "data(\"max_label_length\")[0].max_value*0.9*label_size"
-        // },
         {
           // Label size for tree leaves (clamped to max value of 10)
           "name": "label_size",
@@ -571,8 +384,9 @@ const concatTreeWithAlignmentSpec = () => {
         // ALIGNMENT SIGNALS
         {
           // Size of mutation marks vertically, clamped to max 20
+          // Scale factor to give space between each mark
           "name": "mutation_mark_height",
-          "update": "clamp(leaf_size*0.9, 0, 20)"
+          "update": "clamp(leaf_size*0.75, 0, 20)"
         },
         {
           "name": "mutation_mark_width",
@@ -587,14 +401,13 @@ const concatTreeWithAlignmentSpec = () => {
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
       "layout": {
         "padding": {"column": 0},
+        // 2 columns so the grid repeats on the next row after two items (group marks)
         "columns": 2,
-        // Ideally we'd set bounds: flush to get the leaf labels flush with the tick marks
-        // for the alignment viz, but the leaf labels are not always the same length so 
-        // we can't correct for them with padding. See hack in evolutionary axis title
         "bounds": "full",
         "align": "each"
       },
       "marks": [ 
+        // Mostly a place holder (to have the layout above work) but used as a title for the tree viz
         {
           "name": "tree_header",
           "type": "group",
@@ -605,12 +418,12 @@ const concatTreeWithAlignmentSpec = () => {
             "offset": {"value": -20}
           }
         },
+        // Naive viz as a separate group so it stays put when you zoom in
         {
           "name": "naive_group",
           "type": "group",
           "encode": {
             "update": {
-
               // #59 this will need to be controlled by slider 
               "width": {"signal": "alignment_group_width"},
               "height": {"value": 30}
@@ -705,8 +518,7 @@ const concatTreeWithAlignmentSpec = () => {
               },
             } 
           ],
-
-          // Color legend
+          // Color legend for naive
           "legends": [
             {
               "orient": "top",
@@ -722,6 +534,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ],   
         },
+        // Evolution axis below the tree
         {
           "name": "tree_x_axis",
           "type": "group",
@@ -732,12 +545,6 @@ const concatTreeWithAlignmentSpec = () => {
               "scale": "time",
               "orient": "bottom",
               "grid": false,
-              // See layout section: the axes get included in the group width when you have 
-              // bound: full. We need bounf: full to account for the leaf labels going beyond
-              // the exact width; this setting allows them to be included in our width. However,
-              // since this setting also includes the axis title in the overall width, we collapse
-              // it when the branch scale is 0 because we want to be able to have the leaf labels 
-              // flush with the tick marks for the alignment viz.
               "title": "Evolutionary distance from naive",
               "labelFlush": true,
               "labelOverlap": true,
@@ -747,6 +554,7 @@ const concatTreeWithAlignmentSpec = () => {
             
           ]
         },  
+        // Amino acid position axis
         {
           "name": "alignment_x_axis",
           "type": "group",
@@ -779,7 +587,7 @@ const concatTreeWithAlignmentSpec = () => {
            }
           },
           "signals": [        
-            // Zoom signals, xdom and ydom are push: outer to allow access
+            // Zoom signals, {x,y}dom (and {xdom,ydom}_delta) are push: outer to allow access
             // at the top level other places in the spec
             {
               "name": "down",
@@ -809,6 +617,7 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
             },
+            // Dragging / panning
             {
               "name": "delta",
               "value": [0, 0],
@@ -828,15 +637,14 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
             },
-        
+            // Anchor for zoom
             {
               "name": "anchor",
               "value": [0, 0],
               "on": [
                 {
                   "events": "wheel",
-                  // Trying to clamp the anchor values here to just work on with the tree area
-                  "update": "[invert('time', x()), invert('yscale', y())]"
+                  "update": "[invert('time', x()), invert('yscale', y() )]"
                 },
                 {
                   "events": {"type": "touchstart", "filter": "event.touches.length===2"},
@@ -844,11 +652,8 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
             },
+            // Zoom factor
             {
-              // Tried filtering the wheel event to allow enforcing holding shift to zoom
-              // This required changing the events field to an object which broke the wheel events
-              // (you can set consume to true - i thought - to make it like wheel! but this made it
-              // not limited to the tree scope anymore)
               "name": "zoom", 
               "value": 1,
               "on": [
@@ -886,6 +691,7 @@ const concatTreeWithAlignmentSpec = () => {
                 "update": "pinchDistance(event)"
               }]
             },
+            // Original delta values are stored in these signals to make the {x,y}dom delta handlers more readable
             {
               "push": "outer",
               "name": "xdom_delta",
@@ -906,27 +712,25 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
             },
-            
             {
               "push": "outer",
               "name": "xdom",
               "on": [
-                // Figure out a way to limit the bounds of dragging around
-                // This will fix the problem of it "snapping" back into place
-                // when you drag beyond the bounds of the tree and then zoom
-                // Should be something like one of the below updates with clamp or min/max but none quite work 
+                // Update shown x values when dragging
                 {
                   "events": {"signal": "xdom_delta"},
+                  // Original values
                   // "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
+                  // Limiting dragging to the boundaries of the tree
                   "update": "xdom_delta[0] < xext[0] || xdom_delta[1] > xext[1] ? slice(xdom) : slice(xdom_delta)"
                 },
-                // Clamp zoom in order to limit max zoom out
+                // Update shown x values when zooming
                 {
                   "events": {"signal": "zoom"},
-                  "update": " (anchor[0] + (xdom[0] - anchor[0]) * zoom) < xext[0] ||  (anchor[0] + (xdom[1] - anchor[0]) * zoom) > xext[1] ? slice(xext) :  [(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
-                  // "update": "[clamp( (anchor[0] + (xdom[0] - anchor[0]) * zoom), xext[0], xext[1]) ,   clamp( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[0], xext[1])]"
-    
+                  // Original values
                   // "update": "[(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
+                  // Limiting zoom to the boundaries of the tree
+                  "update": "[ max( (anchor[0] + (xdom[0] - anchor[0]) * zoom) , xext[0] ),   min( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[1]) ]"
                 }
               ]
             },
@@ -934,18 +738,22 @@ const concatTreeWithAlignmentSpec = () => {
               "push": "outer",
               "name": "ydom",
               "on": [
+                // Update shown y values when dragging
                 {
                   "events": {"signal": "ydom_delta"},
+                  // Original values
                   // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
+                  // Limiting dragging to the boundaries of the tree
                   "update": "ydom_delta[0] < yext[0] || ydom_delta[1] > yext[1] ? slice(ydom) : slice(ydom_delta)"
                 },
-                // Clamp zoom in order to limit max zoom out
+                // Update shown y values when zooming
                 {
                   "events": {"signal": "zoom"},
-                  "update": " (anchor[1] + (ydom[0] - anchor[1]) * zoom) < yext[0] || (anchor[1] + (ydom[1] - anchor[1]) * zoom) > yext[1] ? slice(yext) : [(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom)] "
-                  // "update": "[clamp( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0], yext[1]), clamp( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[0], yext[1])]"
-    
+                  // Original values
                   // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
+                  // Limiting zoom to the boundaries of the tree
+                  "update": "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0]), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] ) ] "
+                 
                 }
               ]
             },
@@ -1036,7 +844,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "symbol",
               "from": {"data": "leaves"}
             },
-            // labels
+            // LEAF LABELS
             {
               "type": "text",
               "encode": {
@@ -1189,7 +997,6 @@ const concatTreeWithAlignmentSpec = () => {
             {
               "scale": "aa_position",
               "orient": "bottom",
-              // "gridScale": "yscale",
               "grid": true,
               "tickCount": 128,
               "domain": false,
@@ -1203,7 +1010,7 @@ const concatTreeWithAlignmentSpec = () => {
             {
               "scale": "yscale",
               "orient": "left",
-              // "gridScale": "aa_position",
+              // "gridScale": "",
               "grid": true,
               "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
               "offset": 5,
@@ -1289,7 +1096,6 @@ const concatTreeWithAlignmentSpec = () => {
           "direction": "vertical",
           "fill": "aa_color",
           "title": "AA color",
-          // "offset": {"signal": "2.5*mutation_mark_height"},
           "encode": {
             "symbols": {
               "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}

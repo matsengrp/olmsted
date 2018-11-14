@@ -241,23 +241,7 @@ class TreeViz extends React.Component {
               {this.props.selectedFamily.reconstructions.map((recon) =>
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
-            <Vega onParseError={(...args) => console.error("parse error:", args)}
-              onSignalWidth={(...args) => {
-                let result = args.slice(1)[0]
-                console.log("width", result)
-              }}
-              onSignalHeight={(...args) => {
-                let result = args.slice(1)[0]
-                console.log("height", result)
-              }}
-              onSignalXdom={(...args) => {
-                let result = args.slice(1)[0]
-                console.log("X ext", result)
-              }}
-              onSignalYdom={(...args) => {
-                let result = args.slice(1)[0]
-                console.log("Y ext", result)
-              }}
+            <Vega onParseError={(...args) => console.error("parse error:", args)}             
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
@@ -278,7 +262,7 @@ class TreeViz extends React.Component {
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
               spec={this.spec}
-              // Reload spec every time for Hot Reloading to work during dev
+              // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
               // spec={concatTreeWithAlignmentSpec(this.props.treeNodes, null)}
 
               />
