@@ -26,7 +26,6 @@ class Monitor extends React.Component {
     /* API call to charon to get initial datasets etc (needed to load the splash page) */
     getDatasets(this.props.dispatch);
     this.onURLChanged();
-    getClonalFamilies(this.props.dispatch);
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener( // future resizes
       "resize",

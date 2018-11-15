@@ -19,7 +19,7 @@ const app = express();
 app.set('port', process.env.PORT || 4000);
 
 // gzip data
-exec(['gzip', '-k9f', 'data/clonal_families.json'], function(err, out, code) {
+exec(['gzip', '-k9fr', 'data/clonal_families/'], function(err, out, code) {
   if (err instanceof Error)
     throw err;
   process.stderr.write(err);

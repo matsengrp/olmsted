@@ -1,12 +1,16 @@
 import React from "react";
 import { TOGGLE_DATASET } from "../../actions/types";
 import { red } from "./displayError";
+import { getClonalFamilies } from "../../actions/loadData";
 
 const formatDataset = (dataset, dispatch) => {
   return (
     <tr key={dataset.id}
       style={{backgroundColor: dataset.selected ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"}}
-      onClick={() => dispatch({type: TOGGLE_DATASET, dataset_id: dataset.id})}>
+      onClick={() => {
+        dispatch({type: TOGGLE_DATASET, dataset_id: dataset.id})
+        if(!dataset.selected){getClonalFamilies(dispatch, dataset.id)};
+      }}>
       <td><input style={{marginLeft: "5px"}} type="checkbox" checked={dataset.selected} onChange={() =>  {}}></input></td>
       <td>{dataset.id}</td>
       <td>{dataset.n_subjects}</td>

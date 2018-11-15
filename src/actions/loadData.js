@@ -12,16 +12,24 @@ const charonErrorHandler = () => {
   dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
 };
 
-export const getClonalFamilies = (dispatch, s3bucket = "live") => {
-  const processData = (data) => {
-    const allClonalFamilies = JSON.parse(data);
+export const getClonalFamilies = (dispatch, datset_id) => {
+  const processData = (data, dataset_id) => {
+    console.log(data.substring(0,100))
+    let clonalFamilies = []
+    try{
+      clonalFamilies = JSON.parse(data);
+    } catch( err ){
+      alert("Failed parsing json for " + dataset_id + 
+      ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
+    }
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, allClonalFamilies) :
+      getDatapath(window.location.pathname, clonalFamilies) :
       undefined;
 
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
-      allClonalFamilies
+      dataset_id,
+      clonalFamilies
     });
     dispatch({
       type: types.LOADING_CLONAL_FAMILIES,
@@ -35,14 +43,14 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
       timerEnd("LOADING CLONAL FAMILIES")
-      processData(request.responseText);
+      processData(request.responseText, datset_id);
     } else {
       charonErrorHandler();
     }
   };
 
   request.onerror = charonErrorHandler;
-  request.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
+  request.open("get", `${charonAPIAddress}/clonal_families/${datset_id}.json`, true); // true for asynchronous
  
   request.send(null);
   timerStart("LOADING CLONAL FAMILIES")
