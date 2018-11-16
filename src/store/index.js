@@ -14,15 +14,19 @@ export default function configureStore(initialState) {
 
   const actionSanitizer = (action) => {
     if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.allClonalFamilies ){
-      return { ...action, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + action.allClonalFamilies.length } 
+      return { ...action, clonalFamilies: 'LARGE PAYLOAD, total families:'  + action.clonalFamilies.length } 
     }
     else{
       return action
     }
   }
   const stateSanitizer = (state) => {
-    if ( state.clonalFamilies.allClonalFamilies ){
-      return { ...state, clonalFamilies: {...state.clonalFamilies, allClonalFamilies: 'LARGE PAYLOAD, total families:'  + state.clonalFamilies.allClonalFamilies.length  }}
+    if ( state.clonalFamilies.clonalFamiliesDict ){
+      let sumClonalFamiliesDict =  {}
+      Object.entries(state.clonalFamilies.clonalFamiliesDict).forEach((pair) => {
+        sumClonalFamiliesDict[pair[0]] = pair[1].length
+      })
+      return { ...state, clonalFamilies: {...state.clonalFamilies, clonalFamiliesDict: sumClonalFamiliesDict}}
     }
     return state
   }

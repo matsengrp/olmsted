@@ -12,20 +12,31 @@ const charonErrorHandler = () => {
   dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
 };
 
-export const getClonalFamilies = (dispatch, s3bucket = "live") => {
-  const processData = (data) => {
-    const allClonalFamilies = JSON.parse(data);
+export const getClonalFamilies = (dispatch, dataset_id) => {
+  const processData = (data, dataset_id) => {
+    console.log(data.substring(0,100))
+    let clonalFamilies = []
+    try{
+      clonalFamilies = JSON.parse(data);
+      timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
+
+    } catch( err ){
+      alert("Failed parsing json for " + dataset_id + 
+      ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
+    }
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, allClonalFamilies) :
+      getDatapath(window.location.pathname, clonalFamilies) :
       undefined;
 
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
-      allClonalFamilies
+      dataset_id,
+      clonalFamilies
     });
     dispatch({
-      type: types.LOADING_CLONAL_FAMILIES,
-      isLoading: false
+      type: types.LOADING_DATASET,
+      dataset_id,
+      loading: "DONE"
     });
   };
 
@@ -34,22 +45,18 @@ export const getClonalFamilies = (dispatch, s3bucket = "live") => {
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
-      timerEnd("LOADING CLONAL FAMILIES")
-      processData(request.responseText);
+      processData(request.responseText, dataset_id);
     } else {
       charonErrorHandler();
     }
   };
 
   request.onerror = charonErrorHandler;
-  request.open("get", `${charonAPIAddress}/clonal_families.json`, true); // true for asynchronous
+  request.open("get", `${charonAPIAddress}/${dataset_id}.clonal_families.json`, true); // true for asynchronous
  
   request.send(null);
-  timerStart("LOADING CLONAL FAMILIES")
-  dispatch({
-    type: types.LOADING_CLONAL_FAMILIES,
-    isLoading: true
-  });
+  timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {

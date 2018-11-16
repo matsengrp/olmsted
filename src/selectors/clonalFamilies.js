@@ -10,31 +10,26 @@ const createDeepEqualSelector = createSelectorCreator(
 
 // FILTER CLONAL FAMILIES BY SELECTED DATASETS
 
-const getAllClonalFamilies = (state) => state.clonalFamilies.allClonalFamilies
+const getClonalFamiliesDict = (state) => state.clonalFamilies.clonalFamiliesDict
 
 const getDatasets = (state) => state.datasets.availableDatasets
 
-// #77 at some point instead of the filtering every single family on its dataset.id
-// we will probably want to nest the clonal families for each dataset by a key
-// so that we can just get all the clonal families for one dataset from one large
-// object by doing allClonalFamilies[selected_dataset_id]
-const computeAvailableClonalFamilies = (families, datasets) => {
-  let selectedDatasetIds = new Set();
-  _.forEach(datasets, (dataset) => {
-    dataset.selected && selectedDatasetIds.add(dataset.id)
-  })
-  let availableClonalFamilies = families
-  if(selectedDatasetIds.size > 0){ 
-    availableClonalFamilies = _.filter(families, (family) => {
-      return selectedDatasetIds.has(family.dataset.id)}
-    ) 
+const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets) => {
+  var availableClonalFamilies = []
+  if(datasets.length > 0){ 
+    _.forEach(datasets, (dataset) => {
+      if(dataset.loading && dataset.loading == "DONE"){ 
+        availableClonalFamilies = availableClonalFamilies.concat(clonalFamiliesDict[dataset.id]) }
+    })
   }
+  console.log(availableClonalFamilies.length)
+
   return availableClonalFamilies
 }
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(
-    [getAllClonalFamilies, getDatasets],
-    (families, datasets) => computeAvailableClonalFamilies(families, datasets)
+    [getClonalFamiliesDict, getDatasets],
+    (clonalFamiliesDict, datasets) => computeAvailableClonalFamilies(clonalFamiliesDict, datasets)
 )
 
 // FILTER TABLE RESULTS BY BRUSH SELECTION

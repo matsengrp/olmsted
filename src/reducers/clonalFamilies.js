@@ -12,27 +12,26 @@ const initialState = {
 }
 
 const clonalFamilies = (state = {
-  loadingClonalFamilies: false,
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
-  allClonalFamilies: [],
+  clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
   treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
-    case types.LOADING_CLONAL_FAMILIES: {
-      return Object.assign({}, state, {loadingClonalFamilies: action.isLoading});
-    } case types.RESET_CLONAL_FAMILIES_STATE: {
+    case types.RESET_CLONAL_FAMILIES_STATE: {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
-      let reset_state = _.omit(initialState, 'allClonalFamilies')
-      console.log(reset_state)
+      let reset_state = _.omit(initialState, 'clonalFamiliesDict')
       return Object.assign({}, state, reset_state);
     } case types.CLONAL_FAMILIES_RECEIVED: {
+      let newClonalFamiliesDictEntry = {}
+      newClonalFamiliesDictEntry[action.dataset_id] = action.clonalFamilies
+      let updatedClonalFamiliesDict = Object.assign({}, state.clonalFamiliesDict, newClonalFamiliesDictEntry);
       return Object.assign({}, state, {
-        allClonalFamilies: action.allClonalFamilies
+        clonalFamiliesDict: updatedClonalFamiliesDict
       });
     } case types.SELECTING_STATUS: {
       return Object.assign({}, state, {
