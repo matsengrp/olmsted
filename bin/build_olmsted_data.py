@@ -8,16 +8,15 @@ from tripl import tripl
 import warnings
 from ete3 import PhyloTree
 import functools as fun
+import os
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-S', '--schema', default='schema.json')
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
-    parser.add_argument('-c', '--clonal-families-out')
+    parser.add_argument('-o', '--data-outdir')
     parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
-    parser.add_argument('-d', '--datasets-out')
-    parser.add_argument('-s', '--sequences-out')
     parser.add_argument('-v', '--verbose', action='store_true')
     return parser.parse_args()
 
@@ -259,8 +258,12 @@ def pull_clonal_families(args, t):
     #result[0]['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(result['cft.reconstruction:cluster']['cft.reconstruction:asr_tree']['tripl.file:contents'])[0])
     return good_families
 
-def write_out(data, filename, args):
-    with open(filename, 'w') as fh:
+def write_out(data, dirname, filename, args):
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    full_path = os.path.normpath(os.path.join(dirname, filename))
+    with open(full_path, 'w') as fh:
+        print('writing '+ full_path)
         if args.csv:
             data = [{k: v for k, v in d.items()}
                     for d in data]
@@ -276,25 +279,23 @@ def write_out(data, filename, args):
 
 def main():
     args = get_args()
-    datasets, clonal_families = [], []
+    datasets, clonal_families_dict = [], {}
     for infile in args.inputs:
         print("\nProcessing infile: " + str(infile))
         t = tripl.TripleStore.loads([args.schema, infile])
         try:
-            if args.datasets_out:
+            if args.data_outdir:
                 datasets += pull_datasets(t)
-            if args.clonal_families_out:
-                clonal_families += pull_clonal_families(args, t)
+                clonal_families = pull_clonal_families(args, t)
+                dataset = clonal_families[0]['dataset']['id']
+                clonal_families_dict[dataset] = clonal_families
         except Exception as e:
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
-    if args.datasets_out:
-        write_out(datasets, args.datasets_out, args)
-    if args.clonal_families_out:
-        write_out(clonal_families, args.clonal_families_out, args)
-    #if args.sequences_out:
-        #write_out(pull_sequences(t), args.sequences_out, args)
-
+    if args.data_outdir:
+        write_out(datasets, args.data_outdir, 'datasets.json', args)
+        for dataset_id, clonal_families in clonal_families_dict.items():
+            write_out(clonal_families, args.data_outdir + '/', dataset_id + '.clonal_families.json' , args)
 
 if __name__ == '__main__':
     main()
