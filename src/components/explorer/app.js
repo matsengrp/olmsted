@@ -5,7 +5,6 @@ import VegaLite from 'react-vega-lite';
 import { connect } from "react-redux";
 import { loadJSONs } from "../../actions/loadData";
 import { controlsHiddenWidth, controlsWidth, controlsPadding } from "../../util/globals";
-import { filterDatasets } from "../../reducers/datasets"
 import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';

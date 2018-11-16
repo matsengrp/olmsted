@@ -1,6 +1,7 @@
 import queryString from "query-string";
 import * as types from "./types";
-
+import { getClonalFamilies } from "./loadData";
+import * as sets from "../util/sets";
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
   // if (pathname === "/" || pathname === "/all") return "splash";
@@ -70,8 +71,27 @@ ARGUMENTS:
 (1) query - REQUIRED - {object}
 (2) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
 */
-export const changePageQuery = ({queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
+export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
   const state =  getState();
+  if( chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets ){
+    let queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets))
+    // Tried to check to see that datasets were in the state before requesting them from server but they are 
+    // not loaded at this point in time..
+    // let notLoaded = new Set();
+    // console.log(state.datasets)
+    // state.datasets.availableDatasets.forEach((dataset) => {if(!dataset.loading){notLoaded.add(dataset.id)}})
+    // console.log(notLoaded)
+    // sets.intersection(notLoaded, queryStringDatasets)
+    queryStringDatasets.forEach( (id) => {
+      console.log(id)
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: id,
+        loading: "LOADING"
+      });
+      getClonalFamilies(dispatch, id)
+    })
+  }
   dispatch({
     type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
     ...state,
@@ -91,6 +111,6 @@ export const browserBackForward = () => (dispatch, getState) => {
     dispatch(changePage({path: window.location.pathname}));
   } 
 
-  dispatch(changePageQuery({queryToUse: queryString.parse(window.location.search)}));
+  dispatch(changePageQuery({path: window.location.pathname, queryToUse: queryString.parse(window.location.search)}));
   
 };

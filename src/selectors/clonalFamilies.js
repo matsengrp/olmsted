@@ -18,7 +18,7 @@ const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets) => {
   var availableClonalFamilies = []
   if(datasets.length > 0){ 
     _.forEach(datasets, (dataset) => {
-      if(dataset.selected){ 
+      if(dataset.loading && dataset.loading == "DONE"){ 
         availableClonalFamilies = availableClonalFamilies.concat(clonalFamiliesDict[dataset.id]) }
     })
   }
