@@ -52,7 +52,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
   };
 
   request.onerror = charonErrorHandler;
-  request.open("get", `${charonAPIAddress}/${dataset_id}.clonal_families.json`, true); // true for asynchronous
+  request.open("get", `${charonAPIAddress}/clonal_families.${dataset_id}.json`, true); // true for asynchronous
  
   request.send(null);
   timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")

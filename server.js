@@ -16,10 +16,10 @@ globals.setGlobals({
 /* if we are in dev-mode, we need to import specific libraries & set flags */
 
 const app = express();
-app.set('port', process.env.PORT || 4000);
+app.set('port', process.env.PORT || 3999);
 
 // gzip all files matching *.clonal_families.json in the data dir
-exec(['find', 'data', '-name', '*.clonal_families.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
+exec(['find', 'data', '-name', 'clonal_families.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
   if (err instanceof Error)
     throw err;
   process.stderr.write(err);

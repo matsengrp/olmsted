@@ -295,7 +295,7 @@ def main():
     if args.data_outdir:
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
-            write_out(clonal_families, args.data_outdir + '/', dataset_id + '.clonal_families.json' , args)
+            write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
 
 if __name__ == '__main__':
     main()
