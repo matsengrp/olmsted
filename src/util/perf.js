@@ -55,13 +55,17 @@ export const timerStart = (name) => {
   dbsingle[name][0] = performance.now();
 };
 
-export const timerEnd = (name) => {
+export const timerEnd = (name, action_type, number_of_actions) => {
   if (dbsingle.hasOwnProperty(name) && dbsingle[name][0] !== false) {
     const thisTook = parseInt(performance.now() - dbsingle[name][0], 10);
     dbsingle[name][0] = false;
     dbsingle[name][1]++;
     dbsingle[name][2] += thisTook;
-    const msg = `Timer ${name} (#${dbsingle[name][1]}) took ${thisTook}ms. Average: ${parseInt(dbsingle[name][2] / dbsingle[name][1], 10)}ms.`;
+    let msg = `Timer ${name} (#${dbsingle[name][1]}) took ${thisTook}ms. Average: ${parseInt(dbsingle[name][2] / dbsingle[name][1], 10)}ms.`;
+    if (action_type && number_of_actions) {
+      msg = `Timer ${name} (#${dbsingle[name][1]}) took ${thisTook}ms. Average: ${parseInt(dbsingle[name][2] / dbsingle[name][1], 10)}ms.
+             rate: ${number_of_actions/(thisTook/1000)} ${action_type}/second`;
+    }
     if (thisTook > 20) {
       console.warn(msg);
     } else {
