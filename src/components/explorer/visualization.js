@@ -118,6 +118,7 @@ class ClonalFamiliesViz extends React.Component {
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <div>
+      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
       <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65

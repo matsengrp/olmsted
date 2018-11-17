@@ -18,7 +18,6 @@ class DatasetRow extends React.Component {
         break;
       }
       case "DONE":{
-        console.log("unloading")
         this.props.dispatch({
           type: types.LOADING_DATASET,
           dataset_id: this.props.dataset.id,
@@ -27,7 +26,6 @@ class DatasetRow extends React.Component {
         break;
       }
       default :{
-        console.log("LLLLLOOOADINF")
         this.props.dispatch({
           type: types.LOADING_DATASET,
           dataset_id: this.props.dataset.id,

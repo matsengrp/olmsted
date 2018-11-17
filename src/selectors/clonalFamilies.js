@@ -1,6 +1,7 @@
 import { createSelector, defaultMemoize, createSelectorCreator} from 'reselect';
 import * as _ from 'lodash';
 import * as fun from '../components/framework/fun';
+import { timerEnd, timerStart } from '../util/perf';
 
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(
@@ -22,8 +23,6 @@ const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets) => {
         availableClonalFamilies = availableClonalFamilies.concat(clonalFamiliesDict[dataset.id]) }
     })
   }
-  console.log(availableClonalFamilies.length)
-
   return availableClonalFamilies
 }
 

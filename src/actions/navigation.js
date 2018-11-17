@@ -83,7 +83,6 @@ export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push 
     // console.log(notLoaded)
     // sets.intersection(notLoaded, queryStringDatasets)
     queryStringDatasets.forEach( (id) => {
-      console.log(id)
       dispatch({
         type: types.LOADING_DATASET,
         dataset_id: id,

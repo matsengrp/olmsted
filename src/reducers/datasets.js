@@ -1,7 +1,7 @@
 import * as types from "../actions/types";
 import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
-export const filterDatasets = (datasets) => {
+export const getSelectedDatasets = (datasets) => {
   return datasets.filter(dataset => dataset.loading);
 };
 
