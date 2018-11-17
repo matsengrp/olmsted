@@ -2,52 +2,7 @@ import React from "react";
 import { red } from "./displayError";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as types from "../../actions/types";
-
-class InProgress extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {counter: 0}
-  }
-
-  componentDidMount() {
-    this.timerID = setInterval(
-      () => this.increment(),
-      400
-    );
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerID);
-  }
-
-  increment() {
-    this.setState((state) => ({
-      counter: state.counter+1
-    }));
-  }
-
-  render(){
-    return <td>{"Loading"+"...".substring(0,this.state.counter%4+1)}</td>
-  }
-
-}
-
-class LoadingStatus extends React.Component {
-  render(){
-    switch(this.props.loading){
-      case "LOADING":{
-        return <InProgress/>
-      }
-      case "DONE":{
-        return <td>{'\u2713'}</td>
-      }
-      default :{
-        return <td>{'\u2795'}</td>
-      }
-    }
-  }
-
-}
+import { LoadingStatus, SimpleInProgress } from "../util/loading";
 
 class DatasetRow extends React.Component {
   constructor(props) {
@@ -89,7 +44,9 @@ class DatasetRow extends React.Component {
       <tr key={this.props.dataset.id}
         style={{backgroundColor: this.props.dataset.loading ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"}}
         onClick={this.selectDataset}>
-        <LoadingStatus loading={this.props.dataset.loading}/>
+        <td>
+          <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
+        </td>
         <td>{this.props.dataset.id}</td>
         <td>{this.props.dataset.n_subjects}</td>
         <td>{this.props.dataset.n_clonal_families}</td>

@@ -11,9 +11,9 @@ import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
-import Copy from "./copy";
+import Copy from "../util/copy";
 import DownloadFasta from "./downloadfasta";
-import DownloadText from "./downloadtext";
+import DownloadText from "../util/downloadtext";
 
 
 
@@ -118,7 +118,6 @@ class ClonalFamiliesViz extends React.Component {
   render() {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     return <div>
-      <p>Number of clonal families: {this.props.availableClonalFamilies.length}</p>
       <Vega
       // TURN THESE ON TO DEBUG SIGNALS
       // SEE https://github.com/matsengrp/olmsted/issues/65
