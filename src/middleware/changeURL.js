@@ -63,11 +63,16 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
   }
 
   if(query){
+    // Format url string 
+
+    // Get rid of keys with no values
     Object.keys(query).filter((k) => !query[k]).forEach((k) => delete query[k]);
+    // Format with no commas or slashes
     let search = queryString.stringify(query).replace(/%2C/g, ',').replace(/%2F/g, '/');
     if (search) {search = "?" + search;}
     if (!pathname.startsWith("/")) {pathname = "/" + pathname;}
 
+    // If url change
     if (pathname !== window.location.pathname || search !== window.location.search) {
       let newURLString = pathname;
       if (search) {newURLString += search;}

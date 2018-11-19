@@ -1,11 +1,12 @@
 import * as types from "../actions/types";
 import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
-export const filterDatasets = (datasets) => {
-  return datasets.filter(dataset => dataset.selected == true);
+export const getSelectedDatasets = (datasets) => {
+  return datasets.filter(dataset => dataset.loading);
 };
 
 const datasets = (state = {
+  
   s3bucket: "live",
   availableDatasets: [],
   splash: undefined,
@@ -16,7 +17,15 @@ const datasets = (state = {
   errorMessage: undefined
 }, action) => {
   switch (action.type) {
-    case types.PAGE_CHANGE: {
+    case types.LOADING_DATASET: {
+      var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
+        (dataset.id === action.dataset_id)
+          ? {...dataset, loading: action.loading}
+          : dataset
+      )
+      return Object.assign({}, state, {
+        availableDatasets: updatedAvailableDatasets })
+    } case types.PAGE_CHANGE: {
       return Object.assign({}, state, {
         displayComponent: action.displayComponent,
         datapath: action.datapath,
@@ -30,18 +39,6 @@ const datasets = (state = {
         availableDatasets: action.availableDatasets,
         user: action.user,
         datapath: action.datapath});
-
-    } case types.TOGGLE_DATASET: {
-      var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
-        (dataset.id === action.dataset_id)
-          ? {...dataset, selected: !dataset.selected}
-          : dataset
-      )
-      return Object.assign({}, state, {
-        availableDatasets: updatedAvailableDatasets,
-        datapath: action.datapath,
-        errorMessage: action.errorMessage
-      });
     
     // I guess its ok to keep this, but not sure that what its doing here will make any sense or be necessary once all reorg is said and done
     } case types.PROCEED_SANS_MANIFEST: {
