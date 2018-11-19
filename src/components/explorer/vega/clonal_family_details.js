@@ -199,7 +199,7 @@ const concatTreeWithAlignmentSpec = () => {
             { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
             {
               "type": "filter",
-              "expr": "datum.seq_id !== 'inferred_naive'"
+              "expr": "datum.type !== 'naive'"
             }
           ]
         },
@@ -214,7 +214,7 @@ const concatTreeWithAlignmentSpec = () => {
             {"expr": "datum.height", "type": "formula", "as": "y"},
             {
               "type": "filter",
-              "expr": "datum.seq_id !== 'inferred_naive'"
+              "expr": "datum.type !== 'naive'"
             }
           ]
         },
@@ -230,7 +230,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
             {
               "type": "filter",
-              "expr": "datum.seq_id == 'inferred_naive'"
+              "expr": "datum.type == 'naive'"
             }
           ]
        },
@@ -244,7 +244,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
             {
               "type": "filter",
-              "expr": "datum.seq_id == 'inferred_naive'"
+              "expr": "datum.type == 'naive'"
             }
           ]
       },
@@ -935,9 +935,9 @@ const concatTreeWithAlignmentSpec = () => {
               "encode": {
                 "update": {
                   "opacity": {"value": 0.9},
-                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
                   // [
-                  //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.seq_id == 'inferred_naive'", "value": 0.9},
+                  //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.type == 'naive'", "value": 0.9},
                   //   {"value": 0.1}
                   // ],
                   "fill": [
@@ -977,9 +977,9 @@ const concatTreeWithAlignmentSpec = () => {
                   "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
                   "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
                   "opacity": {"value": 0.9},
-                  // Set opacity similar to this (but with indata and store data set of with hovered id) for hovered data for #24:
+                  // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
                   // [
-                  //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.seq_id == 'inferred_naive'"", "value": 0.9},
+                  //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.type == 'naive'"", "value": 0.9},
                   //   {"value": 0.1}
                   // ],
                   "y": {"scale": "yscale", "field": "y"},
