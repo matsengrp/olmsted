@@ -8,7 +8,6 @@ const initialState = {
   selectedSeq: {},
   allClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-  treeScale: {branch_scale:950, height_scale:10}
 }
 
 const clonalFamilies = (state = {
@@ -19,7 +18,6 @@ const clonalFamilies = (state = {
   selectedSeq: {},
   allClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-  treeScale: {branch_scale:950, height_scale:10}
 }, action) => {
   switch (action.type) {
     case types.LOADING_CLONAL_FAMILIES: {
@@ -111,7 +109,6 @@ const clonalFamilies = (state = {
         selectedFamily: action.family_id,
         selectedReconstruction: null,
         selectedSeq: {},
-        treeScale: {branch_scale:950, height_scale:10}
       }
       // action.updateBrushSelection specifies whether we would like to 
       // include just this family in our brush selection
@@ -128,11 +125,6 @@ const clonalFamilies = (state = {
     } case types.UPDATE_SELECTED_RECONSTRUCTION: {
       return Object.assign({}, state, {
         selectedReconstruction: action.reconstruction,
-      });
-    } case types.UPDATE_TREE_SCALE: {
-      let new_tree_scale = Object.assign({}, state.treeScale, action.val);
-      return Object.assign({}, state, {
-        treeScale: new_tree_scale
       });
     } default: {
       return state;
