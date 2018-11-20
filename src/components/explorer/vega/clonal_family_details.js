@@ -93,7 +93,7 @@ const concatTreeWithAlignmentSpec = () => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "width": 1000,
+      "width": 1250,
       "height": 1000,
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
@@ -250,11 +250,23 @@ const concatTreeWithAlignmentSpec = () => {
       },
       ],
       "signals": [
+        // Clipping - we want more complicated clipping than just clipping the encompassing group marks
+        // for the tree and the alignment (since they differ in how we want the marks clipped.)
+        // See https://vega.github.io/vega/docs/marks#clip (we have to use svg paths for this)
+        { "name": "yrange_clip", "update": "[(0-pie_chart_padding) , (height + pie_chart_padding)]" },    
+        {
+          "name": "tree_clip",
+          "update": " 'M 0 ' + yrange_clip[0] + ' L 0 ' + yrange_clip[1] + ' L ' + tree_group_width + ' ' + yrange_clip[1] + ' L ' + tree_group_width + ' ' + yrange_clip[0] + ' z' "
+        },
+        {
+          "name": "alignment_clip",
+          "update": " 'M 0 ' + (yrange[0]-10) + ' L 0 ' + (yrange[1]+10) + ' L ' + alignment_group_width + ' ' + (yrange[1]+10) + ' L ' + alignment_group_width + ' ' + (yrange[0]-10) + ' z' "
+        },
         // ZOOM SIGNALS
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
         { "name": "xrange", "update": "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
-        { "name": "yrange", "update": "[pie_chart_padding , height - pie_chart_padding]" },    
+        { "name": "yrange", "update": "[10 , height-10]" },    
         // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
         // in the outer scope to allow scales/axes to update accordingly
         {
@@ -383,6 +395,10 @@ const concatTreeWithAlignmentSpec = () => {
         },
         // ALIGNMENT SIGNALS
         {
+          "name": "naive_offset",
+          "update": "-8"
+        },
+        {
           // Size of mutation marks vertically, clamped to max 20
           // Scale factor to give space between each mark
           "name": "mutation_mark_height",
@@ -395,7 +411,7 @@ const concatTreeWithAlignmentSpec = () => {
         // #59 this will need to be controlled by slider 
         {
           "name": "alignment_group_width",
-          "update": "mutation_mark_width*135"
+          "update": "width-tree_group_width"
         }
       ],
       //LAYOUT: how to space the two concattenated viz groups with respect to one another
@@ -407,172 +423,6 @@ const concatTreeWithAlignmentSpec = () => {
         "align": "each"
       },
       "marks": [ 
-        // Mostly a place holder (to have the layout above work) but used as a title for the tree viz
-        {
-          "name": "tree_header",
-          "type": "group",
-          "title": {
-            "text": "Tree reconstruction",
-            "align": "left", 
-            "style": "guide-title",
-            "offset": {"value": -20}
-          }
-        },
-        // Naive viz as a separate group so it stays put when you zoom in
-        {
-          "name": "naive_group",
-          "type": "group",
-          "encode": {
-            "update": {
-              // #59 this will need to be controlled by slider 
-              "width": {"signal": "alignment_group_width"},
-              "height": {"value": 30}
-            },
-          },
-          "marks": [
-            {
-              "name": "naive",
-              "type": "rect",
-              "style": [
-                "bar"
-              ],
-              "from": {
-                "data": "naive_data"
-              },
-              "encode": {
-                "update": {
-                  "fill": {"scale": "naive_color", "field": "region"},
-                  "tooltip": {
-                    "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
-                  },
-                  "x": {
-                    "scale": "aa_position",
-                    "signal": "floor(datum[\"start\"]/3)-0.5"
-                  },
-                  "x2": {
-                    "scale": "aa_position",
-                    "signal": "floor(datum[\"end\"]/3)+0.5"
-                  },
-                  "yc":{"value": 10},
-                  "height": [
-                    {
-                      "test": "datum[\"region\"] == 'CDR3'",
-                      "value": 20
-                    },
-                    {"value": 10}      
-                ],
-                }
-              }
-            },
-            {
-              "name": "marks",
-              "type": "rect",
-              "style": ["tick"],
-              "from": {"data": "naive_mutations"},
-              "encode": {
-                "update": {
-                  "opacity": {"value": 0.9},
-                  "fill": [
-                    {
-                      "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
-                      "value": null
-                    },
-                    {"scale": "aa_color", "field": "mut_to"}
-                  ],
-                  "tooltip": {
-                    "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  },
-                  "xc": {"scale": "aa_position", "field": "position"},
-                  "yc": {"value": 27},
-                  "height": {"signal": "10"},
-                  "width": {"signal": "mutation_mark_width"}
-                }
-              }
-            },
-            // Gap character labels
-            {
-              "name": "x_and_gaps_labels",
-              "type": "text",
-              "from": {"data": "naive_mutations_x_and_gaps"},
-              "encode": {
-                "enter": {
-                  "text": {"field": "mut_to"},
-                  "fill": {"value": "#000"},
-                  // fontSize must be increased for gap character '-' to make it visible
-                },
-                "update": {
-                  //center the text on x, y properties
-                  "align": {"value": "center"},
-                  "baseline": {"value": "middle"},
-                  // Style the '-' and 'X' differently to make them equally visible
-                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
-                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 15"},
-                  "opacity": {"value": 0.9},
-                  "y": {"value": 27},
-                  "x": {"scale": "aa_position", "field": "position"},
-                  "tooltip": {
-                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  }
-                }  
-              },
-            } 
-          ],
-          // Color legend for naive
-          "legends": [
-            {
-              "orient": "top",
-              "direction": "horizontal",
-              "fill": "naive_color",
-              "title": "Gene region color key",
-              "offset": {"signal": "25"},
-              "encode": {
-                "symbols": {
-                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
-                }
-              }
-            }
-          ],   
-        },
-        // Evolution axis below the tree
-        {
-          "name": "tree_x_axis",
-          "type": "group",
-          "role": "column-footer",
-          "encode": {"update": {"width": {"signal": "tree_group_width"}}},
-          "axes": [
-            {
-              "scale": "time",
-              "orient": "bottom",
-              "grid": false,
-              "title": "Evolutionary distance from naive",
-              "labelFlush": true,
-              "labelOverlap": true,
-              "labelBound": true,
-              "zindex": 1
-            }
-            
-          ]
-        },  
-        // Amino acid position axis
-        {
-          "name": "alignment_x_axis",
-          "type": "group",
-          "role": "column-footer",
-          "encode": {"update": {"width": {"signal": "alignment_group_width+5"}}},
-          "axes": [
-            {
-              "scale": "aa_position",
-              "orient": "bottom",
-              "grid": false,
-              "title": "Amino acid position",
-              "labelFlush": true,
-              "labelOverlap": true,
-              "values": {"signal": "sequence(131)"},
-              "zindex": 1
-            },                  
-          ]
-        },
         // TREE
         {
           "type": "group",
@@ -580,13 +430,12 @@ const concatTreeWithAlignmentSpec = () => {
           "style": ["cell"],
           "encode": {
            "update": {
-            "clip": {"value": true},
              // #59 this will need to be controlled by slider 
              "width": {"signal": "tree_group_width"},
              "height": {"signal": "height"}
            }
           },
-          "signals": [        
+          "signals": [
             // Zoom signals, {x,y}dom (and {xdom,ydom}_delta) are push: outer to allow access
             // at the top level other places in the spec
             {
@@ -759,8 +608,20 @@ const concatTreeWithAlignmentSpec = () => {
             },
           ],
           "marks": [
+            {
+              "name": "tree_clip_region",
+              "encode": {
+                "update": {
+                  "path": {"signal": "tree_clip"},
+                  "strokeWidth": {"value": 0.5},
+                  "stroke": {"value": "black"}
+                }
+              },
+              "type": "path"
+            },
             // LINKS
             {
+              "clip": {"path": {"signal": "tree_clip"}},
               "encode": {
                 "update": {
                   "path": {"field": "path"},
@@ -773,6 +634,8 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // INTERNAL NODES
             {
+              "clip": {"path": {"signal": "tree_clip"}},
+
               "name": "ancestor",
               "encode": {
                 "update": {
@@ -798,7 +661,10 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // LEAVES
             // Pie charts: size depends on multiplicity 
-            { "name": "pie",
+            { 
+              "clip": {"path": {"signal": "tree_clip"}},
+
+              "name": "pie",
               "type": "arc",
               "from": {"data": "leaf_pies"},
               "encode": {
@@ -823,6 +689,8 @@ const concatTreeWithAlignmentSpec = () => {
               }
             },
             {
+              "clip": {"path": {"signal": "tree_clip"}},
+
               "name": "leaf_center",
               "encode": {
                 "update": {
@@ -846,6 +714,8 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // LEAF LABELS
             {
+              "clip": {"path": {"signal": "tree_clip"}},
+
               "type": "text",
               "encode": {
                 "update": {
@@ -889,6 +759,20 @@ const concatTreeWithAlignmentSpec = () => {
               "from": {"data": "leaves"}
             },
           ],
+          "axes": [
+            // Evolution axis below the tree
+            {
+              "scale": "time",
+              "orient": "bottom",
+              "grid": false,
+              "title": "Evolutionary distance from naive",
+              "labelFlush": true,
+              "labelOverlap": true,
+              "labelBound": true,
+              "zindex": 1,
+              "offset": {"signal": "pie_chart_padding"}
+            }       
+          ]
         },
         // SEQUENCE ALIGNMENT
         {
@@ -897,7 +781,7 @@ const concatTreeWithAlignmentSpec = () => {
           "style": "cell",
           "encode": {
             "update": {
-              "clip": {"value": true},
+              // "clip": {"value": true},
 
               // #59 this will need to be controlled by slider 
               "width": {"signal": "alignment_group_width"},
@@ -906,6 +790,123 @@ const concatTreeWithAlignmentSpec = () => {
           },
           "marks": [
             {
+              "name": "naive_group",
+              "type": "group",
+              "encode": {
+                "update": {
+                  // #59 this will need to be controlled by slider 
+                  "width": {"signal": "alignment_group_width"},
+                  "height": {"value": 30}
+                },
+              },
+              "marks": [
+                {
+                  "name": "naive",
+                  "type": "rect",
+                  "style": [
+                    "bar"
+                  ],
+                  "from": {
+                    "data": "naive_data"
+                  },
+                  "encode": {
+                    "update": {
+                      "fill": {"scale": "naive_color", "field": "region"},
+                      "tooltip": {
+                        "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+                      },
+                      "x": {
+                        "scale": "aa_position",
+                        "signal": "floor(datum[\"start\"]/3)-0.5"
+                      },
+                      "x2": {
+                        "scale": "aa_position",
+                        "signal": "floor(datum[\"end\"]/3)+0.5"
+                      },
+                      "yc":{"signal": "naive_offset-15"},
+                      "height": [
+                        {
+                          "test": "datum[\"region\"] == 'CDR3'",
+                          "value": 20
+                        },
+                        {"value": 10}      
+                    ],
+                    }
+                  }
+                },
+                {
+                  "name": "marks",
+                  "type": "rect",
+                  "style": ["tick"],
+                  "from": {"data": "naive_mutations"},
+                  "encode": {
+                    "update": {
+                      "opacity": {"value": 0.9},
+                      "fill": [
+                        {
+                          "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                          "value": null
+                        },
+                        {"scale": "aa_color", "field": "mut_to"}
+                      ],
+                      "tooltip": {
+                        "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      },
+                      "xc": {"scale": "aa_position", "field": "position"},
+                      "yc": {"signal": "naive_offset"},
+                      "height": {"signal": "10"},
+                      "width": {"signal": "mutation_mark_width"}
+                    }
+                  }
+                },
+                // Gap character labels
+                {
+                  "name": "x_and_gaps_labels",
+                  "type": "text",
+                  "from": {"data": "naive_mutations_x_and_gaps"},
+                  "encode": {
+                    "enter": {
+                      "text": {"field": "mut_to"},
+                      "fill": {"value": "#000"},
+                      // fontSize must be increased for gap character '-' to make it visible
+                    },
+                    "update": {
+                      //center the text on x, y properties
+                      "align": {"value": "center"},
+                      "baseline": {"value": "middle"},
+                      // Style the '-' and 'X' differently to make them equally visible
+                      "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                      "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                      "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 15"},
+                      "opacity": {"value": 0.9},
+                      "y": {"signal": "naive_offset"},
+                      "x": {"scale": "aa_position", "field": "position"},
+                      "tooltip": {
+                        "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      }
+                    }  
+                  },
+                } 
+              ],
+              // Color legend for naive
+              "legends": [
+                {
+                  "orient": "top",
+                  "direction": "horizontal",
+                  "fill": "naive_color",
+                  "title": "Gene region color key",
+                  "offset": {"signal": "-5*naive_offset"},
+                  "encode": {
+                    "symbols": {
+                      "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
+                    }
+                  }
+                }
+              ],   
+            },
+            {
+              "clip": {"path": {"signal": "alignment_clip"}},
+
               "name": "rule_cdr3",
               "type": "rule",
               "from": {"data": "cdr3_bounds"},
@@ -928,6 +929,8 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // MUTATIONS MARKS
             {
+              "clip": {"path": {"signal": "alignment_clip"}},
+
               "name": "marks",
               "type": "rect",
               "style": ["tick"],
@@ -959,6 +962,8 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // Gap character labels
             {
+              "clip": {"path": {"signal": "alignment_clip"}},
+
               "name": "x_and_gaps_labels",
               "type": "text",
               "from": {"data": "x_and_gaps"},
@@ -993,6 +998,17 @@ const concatTreeWithAlignmentSpec = () => {
           ],
           // MUTATIONS GRIDLINES
           "axes": [
+            // Amino acid position axis
+            {
+              "scale": "aa_position",
+              "orient": "bottom",
+              "grid": false,
+              "title": "Amino acid position",
+              "labelFlush": true,
+              "labelOverlap": true,
+              "values": {"signal": "sequence(131)"},
+              "zindex": 1
+            },
             // x grid
             {
               "scale": "aa_position",
@@ -1010,12 +1026,15 @@ const concatTreeWithAlignmentSpec = () => {
             {
               "scale": "yscale",
               "orient": "left",
-              // "gridScale": "",
+              "gridScale": "aa_position",
               "grid": true,
               "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
               "offset": 5,
               "domain": false,
-              "labels": true,
+              "labels": false,
+              "ticks": false,
+              // Negative offset is to get rid of any extra space since we dont care about the axis, just the grid
+              "offset": -10,
               "maxExtent": 0,
               "minExtent": 0,
               "zindex": 0
