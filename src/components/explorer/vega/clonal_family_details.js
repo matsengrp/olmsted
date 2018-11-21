@@ -93,8 +93,6 @@ const concatTreeWithAlignmentSpec = () => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "width": 1300,
-      "height": 1000,
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
       // the initial values of signals through the props 
@@ -250,6 +248,25 @@ const concatTreeWithAlignmentSpec = () => {
       },
       ],
       "signals": [
+        {
+          "name": "width",
+          "update": "floor(windowSize()[0]*0.8)",
+              "on": [
+                {
+                  "events": { "source": "window", "type": "resize" },
+                  "update": "floor(windowSize()[0]*0.8)"
+                }
+              ]
+        },
+        {
+          "name": "tree_group_width_ratio",
+          "value": 0.5,
+          "bind": {"name": "Tree width to alignment ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
+        },
+        {
+          "name": "tree_group_width",
+          "update": "tree_group_width_ratio*width",
+        },
         // ZOOM SIGNALS
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
@@ -297,9 +314,6 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-        {
-          "name": "width",
-        },
         // This is used through out as the unit defining
         // the vertical spacing of leaves in the tree and 
         // mutation marks in the alignment
@@ -346,10 +360,6 @@ const concatTreeWithAlignmentSpec = () => {
           "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]
         },
         // #59 this will need to be controlled by slider 
-        {
-          "name": "tree_group_width",
-          "update": "500"
-        },
         {
           "name": "unit",
           "value": {},
