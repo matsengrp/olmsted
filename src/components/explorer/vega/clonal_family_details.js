@@ -812,17 +812,17 @@ const concatTreeWithAlignmentSpec = () => {
             },
           ],
           "marks": [
-            // Show clipping region border
-            {
-              "encode": {
-                "update": {
-                  "path": {"signal": "mutations_clip"},
-                  "strokeWidth": {"value": 0.5},
-                  "stroke": {"value": "grey"}
-                }
+              // Show clipping region border
+              {
+                "encode": {
+                  "update": {
+                    "path": {"signal": "mutations_clip"},
+                    "strokeWidth": {"value": 0.5},
+                    "stroke": {"value": "grey"}
+                  }
+                },
+                "type": "path",
               },
-              "type": "path",
-            },
             // Naive
             {
               "name": "naive_group",
@@ -968,7 +968,9 @@ const concatTreeWithAlignmentSpec = () => {
                     },
                     "update": {
                       "x": {"scale": "aa_position", "field": "x"},
-                      "y": {"signal": "-1*mutation_mark_height"},
+                      // This mark had a variable, negative y value;
+                      // was causing issues with this whole group jumping around
+                      "y": 0,
                       "y2": {"signal": "height"},
                       "strokeWidth": {"value": 1},
                       "strokeDash": {"value": [12,4]},
