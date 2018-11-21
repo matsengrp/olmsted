@@ -950,7 +950,6 @@ const concatTreeWithAlignmentSpec = () => {
               "clip": {"path": {"signal": "mutations_clip"}},
               "encode": {
                 "update": {
-                  "clip": {"value": true},
                   // #59 this will need to be controlled by slider 
                   "width": {"signal": "alignment_group_width"},
                   "height": {"signal": "height"}
