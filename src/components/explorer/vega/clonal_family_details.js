@@ -396,12 +396,12 @@ const concatTreeWithAlignmentSpec = () => {
 
         {
           "name": "mutation_mark_width",
-          "update": "ceil(width/150)"
+          "update": "ceil(alignment_group_width/150)"
         },
         // #59 this will need to be controlled by slider 
         {
           "name": "alignment_group_width",
-          "update": "mutation_mark_width*135"
+          "update": "width-tree_group_width"
         }
       ],
       //LAYOUT: how top level group marks are formatted in a grid
