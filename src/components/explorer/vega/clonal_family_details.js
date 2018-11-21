@@ -93,7 +93,7 @@ const concatTreeWithAlignmentSpec = () => {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
       "description": "",
       "autosize": {"type": "pad", "resize": true},
-      "width": 1000,
+      "width": 1300,
       "height": 1000,
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
@@ -389,6 +389,12 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "clamp(leaf_size*0.75, 0, 20)"
         },
         {
+          // Padding value to not cut off marks on fully zoomed out
+          "name": "mutation_mark_padding",
+          "value": 5
+        },
+
+        {
           "name": "mutation_mark_width",
           "update": "ceil(width/150)"
         },
@@ -398,7 +404,7 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "mutation_mark_width*135"
         }
       ],
-      //LAYOUT: how to space the two concattenated viz groups with respect to one another
+      //LAYOUT: how top level group marks are formatted in a grid
       "layout": {
         "padding": {"column": 0},
         // 2 columns so the grid repeats on the next row after two items (group marks)
@@ -407,133 +413,6 @@ const concatTreeWithAlignmentSpec = () => {
         "align": "each"
       },
       "marks": [ 
-        // Mostly a place holder (to have the layout above work) but used as a title for the tree viz
-        {
-          "name": "tree_header",
-          "type": "group",
-          "title": {
-            "text": "Tree reconstruction",
-            "align": "left", 
-            "style": "guide-title",
-            "offset": {"value": -20}
-          }
-        },
-        // Naive viz as a separate group so it stays put when you zoom in
-        {
-          "name": "naive_group",
-          "type": "group",
-          "encode": {
-            "update": {
-              // #59 this will need to be controlled by slider 
-              "width": {"signal": "alignment_group_width"},
-              "height": {"value": 30}
-            },
-          },
-          "marks": [
-            {
-              "name": "naive",
-              "type": "rect",
-              "style": [
-                "bar"
-              ],
-              "from": {
-                "data": "naive_data"
-              },
-              "encode": {
-                "update": {
-                  "fill": {"scale": "naive_color", "field": "region"},
-                  "tooltip": {
-                    "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
-                  },
-                  "x": {
-                    "scale": "aa_position",
-                    "signal": "floor(datum[\"start\"]/3)-0.5"
-                  },
-                  "x2": {
-                    "scale": "aa_position",
-                    "signal": "floor(datum[\"end\"]/3)+0.5"
-                  },
-                  "yc":{"value": 10},
-                  "height": [
-                    {
-                      "test": "datum[\"region\"] == 'CDR3'",
-                      "value": 20
-                    },
-                    {"value": 10}      
-                ],
-                }
-              }
-            },
-            {
-              "name": "marks",
-              "type": "rect",
-              "style": ["tick"],
-              "from": {"data": "naive_mutations"},
-              "encode": {
-                "update": {
-                  "opacity": {"value": 0.9},
-                  "fill": [
-                    {
-                      "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
-                      "value": null
-                    },
-                    {"scale": "aa_color", "field": "mut_to"}
-                  ],
-                  "tooltip": {
-                    "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  },
-                  "xc": {"scale": "aa_position", "field": "position"},
-                  "yc": {"value": 27},
-                  "height": {"signal": "10"},
-                  "width": {"signal": "mutation_mark_width"}
-                }
-              }
-            },
-            // Gap character labels
-            {
-              "name": "x_and_gaps_labels",
-              "type": "text",
-              "from": {"data": "naive_mutations_x_and_gaps"},
-              "encode": {
-                "enter": {
-                  "text": {"field": "mut_to"},
-                  "fill": {"value": "#000"},
-                  // fontSize must be increased for gap character '-' to make it visible
-                },
-                "update": {
-                  //center the text on x, y properties
-                  "align": {"value": "center"},
-                  "baseline": {"value": "middle"},
-                  // Style the '-' and 'X' differently to make them equally visible
-                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
-                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 15"},
-                  "opacity": {"value": 0.9},
-                  "y": {"value": 27},
-                  "x": {"scale": "aa_position", "field": "position"},
-                  "tooltip": {
-                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  }
-                }  
-              },
-            } 
-          ],
-          // Color legend for naive
-          "legends": [
-            {
-              "orient": "top",
-              "direction": "horizontal",
-              "fill": "naive_color",
-              "title": "Gene region color key",
-              "offset": {"signal": "25"},
-              "encode": {
-                "symbols": {
-                  "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
-                }
-              }
-            }
-          ],   
-        },
         // Evolution axis below the tree
         {
           "name": "tree_x_axis",
@@ -559,9 +438,11 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "alignment_x_axis",
           "type": "group",
           "role": "column-footer",
-          "encode": {"update": {"width": {"signal": "alignment_group_width+5"}}},
+          "encode": {"update": {"width": {"signal": "alignment_group_width"}}},
           "axes": [
             {
+              // Offset to align with the change of the alignment height due to padding
+              "offset": {"signal": "mutation_mark_padding-pie_chart_padding"},
               "scale": "aa_position",
               "orient": "bottom",
               "grid": false,
@@ -784,7 +665,7 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "x"
                   },
                   "tooltip": {
-                    "signal": "{\"height\": format(datum[\"height\"], \"\"), \"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
                   }
                 },
                 "enter": {
@@ -882,7 +763,7 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "x"
                   },
                   "tooltip": {
-                    "signal": "{\"x_abs\": invert( 'time', datum[\"x\"] ) ,\"y_abs\": invert('yscale',datum[\"y\"]), \"x\": datum[\"x\"]  ,\"y\": datum[\"y\"], \"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"*tree height\": datum[\"height\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"]}"
                   }
                 }  
               },
@@ -897,130 +778,293 @@ const concatTreeWithAlignmentSpec = () => {
           "style": "cell",
           "encode": {
             "update": {
-              "clip": {"value": true},
-
+              // Hide cell border
+              "stroke": {"value": "transparent"},
               // #59 this will need to be controlled by slider 
               "width": {"signal": "alignment_group_width"},
               "height": {"signal": "height"}
             }
           },
-          "marks": [
+          "signals": [
             {
-              "name": "rule_cdr3",
-              "type": "rule",
-              "from": {"data": "cdr3_bounds"},
-              "encode": {
-                "enter": {
-                  "stroke": {"value": "black"},
-                  "fill": {"value": "black"},
-                  "opacity": {"value": 0.6}
-                },
-                "update": {
-                  "x": {"scale": "aa_position", "field": "x"},
-                  "y": {"signal": "-1*mutation_mark_height"},
-                  "y2": {"signal": "height"},
-                  "strokeWidth": {"value": 1},
-                  "strokeDash": {"value": [12,4]},
-                  "strokeCap": {"value": "butt"},
-                  "opacity": {"value": 1},
-                }
-              }
+              "name": "naive_group_height",
+              "value": 30
             },
-            // MUTATIONS MARKS
+             // This is an SVG path used to assign a special clipping region (not the default
+            // which is the height and width of the group mark) for the alignment. This is
+            // necessary to get the naive viz as close as possible to the alignment so one 
+            // can align mutations with the naive by eye. Doing so became difficult when 
+            // allowing the tree to have padding, as it shares a y-scale with the alignment
+            // , so the mutation marks were not flush agaisnt the border of their plot.
             {
-              "name": "marks",
-              "type": "rect",
-              "style": ["tick"],
-              "from": {"data": "data_1"},
-              "encode": {
-                "update": {
-                  "opacity": {"value": 0.9},
-                  // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
-                  // [
-                  //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.type == 'naive'", "value": 0.9},
-                  //   {"value": 0.1}
-                  // ],
-                  "fill": [
-                    {
-                      "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
-                      "value": null
-                    },
-                    {"scale": "aa_color", "field": "mut_to"}
-                  ],
-                  "tooltip": {
-                    "signal": "{\"height\": datum[\"height\"],\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  },
-                  "xc": {"scale": "aa_position", "field": "position"},
-                  "yc": {"scale": "yscale", "field": "y"},
-                  "height": {"signal": "mutation_mark_height"},
-                  "width": {"signal": "mutation_mark_width"}
-                }
-              }
+              "name": "mutations_clip",
+              "update": " 'M 0 ' + toString(yrange[0]-mutation_mark_padding) + ' L 0 ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[0]-mutation_mark_padding) + ' z' "
             },
-            // Gap character labels
-            {
-              "name": "x_and_gaps_labels",
-              "type": "text",
-              "from": {"data": "x_and_gaps"},
-              "encode": {
-                "enter": {
-                  "text": {"field": "mut_to"},
-                  "fill": {"value": "#000"},
-                  // fontSize must be increased for gap character '-' to make it visible
-                },
-                "update": {
-                  //center the text on x, y properties
-                  "align": {"value": "center"},
-                  "baseline": {"value": "middle"},
-                  // Style the '-' and 'X' differently to make them equally visible
-                  "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
-                  "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
-                  "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
-                  "opacity": {"value": 0.9},
-                  // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
-                  // [
-                  //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.type == 'naive'"", "value": 0.9},
-                  //   {"value": 0.1}
-                  // ],
-                  "y": {"scale": "yscale", "field": "y"},
-                  "x": {"scale": "aa_position", "field": "position"},
-                  "tooltip": {
-                    "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
-                  }
-                }  
-              },
-            } 
           ],
-          // MUTATIONS GRIDLINES
-          "axes": [
-            // x grid
+          "marks": [
+            // Show clipping region border
             {
-              "scale": "aa_position",
-              "orient": "bottom",
-              "grid": true,
-              "tickCount": 128,
-              "domain": false,
-              "labels": false,
-              "maxExtent": 0,
-              "minExtent": 0,
-              "ticks": false,
-              "zindex": 0
+              "encode": {
+                "update": {
+                  "path": {"signal": "mutations_clip"},
+                  "strokeWidth": {"value": 0.5},
+                  "stroke": {"value": "grey"}
+                }
+              },
+              "type": "path",
             },
-            // y grid
+            // Naive
             {
-              "scale": "yscale",
-              "orient": "left",
-              // "gridScale": "",
-              "grid": true,
-              "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
-              "offset": 5,
-              "domain": false,
-              "labels": true,
-              "maxExtent": 0,
-              "minExtent": 0,
-              "zindex": 0
+              "name": "naive_group",
+              "type": "group",
+              "style": "cell",
+              "encode": {
+                "update": {
+                  "stroke": {"value": "transparent"},
+                  // #59 this will need to be controlled by slider 
+                  "y": {"signal": "pie_chart_padding-naive_group_height-mutation_mark_padding"},
+                  "width": {"signal": "alignment_group_width"},
+                  "height": {"signal": "naive_group_height"}
+                },
+              },
+              "marks": [
+                {
+                  "name": "naive",
+                  "type": "rect",
+                  "style": [
+                    "bar"
+                  ],
+                  "from": {
+                    "data": "naive_data"
+                  },
+                  "encode": {
+                    "update": {
+                      "fill": {"scale": "naive_color", "field": "region"},
+                      "tooltip": {
+                        "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+                      },
+                      "x": {
+                        "scale": "aa_position",
+                        "signal": "floor(datum[\"start\"]/3)-0.5"
+                      },
+                      "x2": {
+                        "scale": "aa_position",
+                        "signal": "floor(datum[\"end\"]/3)+0.5"
+                      },
+                      "yc": {"signal": "naive_group_height/4"},
+                      "height": [
+                        {
+                          "test": "datum[\"region\"] == 'CDR3'",
+                          "signal": "naive_group_height/2"
+                        },
+                        {"signal": "naive_group_height/4"}      
+                    ],
+                    }
+                  }
+                },
+                {
+                  "name": "marks",
+                  "type": "rect",
+                  "style": ["tick"],
+                  "from": {"data": "naive_mutations"},
+                  "encode": {
+                    "update": {
+                      "opacity": {"value": 0.9},
+                      "fill": [
+                        {
+                          "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                          "value": null
+                        },
+                        {"scale": "aa_color", "field": "mut_to"}
+                      ],
+                      "tooltip": {
+                        "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      },
+                      "xc": {"scale": "aa_position", "field": "position"},
+                      "yc": {"signal": "3*naive_group_height/4"},
+                      "height": {"signal": "naive_group_height/4"},
+                      "width": {"signal": "mutation_mark_width"}
+                    }
+                  }
+                },
+                // Gap character labels
+                {
+                  "name": "x_and_gaps_labels",
+                  "type": "text",
+                  "from": {"data": "naive_mutations_x_and_gaps"},
+                  "encode": {
+                    "enter": {
+                      "text": {"field": "mut_to"},
+                      "fill": {"value": "#000"},
+                      // fontSize must be increased for gap character '-' to make it visible
+                    },
+                    "update": {
+                      //center the text on x, y properties
+                      "align": {"value": "center"},
+                      "baseline": {"value": "middle"},
+                      // Style the '-' and 'X' differently to make them equally visible
+                      "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                      "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                      "fontSize": {"signal": "datum.mut_to == \"-\" ? 20 : 15"},
+                      "opacity": {"value": 0.9},
+                      "y": {"signal": "3*naive_group_height/4"},
+                      "x": {"scale": "aa_position", "field": "position"},
+                      "tooltip": {
+                        "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      }
+                    }  
+                  },
+                } 
+              ],
+              // Color legend for naive
+              "legends": [
+                {
+                  "orient": "top",
+                  "direction": "horizontal",
+                  "fill": "naive_color",
+                  "title": "Gene region color key",
+                  "offset": {"signal": "0"},
+                  "encode": {
+                    "symbols": {
+                      "update": {"shape": {"value": "square"}, "opacity": {"value": 0.9}}
+                    }
+                  }
+                }
+              ],   
+            },
+            // Alignment
+            {
+              "type": "group",
+              "name": "mutations_group",
+              "style": "cell",
+              "clip": {"path": {"signal": "mutations_clip"}},
+              "encode": {
+                "update": {
+                  "clip": {"value": true},
+                  // #59 this will need to be controlled by slider 
+                  "width": {"signal": "alignment_group_width"},
+                  "height": {"signal": "height"}
+                }
+              },
+              "marks": [
+                {
+                  "name": "rule_cdr3",
+                  "type": "rule",
+                  "from": {"data": "cdr3_bounds"},
+                  "encode": {
+                    "enter": {
+                      "stroke": {"value": "black"},
+                      "fill": {"value": "black"},
+                      "opacity": {"value": 0.6}
+                    },
+                    "update": {
+                      "x": {"scale": "aa_position", "field": "x"},
+                      "y": {"signal": "-1*mutation_mark_height"},
+                      "y2": {"signal": "height"},
+                      "strokeWidth": {"value": 1},
+                      "strokeDash": {"value": [12,4]},
+                      "strokeCap": {"value": "butt"},
+                      "opacity": {"value": 1},
+                    }
+                  }
+                },
+                // MUTATIONS MARKS
+                {
+                  "name": "marks",
+                  "type": "rect",
+                  "style": ["tick"],
+                  "from": {"data": "data_1"},
+                  "encode": {
+                    "update": {
+                      "opacity": {"value": 0.9},
+                      // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
+                      // [
+                      //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.type == 'naive'", "value": 0.9},
+                      //   {"value": 0.1}
+                      // ],
+                      "fill": [
+                        {
+                          "test": "datum[\"position\"] === null || isNaN(datum[\"position\"])",
+                          "value": null
+                        },
+                        {"scale": "aa_color", "field": "mut_to"}
+                      ],
+                      "tooltip": {
+                        "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      },
+                      "xc": {"scale": "aa_position", "field": "position"},
+                      "yc": {"scale": "yscale", "field": "y"},
+                      "height": {"signal": "mutation_mark_height"},
+                      "width": {"signal": "mutation_mark_width"}
+                    }
+                  }
+                },
+                // Gap character labels
+                {
+                  "name": "x_and_gaps_labels",
+                  "type": "text",
+                  "from": {"data": "x_and_gaps"},
+                  "encode": {
+                    "enter": {
+                      "text": {"field": "mut_to"},
+                      "fill": {"value": "#000"},
+                      // fontSize must be increased for gap character '-' to make it visible
+                    },
+                    "update": {
+                      //center the text on x, y properties
+                      "align": {"value": "center"},
+                      "baseline": {"value": "middle"},
+                      // Style the '-' and 'X' differently to make them equally visible
+                      "fontWeight": {"signal": "datum.mut_to == \"-\" ? 'bold' : 'normal'"},
+                      "font": {"signal": "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'"},
+                      "fontSize": {"signal": "datum.mut_to == \"-\" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)"},
+                      "opacity": {"value": 0.9},
+                      // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
+                      // [
+                      //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.type == 'naive'"", "value": 0.9},
+                      //   {"value": 0.1}
+                      // ],
+                      "y": {"scale": "yscale", "field": "y"},
+                      "x": {"scale": "aa_position", "field": "position"},
+                      "tooltip": {
+                        "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
+                      }
+                    }  
+                  },
+                } 
+              ],
+              // MUTATIONS GRIDLINES
+              "axes": [
+                // x grid
+                {
+                  "scale": "aa_position",
+                  "orient": "bottom",
+                  "grid": true,
+                  "tickCount": 128,
+                  "domain": false,
+                  "labels": false,
+                  "maxExtent": 0,
+                  "minExtent": 0,
+                  "ticks": false,
+                  "zindex": 0
+                },
+                // y grid
+                {
+                  "scale": "yscale",
+                  "orient": "left",
+                  // "gridScale": "",
+                  "grid": true,
+                  "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
+                  "offset": 5,
+                  "domain": false,
+                  "labels": true,
+                  "maxExtent": 0,
+                  "minExtent": 0,
+                  "zindex": 0
+                }
+              ],     
             }
-          ],     
+          ]
         }
       ],
       
