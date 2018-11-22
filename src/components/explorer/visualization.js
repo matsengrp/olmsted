@@ -263,7 +263,7 @@ class TreeViz extends React.Component {
                   }}
               spec={this.spec}
               // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
-              // spec={concatTreeWithAlignmentSpec(this.props.treeNodes, null)}
+              // spec={concatTreeWithAlignmentSpec()}
 
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}

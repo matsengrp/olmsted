@@ -249,6 +249,19 @@ const concatTreeWithAlignmentSpec = () => {
       ],
       "signals": [
         {
+          // Update height from window size see https://github.com/matsengrp/olmsted/issues/83)
+          "name": "height",
+         
+          "update": "floor(windowSize()[1]*0.8)",
+         
+          "on": [
+            {
+              "events": {"source": "window", "type": "resize"},
+              "update": "floor(windowSize()[1]*0.8)"
+            }
+          ]
+        },
+        {
           "name": "width",
           "update": "floor(windowSize()[0]*0.8)",
               "on": [
@@ -267,6 +280,7 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "tree_group_width",
           "update": "tree_group_width_ratio*width",
         },
+
         // ZOOM SIGNALS
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
@@ -301,19 +315,6 @@ const concatTreeWithAlignmentSpec = () => {
           // the spec
           "update": "data(\"leaves_count_incl_naive\")[0].data"
         },
-        {
-          // Update height from window size see https://github.com/matsengrp/olmsted/issues/83)
-          "name": "height",
-         
-          "update": "floor(windowSize()[1]*0.8)",
-         
-          "on": [
-            {
-              "events": {"source": "window", "type": "resize"},
-              "update": "floor(windowSize()[1]*0.8)"
-            }
-          ]
-        },
         // This is used through out as the unit defining
         // the vertical spacing of leaves in the tree and 
         // mutation marks in the alignment
@@ -336,8 +337,8 @@ const concatTreeWithAlignmentSpec = () => {
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
         },
         {
-          "value": true,
           "name": "show_labels",
+          "value": true,
           "bind": {"input": "checkbox", "options": [true, false]}
         },
         // Padding to add to the initial tree size to not clip labels
@@ -359,7 +360,6 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "cladify",
           "on": [{"update": "datum", "events": "@ancestor:mousedown, @ancestor:touchstart"}]
         },
-        // #59 this will need to be controlled by slider 
         {
           "name": "unit",
           "value": {},
@@ -403,7 +403,6 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "mutation_mark_padding",
           "value": 5
         },
-
         {
           "name": "mutation_mark_width",
           "update": "ceil(alignment_group_width/150)"
@@ -713,6 +712,7 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               }
             },
+            // LEAF CENTER
             {
               "name": "leaf_center",
               "encode": {
@@ -812,17 +812,17 @@ const concatTreeWithAlignmentSpec = () => {
             },
           ],
           "marks": [
-              // Show clipping region border
-              {
-                "encode": {
-                  "update": {
-                    "path": {"signal": "mutations_clip"},
-                    "strokeWidth": {"value": 0.5},
-                    "stroke": {"value": "grey"}
-                  }
-                },
-                "type": "path",
+            // Show clipping region border
+            {
+              "encode": {
+                "update": {
+                  "path": {"signal": "mutations_clip"},
+                  "strokeWidth": {"value": 0.5},
+                  "stroke": {"value": "grey"}
+                }
               },
+              "type": "path",
+            },
             // Naive
             {
               "name": "naive_group",
@@ -1063,12 +1063,12 @@ const concatTreeWithAlignmentSpec = () => {
                 {
                   "scale": "yscale",
                   "orient": "left",
-                  // "gridScale": "",
                   "grid": true,
                   "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
                   "offset": 5,
                   "domain": false,
-                  "labels": true,
+                  "labels": false,
+                  "ticks": false,
                   "maxExtent": 0,
                   "minExtent": 0,
                   "zindex": 0
@@ -1077,8 +1077,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         }
-      ],
-      
+      ],    
       "scales": [     
         {
           "name": "naive_color",
