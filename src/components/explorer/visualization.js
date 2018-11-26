@@ -12,9 +12,9 @@ import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
-import Copy from "./copy";
+import Copy from "../util/copy";
 import DownloadFasta from "./downloadfasta";
-import DownloadText from "./downloadtext";
+import DownloadText from "../util/downloadtext";
 
 
 
@@ -123,85 +123,86 @@ class ClonalFamiliesViz extends React.Component {
     // Here we have our Vega component specification, where we plug in signal handlers, etc.
     this.spec = this.props.facetByField ? facetClonalFamiliesVizSpec(this.props.availableClonalFamilies, this.props.facetByField) :
                              clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)
-    return <div> 
-            <p>Number of clonal families: {this.props.availableClonalFamilies.length}</p>
-                <Vega
-                // TURN THESE ON TO DEBUG SIGNALS
-                // SEE https://github.com/matsengrp/olmsted/issues/65
-                // onSignalWidth={(...args) => {
-                //   let result = args.slice(1)[0]
-                //   console.log("width", result)
-                // }}
-                // onSignalHeight={(...args) => {
-                //   let result = args.slice(1)[0]
-                //   console.log("height", result)
-                // }}
-                // onSignalBrush_x={(...args) => {
-                //   let result = args.slice(1)[0]
-                //   console.log('brushx: ', result)
-                // }}
-                // onSignalBrush_y={(...args) => {
-                //   let result = args.slice(1)[0]
-                //   console.log('brushy: ', result)  
-                // }}
-                onSignalPts_tuple={(...args) => {
-                  let family = args.slice(1)[0]
-                  if(family.ident){
-                    // Second argument specifies that we would like to 
-                    // include just this family in our brush selection
-                    // and therefore in the table since we have clicked it
-                    this.props.selectFamily(family.ident, true)
-                  }
-                }}
-                onSignalMouseDown={(...args) => {
-                  let coords = args.slice(1)[0]
-                  // Must check to see if there are actual mouse coordinates
-                  // here and in the mouseup signal handler just below because
-                  // they are triggered with undefined upon rendering the viz
-                  if(coords){
-                    this.props.updateSelectingStatus()
-                    this.mouseDown = true
-                  }
-                }}
-                onSignalMouseUp={(...args) => {
-                  let coords = args.slice(1)[0]
-                  if(this.mouseDown && coords){
-                    this.props.updateSelectingStatus()
-                  }
-                  this.mouseDown = false
-                }}
-                onSignalXField={(...args) => {
-                  let result = args.slice(1)[0]
-                  this.xField = result
-                }}
-                onSignalYField={(...args) => {
-                  let result = args.slice(1)[0]
-                  this.yField = result
-                }}
-                onSignalBrush_x_field_outer={(...args) => {
-                  let result = args.slice(1)[0]
-                  this.props.updateBrushSelection("x", this.xField, result)
-                }}
-                onSignalBrush_y_field_outer={(...args) => {
-                  let result = args.slice(1)[0]
-                  this.props.updateBrushSelection("y", this.yField, result)
-                }}
-                onParseError={(...args) => console.error("parse error:", args)}
-                debug={/* true for debugging */ true}
-                data={{source: this.props.availableClonalFamilies,
-                      // Here we create a separate dataset only containing the id of the
-                      // selected family so as to check quickly for this id within the 
-                      // viz to highlight the selected family.
-                      selected: [{'ident': this.props.selectedFamily}] }}
-                spec={this.spec}/>
-              
-              <label>Facet by field: </label>
-              <select value={this.props.facetByField}
-                onChange={(event) => this.props.updateFacet(event.target.value) }>
-                {this.facetOptions.map((option) =>
-                  <option key={option} value={option}>{option}</option>)}
-              </select>
-            </div>}
+    return  <div>
+      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
+        <Vega
+        // TURN THESE ON TO DEBUG SIGNALS
+        // SEE https://github.com/matsengrp/olmsted/issues/65
+        // onSignalWidth={(...args) => {
+        //   let result = args.slice(1)[0]
+        //   console.log("width", result)
+        // }}
+        // onSignalHeight={(...args) => {
+        //   let result = args.slice(1)[0]
+        //   console.log("height", result)
+        // }}
+        // onSignalBrush_x={(...args) => {
+        //   let result = args.slice(1)[0]
+        //   console.log('brushx: ', result)
+        // }}
+        // onSignalBrush_y={(...args) => {
+        //   let result = args.slice(1)[0]
+        //   console.log('brushy: ', result)  
+        // }}
+        onSignalPts_tuple={(...args) => {
+          let family = args.slice(1)[0]
+          if(family.ident){
+            // Second argument specifies that we would like to 
+            // include just this family in our brush selection
+            // and therefore in the table since we have clicked it
+            this.props.selectFamily(family.ident, true)
+          }
+        }}
+        onSignalMouseDown={(...args) => {
+          let coords = args.slice(1)[0]
+          // Must check to see if there are actual mouse coordinates
+          // here and in the mouseup signal handler just below because
+          // they are triggered with undefined upon rendering the viz
+          if(coords){
+            this.props.updateSelectingStatus()
+            this.mouseDown = true
+          }
+        }}
+        onSignalMouseUp={(...args) => {
+          let coords = args.slice(1)[0]
+          if(this.mouseDown && coords){
+            this.props.updateSelectingStatus()
+          }
+          this.mouseDown = false
+        }}
+        onSignalXField={(...args) => {
+          let result = args.slice(1)[0]
+          this.xField = result
+        }}
+        onSignalYField={(...args) => {
+          let result = args.slice(1)[0]
+          this.yField = result
+        }}
+        onSignalBrush_x_field_outer={(...args) => {
+          let result = args.slice(1)[0]
+          this.props.updateBrushSelection("x", this.xField, result)
+        }}
+        onSignalBrush_y_field_outer={(...args) => {
+          let result = args.slice(1)[0]
+          this.props.updateBrushSelection("y", this.yField, result)
+        }}
+        onParseError={(...args) => console.error("parse error:", args)}
+        debug={/* true for debugging */ true}
+        data={{source: this.props.availableClonalFamilies,
+              // Here we create a separate dataset only containing the id of the
+              // selected family so as to check quickly for this id within the 
+              // viz to highlight the selected family.
+              selected: [{'ident': this.props.selectedFamily}] }}
+        spec={this.spec}/>
+      
+      <label>Facet by field: </label>
+      <select value={this.props.facetByField}
+        onChange={(event) => this.props.updateFacet(event.target.value) }>
+        {this.facetOptions.map((option) =>
+          <option key={option} value={option}>{option}</option>)}
+      </select>
+    </div>
+  }
 };
 
 
@@ -215,11 +216,14 @@ class ClonalFamiliesViz extends React.Component {
 // First some redux connection functions
 
 const mapStateToPropsTips = (state, ownProps) => {
-  let treeNodes = getReconstructionData(state)
+  let selectedFamily = getSelectedFamily(state)
+  let naiveData = getNaiveVizData(selectedFamily)
   return {
-    selectedFamily: getSelectedFamily(state),
-    treeNodes,
+    selectedFamily,
+    treeNodes: getReconstructionData(state),
     selectedReconstruction: getSelectedReconstruction(state),
+    naiveData,
+    cdr3Bounds: [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
   }
 }
 
@@ -241,22 +245,7 @@ class TreeViz extends React.Component {
     this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
   }
 
-  shouldComponentUpdate(nextProps, nextState){
-    // This is here because we don't want to rerender when the component gets new props
-    // except these ones. This includes when it recieves a new availableHeight prop
-    // Before we were using areStatesEqual, but that just checks incoming state values,
-    // and so we would still rerender on some new props. Hence the implementation here.
-
-    //      NOTE this '!' in front means if either of them are not equal, we DO rerender
-    return !(_.isEqual(this.props.selectedReconstruction, nextProps.selectedReconstruction) &&
-           _.isEqual(this.props.selectedFamily, nextProps.selectedFamily))
-  }
-
-  render() {
-
-    let naiveData = getNaiveVizData(this.props.selectedFamily)
-    let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
-
+  render() {    
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
@@ -265,7 +254,7 @@ class TreeViz extends React.Component {
               {this.props.selectedFamily.reconstructions.map((recon) =>
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
-            <Vega onParseError={(...args) => console.error("parse error:", args)}
+            <Vega onParseError={(...args) => console.error("parse error:", args)}             
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
@@ -276,10 +265,9 @@ class TreeViz extends React.Component {
               debug={/* true for debugging */ true}
               data={{source_0: this.props.treeNodes.asr_tree,
                      source_1: this.props.treeNodes.tips_alignment,
-                     naive_data: naiveData.source,
-                     cdr3_bounds: cdr3Bounds,
+                     naive_data: this.props.naiveData.source,
+                     cdr3_bounds: this.props.cdr3Bounds,
                      leaves_count_incl_naive: this.props.treeNodes.leaves_count_incl_naive,
-                     available_height: this.props.availableHeight,
                      pts_tuple: this.props.selectedFamily,
                     // Here we create a separate dataset only containing the id of the
                     // seed sequence so as to check quickly for this id within the 
@@ -287,6 +275,9 @@ class TreeViz extends React.Component {
                      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
                   }}
               spec={this.spec}
+              // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
+              // spec={concatTreeWithAlignmentSpec()}
+
               />
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                            filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}

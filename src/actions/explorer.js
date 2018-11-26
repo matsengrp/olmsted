@@ -14,9 +14,6 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (id, updateBrushSelection=false) => {
   return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection}}
 
-export const updateTreeScale = (val) => {
-  return {type: types.UPDATE_TREE_SCALE, val: val}}
-
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 

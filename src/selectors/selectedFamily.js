@@ -45,7 +45,7 @@ const createAlignment = (naive_seq, tree) => {
     let mutations = []
     let seq = node.aa_seq;
     let seq_id = node.id;
-    let is_naive = seq_id == 'inferred_naive';
+    let is_naive = node.type == 'root';
     let pairs = _.toPairs(seq);
     // add mutation for each position deviating from the naive aa_seq
     _.forEach(pairs, (pair) => {
@@ -53,11 +53,11 @@ const createAlignment = (naive_seq, tree) => {
       let aa = pair[1]
       if (aa != naive_seq[i] ){
         // add a mutation for a sequence deviating from the naive
-        mutations.push( { 'height': node.height, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'height': node.height, 'type': node.type,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
       else if(is_naive){
         // add a mutation for the naive so it shows up in the viz
-        mutations.push( { 'height': 0, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'height': 0, 'type': 'naive','parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
     });
     all_mutations = all_mutations.concat(mutations);    
@@ -120,7 +120,7 @@ const uniqueSeqs = (asr_tree) => {
 }
 
 const findNaive = (data) => {
-  return _.find(data, {"id": "inferred_naive"});
+  return _.find(data, {"type": "root"});
 }
 
 // Create an alignment for naive + all of the leaves of the tree (reconstruction)
