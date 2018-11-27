@@ -194,10 +194,10 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
        "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     // Outer level brush signals to subscribe to
     {
-      "name": "brush_x_field_outer",
+      "name": "brush_x_field",
     },
     {
-      "name": "brush_y_field_outer",     
+      "name": "brush_y_field",     
     },
   ],
   // LAYOUT
@@ -294,11 +294,30 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
             ]
          },
          {
-                "name": "brush_x",
-                "value": [],
-                "on": [
+            "name": "brush_x",
+            "value": [],
+            "on": [
+                {
+                "events": {
+                    "source": "scope",
+                    "type": "mousedown",
+                    "filter": [
+                    "!event.item || event.item.mark.name !== \"brush_brush\"",
+                    "inScope(event.item)",
+                    "inScope(event.item)",
+                    "inScope(event.item)",
+                    "inScope(event.item)"
+                    ]
+                },
+                "update": "[x(unit), x(unit)]"
+                },
+                {
+                "events": {
+                    "source": "window",
+                    "type": "mousemove",
+                    "consume": true,
+                    "between": [
                     {
-                    "events": {
                         "source": "scope",
                         "type": "mousedown",
                         "filter": [
@@ -309,73 +328,73 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
                         "inScope(event.item)"
                         ]
                     },
-                    "update": "[x(unit), x(unit)]"
-                    },
                     {
-                    "events": {
                         "source": "window",
-                        "type": "mousemove",
-                        "consume": true,
-                        "between": [
-                        {
-                            "source": "scope",
-                            "type": "mousedown",
-                            "filter": [
-                            "!event.item || event.item.mark.name !== \"brush_brush\"",
-                            "inScope(event.item)",
-                            "inScope(event.item)",
-                            "inScope(event.item)",
-                            "inScope(event.item)"
-                            ]
-                        },
-                        {
-                            "source": "window",
-                            "type": "mouseup"
-                        }
-                        ]
-                    },
-                    "update": "[brush_x[0], clamp(x(unit), 0, child_width)]"
-                    },
-                    {
-                    "events": {
-                        "signal": "brush_scale_trigger"
-                    },
-                    "update": "[scale(\"x\", brush_x_field[0]), scale(\"x\", brush_x_field[1])]"
-                    },
-                    {
-                    "events": {
-                        "signal": "brush_translate_delta"
-                    },
-                    "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
-                    },
-                ]
-                },
-                {
-                  "name": "brush_x_field_outer",
-                  "on": [
-                      {
-                      "events": { "signal": "brush_x"},
-                      "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
+                        "type": "mouseup"
                     }
-                  ],
-                  "push": "outer"
+                    ]
+                },
+                "update": "[brush_x[0], clamp(x(unit), 0, child_width)]"
                 },
                 {
-                  "name": "brush_x_field",
-                  "on": [
-                      {
-                      "events": { "signal": "brush_x"},
-                      "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
-                    }
-                  ],
-                  // "push": "outer"
+                "events": {
+                    "signal": "brush_scale_trigger"
+                },
+                "update": "[scale(\"x\", brush_x_field_nested[0]), scale(\"x\", brush_x_field_nested[1])]"
                 },
                 {
-                "name": "brush_y",
-                "value": [],
-                "on": [
-                  {
-                    "events": {
+                "events": {
+                    "signal": "brush_translate_delta"
+                },
+                "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
+                },
+            ]
+          },
+          {
+            "name": "brush_x_field",
+            "on": [
+                {
+                "events": { "signal": "brush_x"},
+                "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
+              }
+            ],
+            "push": "outer"
+          },
+          {
+            "name": "brush_x_field_nested",
+            "on": [
+                {
+                "events": { "signal": "brush_x"},
+                "update": "brush_x[0] === brush_x[1] ? null : invert(\"x\", brush_x)"
+              }
+            ],
+            // "push": "outer"
+          },
+          {
+            "name": "brush_y",
+            "value": [],
+            "on": [
+              {
+                "events": {
+                    "source": "scope",
+                    "type": "mousedown",
+                    "filter": [
+                    "!event.item || event.item.mark.name !== \"brush_brush\"",
+                    "inScope(event.item)",
+                    "inScope(event.item)",
+                    "inScope(event.item)",
+                    "inScope(event.item)"                      
+                    ]
+                },
+                "update": "[y(unit), y(unit)]"
+                },
+                {
+                "events": {
+                    "source": "window",
+                    "type": "mousemove",
+                    "consume": true,
+                    "between": [
+                    {
                         "source": "scope",
                         "type": "mousedown",
                         "filter": [
@@ -383,138 +402,119 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
                         "inScope(event.item)",
                         "inScope(event.item)",
                         "inScope(event.item)",
-                        "inScope(event.item)"                      
+                        "inScope(event.item)"
                         ]
                     },
-                    "update": "[y(unit), y(unit)]"
-                    },
                     {
-                    "events": {
                         "source": "window",
-                        "type": "mousemove",
-                        "consume": true,
-                        "between": [
-                        {
-                            "source": "scope",
-                            "type": "mousedown",
-                            "filter": [
-                            "!event.item || event.item.mark.name !== \"brush_brush\"",
-                            "inScope(event.item)",
-                            "inScope(event.item)",
-                            "inScope(event.item)",
-                            "inScope(event.item)"
-                            ]
-                        },
-                        {
-                            "source": "window",
-                            "type": "mouseup"
-                        }
-                        ]
-                    },
-                    "update": "[brush_y[0], clamp(y(unit), 0, child_height)]"
-                    },
-                    {
-                    "events": {
-                        "signal": "brush_scale_trigger"
-                    },
-                    "update": "[scale(\"y\", brush_y_field[0]), scale(\"y\", brush_y_field[1])]"
-                    },
-                    {
-                    "events": {
-                        "signal": "brush_translate_delta"
-                    },
-                    "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
-                    },
-                ]
+                        "type": "mouseup"
+                    }
+                    ]
+                },
+                "update": "[brush_y[0], clamp(y(unit), 0, child_height)]"
                 },
                 {
-                "name": "brush_y_field_outer",
-                "on": [
+                "events": {
+                    "signal": "brush_scale_trigger"
+                },
+                "update": "[scale(\"y\", brush_y_field_nested[0]), scale(\"y\", brush_y_field_nested[1])]"
+                },
+                {
+                "events": {
+                    "signal": "brush_translate_delta"
+                },
+                "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
+                },
+            ]
+          },
+          {
+            "name": "brush_y_field",
+            "on": [
+                {
+                "events": { "signal": "brush_y" },
+                "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
+                }
+            ],
+            "push": "outer"
+          },
+          {
+            "name": "brush_y_field_nested",
+            "on": [
+                {
+                "events": { "signal": "brush_y" },
+                "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
+                }
+            ],
+            // "push": "outer"
+            },
+          {
+            "name": "brush_scale_trigger",
+            "update": "(!isArray(brush_x_field_nested) || (+invert(\"x\", brush_x)[0] === +brush_x_field_nested[0] && +invert(\"x\", brush_x)[1] === +brush_x_field_nested[1])) && (!isArray(brush_y_field_nested) || (+invert(\"y\", brush_y)[0] === +brush_y_field_nested[0] && +invert(\"y\", brush_y)[1] === +brush_y_field_nested[1])) ? brush_scale_trigger : {}"
+          },
+          {
+            "name": "brush_tuple",
+            "on": [
+                {
+                "events": [
+                    {"signal": "brush_x_field_nested"},
+                    {"signal": "brush_y_field_nested"}
+                ],
+                "update": "brush_x_field_nested && brush_y_field_nested ? {unit: \"child\" + '_' + (facet[facet_by_field]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field_nested}, {encoding: \"y\", field: yField, extent: brush_y_field_nested}]} : null"
+                }
+            ]
+          },
+          {
+            "name": "brush_translate_anchor",
+            "value": {},
+            "on": [
+                {
+                "events": [
                     {
-                    "events": { "signal": "brush_y" },
-                    "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
+                    "source": "scope",
+                    "type": "mousedown",
+                    "markname": "brush_brush"
                     }
                 ],
-                "push": "outer"
-                },
+                "update": "{x: x(unit), y: y(unit), extent_x: slice(brush_x), extent_y: slice(brush_y)}"
+                }
+            ]
+          },
+          {
+            "name": "brush_translate_delta",
+            "value": {},
+            "on": [
                 {
-                  "name": "brush_y_field",
-                  "on": [
-                      {
-                      "events": { "signal": "brush_y" },
-                      "update": "brush_y[0] === brush_y[1] ? null : invert(\"y\", brush_y)"
-                      }
-                  ],
-                  // "push": "outer"
-                  },
-                {
-                "name": "brush_scale_trigger",
-                "update": "(!isArray(brush_x_field) || (+invert(\"x\", brush_x)[0] === +brush_x_field[0] && +invert(\"x\", brush_x)[1] === +brush_x_field[1])) && (!isArray(brush_y_field) || (+invert(\"y\", brush_y)[0] === +brush_y_field[0] && +invert(\"y\", brush_y)[1] === +brush_y_field[1])) ? brush_scale_trigger : {}"
-                },
-                {
-                "name": "brush_tuple",
-                "on": [
+                "events": [
                     {
-                    "events": [
-                        {"signal": "brush_x_field"},
-                        {"signal": "brush_y_field"}
-                    ],
-                    "update": "brush_x_field && brush_y_field ? {unit: \"child\" + '_' + (facet[facet_by_field]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field}, {encoding: \"y\", field: yField, extent: brush_y_field}]} : null"
-                    }
-                ]
-                },
-                {
-                "name": "brush_translate_anchor",
-                "value": {},
-                "on": [
-                    {
-                    "events": [
+                    "source": "window",
+                    "type": "mousemove",
+                    "consume": true,
+                    "between": [
                         {
                         "source": "scope",
                         "type": "mousedown",
                         "markname": "brush_brush"
-                        }
-                    ],
-                    "update": "{x: x(unit), y: y(unit), extent_x: slice(brush_x), extent_y: slice(brush_y)}"
-                    }
-                ]
-                },
-                {
-                "name": "brush_translate_delta",
-                "value": {},
-                "on": [
-                    {
-                    "events": [
+                        },
                         {
                         "source": "window",
-                        "type": "mousemove",
-                        "consume": true,
-                        "between": [
-                            {
-                            "source": "scope",
-                            "type": "mousedown",
-                            "markname": "brush_brush"
-                            },
-                            {
-                            "source": "window",
-                            "type": "mouseup"
-                            }
-                        ]
+                        "type": "mouseup"
                         }
-                    ],
-                    "update": "{x: brush_translate_anchor.x - x(unit), y: brush_translate_anchor.y - y(unit)}"
+                    ]
                     }
-                ]
-                },
-                {
-                  "name": "brush_modify",
-                  "on": [
-                        {
-                        "events": {"signal": "brush_tuple"},
-                        "update": "modify(\"brush_store\", brush_tuple, true)"
-                        }
-                  ]
+                ],
+                "update": "{x: brush_translate_anchor.x - x(unit), y: brush_translate_anchor.y - y(unit)}"
                 }
+            ]
+          },
+          {
+            "name": "brush_modify",
+            "on": [
+                  {
+                  "events": {"signal": "brush_tuple"},
+                  "update": "modify(\"brush_store\", brush_tuple, true)"
+                  }
+            ]
+          }
         ],
         // put marks here
         "marks": [

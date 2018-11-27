@@ -177,11 +177,11 @@ class ClonalFamiliesViz extends React.Component {
           let result = args.slice(1)[0]
           this.yField = result
         }}
-        onSignalBrush_x_field_outer={(...args) => {
+        onSignalBrush_x_field={(...args) => {
           let result = args.slice(1)[0]
           this.props.updateBrushSelection("x", this.xField, result)
         }}
-        onSignalBrush_y_field_outer={(...args) => {
+        onSignalBrush_y_field={(...args) => {
           let result = args.slice(1)[0]
           this.props.updateBrushSelection("y", this.yField, result)
         }}
