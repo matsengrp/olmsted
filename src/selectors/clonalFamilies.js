@@ -2,7 +2,8 @@ import { createSelector, defaultMemoize, createSelectorCreator} from 'reselect';
 import * as _ from 'lodash';
 import * as fun from '../components/framework/fun';
 import { timerEnd, timerStart } from '../util/perf';
-
+import clonalFamiliesVizCustomSpec from '../components/explorer/vega/custom_scatter_plot';
+import facetClonalFamiliesVizSpec from '../components/explorer/vega/facet_scatter_plot';
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(
   defaultMemoize,
@@ -86,4 +87,12 @@ export const getClonalFamiliesPage = createDeepEqualSelector(
     (data, pagination) => {
       return computeClonalFamiliesPage(data, pagination)
     }
+)
+
+const getFacetByField = (state) => state.clonalFamilies.facetByField
+
+export const getScatterPlotSpec = createSelector(
+  [getFacetByField, getAvailableClonalFamilies],
+  (facetByField, availableClonalFamilies) => facetByField ? facetClonalFamiliesVizSpec(availableClonalFamilies, facetByField) :
+                                                            clonalFamiliesVizCustomSpec(availableClonalFamilies)
 )

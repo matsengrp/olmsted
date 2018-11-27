@@ -6,7 +6,12 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
   "padding": 5,
   // DATA
   "data": [
-    {"name": "pts_store"},
+    {
+      "name": "pts_store"
+    },
+    {
+      "name": "facetByField"
+    },
     {
       "name": "selected"
     },
@@ -62,7 +67,7 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
   "signals": [
     {
       "name": "facet_by_field",
-      "value": facet_by_field,
+      "update": "data(\"facetByField\")[0].data",
       // UPDATING DOESN"T WORK
       // "value": "dataset.id",
       // "bind": {"name": "Facet by (VEGA)", "input": "select", "options": ["has_seed", "dataset.id", "subject.id", "sample.timepoint" ]}

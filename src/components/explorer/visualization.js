@@ -5,7 +5,7 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import {createClassFromSpec} from 'react-vega';
 import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction} from "../../selectors/selectedFamily";
-import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
+import { getAvailableClonalFamilies, getScatterPlotSpec } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
@@ -99,10 +99,11 @@ const NaiveSequence = ({datum}) => {
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-  availableClonalFamilies: getAvailableClonalFamilies(state),
-  selectedFamily: state.clonalFamilies.selectedFamily,
-  facetByField: state.clonalFamilies.facetByField
-}),
+    availableClonalFamilies: getAvailableClonalFamilies(state),
+    selectedFamily: state.clonalFamilies.selectedFamily,
+    spec: getScatterPlotSpec(state),
+    facetByField: state.clonalFamilies.facetByField
+  }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
     selectFamily: explorerActions.selectFamily,
@@ -120,11 +121,9 @@ class ClonalFamiliesViz extends React.Component {
   }
 
   render() {
-    // Here we have our Vega component specification, where we plug in signal handlers, etc.
-    this.spec = this.props.facetByField ? facetClonalFamiliesVizSpec(this.props.availableClonalFamilies, this.props.facetByField) :
-                             clonalFamiliesVizCustomSpec(this.props.availableClonalFamilies)
     return  <div>
       <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
+        {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
         <Vega
         // TURN THESE ON TO DEBUG SIGNALS
         // SEE https://github.com/matsengrp/olmsted/issues/65
@@ -192,8 +191,9 @@ class ClonalFamiliesViz extends React.Component {
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 
               // viz to highlight the selected family.
+              facetByField: this.props.facetByField,
               selected: [{'ident': this.props.selectedFamily}] }}
-        spec={this.spec}/>
+        spec={this.props.spec}/>
       
       <label>Facet by field: </label>
       <select value={this.props.facetByField}
