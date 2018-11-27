@@ -199,6 +199,7 @@ class ClonalFamiliesViz extends React.Component {
       <select value={this.props.facetByField}
         onChange={(event) => {
           // Re-initialize spec for updated facet to take effect
+          // see https://github.com/matsengrp/olmsted/issues/105
           this.spec = facetClonalFamiliesVizSpec()
           this.props.updateFacet(event.target.value)} }>
         {this.facetOptions.map((option) =>
