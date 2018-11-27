@@ -1,9 +1,8 @@
-const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
+const facetClonalFamiliesVizSpec = () => {
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
-  "autosize": "pad",
-  "padding": 5,
+  "autosize": {"type": "pad"},
   // DATA
   "data": [
     {
@@ -20,7 +19,16 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
     },
     {
       "name": "source",
-      "values":data
+      "transform": [
+        // We are adding a field that we can facet by that is the 
+        // same for all values so that we can have a setting that
+        // is not faceted but still use this spec
+        {
+          "type": "formula",
+          "expr": "'no_facet'",
+          "as": "none"
+        }
+      ]
     },
     {
       "name": "data_0",
@@ -129,7 +137,7 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
         ]
     },
     {"name": "layout_padding", "value": 10},
-    { "name": "len_col_domain", "update": "length(data('column_domain'))" },
+    { "name": "len_col_domain", "update": "clamp(length(data('column_domain')), 1, 100)" },
     {"name": "child_width", "update": "width/len_col_domain-layout_padding"},
     {"name": "child_height", "update": "height"},
     // On click stuff
@@ -214,7 +222,7 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
         "name": "column-title",
         "type": "group",
         "role": "column-title",
-        "title": {"text": {"signal": "facet_by_field"}, "offset": 10, "style": "guide-title"}
+        "title": {"text": {"signal": "facet_by_field == 'none' ? '' : facet_by_field"}, "offset": 10, "style": "guide-title"}
     },
     {
         "name": "row_header",
@@ -240,7 +248,7 @@ const facetClonalFamiliesVizSpec = (data, facet_by_field) => {
         "from": {"data": "column_domain"},
         "sort": {"field": "datum[facet_by_field]", "order": "ascending"},
         "title": {
-            "text": {"signal": "''+parent[facet_by_field]"},
+            "text": {"signal": "'' + (parent[facet_by_field] == 'no_facet' ? '' : parent[facet_by_field])"},
             "offset": 10,
             "style": "guide-label",
             "baseline": "middle"

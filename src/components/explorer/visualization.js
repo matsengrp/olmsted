@@ -5,7 +5,7 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import {createClassFromSpec} from 'react-vega';
 import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction} from "../../selectors/selectedFamily";
-import { getAvailableClonalFamilies, getScatterPlotSpec } from "../../selectors/clonalFamilies";
+import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
@@ -101,8 +101,7 @@ const NaiveSequence = ({datum}) => {
 @connect((state) => ({
     availableClonalFamilies: getAvailableClonalFamilies(state),
     selectedFamily: state.clonalFamilies.selectedFamily,
-    spec: getScatterPlotSpec(state),
-    facetByField: state.clonalFamilies.facetByField
+    facetByField: state.clonalFamilies.facetByField,
   }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
@@ -117,14 +116,15 @@ class ClonalFamiliesViz extends React.Component {
     super(props);
     this.xField = "n_seqs";
     this.yField = "mean_mut_freq";
-    this.facetOptions = [undefined, "has_seed", "sample.timepoint", "dataset.id", "subject.id", "v_gene", "d_gene", "j_gene"]
+    this.facetOptions = ["none", "has_seed", "sample.timepoint", "dataset.id", "subject.id", "v_gene", "d_gene", "j_gene"]
+    this.spec = facetClonalFamiliesVizSpec()
   }
 
   render() {
     return  <div>
       <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
-        <Vega
+        {this.props.availableClonalFamilies.length > 0 && <Vega
         // TURN THESE ON TO DEBUG SIGNALS
         // SEE https://github.com/matsengrp/olmsted/issues/65
         // onSignalWidth={(...args) => {
@@ -193,11 +193,14 @@ class ClonalFamiliesViz extends React.Component {
               // viz to highlight the selected family.
               facetByField: this.props.facetByField,
               selected: [{'ident': this.props.selectedFamily}] }}
-        spec={this.props.spec}/>
+        spec={this.spec}/>}
       
       <label>Facet by field: </label>
       <select value={this.props.facetByField}
-        onChange={(event) => this.props.updateFacet(event.target.value) }>
+        onChange={(event) => {
+          // Re-initialize spec for updated facet to take effect
+          this.spec = facetClonalFamiliesVizSpec()
+          this.props.updateFacet(event.target.value)} }>
         {this.facetOptions.map((option) =>
           <option key={option} value={option}>{option}</option>)}
       </select>

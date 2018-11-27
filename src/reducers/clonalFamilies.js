@@ -17,7 +17,7 @@ const clonalFamilies = (state = {
   selectedSeq: {},
   clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-  facetByField: undefined,
+  facetByField: "none",
 }, action) => {
   switch (action.type) {
     case types.RESET_CLONAL_FAMILIES_STATE: {
