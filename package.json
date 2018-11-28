@@ -1,6 +1,6 @@
 {
   "name": "olmsted",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "Web app for visualizing pathogen evolution (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
   "author": "Eli Harkins, Christopher Small, (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
   "license": "AGPL",
