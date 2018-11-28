@@ -18,7 +18,7 @@ import { getSelectedDatasets } from "../../reducers/datasets"
 class Splash extends React.Component {
   render() {
     return (
-      <div>
+      <div style={{justifyContent: "space-around", display: "flex", marginRight: 50}}>
         <div className="static container">
           <Flex justifyContent="center">
             <Title/>
@@ -42,11 +42,13 @@ class Splash extends React.Component {
             <p style={{maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143}}>
               Select datasets below and click "Explore!" to visualize clonal families.
             </p>
+            {/*This only happens when the app loads up, not when we change the state.*/}
+            <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
             <button
               style={{
                 border: "0px",
                 backgroundColor: "#05337f",
-                marginLeft: 0,
+                marginTop: 20,
                 borderRadius: 5,
                 cursor: "pointer",
                 padding: 20,
@@ -69,8 +71,6 @@ class Splash extends React.Component {
                 }>
                 Explore!
             </button>
-            {/*This only happens when the app loads up, not when we change the state.*/}
-            <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
           </CenterContent>
           {/* hack; insert line */}
         </div>

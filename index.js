@@ -35,7 +35,7 @@ app.on('ready', function() {
   });
 
   
-  // run the Nextstrain express app in that window
+  // run the express app in that window
   mainWindow.loadURL('http://localhost:5000/');
   mainWindow.focus();
 

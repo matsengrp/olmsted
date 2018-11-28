@@ -14,15 +14,14 @@ const charonErrorHandler = () => {
 
 export const getClonalFamilies = (dispatch, dataset_id) => {
   const processData = (data, dataset_id) => {
-    console.log(data.substring(0,100))
     let clonalFamilies = []
     try{
       clonalFamilies = JSON.parse(data);
-      timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
-
+      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch( err ){
       alert("Failed parsing json for " + dataset_id + 
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
+      console.log(data.substring(0,100))
     }
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
       getDatapath(window.location.pathname, clonalFamilies) :
@@ -55,7 +54,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
   request.open("get", `${charonAPIAddress}/clonal_families.${dataset_id}.json`, true); // true for asynchronous
  
   request.send(null);
-  timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
   
 };
 

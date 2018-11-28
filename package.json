@@ -1,8 +1,8 @@
 {
-  "name": "auspice",
-  "version": "1.21.1",
-  "description": "Web app for visualizing pathogen evolution",
-  "author": "James Hadfield, Trevor Bedford and Richard Neher",
+  "name": "olmsted",
+  "version": "0.1",
+  "description": "Web app for visualizing pathogen evolution (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
+  "author": "Eli Harkins, Christopher Small, (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
   "license": "AGPL",
   "homepage": "./",
   "engines": {
@@ -129,7 +129,7 @@
     "webpack-hot-middleware": "^2.19.1"
   },
   "build": {
-    "appId": "nextstrain",
+    "appId": "olmsted",
     "directories": {
       "output": "releases"
     },
