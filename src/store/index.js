@@ -13,7 +13,7 @@ export default function configureStore(initialState) {
   ]
 
   const actionSanitizer = (action) => {
-    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.allClonalFamilies ){
+    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.clonalFamilies ){
       return { ...action, clonalFamilies: 'LARGE PAYLOAD, total families:'  + action.clonalFamilies.length } 
     }
     else{
