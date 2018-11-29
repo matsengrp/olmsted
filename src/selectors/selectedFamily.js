@@ -10,10 +10,7 @@ const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
 // selector for clonal family record
 export const getSelectedFamily = createSelector(
   [getAvailableClonalFamilies, getSelectedFamilyIdent],
-  (availableClonalFamilies, selectedIdent) => {
-    let result = _.find(availableClonalFamilies, {"ident": selectedIdent})
-    return result
-  }
+  (availableClonalFamilies, selectedIdent) =>  _.find(availableClonalFamilies, {"ident": selectedIdent})
 )
 
 // selector for selected tree
@@ -24,17 +21,25 @@ const defaultReconstruction = (reconstructions) =>
   // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
   _.find(reconstructions, {prune_strategy: "seed_lineage"}) || _.find(reconstructions, {prune_strategy: "min_adcl"}) || reconstructions[0]
 
+export const findReconstruction = (family, reconstructionIdent) => reconstructionIdent ?
+                                                            _.find(family.reconstructions, {ident: reconstructionIdent}) :
+                                                            defaultReconstruction(family.reconstructions)
+
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
   [getSelectedFamily, getSelectedReconstructionIdent],
-  (family, reconstructionIdent) => reconstructionIdent ?
-    _.find(family.reconstructions, {ident: reconstructionIdent}) :
-    defaultReconstruction(family.reconstructions))
+  (family, reconstructionIdent) => findReconstruction(family, reconstructionIdent)
+)
 
 
 // selector for sequence
+ 
+const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq
 
-const getSelectedSeq = (state) => state.clonalFamilies.selectedSeq
+export const getSelectedSeq = createSelector(
+  [getSelectedSeqId, getSelectedReconstruction],
+  (seq_id, recon) => _.find(recon.asr_tree, {"id": seq_id})
+)
 
 // computing mutations for tree node records relative to naive_seq
 

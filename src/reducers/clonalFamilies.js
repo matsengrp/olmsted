@@ -14,6 +14,7 @@ const clonalFamilies = (state = {
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
+  selectedReconstruction: undefined,
   selectedSeq: {},
   clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
@@ -109,7 +110,7 @@ const clonalFamilies = (state = {
     } case types.TOGGLE_FAMILY: {
       let updates = {
         selectedFamily: action.family_id,
-        selectedReconstruction: null,
+        selectedReconstruction: undefined,
         selectedSeq: {},
       }
       // action.updateBrushSelection specifies whether we would like to 

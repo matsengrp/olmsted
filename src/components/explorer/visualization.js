@@ -4,7 +4,7 @@ import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import {createClassFromSpec} from 'react-vega';
-import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction} from "../../selectors/selectedFamily";
+import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
@@ -216,6 +216,7 @@ const mapStateToPropsTips = (state, ownProps) => {
   return {
     selectedFamily,
     treeNodes: getReconstructionData(state),
+    selectedSeq: state.clonalFamilies.selectedSeq,
     selectedReconstruction: getSelectedReconstruction(state),
     naiveData,
     cdr3Bounds: [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
@@ -238,14 +239,31 @@ class TreeViz extends React.Component {
   constructor(props) {
     super(props);
     this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
+    this.selectReconstruction = this.selectReconstruction.bind(this)
   }
 
-  render() {    
+  selectReconstruction(newReconId){
+    // We default to deselecting the selected sequence when
+    // we select a new reconstruction. If the new reconstruction
+    // contains the same sequence, we allow it to remain selected
+    // to compare the lineages more easily between reconstructions
+    // without having to find and reselect that sequence.
+    let deselectSeq = true
+    if(this.props.selectedSeq){
+      let newSelectedReconstruction = findReconstruction(this.props.selectedFamily, newReconId)
+      let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
+      deselectSeq = !selectedSeqInNewReconstruction
+    }
+    if(deselectSeq){this.props.dispatchSelectedSeq(undefined)}
+    this.props.dispatchSelectedReconstruction(newReconId)
+  }
+
+  render() {   
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             <label>Ancestral reconstruction method: </label>
             <select value={this.props.treeNodes.ident}
-              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value)}>
+              onChange={(event) => this.selectReconstruction(event.target.value)}>
               {this.props.selectedFamily.reconstructions.map((recon) =>
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
@@ -254,7 +272,7 @@ class TreeViz extends React.Component {
                 let node = args.slice(1)[0]
                 if(node.parent){
                   // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                  this.props.dispatchSelectedSeq(node)
+                  this.props.dispatchSelectedSeq(node.id)
                 }
               }}
               debug={/* true for debugging */ true}
@@ -294,16 +312,14 @@ class TreeViz extends React.Component {
 const mapStateToPropsLineage = (state) => {
     return {
       lineageData: getLineageData(state),
-      selectedSeq: state.clonalFamilies.selectedSeq,
+      selectedSeq: getSelectedSeq(state),
       selectedFamily: getSelectedFamily(state)
     }
 }
 
 // Compoent definition
 
-@connect(mapStateToPropsLineage, null, null, 
-  {areStatesEqual: (next, prev) => {
-    return _.isEqual(prev.clonalFamilies.lineageData, next.clonalFamilies.lineageData) && _.isEqual(prev.clonalFamilies.selectedSeq, next.clonalFamilies.selectedSeq)}})
+@connect(mapStateToPropsLineage)
 class Lineage extends React.Component {
   render() {
         let naiveData = getNaiveVizData(this.props.selectedFamily)
