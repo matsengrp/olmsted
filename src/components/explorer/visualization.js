@@ -7,7 +7,6 @@ import {createClassFromSpec} from 'react-vega';
 import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
-import clonalFamiliesVizCustomSpec from './vega/custom_scatter_plot';
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
