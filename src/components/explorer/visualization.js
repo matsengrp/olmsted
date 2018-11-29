@@ -100,8 +100,7 @@ const NaiveSequence = ({datum}) => {
 
 @connect((state) => ({
     availableClonalFamilies: getAvailableClonalFamilies(state),
-    selectedFamily: state.clonalFamilies.selectedFamily,
-    facetByField: state.clonalFamilies.facetByField,
+    selectedFamily: state.clonalFamilies.selectedFamily
   }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
@@ -177,6 +176,10 @@ class ClonalFamiliesViz extends React.Component {
           let result = args.slice(1)[0]
           this.yField = result
         }}
+        onSignalFacet_by_signal={(...args) => {
+          let result = args.slice(1)[0]
+          this.props.updateFacet(result)          
+        }}
         onSignalBrush_x_field={(...args) => {
           let result = args.slice(1)[0]
           this.props.updateBrushSelection("x", this.xField, result)
@@ -191,20 +194,8 @@ class ClonalFamiliesViz extends React.Component {
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 
               // viz to highlight the selected family.
-              facetByField: this.props.facetByField,
               selected: [{'ident': this.props.selectedFamily}] }}
         spec={this.spec}/>}
-      
-      <label>Facet by field: </label>
-      <select value={this.props.facetByField}
-        onChange={(event) => {
-          // Re-initialize spec for updated facet to take effect
-          // see https://github.com/matsengrp/olmsted/issues/105
-          this.spec = facetClonalFamiliesVizSpec()
-          this.props.updateFacet(event.target.value)} }>
-        {this.facetOptions.map((option) =>
-          <option key={option} value={option}>{option}</option>)}
-      </select>
     </div>
   }
 };

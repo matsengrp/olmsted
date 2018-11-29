@@ -9,9 +9,6 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "pts_store"
     },
     {
-      "name": "facetByField"
-    },
-    {
       "name": "selected"
     },
     {
@@ -19,36 +16,19 @@ const facetClonalFamiliesVizSpec = () => {
     },
     {
       "name": "source",
-      "transform": [
-        // We are adding a field that we can facet by that is the 
-        // same for all values so that we can have a setting that
-        // is not faceted but still use this spec
-        {
-          "type": "formula",
-          "expr": "'no_facet'",
-          "as": "none"
-        }
-      ]
     },
     {
       "name": "data_0",
       "source": "source",
-    //   try this instead of the transforms
-    //   "format": {
-    //     "type": "json",
-    //     "parse": {"Horsepower": "number", "Miles_per_Gallon": "number"}
-    //   },
+      "format": {
+        "type": "json",
+        "parse": {"n_seqs": "number", "mean_mut_freq": "number"},
+        "copy": true
+      },
       "transform": [
-        {
-          "type": "formula",
-          "expr": "toNumber(datum[\"n_seqs\"])",
-          "as": "n_seqs"
-        },
-        {
-          "type": "formula",
-          "expr": "toNumber(datum[\"mean_mut_freq\"])",
-          "as": "mean_mut_freq"
-        },
+        // Get nested data at top level
+        // Vega assumes things are top level properties and
+        // sometimes has issues with nested fields https://vega.github.io/vega/docs/data/
         {
           "type": "formula",
           "expr": "datum[\"subject\"] && datum[\"subject\"][\"id\"]",
@@ -60,26 +40,32 @@ const facetClonalFamiliesVizSpec = () => {
           "as": "sample.timepoint"
         },
         {
+          "type": "formula",
+          "expr": "datum[\"dataset\"] && datum[\"dataset\"][\"id\"]",
+          "as": "dataset.id"
+        },
+        {
           "type": "filter",
           "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
-        }
+        },
+        // Add the facet by field work around since it cannot be updated directly 
+        // with a signal see https://github.com/vega/vega/issues/1461
+        {"type": "formula", "expr": "datum[facet_by_signal]", "as": "facet_by_field"}
+
       ],
     },
     {
         "name": "column_domain",
         "source": "data_0",
-        "transform": [{"type": "aggregate", "groupby": [{"signal": "facet_by_field"}]}]
+        "transform": [{"type": "aggregate", "groupby": [{"signal": "facet_by_signal"}]},
+                      // Add the facet by field work around since it cannot be updated directly 
+                      // with a signal see https://github.com/vega/vega/issues/1461
+                      {"type": "formula", "expr": "datum[facet_by_signal]", "as": "facet_by_field"}
+      ]
     }
   ],
   // SIGNALS
   "signals": [
-    {
-      "name": "facet_by_field",
-      "update": "data(\"facetByField\")[0].data",
-      // UPDATING DOESN"T WORK
-      // "value": "dataset.id",
-      // "bind": {"name": "Facet by (VEGA)", "input": "select", "options": ["has_seed", "dataset.id", "subject.id", "sample.timepoint" ]}
-    },
     {
       "name": "PADDING_FRACTION",
       "value": 0.05
@@ -186,6 +172,11 @@ const facetClonalFamiliesVizSpec = () => {
       ]
     },
     // Dropdown menus
+    {
+      "name": "facet_by_signal",
+      "value": "none",
+      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint"]}
+    },
     { "name": "yField", "value": "mean_mut_freq",
       "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
     { "name": "xField", "value": "n_seqs",
@@ -216,7 +207,7 @@ const facetClonalFamiliesVizSpec = () => {
         "name": "column-title",
         "type": "group",
         "role": "column-title",
-        "title": {"text": {"signal": "facet_by_field == 'none' ? '' : facet_by_field"}, "offset": 10, "style": "guide-title"}
+        "title": {"text": {"signal": "facet_by_signal == 'none' ? '' : facet_by_signal"}, "offset": 10, "style": "guide-title"}
     },
     {
         "name": "row_header",
@@ -240,9 +231,9 @@ const facetClonalFamiliesVizSpec = () => {
         "type": "group",
         "role": "column-header",
         "from": {"data": "column_domain"},
-        "sort": {"field": "datum[facet_by_field]", "order": "ascending"},
+        "sort": {"field": "datum[\"facet_by_field\"]", "order": "ascending"},
         "title": {
-            "text": {"signal": "'' + (parent[facet_by_field] == 'no_facet' ? '' : parent[facet_by_field])"},
+            "text": {"signal": "'' + (parent[\"facet_by_field\"] ? parent[\"facet_by_field\"] : '')"},
             "offset": 10,
             "style": "guide-label",
             "baseline": "middle"
@@ -254,7 +245,7 @@ const facetClonalFamiliesVizSpec = () => {
         "type": "group",
         "role": "column-footer",
         "from": {"data": "column_domain"},
-        "sort": {"field": "datum[facet_by_field]", "order": "ascending"},
+        "sort": {"field": "datum[\"facet_by_field\"]", "order": "ascending"},
         "encode": {"update": {"width": {"signal": "child_width"}}},
         "axes": [
         {
@@ -275,9 +266,9 @@ const facetClonalFamiliesVizSpec = () => {
       "type": "group",
       "style": "cell",
       "from": {
-        "facet": {"name": "facet", "data": "data_0", "groupby": [{"signal": "facet_by_field"}]}
+        "facet": {"name": "facet", "data": "data_0", "groupby": "facet_by_field"}
       },
-      "sort": {"field": ["datum[facet_by_field]"], "order": ["ascending"]},
+      "sort": {"field": "datum[\"facet_by_field\"]", "order": "ascending"},
       "encode": {
         "update": {
           "width": {"signal": "child_width"},
@@ -472,7 +463,7 @@ const facetClonalFamiliesVizSpec = () => {
                   {"signal": "brush_x_field_nested"},
                   {"signal": "brush_y_field_nested"}
               ],
-              "update": "brush_x_field_nested && brush_y_field_nested ? {cell: \"child\" + '_' + (facet[facet_by_field]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field_nested}, {encoding: \"y\", field: yField, extent: brush_y_field_nested}]} : null"
+              "update": "brush_x_field_nested && brush_y_field_nested ? {cell: \"child\" + '_' + (facet[facet_by_signal]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field_nested}, {encoding: \"y\", field: yField, extent: brush_y_field_nested}]} : null"
             }
           ]
         },
@@ -547,7 +538,7 @@ const facetClonalFamiliesVizSpec = () => {
               "update": {
               "x": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_x[0]"
                 },
                 {
@@ -556,7 +547,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_y[0]"
                 },
                 {
@@ -565,7 +556,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "x2": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_x[1]"
                 },
                 {
@@ -574,7 +565,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y2": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_y[1]"
                 },
                 {
@@ -636,7 +627,7 @@ const facetClonalFamiliesVizSpec = () => {
             "update": {
               "x": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_x[0]"
                 },
                 {
@@ -645,7 +636,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_y[0]"
                 },
                 {
@@ -654,7 +645,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "x2": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_x[1]"
                 },
                 {
@@ -663,7 +654,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y2": [
                 {
-                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_field])",
+                  "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
                   "signal": "brush_y[1]"
                 },
                 {

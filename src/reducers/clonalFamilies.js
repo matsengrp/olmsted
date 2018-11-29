@@ -17,6 +17,8 @@ const clonalFamilies = (state = {
   selectedSeq: {},
   clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  // EH:facet field is no longer required to update the spec but 
+  // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
 }, action) => {
   switch (action.type) {
