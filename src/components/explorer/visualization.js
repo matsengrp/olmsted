@@ -209,7 +209,7 @@ class ClonalFamiliesViz extends React.Component {
 
 // First some redux connection functions
 
-const mapStateToPropsTips = (state, ownProps) => {
+const mapStateToPropsTree = (state) => {
   let selectedFamily = getSelectedFamily(state)
   let naiveData = getNaiveVizData(selectedFamily)
   return {
@@ -233,11 +233,11 @@ const mapDispatchToProps = (dispatch) => ( {
 
 // now for the actual component definition
 
-@connect(mapStateToPropsTips, mapDispatchToProps)
+@connect(mapStateToPropsTree, mapDispatchToProps)
 class TreeViz extends React.Component {
   constructor(props) {
     super(props);
-    this.spec=concatTreeWithAlignmentSpec(props.treeNodes, null)
+    this.spec = concatTreeWithAlignmentSpec()
     this.selectReconstruction = this.selectReconstruction.bind(this)
   }
 
@@ -253,6 +253,7 @@ class TreeViz extends React.Component {
       let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
       deselectSeq = !selectedSeqInNewReconstruction
     }
+    // This is how we deselect the currently selected sequence
     if(deselectSeq){this.props.dispatchSelectedSeq(undefined)}
     this.props.dispatchSelectedReconstruction(newReconId)
   }
@@ -266,7 +267,7 @@ class TreeViz extends React.Component {
               {this.props.selectedFamily.reconstructions.map((recon) =>
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>
-            <Vega onParseError={(...args) => console.error("parse error:", args)}             
+            <Vega onParseError={(...args) => console.error("parse error:", args)}      
               onSignalPts_tuple={(...args) => {
                 let node = args.slice(1)[0]
                 if(node.parent){
