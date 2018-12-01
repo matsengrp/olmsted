@@ -280,7 +280,6 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "tree_group_width",
           "update": "tree_group_width_ratio*width",
         },
-
         // ZOOM SIGNALS
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
@@ -294,14 +293,6 @@ const concatTreeWithAlignmentSpec = () => {
         },
         {
           "name": "ydom",
-          "update": "slice(yext)",
-        },
-        {
-          "name": "xdom_delta",
-          "update": "slice(xext)",
-        },
-        {
-          "name": "ydom_delta",
           "update": "slice(yext)",
         },
 
@@ -583,7 +574,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // Original delta values are stored in these signals to make the {x,y}dom delta handlers more readable
             {
-              "push": "outer",
+              "update": "slice(xext)",
               "name": "xdom_delta",
               "on": [
                 {
@@ -592,8 +583,10 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
             },
+            // Original delta values are stored in these signals to make the {x,y}dom delta handlers more readable
             {
-              "push": "outer",
+              "update": "slice(yext)",
+
               "name": "ydom_delta",
               "on": [
                 {
@@ -608,7 +601,7 @@ const concatTreeWithAlignmentSpec = () => {
               "on": [
                 // Update shown x values when dragging
                 {
-                  "events": {"signal": "xdom_delta"},
+                  "events": {"signal": "delta"},
                   // Original values
                   // "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
                   // Limiting dragging to the boundaries of the tree
@@ -630,7 +623,7 @@ const concatTreeWithAlignmentSpec = () => {
               "on": [
                 // Update shown y values when dragging
                 {
-                  "events": {"signal": "ydom_delta"},
+                  "events": {"signal": "delta"},
                   // Original values
                   // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
                   // Limiting dragging to the boundaries of the tree
