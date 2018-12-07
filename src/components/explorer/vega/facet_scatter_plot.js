@@ -140,8 +140,12 @@ const facetClonalFamiliesVizSpec = () => {
         }
       ]
     },
+    // Tracks the facet value of the group selected from
     {
-      // Tracks the cell (group mark) in which the user is interacting
+      "name": "brushed_facet_value", "value": null
+    },
+    // Tracks the cell (group mark) in which the user is interacting
+    {
       "name": "cell", "value": null
     },
     //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
@@ -233,7 +237,7 @@ const facetClonalFamiliesVizSpec = () => {
         "from": {"data": "column_domain"},
         "sort": {"field": "datum[\"facet_by_field\"]", "order": "ascending"},
         "title": {
-            "text": {"signal": "'' + (parent[\"facet_by_field\"] ? parent[\"facet_by_field\"] : '')"},
+            "text": {"signal": "'' + (toString(parent[\"facet_by_field\"]) ? parent[\"facet_by_field\"] : '')"},
             "offset": 10,
             "style": "guide-label",
             "baseline": "middle"
@@ -287,17 +291,30 @@ const facetClonalFamiliesVizSpec = () => {
           ]
         },
         {
-        "name": "cell", 
-        "push": "outer",
-        "on": [
-          {
-            "events": "@cell:mousedown", "update": "group()"
-          },
-          {
-            "events": "@cell:mouseup",
-            "update": "!span(brush_x) && !span(brush_y) ? null : cell"
-          }
-        ]
+          "name": "brushed_facet_value", 
+          "push": "outer",
+          "on": [
+            {
+              "events": "@cell:mousedown", "update": "[facet_by_signal, datum[\"facet_by_field\"]]"
+            },
+            {
+              "events": "@cell:mouseup",
+              "update": "!span(brush_x) && !span(brush_y) ? null : brushed_facet_value"
+            }
+          ]
+        },
+        {
+          "name": "cell",  
+          "push": "outer",
+          "on": [
+            {
+              "events": "@cell:mousedown", "update": "group()"
+            },
+            {
+              "events": "@cell:mouseup",
+              "update": "!span(brush_x) && !span(brush_y) ? null : cell"
+            }
+          ]
         },
         {
           "name": "brush_x",
@@ -597,7 +614,7 @@ const facetClonalFamiliesVizSpec = () => {
               },
               "stroke": [
                 {
-                  "test": "!(length(data(\"brush_store\"))) || (vlInterval(\"brush_store\", datum))",
+                  "test": "!(length(data(\"brush_store\"))) || (vlInterval(\"brush_store\", datum) && datum.facet_by_field == brushed_facet_value[1])",
                   "scale": "color",
                   "field": {"signal": "colorBy"}
                 },

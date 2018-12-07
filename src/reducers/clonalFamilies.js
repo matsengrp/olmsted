@@ -49,6 +49,8 @@ const clonalFamilies = (state = {
         // vega), and then sort so that we have range in canonical order
         range = action.updatedBrushData[2].slice(0)
         range = _.sortBy(range)
+      } else if (action.updatedBrushData[0] == "filter") {
+        range = action.updatedBrushData[2]
       } else {
         // otherwise leave undefined, to trigger select all in selectors.clonalFamilies.checkBrushSelection
         range = undefined
@@ -70,7 +72,7 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      
+      console.log(new_brushSelection)
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination

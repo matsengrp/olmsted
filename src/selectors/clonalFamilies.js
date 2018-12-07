@@ -39,6 +39,16 @@ const checkInRange = (axis, datum, brushSelection) => {
 }
 
 const checkBrushSelection = (brushSelection, datum) => {
+  // Check filter on a specific field
+  // This is necessary when we facet and 
+  // want to only select from the pane 
+  // where "has_seed == true", for example
+  if(brushSelection["filter"] && 
+     brushSelection["filter"].range !== undefined &&
+     datum[brushSelection["filter"].fieldName] !== brushSelection["filter"].range){
+       return false
+  }
+  // Check brush selection ranges
   if(brushSelection["x"] && brushSelection["y"]){
     if(brushSelection["x"]["range"] && brushSelection["y"]["range"]){
       return (checkInRange("x", datum, brushSelection)) && (checkInRange("y", datum, brushSelection))

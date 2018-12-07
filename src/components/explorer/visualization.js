@@ -187,6 +187,12 @@ class ClonalFamiliesViz extends React.Component {
           let result = args.slice(1)[0]
           this.props.updateBrushSelection("y", this.yField, result)
         }}
+        onSignalBrushed_facet_value={(...args) => {
+          let keyVal = args.slice(1)[0]
+          if(keyVal){
+            this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+          }
+        }}
         onParseError={(...args) => console.error("parse error:", args)}
         debug={/* true for debugging */ true}
         data={{source: this.props.availableClonalFamilies,
