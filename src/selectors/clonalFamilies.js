@@ -43,9 +43,15 @@ const checkBrushSelection = (brushSelection, datum) => {
   // This is necessary when we facet and 
   // want to only select from the pane 
   // where "has_seed == true", for example
-  if(brushSelection["filter"] && 
-     brushSelection["filter"].range !== undefined &&
-     datum[brushSelection["filter"].fieldName] !== brushSelection["filter"].range){
+  // if(brushSelection["filter"] && 
+  //   brushSelection["filter"].range !== undefined &&
+  //   datum[brushSelection["filter"].fieldName] !== brushSelection["filter"].range){
+  //     return false
+  // }
+  if(brushSelection.filter &&
+     brushSelection.filter.fieldName !== "none" && 
+    // Using _.at to allow indexing nested fields like dataset.id; reject datum if it does not match filter
+     _.at(datum, brushSelection.filter.fieldName).length && _.at(datum, brushSelection.filter.fieldName)[0] !== brushSelection.filter.range){
        return false
   }
   // Check brush selection ranges

@@ -105,6 +105,7 @@ const NaiveSequence = ({datum}) => {
   {
     selectFamily: explorerActions.selectFamily,
     updateBrushSelection: explorerActions.updateBrushSelection,
+    filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
 
@@ -141,6 +142,10 @@ class ClonalFamiliesViz extends React.Component {
         //   let result = args.slice(1)[0]
         //   console.log('brushy: ', result)  
         // }}
+        onSignalBrush_store_signal={(...args) => {
+          let result = args.slice(1)[0]
+          console.log('brushy: ', result)  
+        }}
         onSignalPts_tuple={(...args) => {
           let family = args.slice(1)[0]
           if(family.ident){
@@ -181,6 +186,7 @@ class ClonalFamiliesViz extends React.Component {
         }}
         onSignalBrush_x_field={(...args) => {
           let result = args.slice(1)[0]
+          console.log(result)
           this.props.updateBrushSelection("x", this.xField, result)
         }}
         onSignalBrush_y_field={(...args) => {
@@ -190,7 +196,9 @@ class ClonalFamiliesViz extends React.Component {
         onSignalBrushed_facet_value={(...args) => {
           let keyVal = args.slice(1)[0]
           if(keyVal){
-            this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+            console.log(keyVal)
+            // this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+            this.props.filterBrushSelection(keyVal[0], keyVal[1])
           }
         }}
         onParseError={(...args) => console.error("parse error:", args)}
