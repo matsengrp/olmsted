@@ -4,6 +4,7 @@ import { charonAPIAddress } from "../util/globals";
 import { getDatapath, goTo404, chooseDisplayComponentFromPathname } from "./navigation";
 import { createStateFromQueryOrJSONs, createTreeTooState } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
+import { timerStart, timerEnd } from "../util/perf";
 
 const charonErrorHandler = () => {
   console.warn("Failed to get manifest JSON from server");
@@ -11,33 +12,50 @@ const charonErrorHandler = () => {
   dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
 };
 
-export const getClonalFamilies = (dispatch, s3bucket = "live") => {
-  const processData = (data) => {
-    const allClonalFamilies = JSON.parse(data);
+export const getClonalFamilies = (dispatch, dataset_id) => {
+  const processData = (data, dataset_id) => {
+    let clonalFamilies = []
+    try{
+      clonalFamilies = JSON.parse(data);
+      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
+    } catch( err ){
+      alert("Failed parsing json for " + dataset_id + 
+      ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
+      console.log(data.substring(0,100))
+    }
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, allClonalFamilies) :
+      getDatapath(window.location.pathname, clonalFamilies) :
       undefined;
+
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
-      allClonalFamilies
+      dataset_id,
+      clonalFamilies
+    });
+    dispatch({
+      type: types.LOADING_DATASET,
+      dataset_id,
+      loading: "DONE"
     });
   };
 
   const query = queryString.parse(window.location.search);
   const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
-
-  const xmlHttp = new XMLHttpRequest();
-  xmlHttp.onload = () => {
-    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText);
+  const request = new XMLHttpRequest();
+  request.onload = () => {
+    if (request.readyState === 4 && request.status === 200) {
+      processData(request.responseText, dataset_id);
     } else {
       charonErrorHandler();
     }
   };
 
-  xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}request=clonalFamilies&user=${user}&s3=${s3bucket}`, true); // true for asynchronous
-  xmlHttp.send(null);
+  request.onerror = charonErrorHandler;
+  request.open("get", `${charonAPIAddress}/clonal_families.${dataset_id}.json`, true); // true for asynchronous
+ 
+  request.send(null);
+  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {
@@ -66,17 +84,17 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   const query = queryString.parse(window.location.search);
   const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
 
-  const xmlHttp = new XMLHttpRequest();
-  xmlHttp.onload = () => {
-    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      processData(xmlHttp.responseText, query);
+  const request = new XMLHttpRequest();
+  request.onload = () => {
+    if (request.readyState === 4 && request.status === 200) {
+      processData(request.responseText, query);
     } else {
       charonErrorHandler();
     }
   };
-  xmlHttp.onerror = charonErrorHandler;
-  xmlHttp.open("get", `${charonAPIAddress}request=datasets&user=${user}&s3=${s3bucket}`, true); // true for asynchronous
-  xmlHttp.send(null);
+  request.onerror = charonErrorHandler;
+  request.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
+  request.send(null);
 };
 
 

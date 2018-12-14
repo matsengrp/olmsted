@@ -1,19 +1,39 @@
 import * as types from "../actions/types";
 import * as _ from "lodash";
 
-const clonalFamilies = (state = {
+const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
   allClonalFamilies: [],
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-  treeScale: {branch_scale:950, height_scale:10}
+}
+
+const clonalFamilies = (state = {
+  brushSelecting: false,
+  brushSelection: undefined,
+  selectedFamily: undefined,
+  selectedReconstruction: undefined,
+  selectedSeq: {},
+  clonalFamiliesDict: {},
+  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  // EH:facet field is no longer required to update the spec but 
+  // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
+  facetByField: "none",
 }, action) => {
   switch (action.type) {
-    case types.CLONAL_FAMILIES_RECEIVED: {
+    case types.RESET_CLONAL_FAMILIES_STATE: {
+      // Want to reset the clonal families state without
+      // getting rid of our raw clonal families data
+      let reset_state = _.omit(initialState, 'clonalFamiliesDict')
+      return Object.assign({}, state, reset_state);
+    } case types.CLONAL_FAMILIES_RECEIVED: {
+      let newClonalFamiliesDictEntry = {}
+      newClonalFamiliesDictEntry[action.dataset_id] = action.clonalFamilies
+      let updatedClonalFamiliesDict = Object.assign({}, state.clonalFamiliesDict, newClonalFamiliesDictEntry);
       return Object.assign({}, state, {
-        allClonalFamilies: action.allClonalFamilies
+        clonalFamiliesDict: updatedClonalFamiliesDict
       });
     } case types.SELECTING_STATUS: {
       return Object.assign({}, state, {
@@ -29,6 +49,8 @@ const clonalFamilies = (state = {
         // vega), and then sort so that we have range in canonical order
         range = action.updatedBrushData[2].slice(0)
         range = _.sortBy(range)
+      } else if (action.updatedBrushData[0] == "filter") {
+        range = action.updatedBrushData[2]
       } else {
         // otherwise leave undefined, to trigger select all in selectors.clonalFamilies.checkBrushSelection
         range = undefined
@@ -50,7 +72,7 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      
+      console.log(new_brushSelection)
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination
@@ -90,9 +112,8 @@ const clonalFamilies = (state = {
     } case types.TOGGLE_FAMILY: {
       let updates = {
         selectedFamily: action.family_id,
-        selectedReconstruction: null,
+        selectedReconstruction: undefined,
         selectedSeq: {},
-        treeScale: {branch_scale:950, height_scale:10}
       }
       // action.updateBrushSelection specifies whether we would like to 
       // include just this family in our brush selection
@@ -110,10 +131,9 @@ const clonalFamilies = (state = {
       return Object.assign({}, state, {
         selectedReconstruction: action.reconstruction,
       });
-    } case types.UPDATE_TREE_SCALE: {
-      let new_tree_scale = Object.assign({}, state.treeScale, action.val);
+    } case types.UPDATE_FACET: {
       return Object.assign({}, state, {
-        treeScale: new_tree_scale
+        facetByField: action.facetByField
       });
     } default: {
       return state;

@@ -1,8 +1,8 @@
 {
-  "name": "auspice",
-  "version": "1.21.1",
-  "description": "Web app for visualizing pathogen evolution",
-  "author": "James Hadfield, Trevor Bedford and Richard Neher",
+  "name": "olmsted",
+  "version": "0.0.1",
+  "description": "Web app for visualizing pathogen evolution (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
+  "author": "Eli Harkins, Christopher Small, (forked from auspice by James Hadfield, Trevor Bedford and Richard Neher)",
   "license": "AGPL",
   "homepage": "./",
   "engines": {
@@ -27,10 +27,10 @@
     "run:electron": "npm run clean && npm run build:electron && npm run getdata && ./node_modules/.bin/electron . ",
     "dist:electron": "npm run clean && npm run build:electron && npm run getdata && electron-builder",
     "heroku-postbuild": "npm run build",
-    "get-data": "./scripts/get-data.sh",
-    "redeploy-site": "./scripts/redeploy-site.sh",
-    "gzip-and-upload": "./scripts/gzip-and-upload.sh",
-    "create-data-dir": "./scripts/create-data-dir.sh"
+    "get-data": "./bin/get-data.sh",
+    "redeploy-site": "./bin/redeploy-site.sh",
+    "gzip-and-upload": "./bin/gzip-and-upload.sh",
+    "create-data-dir": "./bin/create-data-dir.sh"
   },
   "dependencies": {
     "awesomplete": "^1.1.2",
@@ -53,6 +53,7 @@
     "d3-zoom": "^1.1.3",
     "es6-object-assign": "^1.1.0",
     "es6-promise-polyfill": "^1.2.0",
+    "exec": "^0.2.1",
     "express": "^4.13.3",
     "express-naked-redirect": "^0.1.2",
     "express-static-gzip": "^0.2.2",
@@ -83,7 +84,7 @@
     "redux-thunk": "^2.2.0",
     "request": "^2.65.0",
     "reselect": "^3.0.1",
-    "vega": "^4.0.0",
+    "vega": "^4.3.0",
     "vega-lite": "^2.6.0",
     "vega-tooltip": "^0.12.0",
     "webpack": "^4.16.5",
@@ -128,7 +129,7 @@
     "webpack-hot-middleware": "^2.19.1"
   },
   "build": {
-    "appId": "nextstrain",
+    "appId": "olmsted",
     "directories": {
       "output": "releases"
     },

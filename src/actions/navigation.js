@@ -1,6 +1,7 @@
 import queryString from "query-string";
-import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
-
+import * as types from "./types";
+import { getClonalFamilies } from "./loadData";
+import * as sets from "../util/sets";
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
   // if (pathname === "/" || pathname === "/all") return "splash";
@@ -33,11 +34,23 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
   if (!path) {console.error("changePage called without a path"); return;}
   const { datasets } = getState();
   const d = {
-    type: PAGE_CHANGE,
+    type: types.PAGE_CHANGE,
     displayComponent: chooseDisplayComponentFromPathname(path),
-    errorMessage: undefined
+    errorMessage: undefined,
+    datapath: undefined
   };
-  d.datapath = d.displayComponent === "app" ? getDatapath(path, datasets.availableDatasets) : undefined;
+
+  // Set the new datapath if we are changing to the app page
+  if (d.displayComponent === "app"){
+    d.datapath = getDatapath(path, datasets.availableDatasets)
+  }
+
+  // If we were PREVIOUSLY on the app page and change to a different dataset or go 
+  // back to splash, we want to reset the clonal families state
+  if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath){
+    dispatch({type: types.RESET_CLONAL_FAMILIES_STATE})
+  }
+
   if (query !== undefined) { d.query = query; }
   if (push) { d.pushState = true; }
   /* check if this is "valid" - we can change it here before it is dispatched */
@@ -46,7 +59,7 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
 
 /* a 404 uses the same machinery as changePage, but it's not a thunk */
 export const goTo404 = (errorMessage) => ({
-  type: PAGE_CHANGE,
+  type: types.PAGE_CHANGE,
   displayComponent: "splash",
   errorMessage,
   pushState: true
@@ -58,10 +71,28 @@ ARGUMENTS:
 (1) query - REQUIRED - {object}
 (2) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
 */
-export const changePageQuery = ({queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
+export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
   const state =  getState();
+  if( chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets ){
+    let queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets))
+    // Tried to check to see that datasets were in the state before requesting them from server but they are 
+    // not loaded at this point in time..
+    // let notLoaded = new Set();
+    // console.log(state.datasets)
+    // state.datasets.availableDatasets.forEach((dataset) => {if(!dataset.loading){notLoaded.add(dataset.id)}})
+    // console.log(notLoaded)
+    // sets.intersection(notLoaded, queryStringDatasets)
+    queryStringDatasets.forEach( (id) => {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: id,
+        loading: "LOADING"
+      });
+      getClonalFamilies(dispatch, id)
+    })
+  }
   dispatch({
-    type: URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
+    type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
     ...state,
     pushState: push,
     query: queryToDisplay ? queryToDisplay : queryToUse
@@ -79,6 +110,6 @@ export const browserBackForward = () => (dispatch, getState) => {
     dispatch(changePage({path: window.location.pathname}));
   } 
 
-  dispatch(changePageQuery({queryToUse: queryString.parse(window.location.search)}));
+  dispatch(changePageQuery({path: window.location.pathname, queryToUse: queryString.parse(window.location.search)}));
   
 };

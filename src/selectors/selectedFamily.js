@@ -10,10 +10,7 @@ const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
 // selector for clonal family record
 export const getSelectedFamily = createSelector(
   [getAvailableClonalFamilies, getSelectedFamilyIdent],
-  (availableClonalFamilies, selectedIdent) => {
-    let result = _.find(availableClonalFamilies, {"ident": selectedIdent})
-    return result
-  }
+  (availableClonalFamilies, selectedIdent) =>  _.find(availableClonalFamilies, {"ident": selectedIdent})
 )
 
 // selector for selected tree
@@ -24,17 +21,25 @@ const defaultReconstruction = (reconstructions) =>
   // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
   _.find(reconstructions, {prune_strategy: "seed_lineage"}) || _.find(reconstructions, {prune_strategy: "min_adcl"}) || reconstructions[0]
 
+export const findReconstruction = (family, reconstructionIdent) => reconstructionIdent ?
+                                                            _.find(family.reconstructions, {ident: reconstructionIdent}) :
+                                                            defaultReconstruction(family.reconstructions)
+
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
   [getSelectedFamily, getSelectedReconstructionIdent],
-  (family, reconstructionIdent) => reconstructionIdent ?
-    _.find(family.reconstructions, {ident: reconstructionIdent}) :
-    defaultReconstruction(family.reconstructions))
+  (family, reconstructionIdent) => findReconstruction(family, reconstructionIdent)
+)
 
 
 // selector for sequence
+ 
+const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq
 
-const getSelectedSeq = (state) => state.clonalFamilies.selectedSeq
+export const getSelectedSeq = createSelector(
+  [getSelectedSeqId, getSelectedReconstruction],
+  (seq_id, recon) => _.find(recon.asr_tree, {"id": seq_id})
+)
 
 // computing mutations for tree node records relative to naive_seq
 
@@ -45,7 +50,7 @@ const createAlignment = (naive_seq, tree) => {
     let mutations = []
     let seq = node.aa_seq;
     let seq_id = node.id;
-    let is_naive = seq_id == 'inferred_naive';
+    let is_naive = node.type == 'root';
     let pairs = _.toPairs(seq);
     // add mutation for each position deviating from the naive aa_seq
     _.forEach(pairs, (pair) => {
@@ -53,11 +58,11 @@ const createAlignment = (naive_seq, tree) => {
       let aa = pair[1]
       if (aa != naive_seq[i] ){
         // add a mutation for a sequence deviating from the naive
-        mutations.push( { 'height': node.height, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'height': node.height, 'type': node.type,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
       else if(is_naive){
         // add a mutation for the naive so it shows up in the viz
-        mutations.push( { 'height': 0, 'distance': node.distance,'length': node.length,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'height': 0, 'type': 'naive','parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
     });
     all_mutations = all_mutations.concat(mutations);    
@@ -120,7 +125,7 @@ const uniqueSeqs = (asr_tree) => {
 }
 
 const findNaive = (data) => {
-  return _.find(data, {"id": "inferred_naive"});
+  return _.find(data, {"type": "root"});
 }
 
 // Create an alignment for naive + all of the leaves of the tree (reconstruction)

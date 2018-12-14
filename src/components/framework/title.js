@@ -36,10 +36,7 @@ class Title extends React.Component {
     };
   }
   createTitle() {
-    const title = "olmsted";
-    return title.split("").map((letter, i) =>
-      <span key={i} style={{color: titleColors[i] }}>{letter}</span>
-    );
+    return <span style={{color: "#05337f" }}>{"Olmsted"}</span>;
   }
   render() {
     const styles = this.getStyles();

@@ -85,23 +85,20 @@ class NavBar extends React.Component {
     return (
       <a style={styles.logo}
         onClick={(e) => this.props.dispatch(changePage({path: "splash"})) }>
-        <img alt="" width="40" src={require("../../images/nextstrain-logo-small.png")}/>
+        <img alt="" width="40" src={require("../../images/olmsted_logo.png")}/>
       </a>
     );
   }
 
   getLogoType(styles) {
-    const title = "Olmsted";
-    const rainbowTitle = title.split("").map((letter, i) =>
-      <span key={i} style={{color: titleColors[i] }}>{letter}</span>
-    );
+    const title = <span style={{color: "#05337f" }}>{"Olmsted"}</span>;
     return (
       this.props.minified ?
         <div/>
         :
         <a style={styles.title}
           onClick={(e) => this.props.dispatch(changePage({path: "splash"})) }>
-          {rainbowTitle}
+          {title}
         </a>
     );
   }
@@ -135,9 +132,6 @@ class NavBar extends React.Component {
         {this.getLogo(styles)}
         {this.getLogoType(styles)}
         <div style={{flex: 5}}/>
-        {this.getLink("About", "/about/overview/introduction", styles)}
-        {this.getLink("Docs", "/docs/getting-started/install", styles)}
-        {this.getLink("Blog", "/blog", styles)}
         {this.getChevron()}
         <div style={{width: this.props.minified ? 8 : 0 }}/>
       </Flex>
