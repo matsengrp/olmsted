@@ -110,6 +110,7 @@ clonal_family_pull_pattern = [
       "cft.cluster:j_start",
       "cft.cluster:cdr3_length",
       "cft.cluster:cdr3_start",
+      "cft.cluster:path",
       "cft.cluster:naive_seq",
       "cft.cluster:mean_mut_freq",
       {"cft.cluster:seed": ["db:ident", "cft.seed:id"],
