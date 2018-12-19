@@ -46,7 +46,7 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      console.log("adding filter", new_brushSelection)
+      // console.log("adding filter", new_brushSelection)
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination
@@ -79,7 +79,7 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      console.log("adding brush", new_brushSelection)
+      // console.log("adding brush", new_brushSelection)
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination

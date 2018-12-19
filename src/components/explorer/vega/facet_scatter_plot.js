@@ -12,15 +12,18 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "selected"
     },
     {
-      "name": "brush_store"
-      // "on": [
-      //   {"trigger": "brush_tuple", "insert": "brush_tuple", "remove": true},
+      "name": "brush_store",
+      "on": [
+        // TODO: see brushed_facet_value TODOs below
+        // {"trigger": "brush_selection", "insert": "brush_selection", "remove": true},
+        {"trigger": "brush_store_trigger == 'insert'", "insert": "brush_selection", "remove": true},
+        {"trigger": "brush_store_trigger == 'remove'", "remove": true},
 
-      //   // Use a pattern similar to this for #114
-      //   // {"trigger": "!shift", "remove": true},
-      //   // {"trigger": "!shift && clicked", "insert": "clicked"},
-      //   // {"trigger": "shift && clicked", "toggle": "clicked"}
-      // ]
+        // Use a pattern similar to this for #114
+        // {"trigger": "!shift", "remove": true},
+        // {"trigger": "!shift && clicked", "insert": "clicked"},
+        // {"trigger": "shift && clicked", "toggle": "clicked"}
+      ]
     },
     {
       "name": "source",
@@ -152,10 +155,19 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "brush_store_signal",
       "update": "data(\"brush_store\")"
     },
-    // {
-    //   "name": "brush_tuple",
-    //   "value": null
-    // },
+     // TODO: just use one trigger, always replace the brush store 
+     // upon click or drag, updating the filter (facet or lack thereof)
+     // and the selection, respectively. Use brush store signal in place
+     // of brushed_facet_value, taking values from facetKey and facetValue 
+     // from brush store
+    {
+      "name": "brush_store_trigger",
+      "update": "brush_y_field && brush_x_field ? 'insert' : 'remove'"
+    },
+    {
+      "name": "brush_selection",
+      "value": null
+    },
     // Tracks the facet value of the group selected from
     {
       "name": "brushed_facet_value", "value": null
@@ -208,9 +220,21 @@ const facetClonalFamiliesVizSpec = () => {
     // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field",
+      "on": [{
+              "events": {
+                "signal": "facet_by_signal"
+              },
+              "update": "null"
+            }]
     },
     {
-      "name": "brush_y_field",     
+      "name": "brush_y_field",    
+      "on": [{
+              "events": {
+                "signal": "facet_by_signal"
+              },
+              "update": "null"
+            }]
     },
   ],
   // LAYOUT
@@ -288,8 +312,6 @@ const facetClonalFamiliesVizSpec = () => {
       "from": {
         "facet": {"name": "facet", "data": "data_0", "groupby": "facet_by_field"}
       },
-      // "sort": {"field": "datum[\"facet_by_field\"]", "order": "ascending"},
-
       "sort": {"field": "datum.facet_by_field", "order": "ascending"},
       "encode": {
         "update": {
@@ -314,22 +336,14 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           "name": "brush_test",
-          // "update": "true"
           "update": "data(\"brush_store\").length && (local_facet_value !== \"none\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
-          // "update": "data(\"brush_store\").length"
         },
-        {
-          "name": "facet_test",
-          "update": "true"
-          // "update": "local_facet_value !== \"none\" ? data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal]) : true"
-          // "update": "local_facet_value !== \"none\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true"
-        },
+        // TODO: use brush store and get rid of brushed_facet_value
         {
           "name": "brushed_facet_value", 
           "push": "outer",
           "on": [
             {
-              // "events": "@cell:mousedown", "update": "[facet_by_signal, datum[\"facet_by_field\"]]"
               "events": "@cell:mousedown", "update": "[facet_by_signal, facet.facet_by_field]"
             },
             {
@@ -406,6 +420,12 @@ const facetClonalFamiliesVizSpec = () => {
                 },
                 "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
               },
+              {
+                "events": {
+                  "signal": "facet_by_signal"
+                },
+                "update": "[]"
+              }
           ]
         },
         {
@@ -484,6 +504,12 @@ const facetClonalFamiliesVizSpec = () => {
               },
               "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
             },
+            {
+              "events": {
+                "signal": "facet_by_signal"
+              },
+              "update": "[]"
+            }
           ]
         },
         {
@@ -512,15 +538,14 @@ const facetClonalFamiliesVizSpec = () => {
           "update": "(!isArray(brush_x_field_nested) || (+invert(\"x\", brush_x)[0] === +brush_x_field_nested[0] && +invert(\"x\", brush_x)[1] === +brush_x_field_nested[1])) && (!isArray(brush_y_field_nested) || (+invert(\"y\", brush_y)[0] === +brush_y_field_nested[0] && +invert(\"y\", brush_y)[1] === +brush_y_field_nested[1])) ? brush_scale_trigger : {}"
         },
         {
-          "name": "brush_tuple",
-          // "push": "outer",
+          "name": "brush_selection",
+          "push": "outer",
           "on": [
             {
               "events": [
                   {"signal": "brush_x_field_nested"},
                   {"signal": "brush_y_field_nested"}
               ],
-              // "update": "brush_x_field_nested && brush_y_field_nested ? {cell: \"child\" + '_' + (facet[facet_by_signal]), intervals: [{encoding: \"x\", field: xField, extent: brush_x_field_nested}, {encoding: \"y\", field: yField, extent: brush_y_field_nested}]} : null"
               "update": "brush_x_field_nested && brush_y_field_nested ? {facetKey: facet_by_signal, facetValue: local_facet_value, intervals: { \"x\": { field: xField, extent: brush_x_field_nested },  \"y\": { field: yField, extent: brush_y_field_nested } }  } : null",
               "force": true
             }
@@ -569,16 +594,6 @@ const facetClonalFamiliesVizSpec = () => {
             }
           ]
         },
-        {
-          "name": "brush_modify",
-          "on": [
-              {
-                "events": {"signal": "brush_tuple"},
-                "update": "modify(\"brush_store\", brush_tuple, true)",
-                "force": true
-              }
-          ]
-        }
       ],
       // put marks here
       "marks": [
@@ -598,8 +613,7 @@ const facetClonalFamiliesVizSpec = () => {
               "update": {
               "x": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_x[0]"
                 },
                 {
@@ -608,8 +622,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_y[0]"
                 },
                 {
@@ -618,8 +631,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "x2": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_x[1]"
                 },
                 {
@@ -628,8 +640,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y2": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_y[1]"
                 },
                 {
@@ -661,7 +672,7 @@ const facetClonalFamiliesVizSpec = () => {
               },
               "stroke": [
                 {
-                  // "test": "!(length(data(\"brush_store\"))) || (vlInterval(\"brush_store\", datum) && datum.facet_by_field == brushed_facet_value[1])",
+                  // TODO: use brush store and get rid of brushed_facet_value
                   "test": "!(length(data(\"brush_store\"))) || ( (datum.facet_by_field == brushed_facet_value[1]) && inrange(datum[xField], data(\"brush_store\")[0].intervals.x.extent) && inrange(datum[yField], data(\"brush_store\")[0].intervals.y.extent) )",
                   "scale": "color",
                   "field": {"signal": "colorBy"}
@@ -692,8 +703,7 @@ const facetClonalFamiliesVizSpec = () => {
             "update": {
               "x": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_x[0]"
                 },
                 {
@@ -702,8 +712,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_y[0]"
                 },
                 {
@@ -712,8 +721,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "x2": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_x[1]"
                 },
                 {
@@ -722,8 +730,7 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               "y2": [
                 {
-                  // "test": "data(\"brush_store\").length && data(\"brush_store\")[0].cell === \"child\" + '_' + (facet[facet_by_signal])",
-                  "test": "brush_test && facet_test",
+                  "test": "brush_test",
                   "signal": "brush_y[1]"
                 },
                 {
