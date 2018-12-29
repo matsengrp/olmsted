@@ -1,11 +1,12 @@
 ### App specific ###
 /dist/
-big_flu
 /data/
+/deploy/
 /releases/
 server.dist.js
 /static/
 s3/
+/scratch/
 
 ### OSX ###
 .DS_Store
@@ -13,4 +14,3 @@ s3/
 ### npm ###
 node_modules/
 npm-debug.log
-deploy
