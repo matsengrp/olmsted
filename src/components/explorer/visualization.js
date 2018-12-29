@@ -105,6 +105,7 @@ const NaiveSequence = ({datum}) => {
   {
     selectFamily: explorerActions.selectFamily,
     updateBrushSelection: explorerActions.updateBrushSelection,
+    filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
 
@@ -190,7 +191,9 @@ class ClonalFamiliesViz extends React.Component {
         onSignalBrushed_facet_value={(...args) => {
           let keyVal = args.slice(1)[0]
           if(keyVal){
-            this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+            // console.log(keyVal)
+            // this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+            this.props.filterBrushSelection(keyVal[0], keyVal[1])
           }
         }}
         onParseError={(...args) => console.error("parse error:", args)}

@@ -39,21 +39,28 @@ const clonalFamilies = (state = {
       return Object.assign({}, state, {
         brushSelecting: !state.brushSelecting
       });
+    } case types.FILTER_BRUSH_SELECTION: { 
+      let brushDelta = {filter: {fieldName: action.key, range: action.value}}
+      let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
+
+      let new_pagination = Object.assign({}, state.pagination, {
+        page: 0
+      });
+      // console.log("adding filter", new_brushSelection)
+      return Object.assign({}, state, {
+        brushSelection: new_brushSelection,
+        pagination: new_pagination
+      });
     } case types.UPDATE_BRUSH_SELECTION: { 
-      // the updatedBrushData is an array of [brush_<attr-name>, [range_x0, range_x1]]
+      // the updatedBrushData is an array of [<axis>, brush_<attr-name>, [range_x0, range_x1]]
       let attr = action.updatedBrushData[1] //.replace("brush_", "")
       let range
       // if no brush selection has been made or if brush has been unselected, range will be undefined
-      if (action.updatedBrushData[2]) {
+      if (action.updatedBrushData[2] && action.updatedBrushData[2].length) {
         // if we have a range, first slice so that we get a copy (important or weird state bugs crop up with
         // vega), and then sort so that we have range in canonical order
         range = action.updatedBrushData[2].slice(0)
         range = _.sortBy(range)
-      } else if (action.updatedBrushData[0] == "filter") {
-        range = action.updatedBrushData[2]
-      } else {
-        // otherwise leave undefined, to trigger select all in selectors.clonalFamilies.checkBrushSelection
-        range = undefined
       }
 
       // define new brushselection
@@ -72,7 +79,7 @@ const clonalFamilies = (state = {
       let new_pagination = Object.assign({}, state.pagination, {
         page: 0
       });
-      console.log(new_brushSelection)
+      // console.log("adding brush", new_brushSelection)
       return Object.assign({}, state, {
         brushSelection: new_brushSelection,
         pagination: new_pagination

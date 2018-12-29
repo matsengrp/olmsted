@@ -27,6 +27,9 @@ export const updateBrushSelection = (dim, attr, data) => {
     let updateBrushData = [dim, attr, data]
     return {type: types.UPDATE_BRUSH_SELECTION, updatedBrushData: updateBrushData}}
 
+export const filterBrushSelection = (key, value) => {
+  return {type: types.FILTER_BRUSH_SELECTION, key, value}}
+
 export const updateFacet = (facetByField) => {
   return {type: types.UPDATE_FACET, facetByField}}
 
