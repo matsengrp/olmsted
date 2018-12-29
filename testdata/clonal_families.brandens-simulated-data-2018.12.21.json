@@ -1,0 +1,203 @@
+[
+    {
+        "dataset": {
+            "ident": "f39396f1-18fc-341b-874c-b285eb2f88c7", 
+            "id": "brandens-simulated-data-2018.12.21"
+        }, 
+        "sample": {
+            "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
+            "id": "out_f1", 
+            "timepoint": null
+        }, 
+        "seed": null, 
+        "j_end": null, 
+        "j_gene": null, 
+        "id": "clust-2", 
+        "d_start": null, 
+        "size": 1105, 
+        "n_seqs": null, 
+        "naive_seq": null, 
+        "cdr3_length": null, 
+        "j_start": null, 
+        "d_end": null, 
+        "n_sampled_seqs": null, 
+        "j_per_gene_support": [], 
+        "subject": {
+            "ident": "89a89996-f605-31e1-ac2f-77d61c66ef24", 
+            "id": "None"
+        }, 
+        "type": "cft.cluster", 
+        "v_start": null, 
+        "v_gene": null, 
+        "reconstructions": [
+            {
+                "ident": "efb22038-4f08-3bad-a12c-9653f0aac971", 
+                "prune_count": 100, 
+                "asr_tree": {
+                    "sources": [
+                        "c40d3d90-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40d43ee-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40d40d8-055c-11e9-ab77-cf30b3e4c75a"
+                    ], 
+                    "path": "None/out_f1/unseeded-part-0/clust-2/min_adcl-dnaml/asr.nwk", 
+                    "ident": "04f2b16f-a6ee-36c2-9fb6-5633c9271f72", 
+                    "error": [
+                        "[Errno 2] No such file or directory: 'output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-2/min_adcl-dnaml/asr.nwk'"
+                    ]
+                }, 
+                "prune_strategy": "min_adcl", 
+                "type": "cft.reconstruction", 
+                "id": "min_adcl-dnaml"
+            }
+        ], 
+        "has_seed": null, 
+        "d_per_gene_support": [], 
+        "ident": "861c5d26-50ca-3f28-8d8c-e3ce37c7255f", 
+        "v_end": null, 
+        "partition": {
+            "step": 0, 
+            "ident": "1b147676-206d-35ff-9eda-9932bc54150b", 
+            "logprob": -3302757.8756737825, 
+            "id": "unseeded-part-0"
+        }, 
+        "v_per_gene_support": [], 
+        "sorted_index": 2, 
+        "mean_mut_freq": null, 
+        "d_gene": null, 
+        "cdr3_start": null
+    }, 
+    {
+        "dataset": {
+            "ident": "f39396f1-18fc-341b-874c-b285eb2f88c7", 
+            "id": "brandens-simulated-data-2018.12.21"
+        }, 
+        "sample": {
+            "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
+            "id": "out_f1", 
+            "timepoint": null
+        }, 
+        "seed": null, 
+        "j_end": null, 
+        "j_gene": null, 
+        "id": "clust-0", 
+        "d_start": null, 
+        "size": 1210, 
+        "n_seqs": null, 
+        "naive_seq": null, 
+        "cdr3_length": null, 
+        "j_start": null, 
+        "d_end": null, 
+        "n_sampled_seqs": null, 
+        "j_per_gene_support": [], 
+        "subject": {
+            "ident": "89a89996-f605-31e1-ac2f-77d61c66ef24", 
+            "id": "None"
+        }, 
+        "type": "cft.cluster", 
+        "v_start": null, 
+        "v_gene": null, 
+        "reconstructions": [
+            {
+                "ident": "4f17841c-e31d-3d17-9eb0-1ca31018453a", 
+                "prune_count": 100, 
+                "asr_tree": {
+                    "sources": [
+                        "c40c37b0-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40c3b34-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40c3e54-055c-11e9-ab77-cf30b3e4c75a"
+                    ], 
+                    "path": "None/out_f1/unseeded-part-0/clust-0/min_adcl-dnaml/asr.nwk", 
+                    "ident": "cece0724-0123-366d-9009-769a481fb708", 
+                    "error": [
+                        "[Errno 2] No such file or directory: 'output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-0/min_adcl-dnaml/asr.nwk'"
+                    ]
+                }, 
+                "prune_strategy": "min_adcl", 
+                "type": "cft.reconstruction", 
+                "id": "min_adcl-dnaml"
+            }
+        ], 
+        "has_seed": null, 
+        "d_per_gene_support": [], 
+        "ident": "72134b80-3785-38ce-aad6-117ad36bb2d2", 
+        "v_end": null, 
+        "partition": {
+            "step": 0, 
+            "ident": "1b147676-206d-35ff-9eda-9932bc54150b", 
+            "logprob": -3302757.8756737825, 
+            "id": "unseeded-part-0"
+        }, 
+        "v_per_gene_support": [], 
+        "sorted_index": 0, 
+        "mean_mut_freq": null, 
+        "d_gene": null, 
+        "cdr3_start": null
+    }, 
+    {
+        "dataset": {
+            "ident": "f39396f1-18fc-341b-874c-b285eb2f88c7", 
+            "id": "brandens-simulated-data-2018.12.21"
+        }, 
+        "sample": {
+            "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
+            "id": "out_f1", 
+            "timepoint": null
+        }, 
+        "seed": null, 
+        "j_end": null, 
+        "j_gene": null, 
+        "id": "clust-1", 
+        "d_start": null, 
+        "size": 1143, 
+        "n_seqs": null, 
+        "naive_seq": null, 
+        "cdr3_length": null, 
+        "j_start": null, 
+        "d_end": null, 
+        "n_sampled_seqs": null, 
+        "j_per_gene_support": [], 
+        "subject": {
+            "ident": "89a89996-f605-31e1-ac2f-77d61c66ef24", 
+            "id": "None"
+        }, 
+        "type": "cft.cluster", 
+        "v_start": null, 
+        "v_gene": null, 
+        "reconstructions": [
+            {
+                "ident": "fac5799e-6a07-334f-bf60-6d0d5fdcd292", 
+                "prune_count": 100, 
+                "asr_tree": {
+                    "sources": [
+                        "c40cbe88-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40cb85c-055c-11e9-ab77-cf30b3e4c75a", 
+                        "c40cbb72-055c-11e9-ab77-cf30b3e4c75a"
+                    ], 
+                    "path": "None/out_f1/unseeded-part-0/clust-1/min_adcl-dnaml/asr.nwk", 
+                    "ident": "8bcce165-4e62-3ce1-9f57-5112f5beb3ae", 
+                    "error": [
+                        "[Errno 2] No such file or directory: 'output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-1/min_adcl-dnaml/asr.nwk'"
+                    ]
+                }, 
+                "prune_strategy": "min_adcl", 
+                "type": "cft.reconstruction", 
+                "id": "min_adcl-dnaml"
+            }
+        ], 
+        "has_seed": null, 
+        "d_per_gene_support": [], 
+        "ident": "a5ee2c0d-cb72-33a2-92a9-135f3ec8d3dc", 
+        "v_end": null, 
+        "partition": {
+            "step": 0, 
+            "ident": "1b147676-206d-35ff-9eda-9932bc54150b", 
+            "logprob": -3302757.8756737825, 
+            "id": "unseeded-part-0"
+        }, 
+        "v_per_gene_support": [], 
+        "sorted_index": 1, 
+        "mean_mut_freq": null, 
+        "d_gene": null, 
+        "cdr3_start": null
+    }
+]
