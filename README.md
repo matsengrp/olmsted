@@ -43,6 +43,12 @@ npm install
 sudo npm install
 ```
 
+You may also need to install libcairo
+
+```
+sudo apt-get install libcairo2 libcairo2-dev
+```
+
 You can then run Olmsted locally with `npm start localData`, and open a browser to [http://localhost:4000](http://localhost:4000/).
 
 
