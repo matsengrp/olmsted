@@ -3,6 +3,7 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
+import * as vega from 'vega';
 import {createClassFromSpec} from 'react-vega';
 import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
@@ -191,13 +192,12 @@ class ClonalFamiliesViz extends React.Component {
         onSignalBrushed_facet_value={(...args) => {
           let keyVal = args.slice(1)[0]
           if(keyVal){
-            // console.log(keyVal)
-            // this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
             this.props.filterBrushSelection(keyVal[0], keyVal[1])
           }
         }}
         onParseError={(...args) => console.error("parse error:", args)}
         debug={/* true for debugging */ true}
+        // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
         data={{source: this.props.availableClonalFamilies,
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 
