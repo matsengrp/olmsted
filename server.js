@@ -2,7 +2,6 @@
 const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
-const charon = require("./src/server/charon");
 const globals = require("./src/server/globals");
 var exec = require('exec');
 
@@ -64,7 +63,7 @@ if (devServer) {
   }));
 
   // Change this to zip data instead of dist
-  app.use("/charon", expressStaticGzip("data", options));
+  app.use("/data", expressStaticGzip("data", options));
   app.use(express.static(path.join(__dirname, "dist")));
 
 } else {
@@ -80,7 +79,6 @@ app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
 
-// charon.applyCharonToApp(app);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
