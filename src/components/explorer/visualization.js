@@ -3,6 +3,7 @@ import React from "react";
 import Vega from 'react-vega';
 import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
+import * as vega from 'vega';
 import {createClassFromSpec} from 'react-vega';
 import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
 import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
@@ -105,6 +106,7 @@ const NaiveSequence = ({datum}) => {
   {
     selectFamily: explorerActions.selectFamily,
     updateBrushSelection: explorerActions.updateBrushSelection,
+    filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
 
@@ -120,7 +122,6 @@ class ClonalFamiliesViz extends React.Component {
 
   render() {
     return  <div>
-      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
         {this.props.availableClonalFamilies.length > 0 && <Vega
         // TURN THESE ON TO DEBUG SIGNALS
@@ -190,11 +191,12 @@ class ClonalFamiliesViz extends React.Component {
         onSignalBrushed_facet_value={(...args) => {
           let keyVal = args.slice(1)[0]
           if(keyVal){
-            this.props.updateBrushSelection("filter", keyVal[0], keyVal[1])
+            this.props.filterBrushSelection(keyVal[0], keyVal[1])
           }
         }}
         onParseError={(...args) => console.error("parse error:", args)}
         debug={/* true for debugging */ true}
+        // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
         data={{source: this.props.availableClonalFamilies,
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 

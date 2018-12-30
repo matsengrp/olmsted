@@ -163,21 +163,26 @@ const concatTreeWithAlignmentSpec = () => {
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
         {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"},
-        {"name": "leaf_pies", "transform": [{ "type": "flatten", "fields": ["timepoint_multiplicities"]},
+        {"name": "leaf_pies", "transform": [
+                                            // Make these depend on the cluster multiplicity vs multiplicity dropdown signal
+                                            // so as to update the pie chart values according to the appropriate timepoint mults
+                                            { "type": "formula", "expr": "leaf_size_by == 'cluster_multiplicity' ? datum['cluster_timepoint_multiplicities'] : datum['timepoint_multiplicities']", "as": "timepoint_mult_data"},
+                                            { "type": "flatten", "fields": ["timepoint_mult_data"]},
                                             {
                                               "type": "formula",
-                                              "expr": "datum.timepoint_multiplicities.timepoint", "as": "timepoint_multiplicity_key"
+                                              "expr": "datum.timepoint_mult_data.timepoint", "as": "timepoint_multiplicity_key"
                                             },
                                             {
                                               "type": "formula",
-                                              "expr": "datum.timepoint_multiplicities.multiplicity", "as": "timepoint_multiplicity_value"
+                                              "expr": "datum.timepoint_mult_data.multiplicity", "as": "timepoint_multiplicity_value"
                                             },
                                             {
                                               "type": "pie",
                                               "field": "timepoint_multiplicity_value",
                                               "startAngle": 0,
                                               "endAngle": {"signal": "length(data('leaves'))*6.29"}
-                                            }],
+                                            }
+                                          ],
           "source": "leaves"},
         // Mutations Data
         {
@@ -273,8 +278,8 @@ const concatTreeWithAlignmentSpec = () => {
         },
         {
           "name": "tree_group_width_ratio",
-          "value": 0.5,
-          "bind": {"name": "Tree width to alignment ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
+          "value": 0.3,
+          "bind": {"name": "Tree width ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
         },
         {
           "name": "tree_group_width",

@@ -36,7 +36,8 @@ class Table extends React.Component {
           <div className="grid-container"
                style={{gridTemplateColumns: templateColumnsStyle,
                        gridTemplateAreas: "\"" + "controls ".repeat(nCols) + "\"",
-                       maxWidth: nCols*80 + 400
+                       maxWidth: nCols*80 + 400,
+                       fontSize: 12
                }}>
             {/* Pagination controls */}
             <div className="grid-item pagination-controls" style={{gridArea: "controls"}}>
@@ -50,8 +51,7 @@ class Table extends React.Component {
                 let sorting_arrow = this.props.pagination.desc ? ' \u25BC' : ' \u25B2'
                 name = name + sorting_arrow
               }
-              let style = is_sorting ? {fontSize:  "12px", fontWeight: "bold"} : {}
-
+              let style = is_sorting ? {fontSize:  14, fontWeight: "bold"} : {fontSize: 13}
               // check to make sure its an attribute so we can sort by it (onclick)
               let isAttr = ((typeof AttrOrComponent) == "string");
               // set to click cursor if we can sort on it
@@ -72,6 +72,7 @@ class Table extends React.Component {
                 let isAttr = ((typeof AttrOrComponent) == "string")
                 let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
                 let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
+                style = Object.assign(style, {padding: 3})
                 return <div className="grid-item" key={key} style={style}>
                   {isAttr ?
                     <div style={{marginTop: 5, marginBottom: 5}}>{String(_.get(datum, AttrOrComponent))}</div> :
