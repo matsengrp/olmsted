@@ -24,6 +24,23 @@ html, body, #root, [data-reactid=".0"] {
   margin: 0;
   height: 100%;
   position: relative;
+  font-size: 11pt;
+}
+
+
+div.vega-bindings {
+  font-size: 10pt;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div.vega-bindings div.vega-bind {
+  padding: 10px;
+  width: 330px;
+}
+div.vega-bindings div.vega-bind .vega-bind-name {
+  margin-right: 5px;
+  width: 100%;
 }
 
 /*

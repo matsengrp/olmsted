@@ -74,7 +74,7 @@ const applyFilters = (data, brushSelection) => {
   return data
 }
 
-const getBrushedClonalFamilies = createDeepEqualSelector(
+export const getBrushedClonalFamilies = createDeepEqualSelector(
   [getAvailableClonalFamilies, getBrushSelection],
   (availableClonalFamilies, brushSelection) => {
     return applyFilters(availableClonalFamilies, brushSelection)

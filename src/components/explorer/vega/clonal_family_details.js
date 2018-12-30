@@ -278,8 +278,8 @@ const concatTreeWithAlignmentSpec = () => {
         },
         {
           "name": "tree_group_width_ratio",
-          "value": 0.5,
-          "bind": {"name": "Tree width to alignment ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
+          "value": 0.3,
+          "bind": {"name": "Tree width ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
         },
         {
           "name": "tree_group_width",

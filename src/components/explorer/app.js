@@ -9,6 +9,7 @@ import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
+import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -29,18 +30,41 @@ const tableStyle = {marginBottom: 20, overflow:'auto'};
 
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
-const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
 
+const mapStateToProps = (state) => {
+    let nClonalFamiliesBrushed = getBrushedClonalFamilies(state).length
+    return {
+      nClonalFamiliesBrushed: nClonalFamiliesBrushed
+    }
+}
+
+@connect(mapStateToProps, {})
+class SelectedFamiliesSummary extends React.Component {
+  render () {
+    return (
+      <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
+
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
   return (
     <div>
       <div style={usableWidthStyle(availableWidth)}>
         <div style={sectionStyle}>
-          <h2>Clonal Families</h2>
+          <h2>Datasets</h2>
+          <p>You have the following datasets loaded:</p>
           <LoadingTable datasets={availableDatasets}/>
+        </div>
+
+        <div style={sectionStyle}>
+          <h2>Clonal Families</h2>
+          <p>Click and drag on the visualization below to see more information about the selected clonal families.
+             Also note that at the bottom of the visualization you can control several aspects of the plot, such as x & y axes, color & shape mappings, and facet field.</p>
+          <SelectedFamiliesSummary/>
           <viz.ClonalFamiliesViz/>
         </div>
+
         <div style={{paddingBottom: 40}}>
           <h2>Selected clonal families:</h2>
+          <p>Below are the clonal families selected in the scatterplot above.</p>
           <div style={tableStyle}>
               <ClonalFamiliesTable/>
           </div>
