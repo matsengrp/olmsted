@@ -10,9 +10,12 @@ from ete3 import PhyloTree
 import functools as fun
 import os
 
+
+default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
+
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-S', '--schema', default='schema.json')
+    parser.add_argument('-S', '--schema', default=default_schema_path)
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-o', '--data-outdir')
@@ -46,6 +49,19 @@ def clean_record(d):
         return d
 
 
+def spy(x):
+    print("debugging:", x)
+    return x
+
+def lspy(xs):
+    xs_ = list(xs)
+    print("debugging listable:", xs_)
+    return xs_
+
+def nospy(xs):
+    return xs
+
+
 # Pulling datasets information out
 
 datasets_pull_pattern = [
@@ -67,12 +83,26 @@ def clean_dataset_record(d):
     return d
 
 def pull_datasets(t):
+    records = t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'})
+    #import pdb; pdb.set_trace()
     records = list(t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'}))
     return map(comp(clean_record, clean_dataset_record), records)
 
 
 # Pulling clonal families information out
 
+sequence_pull_pattern = [
+    "*",
+    "bio.seq:id",
+    "cft.seq:timepoint",
+    "cft.seq:timepoints",
+    "cft.seq:cluster_timepoints",
+    "cft.seq:multiplicity",
+    "cft.seq:cluster_multiplicity",
+    "cft.seq:timepoint_multiplicities",
+    "cft.seq:cluster_timepoint_multiplicities",
+    "cft.tree.node:lbi",
+    "cft.tree.node:lbr"]
 
 reconstruction_pull_pattern = [
     "db:ident",
@@ -81,7 +111,7 @@ reconstruction_pull_pattern = [
     "cft.reconstruction:prune_strategy",
     "cft.reconstruction:prune_count",
     "cft.reconstruction:prune_count",
-    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity"]}],
+    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": sequence_pull_pattern}],
 # comment this in and make necessary changes to properly read out timepoint multiplicity metadata when we can for #56
 #    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity", "cft.seq:timepoints", "cft.seq:timepoint_multiplicities"]}],
      "cft.reconstruction:cluster_aa": [{"bio.seq:set": ["*"]}],
@@ -145,6 +175,13 @@ def try_del(d, attr):
     except Exception:
         pass
 
+def listof(xs_str, f=lambda x: x):
+    return map(f, xs_str.split(':'))
+
+def listofint(xs_str):
+    return listof(xs_str, int)
+
+
 def parse_tree_data(args, c):
     # create a phylo tree object
     newick_tree = c['cft.reconstruction:asr_tree']['tripl.file:contents']
@@ -157,67 +194,73 @@ def parse_tree_data(args, c):
 
     # Note that this function is impure; it's mutable over leaves_counter and the internal nodes
     leaves_counter = {'count': 1}
-    def process_node(n):
-        n.label = n.id = n.name
-        n.nt_seq = nt_seqs_dict[n.name]
-        n.aa_seq = aa_seqs_dict[n.name]
-        mult = None
-        clust_mult = None
-        # change this (and the next few commented out bits) to get the array of timepoint multiplicity objects from the seqmeta dict for #56 
-        #timepoint_mults = None
-        if n.name in seqmeta_dict.keys():
-            #timepoint_mults = seqmeta_dict[n.name]["cft.seq:multiplicities"]
-            mult = seqmeta_dict[n.name]["cft.seq:multiplicity"]
-            clust_mult = seqmeta_dict[n.name]["cft.seq:cluster_multiplicity"]
-        n.multiplicity = int(mult) if mult else mult
-        n.cluster_multiplicity = int(clust_mult) if clust_mult else clust_mult
-        #n.timepoint_multiplicities = int(timepoint_mults) if timepoint_mults else timepoint_mults
-        n.type = "node"
-        if n.is_leaf():
+    def process_node(node):
+        node.label = node.id = node.name
+        node.nt_seq = nt_seqs_dict[node.name]
+        node.aa_seq = aa_seqs_dict[node.name]
+        for attr, parser in [
+                ['cft.seq:multiplicity', int],
+                ['cft.seq:timepoint_multiplicities', listofint],
+                ['cft.seq:cluster_multiplicity', int],
+                ['cft.seq:cluster_timepoint_multiplicities', listofint],
+                ['cft.seq:timepoint', None],
+                ['cft.seq:timepoints', listof],
+                ['cft.seq:cluster_timepoints', listof],
+                ['cft.tree.node:lbi', float],
+                ['cft.tree.node:lbr', float]]:
+            seqmeta = seqmeta_dict.get(node.name, {})
+            node.__dict__[attr.split(':')[1]] = (parser or (lambda x: x))(seqmeta.get(attr)) if seqmeta.get(attr) else None
+        node.type = "node"
+        if node.is_leaf():
             # get height for leaves
-            n.type = "leaf"
-            n.height = leaves_counter['count']
+            node.type = "leaf"
+            node.height = leaves_counter['count']
             leaves_counter['count'] += 1
         else:
             # get height for non leaves
             total_height = 0
-            for child in n.children:
+            for child in node.children:
                 total_height += child.height
-            avg_height = total_height/len(n.children)
-            n.height = avg_height
-        if n.up:
+            avg_height = total_height/len(node.children)
+            node.height = avg_height
+        if node.up:
             # get parent info, distance for non root
-            n.parent = n.up.name
-            n.length = n.get_distance(n.up)
+            node.parent = node.up.name
+            node.length = node.get_distance(node.up)
             try:
-                n.distance = n.get_distance(args.inferred_naive_name)
+                node.distance = node.get_distance(args.inferred_naive_name)
             except Exception as e:
                 if args.verbose:
                     warnings.warn("Unable to compute distance to naive '" + str(args.inferred_naive_name) + "' in file " + newick_tree_path)
                     print("newick tree:", newick_tree)
                 raise e
         else:
-            # n is root
-            n.type = "root"
-            n.parent = None
-            n.length = 0.0
-            n.distance = 0.0
-        return ({'id': n.id,
-                 'label': n.label,
-                 'type': n.type,
-                 'parent': n.parent,
-                 'length': n.length,
-                 'distance': n.distance,
-                 'height': n.height,
-                 'nt_seq': n.nt_seq,
-                 'aa_seq': n.aa_seq,
-                 'multiplicity': n.multiplicity,
-                 'cluster_multiplicity': n.cluster_multiplicity,
+            # node is root
+            node.type = "root"
+            node.parent = None
+            node.length = 0.0
+            node.distance = 0.0
+        node = node
+        #import pdb; pdb.set_trace()
+        return ({'id': node.id,
+                 'label': node.label,
+                 'type': node.type,
+                 'parent': node.parent,
+                 'length': node.length,
+                 'distance': node.distance,
+                 'height': node.height,
+                 'nt_seq': node.nt_seq,
+                 'aa_seq': node.aa_seq,
+                 'lbi': node.lbi,
+                 'lbr': node.lbr,
+                 'timepoint': node.timepoint,
+                 'multiplicity': node.multiplicity,
+                 'cluster_multiplicity': node.cluster_multiplicity,
                  # change this to real list of key value objects for timepoint multiplicities for #56
-                 'timepoint_multiplicities': [
-                                              {'timepoint':'test', 'multiplicity':7}, 
-                                              {'timepoint':'test2', 'multiplicity':13}
-                                             ]
+                 'timepoint_multiplicities': [{'timepoint': t, 'multiplicity': m} for t, m in
+                     zip(node.timepoints or [], node.timepoint_multiplicities or [])],
+                 'cluster_timepoint_multiplicities': [{'timepoint': t, 'multiplicity': m} for t, m in
+                     zip(node.cluster_timepoints or [], node.cluster_timepoint_multiplicities or [])]
               })
 
     # map through and process the nodes
@@ -225,6 +268,7 @@ def parse_tree_data(args, c):
 
 def clean_reconstruction_record(args, d):
     c = d.copy()
+    #import pdb; pdb.set_trace()
     if c['cft.reconstruction:asr_tree'].get('tripl.file:contents'):
         c['cft.reconstruction:newick_string'] = c['cft.reconstruction:asr_tree']['tripl.file:contents']
         c['cft.reconstruction:asr_tree'] = parse_tree_data(args, c)
@@ -244,11 +288,13 @@ def clean_clonal_family_record(args, d):
     except Exception as e:
         if args.verbose:
             warnings.warn("Failed to process cluster: " + str(d.get('db:ident')))
+        #raise e
         return None
 
 def pull_clonal_families(args, t):
     result = map(comp(clean_record, fun.partial(clean_clonal_family_record, args)),
-            t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.cluster'}))
+            nospy(t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.cluster'})))
+    #import pdb; pdb.set_trace()
     bad_families = filter(lambda c: not c, result)
     good_families = filter(None, result)
     if bad_families:
@@ -285,10 +331,12 @@ def main():
         t = tripl.TripleStore.loads([args.schema, infile])
         try:
             if args.data_outdir:
-                datasets += pull_datasets(t)
+                file_datasets = pull_datasets(t)
+                assert len(file_datasets) == 1, "Must have exactly one dataset per file (for now); instead had %s" % len(file_datasets)
+                dataset = file_datasets[0]
+                datasets.append(dataset)
                 clonal_families = pull_clonal_families(args, t)
-                dataset = clonal_families[0]['dataset']['id']
-                clonal_families_dict[dataset] = clonal_families
+                clonal_families_dict[dataset['id']] = clonal_families
         except Exception as e:
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
