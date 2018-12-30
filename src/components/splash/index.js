@@ -20,6 +20,11 @@ class Splash extends React.Component {
     return (
       <div style={{justifyContent: "space-around", display: "flex", marginRight: 50}}>
         <div className="static container">
+          <div style={{marginBottom: 35}}>
+            <Flex justifyContent="center">
+              <img alt="logo" src={require("../../images/olmsted.svg")}/>
+            </Flex>
+          </div>
           <Flex justifyContent="center">
             <Title/>
           </Flex>
