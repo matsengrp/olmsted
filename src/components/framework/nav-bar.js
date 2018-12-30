@@ -19,11 +19,10 @@ class NavBar extends React.Component {
   getStyles() {
     return {
       main: {
-        maxWidth: 960,
-        marginTop: "auto",
-        marginRight: "auto",
-        marginBottom: "auto",
-        marginLeft: "auto",
+        marginTop: "10px",
+        marginRight: "18px",
+        marginBottom: "10px",
+        marginLeft: "18px",
         height: 50,
         justifyContent: "space-between",
         alignItems: "center",
