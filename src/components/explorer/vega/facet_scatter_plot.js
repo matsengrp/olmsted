@@ -14,10 +14,9 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "brush_store",
       "on": [
-        // TODO: see brushed_facet_value TODOs below
-        // {"trigger": "brush_selection", "insert": "brush_selection", "remove": true},
-        {"trigger": "brush_store_trigger == 'insert'", "insert": "brush_selection", "remove": true},
-        {"trigger": "brush_store_trigger == 'remove'", "remove": true},
+        // single trigger version
+        {"trigger": "brush_selection", "insert": "brush_selection", "remove": true},
+        {"trigger": "facet_by_signal", "remove": true},
 
         // Use a pattern similar to this for #114
         // {"trigger": "!shift", "remove": true},
@@ -155,21 +154,15 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "brush_store_signal",
       "update": "data(\"brush_store\")"
     },
-     // TODO: just use one trigger, always replace the brush store 
-     // upon click or drag, updating the filter (facet or lack thereof)
-     // and the selection, respectively. Use brush store signal in place
-     // of brushed_facet_value, taking values from facetKey and facetValue 
-     // from brush store
-    {
-      "name": "brush_store_trigger",
-      "update": "brush_y_field && brush_x_field ? 'insert' : 'remove'"
-    },
     {
       "name": "brush_selection",
       "value": null
     },
     // Tracks the facet value of the group selected from
     {
+      // TODO (#118):  Use brush store signal in place
+     // of brushed_facet_value, taking values from facetKey and facetValue 
+     // from brush store
       "name": "brushed_facet_value", "value": null
     },
     // Tracks the cell (group mark) in which the user is interacting
@@ -338,7 +331,7 @@ const facetClonalFamiliesVizSpec = () => {
           "name": "brush_test",
           "update": "data(\"brush_store\").length && (local_facet_value !== \"none\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
         },
-        // TODO: use brush store and get rid of brushed_facet_value
+        // TODO (#118): use brush store and get rid of brushed_facet_value
         {
           "name": "brushed_facet_value", 
           "push": "outer",
@@ -412,7 +405,7 @@ const facetClonalFamiliesVizSpec = () => {
                 "events": {
                     "signal": "brush_scale_trigger"
                 },
-                "update": "[scale(\"x\", brush_x_field_nested[0]), scale(\"x\", brush_x_field_nested[1])]"
+                "update": "brush_x_field_nested ? [scale(\"x\", brush_x_field_nested[0]), scale(\"x\", brush_x_field_nested[1])] : null"
               },
               {
                 "events": {
@@ -496,7 +489,7 @@ const facetClonalFamiliesVizSpec = () => {
               "events": {
                   "signal": "brush_scale_trigger"
               },
-              "update": "[scale(\"y\", brush_y_field_nested[0]), scale(\"y\", brush_y_field_nested[1])]"
+              "update": "brush_y_field_nested ? [scale(\"y\", brush_y_field_nested[0]), scale(\"y\", brush_y_field_nested[1])] : null"
             },
             {
               "events": {
@@ -543,10 +536,10 @@ const facetClonalFamiliesVizSpec = () => {
           "on": [
             {
               "events": [
-                  {"signal": "brush_x_field_nested"},
-                  {"signal": "brush_y_field_nested"}
+                {"signal": "brush_x_field_nested"},
+                {"signal": "brush_y_field_nested"}
               ],
-              "update": "brush_x_field_nested && brush_y_field_nested ? {facetKey: facet_by_signal, facetValue: local_facet_value, intervals: { \"x\": { field: xField, extent: brush_x_field_nested },  \"y\": { field: yField, extent: brush_y_field_nested } }  } : null",
+              "update": "{facetKey: facet_by_signal, facetValue: local_facet_value, intervals: { \"x\": { field: xField, extent: brush_x_field_nested },  \"y\": { field: yField, extent: brush_y_field_nested } }  } ",
               "force": true
             }
           ]
@@ -672,12 +665,9 @@ const facetClonalFamiliesVizSpec = () => {
               },
               "stroke": [
                 {
-                  // TODO: use brush store and get rid of brushed_facet_value
-                  "test": "!(length(data(\"brush_store\"))) || ( (datum.facet_by_field == brushed_facet_value[1]) && inrange(datum[xField], data(\"brush_store\")[0].intervals.x.extent) && inrange(datum[yField], data(\"brush_store\")[0].intervals.y.extent) )",
                   "scale": "color",
                   "field": {"signal": "colorBy"}
                 },
-                {"value": "grey"}
               ],
               "shape": {
                   "scale": "shape",
