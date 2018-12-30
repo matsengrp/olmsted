@@ -1,13 +1,18 @@
 
+# Olmsted
+
+![tree logo](src/images/olmsted.svg)
+
 *After [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted), a tree-hugger considered the father of Landscape architecture*
+
 
 
 ## Introduction
 
 Olmsted is an open-source tool for visualizing and exploring the adaptive immune system.
 
-B-cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_) on an infectious agent, such as viruses or bacteria.
-Within the last several years, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us for the first time the ability to get a "birds eye view" of the adaptive immune system at a point in time.
+B-cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_) on a virus or bacteria.
+Within the last several years, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us the ability to get a "birds eye view" of the adaptive immune system at a point in time.
 
 Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored at multiple levels of detail.
 
