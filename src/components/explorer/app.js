@@ -56,17 +56,20 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
 
         <div style={sectionStyle}>
           <h2>Clonal Families</h2>
-          <p>Click and drag on the visualization below to see more information about the selected clonal families.
-             Also note that at the bottom of the visualization you can control several aspects of the plot, such as x & y axes, color & shape mappings, and facet field.</p>
+          <p>Each point below represent a clonal family.
+            Click and drag to select a set of clonal families for deeper investigation.
+            Color, shape and x & y axes can be controlled at the bottom of the plot.
+          </p>
           <SelectedFamiliesSummary/>
           <viz.ClonalFamiliesViz/>
         </div>
 
         <div style={{paddingBottom: 40}}>
           <h2>Selected clonal families:</h2>
-          <p>Below are the clonal families selected in the scatterplot above.</p>
+          <p>Below are the clonal families selected in the scatterplot above.
+             Click on a column in the table to update the ordering of rows in the table.</p>
           <div style={tableStyle}>
-              <ClonalFamiliesTable/>
+             <ClonalFamiliesTable/>
           </div>
         </div>
         { selectedFamily ?
