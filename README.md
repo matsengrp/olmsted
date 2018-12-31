@@ -41,7 +41,7 @@ When you do, the selection acts as a filter for the clonal families table.
 This table shows additional details about the selected clonal families, including a visual encoding of the gene rearrangement responsible for the clonal family's naive B-cell.
 You can also click on a column header of the table to sort by that column.
 
-![tree align view](docs/tree-align-view2.png)
+![tree align view](docs/clonal-families-table2.png)
 
 ### Tree and alignment view
 
