@@ -1,15 +1,61 @@
 
+# Olmsted
+
+![tree logo](src/images/olmsted.svg)
+
 *After [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted), a tree-hugger considered the father of Landscape architecture*
+
 
 
 ## Introduction
 
 Olmsted is an open-source tool for visualizing and exploring the adaptive immune system.
 
-B-cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_) on an infectious agent, such as viruses or bacteria.
-Within the last several years, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us for the first time the ability to get a "birds eye view" of the adaptive immune system at a point in time.
+B-cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_) on a virus or bacteria.
+Recently, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us an in depth snapshot of the adaptive immune system at a point in time.
 
-Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored at multiple levels of detail.
+Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored in depth, unlocking a birds eye view of this data.
+
+
+## The explorer view
+
+The explorer view breaks down into hierarchy of components which allow one drill down into details of the data.
+
+### Clonal family scatterplot
+
+The top level component in the explorer view is a scatterplot of all the clonal families in your selected datasets.
+The axes, color and symbol mappings are all customizable.
+
+![scatterplot](docs/scatterplot-viz.png)
+
+It's also possible to facet the visualization by a variable, which splits it up into separate panes, one for each value corresponding to the selected variable.
+For example, we might want to facet by subject to get a better sense of how trends compare between subjects
+
+![facet](docs/facet.png)
+
+### Clonal family table
+
+In the main clonal family scatterplot, you can click and drag to select a set of points in the plot.
+When you do, the selection acts as a filter for the clonal families table.
+
+This table shows additional details about the selected clonal families, including a visual encoding of the gene rearrangement responsible for the clonal family's naive B-cell.
+You can also click on a column header of the table to sort by that column.
+
+![tree align view](docs/clonal-families-table2.png)
+
+### Tree and alignment view
+
+Clicking on a row of the table presents further details about the clonal family, including a phylogenetic tree of select sequences from the family, and a visualization of the mutation patterns in the selected sequences.
+As with other visualizations in the application, the details of color and node size can be controlled.
+
+![tree align view](docs/tree-align-view.png)
+
+### Lineage view
+
+Clicking on a tip in the phylogenetic tree displays additional details about the series of mutations leading up to the sequence in question.
+
+![lineage view](docs/lineage-view.png)
+
 
 
 ## Data processing - Partis & CFT
@@ -21,7 +67,7 @@ CFT then takes those clonal families and builds phylogenetic trees for them (hen
 
 The process for getting data out of CFT and into Olmsted now is a script in `cft/bin/build_olmsted_data.py`, which takes the JSON files output by CFT and extracts several data files at the paths you specify.
 Olmsted will read in the files you specify at `olmsted/data/{datasets,clonal_families}.csv`.
-This flow will likely eventually be improved, but for now its what we got.
+This flow will likely eventually be improved, but for now let us know if you'd like help getting your data into Olmsted.
 
 
 ## Install
@@ -50,18 +96,6 @@ sudo apt-get install libcairo2 libcairo2-dev
 ```
 
 You can then run Olmsted locally with `npm start localData`, and open a browser to [http://localhost:4000](http://localhost:4000/).
-
-
-## The explorer view
-
-The top pane below is a high level scatterplot view of all the loaded clonal families.
-The axes are customizable, as is the color/symbol scheme.
-As you brush select a set of points in the plot, the selection acts as a filter on the table below.
-
-![image](https://user-images.githubusercontent.com/88556/44306337-593a6100-a341-11e8-864d-6cbd75dfb804.png)
-
-Clicking on a row of the table presents further details about the clonal family, including a phylogenetic tree of select sequences from the family, and a visualization of the mutation patterns in the selected sequences.
-All these plots will be highly configurable and interactive, and in particular, it will be possible to view the ancestral state reconstructions of the sequences at the internal nodes of the tree.
 
 
 ## Implementation notes

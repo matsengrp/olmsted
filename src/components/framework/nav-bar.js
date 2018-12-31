@@ -19,11 +19,10 @@ class NavBar extends React.Component {
   getStyles() {
     return {
       main: {
-        maxWidth: 960,
-        marginTop: "auto",
-        marginRight: "auto",
-        marginBottom: "auto",
-        marginLeft: "auto",
+        marginTop: "10px",
+        marginRight: "18px",
+        marginBottom: "20px",
+        marginLeft: "18px",
         height: 50,
         justifyContent: "space-between",
         alignItems: "center",
@@ -43,10 +42,11 @@ class NavBar extends React.Component {
         fontSize: this.props.minified ? 12 : 16
       },
       title: {
-        padding: "0px",
+        padding: "5px",
+        marginTop: 5,
         color: "#000",
         textDecoration: "none",
-        fontSize: 20,
+        fontSize: 27,
         fontWeight: 400,
         cursor: "pointer"
       },
@@ -85,7 +85,7 @@ class NavBar extends React.Component {
     return (
       <a style={styles.logo}
         onClick={(e) => this.props.dispatch(changePage({path: "splash"})) }>
-        <img alt="" width="40" src={require("../../images/olmsted_logo.png")}/>
+        <img alt="" width="50" src={require("../../images/olmsted_logo.png")}/>
       </a>
     );
   }

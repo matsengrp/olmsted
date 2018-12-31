@@ -122,7 +122,6 @@ class ClonalFamiliesViz extends React.Component {
 
   render() {
     return  <div>
-      <p>Click and drag on the visualization below to brush select a collection of clonal families for deeper investigation.</p>
         {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
         {this.props.availableClonalFamilies.length > 0 && <Vega
         // TURN THESE ON TO DEBUG SIGNALS
@@ -270,6 +269,11 @@ class TreeViz extends React.Component {
   render() {   
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
+            <p>
+              Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
+              On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
+              These sequences are ordered so as to align with the corresponding tree tips.
+            </p>
             <label>Ancestral reconstruction method: </label>
             <select value={this.props.treeNodes.ident}
               onChange={(event) => this.selectReconstruction(event.target.value)}>
