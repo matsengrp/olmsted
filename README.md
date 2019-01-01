@@ -25,7 +25,7 @@ The explorer view breaks down into a hierarchy of components which allow one dri
 
 When you first hit the application at it's root address, you'll be presented with a page where you can select data for exploration.
 
-![splash](docs/spash.png)
+![splash](docs/splash.png)
 
 Once selected, hitting "Explore" takes you to a page which encodes for the selected datasets:
 
