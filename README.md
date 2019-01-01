@@ -19,7 +19,17 @@ Olmsted combines powerful interactive data visualizations as part of an explorer
 
 ## The explorer view
 
-The explorer view breaks down into hierarchy of components which allow one drill down into details of the data.
+The explorer view breaks down into a hierarchy of components which allow one drill down into details of the data.
+
+### Datasets page
+
+When you first hit the application at it's root address, you'll be presented with a page where you can select data for exploration.
+
+![splash](docs/spash.png)
+
+Once selected, hitting "Explore" takes you to a page which encodes for the selected datasets:
+
+<http://olmsted-deploy.s3-website-us-west-2.amazonaws.com/app?selectedDatasets=bf520-synth-v17-2018.12.21&selectedDatasets=kate-qrs-v17-2018.12.21&selectedDatasets=mg505-synth-v17-2018.12.21>
 
 ### Clonal family scatterplot
 
