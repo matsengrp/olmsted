@@ -76,12 +76,7 @@ export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push 
   if( chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets ){
     let queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets))
     // Tried to check to see that datasets were in the state before requesting them from server but they are 
-    // not loaded at this point in time..
-    // let notLoaded = new Set();
-    // console.log(state.datasets)
-    // state.datasets.availableDatasets.forEach((dataset) => {if(!dataset.loading){notLoaded.add(dataset.id)}})
-    // console.log(notLoaded)
-    // sets.intersection(notLoaded, queryStringDatasets)
+    // not necessarily loaded when this function is called; instead we should check this in a componentDidUpdate somewhere (Monitor)?
     queryStringDatasets.forEach( (id) => {
       dispatch({
         type: types.LOADING_DATASET,

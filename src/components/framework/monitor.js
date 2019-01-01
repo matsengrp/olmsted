@@ -8,6 +8,7 @@ import { getDatasets } from "../../actions/loadData";
 import { twoColumnBreakpoint } from "../../util/globals";
 
 @connect((state) => ({
+  datapath: state.datasets.datapath
 }))
 class Monitor extends React.Component {
   constructor(props) {
@@ -42,6 +43,13 @@ class Monitor extends React.Component {
     (or calling history.back() or history.forward() in JavaScript). */
     window.addEventListener('popstate', this.onURLChanged);
     // this.onURLChanged();
+  }
+
+  componentDidUpdate(prevProps) {
+    // Typical usage (don't forget to compare props):
+    if (this.props.datapath !== prevProps.datapath) {
+      this.onURLChanged();
+    }
   }
 
   onURLChanged = () => this.props.dispatch(browserBackForward());
