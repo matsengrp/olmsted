@@ -5,6 +5,7 @@ import { getDatapath, goTo404, chooseDisplayComponentFromPathname } from "./navi
 import { createStateFromQueryOrJSONs, createTreeTooState } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
 import { timerStart, timerEnd } from "../util/perf";
+import { browserBackForward } from "../actions/navigation";
 
 const charonErrorHandler = () => {
   console.warn("Failed to get manifest JSON from server");
@@ -69,7 +70,9 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     )
     
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, availableDatasets) :
+    // getDatapath(window.location.pathname, availableDatasets) :
+    
+    window.location.pathname + window.location.search:
       undefined;
     dispatch({
       type: types.DATASETS_RECEIVED,
@@ -78,6 +81,8 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
       user: "guest",
       datapath
     });
+
+    dispatch(browserBackForward())
 
   };
 
