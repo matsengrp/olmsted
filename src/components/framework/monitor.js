@@ -47,7 +47,7 @@ class Monitor extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
-    if (this.props.datapath !== prevProps.datapath) {
+    if (prevProps.datapath && this.props.datapath !== prevProps.datapath) {
       this.onURLChanged();
     }
   }
