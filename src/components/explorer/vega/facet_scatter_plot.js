@@ -203,9 +203,9 @@ const facetClonalFamiliesVizSpec = () => {
       "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"name": "Y variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "n_seqs"]} },
     { "name": "xField", "value": "n_seqs",
-       "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "size", "cdr3_length", "mean_mut_freq"]} },
+       "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject.id",
        "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
