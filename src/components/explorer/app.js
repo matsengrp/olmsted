@@ -10,6 +10,7 @@ import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
 import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
+import * as selectedFamilySelectors from "../../selectors/selectedFamily";
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -32,11 +33,11 @@ const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 
 const mapStateToProps = (state) => {
+    let selectedFamily = selectedFamilySelectors.getSelectedFamily(state)
     let nClonalFamiliesBrushed = getBrushedClonalFamilies(state).length
-    return {
-      nClonalFamiliesBrushed: nClonalFamiliesBrushed
-    }
+    return {selectedFamily, nClonalFamiliesBrushed}
 }
+
 
 @connect(mapStateToProps, {})
 class SelectedFamiliesSummary extends React.Component {
@@ -73,11 +74,9 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
           </div>
         </div>
         { selectedFamily ?
-           (selectedFamily.n_seqs ?
              <div style={sectionStyle}>
                <viz.TreeViz availableHeight={availableHeight}/>
              </div> :
-             <h3>Insufficient data to display clonal family: {selectedFamily.id}</h3>) :
           ""}
         {_.isEmpty(selectedSeq) ?
             "" :
