@@ -64,7 +64,7 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
           <viz.ClonalFamiliesViz/>
         </div>
 
-        <div style={{paddingBottom: 40}}>
+        <div style={{paddingBottom: 40, ...sectionStyle}}>
           <h2>Selected clonal families:</h2>
           <p>Below are the clonal families selected in the scatterplot above.
              Click on a column in the table to update the ordering of rows in the table.</p>
@@ -73,10 +73,12 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
           </div>
         </div>
         { selectedFamily ?
-            <div style={sectionStyle}>
-              <viz.TreeViz availableHeight={availableHeight}/>
-            </div> :
-            ""}
+           (selectedFamily.n_seqs ?
+             <div style={sectionStyle}>
+               <viz.TreeViz availableHeight={availableHeight}/>
+             </div> :
+             <h3>Insufficient data to display clonal family: {selectedFamily.id}</h3>) :
+          ""}
         {_.isEmpty(selectedSeq) ?
             "" :
             <div style={sectionStyle}>

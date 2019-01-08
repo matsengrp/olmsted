@@ -143,7 +143,7 @@ clonal_family_pull_pattern = [
       "cft.cluster:naive_seq",
       "cft.cluster:mean_mut_freq",
       {"cft.cluster:seed": ["db:ident", "cft.seed:id"],
-       "cft.cluster:sample": ["db:ident", "cft.sample:id", "cft.sample:timepoint"],
+       "cft.cluster:sample": ["db:ident", "cft.sample:id", "cft.sample:timepoint", "cft.sample:locus"],
        "cft.cluster:dataset": ["db:ident", "cft.dataset:id"],
        "cft.cluster:partition": ["db:ident", "cft.partition:id", "cft.partition:logprob", "cft.partition:step"],
        "cft.cluster:subject": ["db:ident", "cft.subject:id"],

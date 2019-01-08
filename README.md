@@ -29,7 +29,7 @@ When you first hit the application at it's root address, you'll be presented wit
 
 Once selected, hitting "Explore" takes you to a page which encodes for the selected datasets:
 
-<http://olmsted-deploy.s3-website-us-west-2.amazonaws.com/app?selectedDatasets=bf520-synth-v17-2018.12.21&selectedDatasets=kate-qrs-v17-2018.12.21&selectedDatasets=mg505-synth-v17-2018.12.21>
+<http://olmstedviz.org/app?selectedDatasets=bf520-synth-v17-2018.12.21&selectedDatasets=kate-qrs-v17-2018.12.21&selectedDatasets=mg505-synth-v17-2018.12.21>
 
 ### Clonal family scatterplot
 
