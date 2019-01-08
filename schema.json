@@ -91,7 +91,9 @@
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.partition:step",
    "db:cardinality": "db.cardinality:one"},
-
+ 
+  {"db:ident": "cft.sample:locus",
+   "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.sample:id",
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.dataset:id",
