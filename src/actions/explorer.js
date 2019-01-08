@@ -33,3 +33,9 @@ export const filterBrushSelection = (key, value) => {
 export const updateFacet = (facetByField) => {
   return {type: types.UPDATE_FACET, facetByField}}
 
+export const filterLocus = (locus) => {
+  return {type: types.FILTER_LOCUS, locus}}
+
+export const resetState = () => {
+  return {type: types.RESET_CLONAL_FAMILIES_STATE}}
+

@@ -5,9 +5,14 @@ const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
+  selectedReconstruction: undefined,
   selectedSeq: {},
-  allClonalFamilies: [],
+  clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  // EH:facet field is no longer required to update the spec but 
+  // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
+  facetByField: "none",
+  locus: "igh"
 }
 
 const clonalFamilies = (state = {
@@ -21,6 +26,7 @@ const clonalFamilies = (state = {
   // EH:facet field is no longer required to update the spec but 
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
+  locus: "igh"
 }, action) => {
   switch (action.type) {
     case types.RESET_CLONAL_FAMILIES_STATE: {
@@ -141,6 +147,10 @@ const clonalFamilies = (state = {
     } case types.UPDATE_FACET: {
       return Object.assign({}, state, {
         facetByField: action.facetByField
+      });
+    } case types.FILTER_LOCUS: {
+      return Object.assign({}, state, {
+        locus: action.locus,
       });
     } default: {
       return state;

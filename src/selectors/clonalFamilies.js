@@ -14,7 +14,9 @@ const getClonalFamiliesDict = (state) => state.clonalFamilies.clonalFamiliesDict
 
 const getDatasets = (state) => state.datasets.availableDatasets
 
-const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets) => {
+const getLocusFilter = (state) => state.clonalFamilies.locus
+
+const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets, locus) => {
   var availableClonalFamilies = []
   if(datasets.length > 0){ 
     _.forEach(datasets, (dataset) => {
@@ -22,12 +24,12 @@ const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets) => {
         availableClonalFamilies = availableClonalFamilies.concat(clonalFamiliesDict[dataset.id]) }
     })
   }
-  return availableClonalFamilies
+  return locus == "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, {"sample": {"locus": locus}})
 }
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(
-    [getClonalFamiliesDict, getDatasets],
-    (clonalFamiliesDict, datasets) => computeAvailableClonalFamilies(clonalFamiliesDict, datasets)
+    [getClonalFamiliesDict, getDatasets, getLocusFilter],
+    (clonalFamiliesDict, datasets, locus) => computeAvailableClonalFamilies(clonalFamiliesDict, datasets, locus)
 )
 
 // FILTER TABLE RESULTS BY BRUSH SELECTION

@@ -51,6 +51,11 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           "type": "formula",
+          "expr": "datum[\"sample\"] && datum[\"sample\"][\"locus\"]",
+          "as": "sample.locus"
+        },
+        {
+          "type": "formula",
           "expr": "datum[\"dataset\"] && datum[\"dataset\"][\"id\"]",
           "as": "dataset.id"
         },
@@ -200,16 +205,16 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "facet_by_signal",
       "value": "none",
-      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint"]}
+      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
       "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "n_seqs"]} },
     { "name": "xField", "value": "n_seqs",
        "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject.id",
-       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
-       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field",

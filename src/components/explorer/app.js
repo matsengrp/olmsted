@@ -10,6 +10,7 @@ import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
 import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
+import * as explorerActions from "../../actions/explorer";
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -44,7 +45,7 @@ class SelectedFamiliesSummary extends React.Component {
     return (
       <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
 
-const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight, locus, filterLocus, resetState}) => {
   return (
     <div>
       <div style={usableWidthStyle(availableWidth)}>
@@ -53,9 +54,17 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
           <p>You have the following datasets loaded:</p>
           <LoadingTable datasets={availableDatasets}/>
         </div>
-
         <div style={sectionStyle}>
           <h2>Clonal Families</h2>
+          <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
+          <select value={locus}
+              onChange={(event) => {
+                resetState()
+                filterLocus(event.target.value)
+                }}>
+              {['igh','igk','igl', 'ALL'].map( (locus) =>
+                <option key={locus} value={locus}>{locus}</option>)}
+          </select>
           <p>Each point below represent a clonal family.
             Click and drag to select a set of clonal families for deeper investigation.
             Color, shape and x & y axes can be controlled at the bottom of the plot.
@@ -102,7 +111,11 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
   availableDatasets: state.datasets.availableDatasets,
   selectedFamily: state.clonalFamilies.selectedFamily,
   selectedSeq: state.clonalFamilies.selectedSeq,
-}))
+  locus: state.clonalFamilies.locus
+}), {
+  filterLocus: explorerActions.filterLocus,
+  resetState: explorerActions.resetState
+})
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -175,6 +188,9 @@ class App extends React.Component {
           availableDatasets={this.props.availableDatasets}
           selectedFamily={this.props.selectedFamily}
           selectedSeq={this.props.selectedSeq}
+          filterLocus={this.props.filterLocus}
+          locus={this.props.locus}
+          resetState={this.props.resetState}
          />
         <Overlay
           styles={overlayStyles}
