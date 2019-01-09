@@ -15,24 +15,12 @@ const initialState = {
   locus: "igh"
 }
 
-const clonalFamilies = (state = {
-  brushSelecting: false,
-  brushSelection: undefined,
-  selectedFamily: undefined,
-  selectedReconstruction: undefined,
-  selectedSeq: {},
-  clonalFamiliesDict: {},
-  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-  // EH:facet field is no longer required to update the spec but 
-  // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
-  facetByField: "none",
-  locus: "igh"
-}, action) => {
+const clonalFamilies = (state = _.clone(initialState), action) => {
   switch (action.type) {
     case types.RESET_CLONAL_FAMILIES_STATE: {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
-      let reset_state = _.omit(initialState, 'clonalFamiliesDict')
+      let reset_state = _.omit(_.clone(initialState), 'clonalFamiliesDict')
       return Object.assign({}, state, reset_state);
     } case types.CLONAL_FAMILIES_RECEIVED: {
       let newClonalFamiliesDictEntry = {}
