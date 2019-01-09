@@ -46,6 +46,7 @@ class SelectedFamiliesSummary extends React.Component {
       <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
 
 const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight, locus, filterLocus, resetState}) => {
+  console.log(selectedFamily)
   return (
     <div>
       <div style={usableWidthStyle(availableWidth)}>
@@ -81,13 +82,10 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
              <ClonalFamiliesTable/>
           </div>
         </div>
-        { selectedFamily ?
-           (selectedFamily.n_seqs ?
+        { selectedFamily &&
              <div style={sectionStyle}>
                <viz.TreeViz availableHeight={availableHeight}/>
-             </div> :
-             <h3>Insufficient data to display clonal family: {selectedFamily.id}</h3>) :
-          ""}
+             </div> }
         {_.isEmpty(selectedSeq) ?
             "" :
             <div style={sectionStyle}>
