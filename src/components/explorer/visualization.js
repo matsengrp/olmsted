@@ -100,7 +100,8 @@ const NaiveSequence = ({datum}) => {
 
 @connect((state) => ({
     availableClonalFamilies: getAvailableClonalFamilies(state),
-    selectedFamily: state.clonalFamilies.selectedFamily
+    selectedFamily: state.clonalFamilies.selectedFamily,
+    locus: state.clonalFamilies.locus
   }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
@@ -109,7 +110,6 @@ const NaiveSequence = ({datum}) => {
     filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
-
   })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
@@ -201,7 +201,8 @@ class ClonalFamiliesViz extends React.Component {
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 
               // viz to highlight the selected family.
-              selected: [{'ident': this.props.selectedFamily}] }}
+              selected: [{'ident': this.props.selectedFamily}],
+              locus: [{'locus': this.props.locus}] }}
         spec={this.spec}/>}
     </div>
   }
@@ -266,7 +267,14 @@ class TreeViz extends React.Component {
     this.props.dispatchSelectedReconstruction(newReconId)
   }
 
-  render() {
+  render() {   
+    if (!this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions){
+      // TODO #94: We need to have a better way to tell if a family should not be
+      // displayed because its data are incomplete. One idea is an 'incomplete' field
+      // that we can set to true (upon building and checking for valid data) and have some
+      // minimum bit of information saying the error that occured and/or the field that was not built.
+      return <h3>Insufficient data to display clonal family: {this.props.selectedFamily.id}</h3>
+    }
     return <div>
             <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
             { this.props.selectedFamily.n_seqs ?

@@ -91,7 +91,9 @@
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.partition:step",
    "db:cardinality": "db.cardinality:one"},
-
+ 
+  {"db:ident": "cft.sample:locus",
+   "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.sample:id",
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.dataset:id",
@@ -146,10 +148,26 @@
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "bio.seq:seq",
    "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:timepoint",
+   "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:timepoints",
+   "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:cluster_timepoints",
+   "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.seq:multiplicity",
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.seq:cluster_multiplicity",
    "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:timepoint_multiplicities",
+   "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:cluster_timepoint_multiplicities",
+   "db:cardinality": "db.cardinality:one"},
+
+  {"db:ident": "cft.tree.node:lbi",
+   "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.tree.node:lbr",
+   "db:cardinality": "db.cardinality:one"},
+
 
   {"db:ident": "tripl.csv:data",
    "db:valueType": "db.type:ref",

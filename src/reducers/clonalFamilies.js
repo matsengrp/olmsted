@@ -5,15 +5,6 @@ const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
-  selectedSeq: {},
-  allClonalFamilies: [],
-  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
-}
-
-const clonalFamilies = (state = {
-  brushSelecting: false,
-  brushSelection: undefined,
-  selectedFamily: undefined,
   selectedReconstruction: undefined,
   selectedSeq: {},
   clonalFamiliesDict: {},
@@ -21,12 +12,15 @@ const clonalFamilies = (state = {
   // EH:facet field is no longer required to update the spec but 
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
-}, action) => {
+  locus: "igh"
+}
+
+const clonalFamilies = (state = _.clone(initialState), action) => {
   switch (action.type) {
     case types.RESET_CLONAL_FAMILIES_STATE: {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
-      let reset_state = _.omit(initialState, 'clonalFamiliesDict')
+      let reset_state = _.omit(_.clone(initialState), 'clonalFamiliesDict')
       return Object.assign({}, state, reset_state);
     } case types.CLONAL_FAMILIES_RECEIVED: {
       let newClonalFamiliesDictEntry = {}
@@ -141,6 +135,10 @@ const clonalFamilies = (state = {
     } case types.UPDATE_FACET: {
       return Object.assign({}, state, {
         facetByField: action.facetByField
+      });
+    } case types.FILTER_LOCUS: {
+      return Object.assign({}, state, {
+        locus: action.locus,
       });
     } default: {
       return state;

@@ -18,12 +18,14 @@ import {NaiveSequence} from './visualization';
       )
 class PaginationControls extends React.Component {
   render () {
+    let is_first_page = this.props.pagination.page == 0
+    let is_last_page = this.props.pagination.page == this.props.last_page
     return (
-      <span>
-        {this.props.pagination.page > 0 && <span style={{padding:10}}><a onClick={() => this.props.dispatchPageUp()}>{'\u25c0'}</a></span>}
+      <span className="non-selectable-text">
+        {<span style={{padding:10}}><a style={{color: is_first_page ? 'white': 'black'}} onClick={() => !is_first_page && this.props.dispatchPageUp()}>{'\u25c0'}</a></span>}
         {/* We compute page based on starting from 0 for our own sake, but for the user's sake we display it as if we start with 1*/}
         <span style={{padding:10}}>{`${this.props.pagination.page+1}/${this.props.last_page+1}`}</span>
-        {this.props.pagination.page !== this.props.last_page && <span style={{padding:10}}><a onClick={() => this.props.dispatchPageDown() }>{'\u25b6'}</a></span>}
+        {<span style={{padding:10}}><a style={{color: is_last_page ? 'white': 'black'}} onClick={() => !is_last_page && this.props.dispatchPageDown() }>{'\u25b6'}</a></span>}
       </span>)}}
 
 

@@ -12,6 +12,9 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "selected"
     },
     {
+      "name": "locus"
+    },
+    {
       "name": "brush_store",
       "on": [
         // single trigger version
@@ -48,6 +51,11 @@ const facetClonalFamiliesVizSpec = () => {
           "type": "formula",
           "expr": "datum[\"sample\"] && datum[\"sample\"][\"timepoint\"]",
           "as": "sample.timepoint"
+        },
+        {
+          "type": "formula",
+          "expr": "datum[\"sample\"] && datum[\"sample\"][\"locus\"]",
+          "as": "sample.locus"
         },
         {
           "type": "formula",
@@ -200,16 +208,16 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "facet_by_signal",
       "value": "none",
-      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint"]}
+      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
       "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "n_seqs"]} },
     { "name": "xField", "value": "n_seqs",
        "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject.id",
-       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint",
-       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed"]} },
+       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field",
@@ -229,6 +237,10 @@ const facetClonalFamiliesVizSpec = () => {
               "update": "null"
             }]
     },
+    {
+      "name": "locus", 
+      "update": "data(\"locus\")[0].locus"
+    }
   ],
   // LAYOUT
   "layout": {
@@ -338,10 +350,6 @@ const facetClonalFamiliesVizSpec = () => {
           "on": [
             {
               "events": "@cell:mousedown", "update": "[facet_by_signal, facet.facet_by_field]"
-            },
-            {
-              "events": "@cell:mouseup",
-              "update": "!span(brush_x) && !span(brush_y) ? null : brushed_facet_value"
             }
           ]
         },
@@ -414,9 +422,11 @@ const facetClonalFamiliesVizSpec = () => {
                 "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
               },
               {
-                "events": {
-                  "signal": "facet_by_signal"
-                },
+                "events": [
+                  {"signal": "facet_by_signal"},
+                  {"signal": "brushed_facet_value"},
+                  {"signal": "locus"}
+                ],
                 "update": "[]"
               }
           ]
@@ -498,9 +508,11 @@ const facetClonalFamiliesVizSpec = () => {
               "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
             },
             {
-              "events": {
-                "signal": "facet_by_signal"
-              },
+              "events": [
+                {"signal": "facet_by_signal"},
+                {"signal": "brushed_facet_value"},
+                {"signal": "locus"}
+              ],
               "update": "[]"
             }
           ]
