@@ -21,7 +21,7 @@ class PaginationControls extends React.Component {
     let is_first_page = this.props.pagination.page == 0
     let is_last_page = this.props.pagination.page == this.props.last_page
     return (
-      <span class="non-selectable-text">
+      <span className="non-selectable-text">
         {<span style={{padding:10}}><a style={{color: is_first_page ? 'white': 'black'}} onClick={() => !is_first_page && this.props.dispatchPageUp()}>{'\u25c0'}</a></span>}
         {/* We compute page based on starting from 0 for our own sake, but for the user's sake we display it as if we start with 1*/}
         <span style={{padding:10}}>{`${this.props.pagination.page+1}/${this.props.last_page+1}`}</span>
