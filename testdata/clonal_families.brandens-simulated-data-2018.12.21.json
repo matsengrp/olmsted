@@ -7,7 +7,8 @@
         "sample": {
             "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
             "id": "out_f1", 
-            "timepoint": null
+            "timepoint": null, 
+            "locus": "igh"
         }, 
         "seed": null, 
         "j_end": null, 
@@ -35,9 +36,9 @@
                 "prune_count": 100, 
                 "asr_tree": {
                     "sources": [
-                        "c40d3d90-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40d43ee-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40d40d8-055c-11e9-ab77-cf30b3e4c75a"
+                        "aba7919c-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba7897c-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba7996c-15f6-11e9-bab6-7121b1b0cb5f"
                     ], 
                     "path": "None/out_f1/unseeded-part-0/clust-2/min_adcl-dnaml/asr.nwk", 
                     "ident": "04f2b16f-a6ee-36c2-9fb6-5633c9271f72", 
@@ -49,6 +50,9 @@
                 "type": "cft.reconstruction", 
                 "id": "min_adcl-dnaml"
             }
+        ], 
+        "path": [
+            "output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-2"
         ], 
         "has_seed": null, 
         "d_per_gene_support": [], 
@@ -74,7 +78,8 @@
         "sample": {
             "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
             "id": "out_f1", 
-            "timepoint": null
+            "timepoint": null, 
+            "locus": "igh"
         }, 
         "seed": null, 
         "j_end": null, 
@@ -102,9 +107,9 @@
                 "prune_count": 100, 
                 "asr_tree": {
                     "sources": [
-                        "c40c37b0-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40c3b34-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40c3e54-055c-11e9-ab77-cf30b3e4c75a"
+                        "aba4e78a-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba4efb4-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba4f7f2-15f6-11e9-bab6-7121b1b0cb5f"
                     ], 
                     "path": "None/out_f1/unseeded-part-0/clust-0/min_adcl-dnaml/asr.nwk", 
                     "ident": "cece0724-0123-366d-9009-769a481fb708", 
@@ -116,6 +121,9 @@
                 "type": "cft.reconstruction", 
                 "id": "min_adcl-dnaml"
             }
+        ], 
+        "path": [
+            "output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-0"
         ], 
         "has_seed": null, 
         "d_per_gene_support": [], 
@@ -141,7 +149,8 @@
         "sample": {
             "ident": "635d04a4-078b-38ba-8434-226528477a9d", 
             "id": "out_f1", 
-            "timepoint": null
+            "timepoint": null, 
+            "locus": "igh"
         }, 
         "seed": null, 
         "j_end": null, 
@@ -169,9 +178,9 @@
                 "prune_count": 100, 
                 "asr_tree": {
                     "sources": [
-                        "c40cbe88-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40cb85c-055c-11e9-ab77-cf30b3e4c75a", 
-                        "c40cbb72-055c-11e9-ab77-cf30b3e4c75a"
+                        "aba63dba-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba6462a-15f6-11e9-bab6-7121b1b0cb5f", 
+                        "aba634c8-15f6-11e9-bab6-7121b1b0cb5f"
                     ], 
                     "path": "None/out_f1/unseeded-part-0/clust-1/min_adcl-dnaml/asr.nwk", 
                     "ident": "8bcce165-4e62-3ce1-9f57-5112f5beb3ae", 
@@ -183,6 +192,9 @@
                 "type": "cft.reconstruction", 
                 "id": "min_adcl-dnaml"
             }
+        ], 
+        "path": [
+            "output/test-brandens-simulated-data/None/out_f1/unseeded-part-0/clust-1"
         ], 
         "has_seed": null, 
         "d_per_gene_support": [], 
