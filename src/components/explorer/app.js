@@ -10,11 +10,8 @@ import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
 import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
-<<<<<<< HEAD
 import * as selectedFamilySelectors from "../../selectors/selectedFamily";
-=======
 import * as explorerActions from "../../actions/explorer";
->>>>>>> 9bdacd9b4f09c01dafdcd6b37f10cc64293f82af
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -48,7 +45,6 @@ class SelectedFamiliesSummary extends React.Component {
     return (
       <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
 
-<<<<<<< HEAD
 const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
   return (
     <div>
@@ -92,8 +88,6 @@ const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq,
   );
 };
 
-=======
->>>>>>> 9bdacd9b4f09c01dafdcd6b37f10cc64293f82af
 const Overlay = ({styles, mobileDisplay, handler}) => {
   return (
     mobileDisplay ?
