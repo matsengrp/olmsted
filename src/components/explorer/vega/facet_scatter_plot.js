@@ -12,6 +12,9 @@ const facetClonalFamiliesVizSpec = () => {
       "name": "selected"
     },
     {
+      "name": "locus"
+    },
+    {
       "name": "brush_store",
       "on": [
         // single trigger version
@@ -234,6 +237,10 @@ const facetClonalFamiliesVizSpec = () => {
               "update": "null"
             }]
     },
+    {
+      "name": "locus", 
+      "update": "data(\"locus\")[0].locus"
+    }
   ],
   // LAYOUT
   "layout": {
@@ -343,10 +350,6 @@ const facetClonalFamiliesVizSpec = () => {
           "on": [
             {
               "events": "@cell:mousedown", "update": "[facet_by_signal, facet.facet_by_field]"
-            },
-            {
-              "events": "@cell:mouseup",
-              "update": "!span(brush_x) && !span(brush_y) ? null : brushed_facet_value"
             }
           ]
         },
@@ -419,9 +422,11 @@ const facetClonalFamiliesVizSpec = () => {
                 "update": "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
               },
               {
-                "events": {
-                  "signal": "facet_by_signal"
-                },
+                "events": [
+                  {"signal": "facet_by_signal"},
+                  {"signal": "brushed_facet_value"},
+                  {"signal": "locus"}
+                ],
                 "update": "[]"
               }
           ]
@@ -503,9 +508,11 @@ const facetClonalFamiliesVizSpec = () => {
               "update": "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
             },
             {
-              "events": {
-                "signal": "facet_by_signal"
-              },
+              "events": [
+                {"signal": "facet_by_signal"},
+                {"signal": "brushed_facet_value"},
+                {"signal": "locus"}
+              ],
               "update": "[]"
             }
           ]

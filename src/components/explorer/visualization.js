@@ -100,7 +100,8 @@ const NaiveSequence = ({datum}) => {
 
 @connect((state) => ({
     availableClonalFamilies: getAvailableClonalFamilies(state),
-    selectedFamily: state.clonalFamilies.selectedFamily
+    selectedFamily: state.clonalFamilies.selectedFamily,
+    locus: state.clonalFamilies.locus
   }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
@@ -109,7 +110,6 @@ const NaiveSequence = ({datum}) => {
     filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
-
   })
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
@@ -201,7 +201,8 @@ class ClonalFamiliesViz extends React.Component {
               // Here we create a separate dataset only containing the id of the
               // selected family so as to check quickly for this id within the 
               // viz to highlight the selected family.
-              selected: [{'ident': this.props.selectedFamily}] }}
+              selected: [{'ident': this.props.selectedFamily}],
+              locus: [{'locus': this.props.locus}] }}
         spec={this.spec}/>}
     </div>
   }
