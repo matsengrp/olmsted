@@ -26,6 +26,19 @@
         "id": "brandens-simulated-data-2018.12.21"
     }, 
     {
+        "ident": "0241459f-8b66-31a7-81b5-a4dae844d8fa", 
+        "n_timepoints": 0, 
+        "n_subjects": 2, 
+        "build": {
+            "commit": "aa2f2089b59a730362283f5a63d208401657fc16\n", 
+            "id": "cft-build-2019-01-09-15:13:13", 
+            "time": "2019-01-09 15:13:13"
+        }, 
+        "n_clonal_families": 6, 
+        "type": "cft.dataset", 
+        "id": "jason-mg-cft-validation-2019.01.09"
+    }, 
+    {
         "ident": "2937184e-632b-3541-a207-9e433294a094", 
         "n_timepoints": 0, 
         "n_subjects": 2, 
@@ -50,57 +63,5 @@
         "n_clonal_families": 32, 
         "type": "cft.dataset", 
         "id": "laura-mb-2-v17-2018.12.20"
-    }, 
-    {
-        "ident": "fe173461-847e-3e3d-8c07-3d71c17abb6f", 
-        "n_timepoints": 0, 
-        "n_subjects": 2, 
-        "build": {
-            "commit": "aa2f2089b59a730362283f5a63d208401657fc16\n", 
-            "id": "cft-build-2018-12-20-21:22:40", 
-            "time": "2018-12-20 21:22:40"
-        }, 
-        "n_clonal_families": 32, 
-        "type": "cft.dataset", 
-        "id": "laura-mb-v17-2018.12.20"
-    }, 
-    {
-        "ident": "e655b61f-7c4d-39ca-b740-c0dd42b0f915", 
-        "n_timepoints": 0, 
-        "n_subjects": 1, 
-        "build": {
-            "commit": "aa2f2089b59a730362283f5a63d208401657fc16\n", 
-            "id": "cft-build-2018-12-21-03:27:26", 
-            "time": "2018-12-21 03:27:26"
-        }, 
-        "n_clonal_families": 18, 
-        "type": "cft.dataset", 
-        "id": "mg505-synth-v17-2018.12.21"
-    }, 
-    {
-        "ident": "4722e1a5-70c8-3f68-b3c8-db3f69513afe", 
-        "n_timepoints": 0, 
-        "n_subjects": 1, 
-        "build": {
-            "commit": "aa2f2089b59a730362283f5a63d208401657fc16\n", 
-            "id": "cft-build-2018-12-21-00:38:53", 
-            "time": "2018-12-21 00:38:53"
-        }, 
-        "n_clonal_families": 6, 
-        "type": "cft.dataset", 
-        "id": "qa255-synth-v17-2018.12.21"
-    }, 
-    {
-        "ident": "c3caf42d-c8e8-3164-a067-150033f48c86", 
-        "n_timepoints": 0, 
-        "n_subjects": 1, 
-        "build": {
-            "commit": "aa2f2089b59a730362283f5a63d208401657fc16\n", 
-            "id": "cft-build-2018-12-21-05:30:26", 
-            "time": "2018-12-21 05:30:26"
-        }, 
-        "n_clonal_families": 6, 
-        "type": "cft.dataset", 
-        "id": "qa255-synth-v18-2018.12.21"
     }
 ]
