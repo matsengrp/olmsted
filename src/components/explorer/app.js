@@ -10,6 +10,7 @@ import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
 import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
+import * as selectedFamilySelectors from "../../selectors/selectedFamily";
 import * as explorerActions from "../../actions/explorer";
 
 // STYLES
@@ -32,17 +33,60 @@ const tableStyle = {marginBottom: 20, overflow:'auto'};
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 const mapStateToProps = (state) => {
+    let selectedFamily = selectedFamilySelectors.getSelectedFamily(state)
     let nClonalFamiliesBrushed = getBrushedClonalFamilies(state).length
-    return {
-      nClonalFamiliesBrushed: nClonalFamiliesBrushed
-    }
+    return {selectedFamily, nClonalFamiliesBrushed}
 }
+
 
 @connect(mapStateToProps, {})
 class SelectedFamiliesSummary extends React.Component {
   render () {
     return (
       <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
+
+const Contents = ({styles, grid, availableDatasets, selectedFamily, selectedSeq, availableWidth, availableHeight}) => {
+  return (
+    <div>
+      <div style={usableWidthStyle(availableWidth)}>
+        <div style={sectionStyle}>
+          <h2>Datasets</h2>
+          <p>You have the following datasets loaded:</p>
+          <LoadingTable datasets={availableDatasets}/>
+        </div>
+
+        <div style={sectionStyle}>
+          <h2>Clonal Families</h2>
+          <p>Each point below represent a clonal family.
+            Click and drag to select a set of clonal families for deeper investigation.
+            Color, shape and x & y axes can be controlled at the bottom of the plot.
+          </p>
+          <SelectedFamiliesSummary/>
+          <viz.ClonalFamiliesViz/>
+        </div>
+
+        <div style={{paddingBottom: 40, ...sectionStyle}}>
+          <h2>Selected clonal families:</h2>
+          <p>Below are the clonal families selected in the scatterplot above.
+             Click on a column in the table to update the ordering of rows in the table.</p>
+          <div style={tableStyle}>
+             <ClonalFamiliesTable/>
+          </div>
+        </div>
+        { selectedFamily ?
+             <div style={sectionStyle}>
+               <viz.TreeViz availableHeight={availableHeight}/>
+             </div> :
+          ""}
+        {_.isEmpty(selectedSeq) ?
+            "" :
+            <div style={sectionStyle}>
+              <viz.Lineage/>
+            </div>}
+      </div>
+    </div>
+  );
+};
 
 const Overlay = ({styles, mobileDisplay, handler}) => {
   return (
