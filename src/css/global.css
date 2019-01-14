@@ -48,7 +48,9 @@ div.vega-bindings div.vega-bind input {
   margin-right: 6px;
 }
 
-
+div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-thumb {
+  margin-top: -5px;
+}
 div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-runnable-track {
   height: 5px;
   cursor: pointer;
