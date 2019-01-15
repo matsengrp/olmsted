@@ -12,6 +12,7 @@ import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
+import * as loadData from "../../actions/loadData";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadfasta";
 import DownloadText from "../util/downloadtext";
@@ -148,7 +149,8 @@ class ClonalFamiliesViz extends React.Component {
             // Second argument specifies that we would like to 
             // include just this family in our brush selection
             // and therefore in the table since we have clicked it
-            this.props.selectFamily(family.ident, true)
+
+            this.props.selectFamily(dispatch, family.ident, true)
           }
         }}
         onSignalMouseDown={(...args) => {
@@ -231,7 +233,7 @@ const mapStateToPropsTree = (state) => {
   }
 }
 
-const mapDispatchToProps = (dispatch) => ( {
+const mapDispatchToProps = (dispatch) => ({
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
   },

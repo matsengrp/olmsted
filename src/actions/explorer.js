@@ -11,14 +11,14 @@ export const toggleSort = (attribute) => {
 // Second argument specifies whether we would like to 
 // include just this family in our brush selection
 // and therefore in the table since we have clicked it
-export const selectFamily = (id, updateBrushSelection=false) => {
-  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection}}
+export const selectFamily = (dispatch, id, updateBrushSelection=false) => {
+  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection, dispatch}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-export const updateSelectedReconstruction = (reconIdent) => {
-  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent}}
+export const updateSelectedReconstruction = (dispatch, reconIdent) => {
+  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent, dispatch}}
 
 export const updateSelectingStatus = () => {
   return {type: types.SELECTING_STATUS}}

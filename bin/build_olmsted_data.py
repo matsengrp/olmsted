@@ -19,6 +19,7 @@ def get_args():
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-o', '--data-outdir')
+    # parser.add_argument('-s', '--split'
     parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
     parser.add_argument('-v', '--verbose', action='store_true')
     return parser.parse_args()
@@ -32,6 +33,9 @@ def comp(f, g):
 
 def strip_ns(a):
     return a.split(':')[-1]
+
+def dict_subset(d, keys):
+    return {k: d[k] for k in keys if k in d}
 
 inf = float("inf")
 neginf = float("-inf")
@@ -326,7 +330,7 @@ def write_out(data, dirname, filename, args):
 
 def main():
     args = get_args()
-    datasets, clonal_families_dict = [], {}
+    datasets, clonal_families_dict, reconstructions = [], {}, []
     for infile in args.inputs:
         print("\nProcessing infile: " + str(infile))
         t = tripl.TripleStore.loads([args.schema, infile])
@@ -337,6 +341,12 @@ def main():
                 dataset = file_datasets[0]
                 datasets.append(dataset)
                 clonal_families = pull_clonal_families(args, t)
+                for clonal_family in clonal_families:
+                    recons = clonal_family['reconstructions']
+                    reconstructions += recons
+                    clonal_family['reconstructions'] = [
+                            dict_subset(r, ['ident', 'id', 'prune_strategy', 'prune_count', 'type'])
+                            for r in recons]
                 clonal_families_dict[dataset['id']] = clonal_families
         except Exception as e:
             warnings.warn("Unable to process infile: " + str(infile))
@@ -345,6 +355,8 @@ def main():
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
+        for reconstruction in reconstructions:
+            write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident']  + '.json' , args)
 
 if __name__ == '__main__':
     main()

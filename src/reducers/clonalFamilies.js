@@ -5,7 +5,6 @@ const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
   selectedFamily: undefined,
-  selectedReconstruction: undefined,
   selectedSeq: {},
   clonalFamiliesDict: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
@@ -113,7 +112,6 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     } case types.TOGGLE_FAMILY: {
       let updates = {
         selectedFamily: action.family_id,
-        selectedReconstruction: undefined,
         selectedSeq: {},
       }
       // action.updateBrushSelection specifies whether we would like to 
@@ -127,10 +125,6 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     } case types.UPDATE_SELECTED_SEQ: {
       return Object.assign({}, state, {
         selectedSeq: action.seq,
-      });
-    } case types.UPDATE_SELECTED_RECONSTRUCTION: {
-      return Object.assign({}, state, {
-        selectedReconstruction: action.reconstruction,
       });
     } case types.UPDATE_FACET: {
       return Object.assign({}, state, {

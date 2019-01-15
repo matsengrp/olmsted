@@ -3,6 +3,7 @@ import { getAvailableClonalFamilies } from './clonalFamilies';
 import * as _ from 'lodash';
 
 // The naming structure here needs to be cleaned up; 
+// This should all probably be in a reconstructions selector ns
 
 // selector for selected family ident
 const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
@@ -15,7 +16,7 @@ export const getSelectedFamily = createSelector(
 
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
-  state.clonalFamilies.selectedReconstruction
+  state.reconstructions.selectedReconstructionIdent
 
 const defaultReconstruction = (reconstructions) =>
   // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
