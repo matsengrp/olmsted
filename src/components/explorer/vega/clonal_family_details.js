@@ -163,6 +163,8 @@ const concatTreeWithAlignmentSpec = () => {
         {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
           "source": "tree"},
         {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"},
+        // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
+        // in order to normalize by this sum instead of trusting the total multiplicity values
         {"name": "leaf_pies", "transform": [
                                             // Make these depend on the cluster multiplicity vs multiplicity dropdown signal
                                             // so as to update the pie chart values according to the appropriate timepoint mults
@@ -174,7 +176,7 @@ const concatTreeWithAlignmentSpec = () => {
                                             },
                                             {
                                               "type": "formula",
-                                              "expr": "datum.timepoint_mult_data.multiplicity", "as": "timepoint_multiplicity_value"
+                                              "expr": "datum.timepoint_mult_data.multiplicity/datum[leaf_size_by]", "as": "timepoint_multiplicity_value"
                                             },
                                             {
                                               "type": "pie",
