@@ -15,6 +15,7 @@ const charonErrorHandler = () => {
 
 
 export const getReconstruction = (dispatch, reconstruction_id) => {
+  console.log("getting reconstruction homey")
   const processData = (data, reconstruction_id) => {
     let reconstructions
     try{
@@ -29,6 +30,7 @@ export const getReconstruction = (dispatch, reconstruction_id) => {
       getDatapath(window.location.pathname, clonalFamilies) :
       undefined;
 
+    console.log("RECONSTRUCTION RECIEVED BIATCH")
     dispatch({
       type: types.RECONSTRUCTION_RECEIVED,
       reconstruction_id,

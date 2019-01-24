@@ -87,7 +87,7 @@ class Table extends React.Component {
 @connect((store) => ({}),
         (dispatch) => ({
           dispatchSelect: (family_id) => {
-            dispatch(explorerActions.selectFamily(dispatch, family_id))
+            dispatch(explorerActions.selectFamily(family_id))
           }
         })
       )
@@ -128,12 +128,14 @@ class ClonalFamiliesTable extends React.Component {
     // 2. !this.props.selectingStatus: We are done doing the brush selection
     // 3. this.props.visibleClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
     if (prevProps.selectingStatus && !this.props.selectingStatus && this.props.visibleClonalFamilies.length > 0) {
-      this.props.selectFamily(dispatch, this.props.visibleClonalFamilies[0].ident);
+      this.props.selectFamily(this.props.visibleClonalFamilies[0].ident);
     }
   }
 
   render() {
     this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
+    console.log("selected family", this.selectedFamily)
+    console.log("visibleClonal families:", this.props.visibleClonalFamilies)
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={

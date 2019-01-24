@@ -4,19 +4,16 @@ import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
 const reconstructions = (state = {
   selectedReconstructionIdent: undefined,
-  cachedReconstructions: {},
+  cache: {},
 }, action) => {
   switch (action.type) {
     case types.RECONSTRUCTION_RECEIVED: {
       let updates = {};
       updates[action.reconstruction_id] = action.reconstruction
       return Object.assign({}, state, {
-        cachedReconstructions: Object.assign({}, state.cachedReconstructions, updates)})
+        cache: Object.assign({}, state.cache, updates)})
     } case types.UPDATE_SELECTED_RECONSTRUCTION: {
-      // Impure nonsense!!!
-      if (!d[action.reconstruction]) {
-        loadData.getReconstruction(dispatch, reconIdent)
-      }
+      console.log("UPDATE_SELECTED_RECONSTRUCTION called")
       return Object.assign({}, state, {
         selectedReconstructionIdent: action.reconstruction,
       });
@@ -32,7 +29,7 @@ const reconstructions = (state = {
 };
 
 export const getSelectedReconstruction = (reconstructions) => {
-  return reconstructions.cachedReconstructions[reconstructions.selectedReconstruction];
+  return reconstructions.cache[reconstructions.selectedReconstruction];
 };
 
 export default reconstructions;

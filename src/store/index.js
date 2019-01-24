@@ -9,7 +9,7 @@ export default function configureStore(initialState) {
   const middleware = [
     thunk,
     changeURLMiddleware, // eslint-disable-line comma-dangle
-    // loggingMiddleware
+    //loggingMiddleware
   ]
 
   const actionSanitizer = (action) => {

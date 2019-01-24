@@ -1,5 +1,7 @@
 
 import * as types from "./types"
+import * as selectedFamily from "../selectors/selectedFamily.js"
+import * as loadData from "../actions/loadData.js"
 
 
 export const pageDown = {type: types.PAGE_DOWN}
@@ -11,14 +13,21 @@ export const toggleSort = (attribute) => {
 // Second argument specifies whether we would like to 
 // include just this family in our brush selection
 // and therefore in the table since we have clicked it
-export const selectFamily = (dispatch, id, updateBrushSelection=false) => {
-  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection, dispatch}}
+export const selectFamily = (id, updateBrushSelection=false) => {
+  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
 export const updateSelectedReconstruction = (dispatch, reconIdent) => {
-  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent, dispatch}}
+  console.log("updateSelectedReconstruction called")
+  return (dispatch, getState) => {
+    console.log("updateSelectedReconstruction inner fn called")
+    let {reconstructions} = getState()
+    dispatch({type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent})
+    if (!reconstructions.cache[reconIdent]) {
+      loadData.getReconstruction(dispatch, reconIdent)
+    }}}
 
 export const updateSelectingStatus = () => {
   return {type: types.SELECTING_STATUS}}

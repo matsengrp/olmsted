@@ -5,31 +5,40 @@ import * as _ from 'lodash';
 // The naming structure here needs to be cleaned up; 
 // This should all probably be in a reconstructions selector ns
 
+
+let f = (x) => g(x)
+
+let g = (y) => f(x)
+
+
 // selector for selected family ident
 const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
 
 // selector for clonal family record
 export const getSelectedFamily = createSelector(
   [getAvailableClonalFamilies, getSelectedFamilyIdent],
-  (availableClonalFamilies, selectedIdent) =>  _.find(availableClonalFamilies, {"ident": selectedIdent})
+  (availableClonalFamilies, selectedIdent) => {
+    let cf = _.find(availableClonalFamilies, {"ident": selectedIdent})
+    return cf || availableClonalFamilies[0]
+  }
 )
 
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
   state.reconstructions.selectedReconstructionIdent
 
-const defaultReconstruction = (reconstructions) =>
-  // If there is a seed lineage tree, we take that first (see #70), otherwise min adcl, otherwise first as last resort
-  _.find(reconstructions, {prune_strategy: "seed_lineage"}) || _.find(reconstructions, {prune_strategy: "min_adcl"}) || reconstructions[0]
-
-export const findReconstruction = (family, reconstructionIdent) => reconstructionIdent ?
-                                                            _.find(family.reconstructions, {ident: reconstructionIdent}) :
-                                                            defaultReconstruction(family.reconstructions)
 
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
-  [getSelectedFamily, getSelectedReconstructionIdent],
-  (family, reconstructionIdent) => findReconstruction(family, reconstructionIdent)
+  [(state) => state.reconstructions, getSelectedFamily, getSelectedReconstructionIdent],
+  (reconstructions, family, selectedIdent) => {
+    console.log("SADFLKJADSFLKJASDF")
+    console.log('reconstructions', reconstructions)
+    console.log('family', family)
+    console.log('selectedIdent', selectedIdent)
+    return reconstructions[selectedIdent] ||
+      reconstructions[(_.find(family.reconstructions, {prune_strategy: "seed_lineage"}) ||
+                       _.find(family.reconstructions, {prune_strategy: "min_adcl"})).ident]}
 )
 
 
