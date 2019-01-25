@@ -270,8 +270,8 @@ class TreeViz extends React.Component {
       let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
       deselectSeq = !selectedSeqInNewReconstruction
     }
-    // This is how we deselect the currently selected sequence
     if(deselectSeq){this.props.dispatchSelectedSeq(undefined)}
+    // This is how we deselect the currently selected sequence
     this.props.dispatchSelectedReconstruction(newReconId)
   }
 

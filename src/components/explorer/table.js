@@ -134,8 +134,6 @@ class ClonalFamiliesTable extends React.Component {
 
   render() {
     this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
-    console.log("selected family", this.selectedFamily)
-    console.log("visibleClonal families:", this.props.visibleClonalFamilies)
     return (
       <Table data={this.props.visibleClonalFamilies}
         mappings={

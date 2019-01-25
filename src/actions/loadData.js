@@ -15,9 +15,8 @@ const charonErrorHandler = () => {
 
 
 export const getReconstruction = (dispatch, reconstruction_id) => {
-  console.log("getting reconstruction homey")
   const processData = (data, reconstruction_id) => {
-    let reconstructions
+    let reconstruction
     try{
       reconstruction = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
@@ -26,11 +25,7 @@ export const getReconstruction = (dispatch, reconstruction_id) => {
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
-    const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, clonalFamilies) :
-      undefined;
 
-    console.log("RECONSTRUCTION RECIEVED BIATCH")
     dispatch({
       type: types.RECONSTRUCTION_RECEIVED,
       reconstruction_id,

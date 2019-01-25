@@ -16,12 +16,10 @@ const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
 
 // selector for clonal family record
 export const getSelectedFamily = createSelector(
-  [getAvailableClonalFamilies, getSelectedFamilyIdent],
-  (availableClonalFamilies, selectedIdent) => {
-    let cf = _.find(availableClonalFamilies, {"ident": selectedIdent})
-    return cf || availableClonalFamilies[0]
-  }
-)
+  [getAvailableClonalFamilies,
+   (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
+  (available, selected) => selected || available[0])
+
 
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
@@ -32,13 +30,11 @@ const getSelectedReconstructionIdent = (state) =>
 export const getSelectedReconstruction = createSelector(
   [(state) => state.reconstructions, getSelectedFamily, getSelectedReconstructionIdent],
   (reconstructions, family, selectedIdent) => {
-    console.log("SADFLKJADSFLKJASDF")
-    console.log('reconstructions', reconstructions)
-    console.log('family', family)
-    console.log('selectedIdent', selectedIdent)
-    return reconstructions[selectedIdent] ||
-      reconstructions[(_.find(family.reconstructions, {prune_strategy: "seed_lineage"}) ||
-                       _.find(family.reconstructions, {prune_strategy: "min_adcl"})).ident]}
+    let ident = selectedIdent ||
+      (_.find(_.values(family.reconstructions), {prune_strategy: "seed_lineage"}) ||
+       _.find(_.values(family.reconstructions), {prune_strategy: "min_adcl"}) ||
+       _.values(family.reconstructions)[0]).ident
+    return reconstructions.cache[ident]}
 )
 
 

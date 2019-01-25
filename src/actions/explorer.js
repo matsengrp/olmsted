@@ -14,20 +14,18 @@ export const toggleSort = (attribute) => {
 // include just this family in our brush selection
 // and therefore in the table since we have clicked it
 export const selectFamily = (id, updateBrushSelection=false) => {
-  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection}}
+  return (dispatch, getState) => {
+    dispatch({type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection})
+    let {reconstructions, clonalFamilies} = getState()
+    let clonalFamily = clonalFamilies.byIdent[id]
+    let clonalFamilyRecons = clonalFamily ? (clonalFamily.reconstructions || []) : []
+    _.forEach(clonalFamilyRecons, (recon) => loadData.getReconstruction(dispatch, recon.ident))}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-export const updateSelectedReconstruction = (dispatch, reconIdent) => {
-  console.log("updateSelectedReconstruction called")
-  return (dispatch, getState) => {
-    console.log("updateSelectedReconstruction inner fn called")
-    let {reconstructions} = getState()
-    dispatch({type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent})
-    if (!reconstructions.cache[reconIdent]) {
-      loadData.getReconstruction(dispatch, reconIdent)
-    }}}
+export const updateSelectedReconstruction = (reconIdent) => {
+  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent}}
 
 export const updateSelectingStatus = () => {
   return {type: types.SELECTING_STATUS}}
