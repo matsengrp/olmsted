@@ -13,6 +13,43 @@ const charonErrorHandler = () => {
   dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
 };
 
+
+export const getReconstruction = (dispatch, reconstruction_id) => {
+  const processData = (data, reconstruction_id) => {
+    let reconstruction
+    try{
+      reconstruction = JSON.parse(data);
+      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
+    } catch( err ){
+      alert("Failed parsing json for " + reconstruction_id + 
+      ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
+      console.log(data.substring(0,100))
+    }
+
+    dispatch({
+      type: types.RECONSTRUCTION_RECEIVED,
+      reconstruction_id,
+      reconstruction
+    });
+  };
+
+  const request = new XMLHttpRequest();
+  request.onload = () => {
+    if (request.readyState === 4 && request.status === 200) {
+      processData(request.responseText, reconstruction_id);
+    } else {
+      charonErrorHandler();
+    }
+  };
+
+  request.onerror = charonErrorHandler;
+  request.open("get", `${charonAPIAddress}/reconstruction.${reconstruction_id}.json`, true); // true for asynchronous
+ 
+  request.send(null);
+  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  
+};
+
 export const getClonalFamilies = (dispatch, dataset_id) => {
   const processData = (data, dataset_id) => {
     let clonalFamilies = []
@@ -24,10 +61,6 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
-    const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
-      getDatapath(window.location.pathname, clonalFamilies) :
-      undefined;
-
     dispatch({
       type: types.CLONAL_FAMILIES_RECEIVED,
       dataset_id,

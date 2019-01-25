@@ -9,8 +9,8 @@ import ClonalFamiliesTable from "./table";
 import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
-import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
-import * as selectedFamilySelectors from "../../selectors/selectedFamily";
+import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
+import * as reconstructionsSelectors from "../../selectors/reconstructions";
 import * as explorerActions from "../../actions/explorer";
 
 // STYLES
@@ -33,8 +33,8 @@ const tableStyle = {marginBottom: 20, overflow:'auto'};
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 const mapStateToProps = (state) => {
-    let selectedFamily = selectedFamilySelectors.getSelectedFamily(state)
-    let nClonalFamiliesBrushed = getBrushedClonalFamilies(state).length
+    let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
+    let nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length
     return {selectedFamily, nClonalFamiliesBrushed}
 }
 

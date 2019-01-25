@@ -1,5 +1,6 @@
 
 import * as types from "./types"
+import * as loadData from "../actions/loadData.js"
 
 
 export const pageDown = {type: types.PAGE_DOWN}
@@ -12,7 +13,12 @@ export const toggleSort = (attribute) => {
 // include just this family in our brush selection
 // and therefore in the table since we have clicked it
 export const selectFamily = (id, updateBrushSelection=false) => {
-  return {type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection}}
+  return (dispatch, getState) => {
+    dispatch({type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection})
+    let {reconstructions, clonalFamilies} = getState()
+    let clonalFamily = clonalFamilies.byIdent[id]
+    let clonalFamilyRecons = clonalFamily ? (clonalFamily.reconstructions || []) : []
+    _.forEach(clonalFamilyRecons, (recon) => loadData.getReconstruction(dispatch, recon.ident))}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}

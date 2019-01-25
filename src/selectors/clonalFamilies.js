@@ -10,18 +10,18 @@ const createDeepEqualSelector = createSelectorCreator(
 
 // FILTER CLONAL FAMILIES BY SELECTED DATASETS
 
-const getClonalFamiliesDict = (state) => state.clonalFamilies.clonalFamiliesDict
+const getClonalFamiliesDict = (state) => state.clonalFamilies.byDatasetId
 
 const getDatasets = (state) => state.datasets.availableDatasets
 
 const getLocusFilter = (state) => state.clonalFamilies.locus
 
-const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets, locus) => {
+const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
   var availableClonalFamilies = []
   if(datasets.length > 0){ 
     _.forEach(datasets, (dataset) => {
       if(dataset.loading && dataset.loading == "DONE"){ 
-        availableClonalFamilies = availableClonalFamilies.concat(clonalFamiliesDict[dataset.id]) }
+        availableClonalFamilies = availableClonalFamilies.concat(byDatasetId[dataset.id]) }
     })
   }
   return locus == "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, {"sample": {"locus": locus}})
@@ -29,8 +29,7 @@ const computeAvailableClonalFamilies = (clonalFamiliesDict, datasets, locus) => 
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(
     [getClonalFamiliesDict, getDatasets, getLocusFilter],
-    (clonalFamiliesDict, datasets, locus) => computeAvailableClonalFamilies(clonalFamiliesDict, datasets, locus)
-)
+    computeAvailableClonalFamilies)
 
 // FILTER TABLE RESULTS BY BRUSH SELECTION
 
@@ -104,3 +103,15 @@ export const getClonalFamiliesPage = createDeepEqualSelector(
       return computeClonalFamiliesPage(data, pagination)
     }
 )
+
+
+// selector for selected family ident
+const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
+
+// selector for clonal family record
+export const getSelectedFamily = createSelector(
+  [getAvailableClonalFamilies,
+   (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
+  (available, selected) => selected || available[0])
+
+

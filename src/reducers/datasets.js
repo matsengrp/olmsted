@@ -7,8 +7,10 @@ export const getSelectedDatasets = (datasets) => {
 
 const datasets = (state = {
   
+  // TODO: remove
   s3bucket: "live",
   availableDatasets: [],
+  // TODO: remove
   splash: undefined,
   datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
   displayComponent: chooseDisplayComponentFromPathname(window.location.pathname),
