@@ -12,8 +12,6 @@ import "./css/global.css";
 import "./css/browserCompatability.css";
 import "./css/bootstrapCustomized.css";
 import "./css/static.css";
-import "./css/boxed.css";
-import "./css/select.css";
 
 
 const store = configureStore();
