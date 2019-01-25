@@ -77,17 +77,14 @@ const applyFilters = (data, brushSelection) => {
 
 export const getBrushedClonalFamilies = createDeepEqualSelector(
   [getAvailableClonalFamilies, getBrushSelection],
-  (availableClonalFamilies, brushSelection) => {
-    return applyFilters(availableClonalFamilies, brushSelection)
-  }
-)
+  applyFilters)
 
 const getPagination = (state) => state.clonalFamilies.pagination;
 
 export const getLastPage = createDeepEqualSelector(
   [getPagination, getBrushedClonalFamilies],
   (pagination, brushedClonalFamilies) => {
-    return Math.ceil(brushedClonalFamilies.length/pagination.per_page)-1 // use ceil-1 because we start at page 0
+    return Math.ceil(brushedClonalFamilies.length / pagination.per_page) - 1 // use ceil-1 because we start at page 0
   }
 )
 
@@ -99,10 +96,7 @@ const computeClonalFamiliesPage = (data, pagination) =>
 
 export const getClonalFamiliesPage = createDeepEqualSelector(
     [getBrushedClonalFamilies, getPagination],
-    (data, pagination) => {
-      return computeClonalFamiliesPage(data, pagination)
-    }
-)
+    computeClonalFamiliesPage)
 
 
 // selector for selected family ident

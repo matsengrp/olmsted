@@ -160,16 +160,10 @@ const computeLineageData = (reconstruction, seq) => {
 }
 
 export const getReconstructionData = createSelector(
-    [getSelectedReconstruction],
-    (reconstruction) => {
-      return computeReconstructionData(reconstruction);
-    }
-  )
+  [getSelectedReconstruction],
+  computeReconstructionData)
 
 export const getLineageData =  createSelector(
-    [getSelectedReconstruction, getSelectedSeq],
-    (reconstruction, seq) => {
-      return computeLineageData(reconstruction, seq);
-    }
-  )
+  [getSelectedReconstruction, getSelectedSeq],
+  computeLineageData)
 
