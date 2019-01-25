@@ -10,7 +10,7 @@ import * as viz from "./visualization";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import * as selectedFamilySelectors from "../../selectors/selectedFamily";
+import * as reconstructionsSelectors from "../../selectors/reconstructions";
 import * as explorerActions from "../../actions/explorer";
 
 // STYLES

@@ -5,7 +5,7 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as vega from 'vega';
 import {createClassFromSpec} from 'react-vega';
-import { getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
+import * as reconstructionsSelector from "../../selectors/reconstructions";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
@@ -222,7 +222,7 @@ class ClonalFamiliesViz extends React.Component {
 
 const mapStateToPropsTree = (state) => {
   let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
-  let selectedReconstruction = getSelectedReconstruction(state)
+  let selectedReconstruction = reconstructionsSelector.getSelectedReconstruction(state)
   // idea is that none of these selectors will work (or be needed) if reconstruction data isn't in yet
   if (selectedReconstruction) {
     let naiveData = getNaiveVizData(selectedFamily)
@@ -230,7 +230,7 @@ const mapStateToPropsTree = (state) => {
       selectedFamily,
       selectedReconstruction,
       naiveData,
-      treeNodes: getReconstructionData(state),
+      treeNodes: reconstructionsSelector.getReconstructionData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
       cdr3Bounds: [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
     }
@@ -266,7 +266,7 @@ class TreeViz extends React.Component {
     // without having to find and reselect that sequence.
     let deselectSeq = true
     if(this.props.selectedSeq){
-      let newSelectedReconstruction = findReconstruction(this.props.selectedFamily, newReconId)
+      let newSelectedReconstruction = reconstructionsSelector.findReconstruction(this.props.selectedFamily, newReconId)
       let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
       deselectSeq = !selectedSeqInNewReconstruction
     }
@@ -359,8 +359,8 @@ class TreeViz extends React.Component {
 
 const mapStateToPropsLineage = (state) => {
     return {
-      lineageData: getLineageData(state),
-      selectedSeq: getSelectedSeq(state),
+      lineageData: reconstructionsSelector.getLineageData(state),
+      selectedSeq: reconstructionsSelector.getSelectedSeq(state),
       selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
     }
 }

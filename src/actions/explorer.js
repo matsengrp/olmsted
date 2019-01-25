@@ -1,6 +1,5 @@
 
 import * as types from "./types"
-import * as selectedFamily from "../selectors/selectedFamily.js"
 import * as loadData from "../actions/loadData.js"
 
 

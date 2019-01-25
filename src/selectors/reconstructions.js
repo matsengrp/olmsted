@@ -6,11 +6,6 @@ import * as _ from 'lodash';
 // This should all probably be in a reconstructions selector ns
 
 
-let f = (x) => g(x)
-
-let g = (y) => f(x)
-
-
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
   state.reconstructions.selectedReconstructionIdent
