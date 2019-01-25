@@ -7,10 +7,13 @@ var exec = require('exec');
 
 /* documentation in the static site! */
 
+// call like `npm start localData` or `npm start localData testdata` for a specific dir
 const devServer = process.argv.indexOf("dev") !== -1;
-globals.setGlobals({
-  localData: process.argv.indexOf("localData") !== -1
-});
+let localDataIndex = process.argv.indexOf("localData")
+let localData = localDataIndex !== -1;
+let localDataPath = localData ? (process.argv[localDataIndex + 1] || "data") : undefined
+globals.setGlobals({localData, localDataPath})
+
 
 /* if we are in dev-mode, we need to import specific libraries & set flags */
 
