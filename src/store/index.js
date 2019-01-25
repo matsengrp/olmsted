@@ -21,12 +21,12 @@ export default function configureStore(initialState) {
     }
   }
   const stateSanitizer = (state) => {
-    if ( state.clonalFamilies.clonalFamiliesDict ){
+    if ( state.clonalFamilies.byDatasetId ){
       let sumClonalFamiliesDict =  {}
-      Object.entries(state.clonalFamilies.clonalFamiliesDict).forEach((pair) => {
+      Object.entries(state.clonalFamilies.byDatasetId).forEach((pair) => {
         sumClonalFamiliesDict[pair[0]] = pair[1].length
       })
-      return { ...state, clonalFamilies: {...state.clonalFamilies, clonalFamiliesDict: sumClonalFamiliesDict}}
+      return { ...state, clonalFamilies: {...state.clonalFamilies, byDatasetId: sumClonalFamiliesDict}}
     }
     return state
   }

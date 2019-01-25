@@ -6,9 +6,8 @@ const initialState = {
   brushSelection: undefined,
   selectedFamily: undefined,
   selectedSeq: {},
-  // 2 indexes
-  // TODO rename clonalFamiliesDict to something more descriptive, like byDatasetId
-  clonalFamiliesDict: {},
+  // 2 indexes so that we can access data differently depending on what we need to get to
+  byDatasetId: {},
   byIdent: {},
   pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
   // EH:facet field is no longer required to update the spec but 
@@ -22,16 +21,16 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     case types.RESET_CLONAL_FAMILIES_STATE: {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
-      let reset_state = _.omit(_.clone(initialState), ['clonalFamiliesDict', 'byIdent'])
+      let reset_state = _.omit(_.clone(initialState), ['byDatasetId', 'byIdent'])
       return Object.assign({}, state, reset_state);
     } case types.CLONAL_FAMILIES_RECEIVED: {
       // have to update both indices here
       let newClonalFamiliesDictEntry = {}
       newClonalFamiliesDictEntry[action.dataset_id] = action.clonalFamilies
-      let updatedClonalFamiliesDict = Object.assign({}, state.clonalFamiliesDict, newClonalFamiliesDictEntry);
+      let updatedClonalFamiliesDict = Object.assign({}, state.byDatasetId, newClonalFamiliesDictEntry);
       let updatedByIdent = Object.assign({}, state.byIdent, _.fromPairs(_.map(action.clonalFamilies, (x) => [x.ident, x])));
       return Object.assign({}, state, {
-        clonalFamiliesDict: updatedClonalFamiliesDict,
+        byDatasetId: updatedClonalFamiliesDict,
         byIdent: updatedByIdent
       });
     } case types.SELECTING_STATUS: {
