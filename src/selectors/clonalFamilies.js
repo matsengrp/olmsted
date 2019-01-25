@@ -103,3 +103,15 @@ export const getClonalFamiliesPage = createDeepEqualSelector(
       return computeClonalFamiliesPage(data, pagination)
     }
 )
+
+
+// selector for selected family ident
+const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
+
+// selector for clonal family record
+export const getSelectedFamily = createSelector(
+  [getAvailableClonalFamilies,
+   (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
+  (available, selected) => selected || available[0])
+
+

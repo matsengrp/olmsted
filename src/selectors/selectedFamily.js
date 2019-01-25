@@ -1,5 +1,5 @@
 import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
-import { getAvailableClonalFamilies } from './clonalFamilies';
+import * as clonalFamiliesSelectors from './clonalFamilies';
 import * as _ from 'lodash';
 
 // The naming structure here needs to be cleaned up; 
@@ -11,16 +11,6 @@ let f = (x) => g(x)
 let g = (y) => f(x)
 
 
-// selector for selected family ident
-const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
-
-// selector for clonal family record
-export const getSelectedFamily = createSelector(
-  [getAvailableClonalFamilies,
-   (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
-  (available, selected) => selected || available[0])
-
-
 // selector for selected tree
 const getSelectedReconstructionIdent = (state) =>
   state.reconstructions.selectedReconstructionIdent
@@ -28,7 +18,7 @@ const getSelectedReconstructionIdent = (state) =>
 
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
-  [(state) => state.reconstructions, getSelectedFamily, getSelectedReconstructionIdent],
+  [(state) => state.reconstructions, clonalFamiliesSelectors.getSelectedFamily, getSelectedReconstructionIdent],
   (reconstructions, family, selectedIdent) => {
     let ident = selectedIdent ||
       (_.find(_.values(family.reconstructions), {prune_strategy: "seed_lineage"}) ||

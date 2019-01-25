@@ -5,8 +5,8 @@ import VegaLite from 'react-vega-lite';
 import * as vl from 'vega-lite';
 import * as vega from 'vega';
 import {createClassFromSpec} from 'react-vega';
-import { getSelectedFamily, getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
-import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
+import { getReconstructionData, getLineageData, getSelectedReconstruction, getSelectedSeq, findReconstruction} from "../../selectors/selectedFamily";
+import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import naiveVegaSpec from './vega/naive.js';
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import {concatTreeWithAlignmentSpec, seqAlignSpec} from './vega/clonal_family_details';
@@ -100,7 +100,7 @@ const NaiveSequence = ({datum}) => {
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-    availableClonalFamilies: getAvailableClonalFamilies(state),
+    availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
     selectedFamily: state.clonalFamilies.selectedFamily,
     locus: state.clonalFamilies.locus
   }),
@@ -221,7 +221,7 @@ class ClonalFamiliesViz extends React.Component {
 // First some redux connection functions
 
 const mapStateToPropsTree = (state) => {
-  let selectedFamily = getSelectedFamily(state)
+  let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
   let selectedReconstruction = getSelectedReconstruction(state)
   // idea is that none of these selectors will work (or be needed) if reconstruction data isn't in yet
   if (selectedReconstruction) {
@@ -361,7 +361,7 @@ const mapStateToPropsLineage = (state) => {
     return {
       lineageData: getLineageData(state),
       selectedSeq: getSelectedSeq(state),
-      selectedFamily: getSelectedFamily(state)
+      selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
     }
 }
 
