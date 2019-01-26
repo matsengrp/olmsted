@@ -11,7 +11,7 @@ var exec = require('exec');
 const devServer = process.argv.indexOf("dev") !== -1;
 let localDataIndex = process.argv.indexOf("localData")
 let localData = localDataIndex !== -1;
-let localDataPath = localData ? (process.argv[localDataIndex + 1] || "data") : undefined
+let localDataPath = localData ? (process.argv[localDataIndex + 1]) || "data" : undefined
 globals.setGlobals({localData, localDataPath})
 
 
@@ -21,7 +21,7 @@ const app = express();
 app.set('port', process.env.PORT || 3999);
 
 // gzip all files matching *.clonal_families.json in the data dir
-exec(['find', 'data', '-name', 'clonal_families.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
+exec(['find', global.LOCAL_DATA_PATH, '-name', 'clonal_families.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
   if (err instanceof Error)
     throw err;
   process.stderr.write(err);
@@ -29,7 +29,7 @@ exec(['find', 'data', '-name', 'clonal_families.*.json',  '-exec', 'gzip', '-k9f
 });
 
 // gzip data/datasets.json
-exec(['gzip', '-k9f', 'data/datasets.json'], function(err, out, code) {
+exec(['gzip', '-k9f', path.join(global.LOCAL_DATA_PATH,'datasets.json')], function(err, out, code) {
   if (err instanceof Error)
     throw err;
   process.stderr.write(err);
@@ -66,7 +66,7 @@ if (devServer) {
   }));
 
   // Change this to zip data instead of dist
-  app.use("/data", expressStaticGzip(localDataPath, options));
+  app.use("/data", expressStaticGzip(global.LOCAL_DATA_PATH, options));
   app.use(express.static(path.join(__dirname, "dist")));
 
 } else {
@@ -91,6 +91,6 @@ const server = app.listen(app.get('port'), () => {
   console.log("-----------------------------------");
   console.log("Olmsted server started on port " + server.address().port);
   console.log(devServer ? "Serving dev bundle with hot-reloading enabled" : "Serving compiled bundle from /dist");
-  console.log(global.LOCAL_DATA ? "Data is being sourced from /data" : "Dataset JSONs are being sourced from S3, narratives via the static github repo");
-  console.log("-----------------------------------\n\n");
+  console.log(global.LOCAL_DATA ? "Data is being sourced from " + global.LOCAL_DATA_PATH : "Dataset JSONs are being sourced from S3, narratives via the static github repo");
+  console.log("-----------------------------------\n\n"); 
 });
