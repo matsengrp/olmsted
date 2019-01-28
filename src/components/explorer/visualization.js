@@ -99,11 +99,8 @@ const NaiveSequence = ({datum}) => {
 // and it's the top level entry point for us in exploring datasets/clonal-families in gerater detail.
 // Goal is to be super configurable and powerful.
 
-@connect((state) => ({
-    availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
-    selectedFamily: state.clonalFamilies.selectedFamily,
-    locus: state.clonalFamilies.locus
-  }),
+@connect((state) => ({availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
+                      selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)}),
   //This is a shorthand way of specifying mapDispatchToProps
   {
     selectFamily: explorerActions.selectFamily,
@@ -122,91 +119,95 @@ class ClonalFamiliesViz extends React.Component {
   }
 
   render() {
-    return  <div>
-        {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
-        {this.props.availableClonalFamilies.length > 0 && <Vega
-        // TURN THESE ON TO DEBUG SIGNALS
-        // SEE https://github.com/matsengrp/olmsted/issues/65
-        // onSignalWidth={(...args) => {
-        //   let result = args.slice(1)[0]
-        //   console.log("width", result)
-        // }}
-        // onSignalHeight={(...args) => {
-        //   let result = args.slice(1)[0]
-        //   console.log("height", result)
-        // }}
-        // onSignalBrush_x={(...args) => {
-        //   let result = args.slice(1)[0]
-        //   console.log('brushx: ', result)
-        // }}
-        // onSignalBrush_y={(...args) => {
-        //   let result = args.slice(1)[0]
-        //   console.log('brushy: ', result)  
-        // }}
-        onSignalPts_tuple={(...args) => {
-          let family = args.slice(1)[0]
-          if(family.ident){
-            // Second argument specifies that we would like to 
-            // include just this family in our brush selection
-            // and therefore in the table since we have clicked it
+    if (this.props.availableClonalFamilies) {
+      return  <div>
+          {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
+          {this.props.availableClonalFamilies.length > 0 && <Vega
+          // TURN THESE ON TO DEBUG SIGNALS
+          // SEE https://github.com/matsengrp/olmsted/issues/65
+          // onSignalWidth={(...args) => {
+          //   let result = args.slice(1)[0]
+          //   console.log("width", result)
+          // }}
+          // onSignalHeight={(...args) => {
+          //   let result = args.slice(1)[0]
+          //   console.log("height", result)
+          // }}
+          // onSignalBrush_x={(...args) => {
+          //   let result = args.slice(1)[0]
+          //   console.log('brushx: ', result)
+          // }}
+          // onSignalBrush_y={(...args) => {
+          //   let result = args.slice(1)[0]
+          //   console.log('brushy: ', result)  
+          // }}
+          onSignalPts_tuple={(...args) => {
+            let family = args.slice(1)[0]
+            if(family.ident){
+              // Second argument specifies that we would like to 
+              // include just this family in our brush selection
+              // and therefore in the table since we have clicked it
 
-            this.props.selectFamily(family.ident, true)
-          }
-        }}
-        onSignalMouseDown={(...args) => {
-          let coords = args.slice(1)[0]
-          // Must check to see if there are actual mouse coordinates
-          // here and in the mouseup signal handler just below because
-          // they are triggered with undefined upon rendering the viz
-          if(coords){
-            this.props.updateSelectingStatus()
-            this.mouseDown = true
-          }
-        }}
-        onSignalMouseUp={(...args) => {
-          let coords = args.slice(1)[0]
-          if(this.mouseDown && coords){
-            this.props.updateSelectingStatus()
-          }
-          this.mouseDown = false
-        }}
-        onSignalXField={(...args) => {
-          let result = args.slice(1)[0]
-          this.xField = result
-        }}
-        onSignalYField={(...args) => {
-          let result = args.slice(1)[0]
-          this.yField = result
-        }}
-        onSignalFacet_by_signal={(...args) => {
-          let result = args.slice(1)[0]
-          this.props.updateFacet(result)          
-        }}
-        onSignalBrush_x_field={(...args) => {
-          let result = args.slice(1)[0]
-          this.props.updateBrushSelection("x", this.xField, result)
-        }}
-        onSignalBrush_y_field={(...args) => {
-          let result = args.slice(1)[0]
-          this.props.updateBrushSelection("y", this.yField, result)
-        }}
-        onSignalBrushed_facet_value={(...args) => {
-          let keyVal = args.slice(1)[0]
-          if(keyVal){
-            this.props.filterBrushSelection(keyVal[0], keyVal[1])
-          }
-        }}
-        onParseError={(...args) => console.error("parse error:", args)}
-        debug={/* true for debugging */ true}
-        // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
-        data={{source: this.props.availableClonalFamilies,
-              // Here we create a separate dataset only containing the id of the
-              // selected family so as to check quickly for this id within the 
-              // viz to highlight the selected family.
-              selected: [{'ident': this.props.selectedFamily}],
-              locus: [{'locus': this.props.locus}] }}
-        spec={this.spec}/>}
-    </div>
+              this.props.selectFamily(family.ident, true)
+            }
+          }}
+          onSignalMouseDown={(...args) => {
+            let coords = args.slice(1)[0]
+            // Must check to see if there are actual mouse coordinates
+            // here and in the mouseup signal handler just below because
+            // they are triggered with undefined upon rendering the viz
+            if(coords){
+              this.props.updateSelectingStatus()
+              this.mouseDown = true
+            }
+          }}
+          onSignalMouseUp={(...args) => {
+            let coords = args.slice(1)[0]
+            if(this.mouseDown && coords){
+              this.props.updateSelectingStatus()
+            }
+            this.mouseDown = false
+          }}
+          onSignalXField={(...args) => {
+            let result = args.slice(1)[0]
+            this.xField = result
+          }}
+          onSignalYField={(...args) => {
+            let result = args.slice(1)[0]
+            this.yField = result
+          }}
+          onSignalFacet_by_signal={(...args) => {
+            let result = args.slice(1)[0]
+            this.props.updateFacet(result)          
+          }}
+          onSignalBrush_x_field={(...args) => {
+            let result = args.slice(1)[0]
+            this.props.updateBrushSelection("x", this.xField, result)
+          }}
+          onSignalBrush_y_field={(...args) => {
+            let result = args.slice(1)[0]
+            this.props.updateBrushSelection("y", this.yField, result)
+          }}
+          onSignalBrushed_facet_value={(...args) => {
+            let keyVal = args.slice(1)[0]
+            if(keyVal){
+              this.props.filterBrushSelection(keyVal[0], keyVal[1])
+            }
+          }}
+          onParseError={(...args) => console.error("parse error:", args)}
+          debug={/* true for debugging */ true}
+          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+          data={{source: this.props.availableClonalFamilies,
+                // Here we create a separate dataset only containing the id of the
+                // selected family so as to check quickly for this id within the 
+                // viz to highlight the selected family.
+                selected: [{'ident': this.props.selectedFamily}],
+                locus: [{'locus': this.props.selectedFamily}] }}
+          spec={this.spec}/>}
+      </div>
+    } else {
+      return <h3>Loading data...</h3>
+    }
   }
 };
 
@@ -224,7 +225,7 @@ const mapStateToPropsTree = (state) => {
   let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
   let selectedReconstruction = reconstructionsSelector.getSelectedReconstruction(state)
   // idea is that none of these selectors will work (or be needed) if reconstruction data isn't in yet
-  if (selectedReconstruction) {
+  if (selectedFamily && selectedReconstruction) {
     let naiveData = getNaiveVizData(selectedFamily)
     return {
       selectedFamily,
@@ -266,7 +267,7 @@ class TreeViz extends React.Component {
     // without having to find and reselect that sequence.
     let deselectSeq = true
     if(this.props.selectedSeq){
-      let newSelectedReconstruction = reconstructionsSelector.findReconstruction(this.props.selectedFamily, newReconId)
+      let newSelectedReconstruction = reconstructionsSelector.getReconstructionData(this.props.selectedFamily, newReconId)
       let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
       deselectSeq = !selectedSeqInNewReconstruction
     }
@@ -370,28 +371,32 @@ const mapStateToPropsLineage = (state) => {
 @connect(mapStateToPropsLineage)
 class Lineage extends React.Component {
   render() {
-        let naiveData = getNaiveVizData(this.props.selectedFamily)
-        let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
-        return <div>
-          <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
-          <h3>Amino acid sequence:</h3>
-          <p>{this.props.selectedSeq.aa_seq}</p>
-          <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
-          <DownloadFasta sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
-                           filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
-                           label="Download Fasta: Lineage Sequences"/>
-          <h3>Lineage</h3>
-          <Vega
-            onParseError={(...args) => console.error("parse error:", args)}
-            debug={/* true for debugging */ true}
-            data={{
-              naive_data: naiveData.source,
-              cdr3_bounds: cdr3Bounds,
-            }}
-            spec={seqAlignSpec(this.props.lineageData)}
-          />
-        </div>
-        }};
+    if (this.props.selectedFamily) {
+      let naiveData = getNaiveVizData(this.props.selectedFamily)
+      let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
+      return <div>
+        <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
+        <h3>Amino acid sequence:</h3>
+        <p>{this.props.selectedSeq.aa_seq}</p>
+        <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
+        <DownloadFasta sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
+                         filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
+                         label="Download Fasta: Lineage Sequences"/>
+        <h3>Lineage</h3>
+        <Vega
+          onParseError={(...args) => console.error("parse error:", args)}
+          debug={/* true for debugging */ true}
+          data={{
+            naive_data: naiveData.source,
+            cdr3_bounds: cdr3Bounds,
+          }}
+          spec={seqAlignSpec(this.props.lineageData)}
+        />
+      </div>
+    } else {
+      return <div>No acestral sequences to show</div>
+    }
+  }};
 
 
 // export compoents
