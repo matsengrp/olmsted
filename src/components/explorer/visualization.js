@@ -266,12 +266,12 @@ class TreeViz extends React.Component {
     // to compare the lineages more easily between reconstructions
     // without having to find and reselect that sequence.
     let deselectSeq = true
-    if(this.props.selectedSeq){
-      let newSelectedReconstruction = reconstructionsSelector.getReconstructionData(this.props.selectedFamily, newReconId)
+    if (this.props.selectedSeq) {
+      let newSelectedReconstruction = reconstructionsSelector.computeReconstructionData(this.props.selectedFamily)
       let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
       deselectSeq = !selectedSeqInNewReconstruction
     }
-    if(deselectSeq){this.props.dispatchSelectedSeq(undefined)}
+    if (deselectSeq) {this.props.dispatchSelectedSeq(undefined)}
     // This is how we deselect the currently selected sequence
     this.props.dispatchSelectedReconstruction(newReconId)
   }

@@ -13,7 +13,6 @@ const reconstructions = (state = {
       return Object.assign({}, state, {
         cache: Object.assign({}, state.cache, updates)})
     } case types.UPDATE_SELECTED_RECONSTRUCTION: {
-      console.log("UPDATE_SELECTED_RECONSTRUCTION called")
       return Object.assign({}, state, {
         selectedReconstructionIdent: action.reconstruction,
       });
