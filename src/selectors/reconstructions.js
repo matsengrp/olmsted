@@ -122,7 +122,7 @@ const findNaive = (data) => {
 // Create an alignment for naive + all of the leaves of the tree (reconstruction)
 // and find unique set of sequences (giving preference to leaves, naive, and duplicate
 // internal nodes that are closer to naive)
-const computeReconstructionData = (reconstruction) => { 
+export const computeReconstructionData = (reconstruction) => { 
   let recon = _.clone(reconstruction)   //clone for assign by value
   if (recon["asr_tree"] && recon["asr_tree"].length > 0){
     let data = recon["asr_tree"].slice(0);
