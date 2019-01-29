@@ -154,14 +154,37 @@ const concatTreeWithAlignmentSpec = () => {
                         {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"},
                         
                         {"key": "id", "type": "stratify", "parentKey": "parent"},
+                        {
+                          "type": "formula",
+                          "expr": "branch_width_by !== 'none' ? datum[branch_width_by] : null",
+                          "as": "branch_width_by_field"
+                        },
+                        {
+                          "type": "formula",
+                          "expr": "branch_color_by !== 'none' ? datum[branch_color_by] : null",
+                          "as": "branch_color_by_field"
+                        }
                       ],
          "source": "source_0"},
         {"name": "links",
          "transform": [ {"key": "id", "type": "treelinks"},
                         {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
          "source": "tree"},
-        {"name": "nodes", "transform": [{"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"}],
-          "source": "tree"},
+        {"name": "nodes", "transform": [
+                                          {"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"},           
+                                          {
+                                            "type": "extent",
+                                            "field": "branch_width_by_field",
+                                            "signal": "branch_width_extent"
+                                          },
+                                          {
+                                            "type": "extent",
+                                            "field": "branch_color_by_field",
+                                            "signal": "branch_color_extent"
+                                          }
+                                       ],
+          "source": "tree"
+        },
         {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"},
         // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
         // in order to normalize by this sum instead of trusting the total multiplicity values
@@ -333,6 +356,31 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "leaf_size_by",
           "value": "multiplicity",
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
+        },
+        {
+          // Seq metric to use for sizing branches; 
+          // uses value from the child of the branch
+          "name": "branch_width_by",
+          "value": "lbr",
+          "bind": {"input": "select", "options": ["none", "lbr", "lbi"]} 
+        },
+        {
+          // Seq metric to use for coloring branches; 
+          // uses value from the child of the branch
+          "name": "branch_color_by",
+          "value": "lbi",
+          "bind": {"input": "select", "options": ["none", "lbr", "lbi", "parent"]} 
+        },
+        {
+          // If a branch_color_by option (a seq metric) should be colored categorically
+          // rather than sequentially, put its name here.
+          "name": "categorical_seq_metrics",
+          "value": "[\"parent\"]",
+        },
+        {
+          // Choose the color scheme/scale to use depending on the selected metric
+          "name": "branch_color_scale",
+          "update": "indexof(categorical_seq_metrics, branch_color_by) > 0 ? \"branch_color_categorical\" : \"branch_color_sequential\""
         },
         {
           "name": "show_labels",
@@ -654,8 +702,27 @@ const concatTreeWithAlignmentSpec = () => {
               "encode": {
                 "update": {
                   "path": {"field": "path"},
-                  "strokeWidth": {"value": 2},
-                  "stroke": {"value": "#ccc"}
+                  "strokeWidth": [
+                                    // Size branches by the branch_width_by_field (see data transform)
+                                    {
+                                      "test": "branch_width_by !== \"none\"",
+                                      "scale": "branch_width",
+                                      "field": "target.branch_width_by_field",
+                                      
+                                    },
+                                    // Size all branches the same if branch_width_by is "none"
+                                    {"value": "2"}
+                                  ],
+                  "stroke": [
+                              // Color branches by the branch_color_by_field (see data transform)
+                              {
+                                "test": "branch_color_by !== \"none\"",
+                                "scale": {"signal": "branch_color_scale"},
+                                "field": "target.branch_color_by_field"
+                              },
+                              // Color all branches grey if branch_color_by is "none"
+                              {"value": "grey"}
+                            ]
                 }
               },
               "type": "path",
@@ -1078,7 +1145,32 @@ const concatTreeWithAlignmentSpec = () => {
           ]
         }
       ],    
-      "scales": [     
+      "scales": [ 
+        {
+          "name": "branch_color_categorical",
+          "type": "ordinal",
+          "domain": {"data": "tree", "field": "branch_color_by_field"},
+          "range": {"scheme": "category10"}
+        },    
+        {
+          "name": "branch_color_sequential",
+          "type": "sequential",
+          "domain": {"signal": "branch_color_extent"},
+          // blue to purple to red
+          "range": [
+            "#0032c8", "#2400c8", "#5000c8", "#8500c8", "#c800c4", "#c80000"
+          ]
+          // Light to dark purples
+          // "range": {"scheme": "purples"},
+          // Set this to true to reverse range order (flip the scale)
+          // "reverse": true
+        }, 
+        {
+          "name": "branch_width",
+          "type": "linear",
+          "domain": {"signal": "branch_width_extent"},
+          "range": [0.5,5]
+        },
         {
           "name": "naive_color",
           "type": "ordinal",
