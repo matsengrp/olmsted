@@ -103,10 +103,8 @@ const uniqueSeqs = (asr_tree) => {
   let uniq_int_nodes = _.filter(
                           _.uniqBy(
                               _.reverse(internal_nodes),
-                              'nt_seq'
-                          ),
-                          function(node) {return !taken_seqs.has(node.nt_seq)}
-                       )
+                              'nt_seq'),
+                          function(node) {return !taken_seqs.has(node.nt_seq)})
 
   download_seqs.push(naive)
   download_seqs = download_seqs.concat(uniq_int_nodes)
@@ -122,8 +120,17 @@ const findNaive = (data) => {
 // Create an alignment for naive + all of the leaves of the tree (reconstruction)
 // and find unique set of sequences (giving preference to leaves, naive, and duplicate
 // internal nodes that are closer to naive)
+
+const dissoc = (d, key) => {
+  let newD = _.clone(d)
+  newD[key] = undefined
+  return newD}
+
 export const computeReconstructionData = (reconstruction) => { 
   let recon = _.clone(reconstruction)   //clone for assign by value
+  // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
+  recon.asr_tree = _.map(recon.asr_tree, (x) => (x.parent == "inferred_naive" || x.id == "inferred_naive") ? dissoc(x, "lbr") : x)
+
   if (recon["asr_tree"] && recon["asr_tree"].length > 0){
     let data = recon["asr_tree"].slice(0);
     let naive = findNaive(data);    
