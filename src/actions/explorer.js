@@ -1,7 +1,7 @@
 
 import * as types from "./types"
 import * as loadData from "../actions/loadData.js"
-
+import * as reconstructionsSelector from "../selectors/reconstructions"
 
 export const pageDown = {type: types.PAGE_DOWN}
 export const pageUp = {type: types.PAGE_UP}
@@ -23,8 +23,22 @@ export const selectFamily = (id, updateBrushSelection=false) => {
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-export const updateSelectedReconstruction = (reconIdent) => {
-  return {type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent}}
+export const updateSelectedReconstruction = (reconIdent, selectedFamily, selectedSeq) => {
+  return (dispatch, getState) => {
+    let {reconstructions} = getState()
+    let deselectSeq = true
+    if (selectedSeq) {
+      let newSelectedReconstruction = reconstructionsSelector.getReconstructionFromCache(reconstructions.cache, selectedFamily, reconIdent)
+      let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": selectedSeq})
+      
+      deselectSeq = !selectedSeqInNewReconstruction
+    }
+    if (deselectSeq) {
+      dispatch(updateSelectedSeq(undefined))}
+    // This is how we deselect the currently selected sequence
+    dispatch({type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent})
+  }
+}
 
 export const updateSelectingStatus = () => {
   return {type: types.SELECTING_STATUS}}

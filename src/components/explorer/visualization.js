@@ -99,8 +99,11 @@ const NaiveSequence = ({datum}) => {
 // and it's the top level entry point for us in exploring datasets/clonal-families in gerater detail.
 // Goal is to be super configurable and powerful.
 
-@connect((state) => ({availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
-                      selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)}),
+@connect((state) => ({
+    availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
+    selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
+    locus: state.clonalFamilies.locus
+  }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
     selectFamily: explorerActions.selectFamily,
@@ -202,7 +205,7 @@ class ClonalFamiliesViz extends React.Component {
                 // selected family so as to check quickly for this id within the 
                 // viz to highlight the selected family.
                 selected: [{'ident': this.props.selectedFamily}],
-                locus: [{'locus': this.props.selectedFamily}] }}
+                locus: [{'locus': this.props.locus}] }}
           spec={this.spec}/>}
       </div>
     } else {
@@ -244,8 +247,8 @@ const mapDispatchToProps = (dispatch) => ({
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
   },
-  dispatchSelectedReconstruction: (reconIdent) => {
-    dispatch(explorerActions.updateSelectedReconstruction(reconIdent))
+  dispatchSelectedReconstruction: (reconIdent, selectedFamily, selectedSeq) => {
+    dispatch(explorerActions.updateSelectedReconstruction(reconIdent, selectedFamily, selectedSeq))
   }
 })
 
@@ -256,25 +259,7 @@ class TreeViz extends React.Component {
   constructor(props) {
     super(props);
     this.spec = concatTreeWithAlignmentSpec()
-    this.selectReconstruction = this.selectReconstruction.bind(this)
-  }
-
-  selectReconstruction(newReconId){
-    // We default to deselecting the selected sequence when
-    // we select a new reconstruction. If the new reconstruction
-    // contains the same sequence, we allow it to remain selected
-    // to compare the lineages more easily between reconstructions
-    // without having to find and reselect that sequence.
-    let deselectSeq = true
-    if (this.props.selectedSeq) {
-      let newSelectedReconstruction = reconstructionsSelector.computeReconstructionData(this.props.selectedFamily)
-      let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": this.props.selectedSeq})
-      deselectSeq = !selectedSeqInNewReconstruction
-    }
-    if (deselectSeq) {this.props.dispatchSelectedSeq(undefined)}
-    // This is how we deselect the currently selected sequence
-    this.props.dispatchSelectedReconstruction(newReconId)
-  }
+  }  
 
   render() {   
     if (!this.props.selectedReconstruction) {
@@ -311,7 +296,7 @@ class TreeViz extends React.Component {
             </p>
             <label>Ancestral reconstruction method: </label>
             <select value={this.props.treeNodes.ident}
-              onChange={(event) => this.selectReconstruction(event.target.value)}>
+              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
               {this.props.selectedFamily.reconstructions.map((recon) =>
                 <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
             </select>

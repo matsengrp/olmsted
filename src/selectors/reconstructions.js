@@ -11,15 +11,18 @@ const getSelectedReconstructionIdent = (state) =>
   state.reconstructions.selectedReconstructionIdent
 
 
+export const getReconstructionFromCache = (cache, family, selectedIdent) => {
+  let ident = selectedIdent ||
+    (_.find(_.values(family.reconstructions), {prune_strategy: "seed_lineage"}) ||
+     _.find(_.values(family.reconstructions), {prune_strategy: "min_adcl"}) ||
+     _.values(family.reconstructions)[0]).ident
+  return cache[ident]
+}
+
 // combine these to select out the actual selected reconstruction entity
 export const getSelectedReconstruction = createSelector(
-  [(state) => state.reconstructions, clonalFamiliesSelectors.getSelectedFamily, getSelectedReconstructionIdent],
-  (reconstructions, family, selectedIdent) => {
-    let ident = selectedIdent ||
-      (_.find(_.values(family.reconstructions), {prune_strategy: "seed_lineage"}) ||
-       _.find(_.values(family.reconstructions), {prune_strategy: "min_adcl"}) ||
-       _.values(family.reconstructions)[0]).ident
-    return reconstructions.cache[ident]}
+  [(state) => state.reconstructions.cache, clonalFamiliesSelectors.getSelectedFamily, getSelectedReconstructionIdent],
+  getReconstructionFromCache
 )
 
 
