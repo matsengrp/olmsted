@@ -372,6 +372,29 @@ const concatTreeWithAlignmentSpec = () => {
           "bind": {"input": "select", "options": ["none", "lbr", "lbi", "parent"]} 
         },
         {
+          "name": "min_color_value",
+          "value": 0,
+          "bind": {"input": "range", "max": 4, "step": 1, "min": 0}
+        },
+        {
+          "name": "branch_color_range",
+          "update": "slice(full_purple_range, min_color_value)"
+        },
+        {
+          "name": "full_purple_range",
+          "value": [
+            "#f7fcfd",
+            "#e0ecf4",
+            "#bfd3e6",
+            "#9ebcda",
+            "#8c96c6",
+            "#8c6bb1",
+            "#88419d",
+            "#810f7c",
+            "#4d004b"
+          ]
+        },
+        {
           // If a branch_color_by option (a seq metric) should be colored categorically
           // rather than sequentially, put its name here.
           "name": "categorical_seq_metrics",
@@ -1156,10 +1179,11 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "branch_color_sequential",
           "type": "sequential",
           "domain": {"signal": "branch_color_extent"},
+          "range": {"signal": "branch_color_range"}
           // blue to purple to red
-          "range": [
-            "#0032c8", "#2400c8", "#5000c8", "#8500c8", "#c800c4", "#c80000"
-          ]
+          // "range": [
+          //   "#0032c8", "#2400c8", "#5000c8", "#8500c8", "#c800c4", "#c80000"
+          // ]
           // Light to dark purples
           // "range": {"scheme": "purples"},
           // Set this to true to reverse range order (flip the scale)
