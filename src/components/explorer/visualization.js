@@ -214,11 +214,72 @@ class ClonalFamiliesViz extends React.Component {
   }
 };
 
+// Tree header component
+// =================================
+// Describes the tree viz, includes dropdown for selecting reconstructions,
+// and provides loading message while reconstructions are being requested.
+@connect(null, (dispatch) => ({
+  dispatchSelectedReconstruction: (reconIdent, selectedFamily, selectedSeq) => {
+    dispatch(explorerActions.updateSelectedReconstruction(reconIdent, selectedFamily, selectedSeq))
+  }
+}))
+class TreeHeader extends React.Component {
+  render(){
+     if (!this.props.selectedReconstruction) {
+      return (
+        <div>
+          <h2>Loading data for clonal family: {this.props.selectedFamily.id}...</h2>
+        </div>)
+    } else {
+      return (
+        <div>
+          <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
+          <div>
+            <p>
+              Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
+              On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
+              These sequences are ordered so as to align with the corresponding tree tips.
+            </p>
+            <label>Ancestral reconstruction method: </label>
+            <select value={this.props.treeNodes.ident}
+              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
+              {this.props.selectedFamily.reconstructions.map((recon) =>
+                <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
+            </select>
+            </div>
+          </div>
+      )
+    }
+  }
+}
+
+// Warning about incomplete clonal family
+// =================================
+// TODO: abstract a generic incomplete data component that takes
+// props and use generic component nested in specific one here
+// TODO: see TODO #94 below 
+class IncompleteFamilyWarning extends React.Component {
+  render(){
+    return (
+      <div>
+        <h2>Insufficient data to display clonal family: {this.props.family.id}</h2>
+        <p>Selected family object has been logged to the console for inspection:</p>
+        <div>
+          <pre>
+            <code>
+              { JSON.stringify(this.props.family, null, 2) }
+            </code>
+          </pre>
+        </div>
+      </div>
+      )
+  }
+}
+
 
 
 // Phylogenetic tree & alignment viz
 // =================================
-//
 // We show this for the given selected clonal family and reconstruction (in case there are multiple such
 // reconstructions).
 
@@ -243,97 +304,83 @@ const mapStateToPropsTree = (state) => {
   }
 }
 
-const mapDispatchToProps = (dispatch) => ({
-  dispatchSelectedSeq: (seq) => {
-    dispatch(explorerActions.updateSelectedSeq(seq))
-  },
-  dispatchSelectedReconstruction: (reconIdent, selectedFamily, selectedSeq) => {
-    dispatch(explorerActions.updateSelectedReconstruction(reconIdent, selectedFamily, selectedSeq))
-  }
-})
-
 // now for the actual component definition
 
-@connect(mapStateToPropsTree, mapDispatchToProps)
+@connect(mapStateToPropsTree, (dispatch) => ({
+  dispatchSelectedSeq: (seq) => {
+    dispatch(explorerActions.updateSelectedSeq(seq))
+  }
+}))
 class TreeViz extends React.Component {
   constructor(props) {
     super(props);
     this.spec = concatTreeWithAlignmentSpec()
+    this.treeDataFromProps = this.treeDataFromProps.bind(this)
+    this.tempVegaData = {
+      source_0: [],
+      source_1: [],
+      naive_data: [],
+      cdr3_bounds: [{"x":0},{"x":100}],
+      leaves_count_incl_naive: 42,
+      pts_tuple: [],
+      seed:[]
+    }
   }  
 
-  render() {   
-    if (!this.props.selectedReconstruction) {
-      return (
-        <div>
-          <h2>Loading data for clonal family: {this.props.selectedFamily.id}...</h2>
-        </div>)
-    } else if (!this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions){
+  treeDataFromProps(){
+    return {
+      source_0: this.props.treeNodes.asr_tree,
+      source_1: this.props.treeNodes.tips_alignment,
+      naive_data: this.props.naiveData.source,
+      cdr3_bounds: this.props.cdr3Bounds,
+      leaves_count_incl_naive: this.props.treeNodes.leaves_count_incl_naive,
+      pts_tuple: this.props.selectedFamily,
+      // Here we create a separate dataset only containing the id of the
+      // seed sequence so as to check quickly for this id within the 
+      // viz to color the seed blue
+      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
+    }
+  }
+
+  render() { 
+    if (!this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions){
       // TODO #94: We need to have a better way to tell if a family should not be
       // displayed because its data are incomplete. One idea is an 'incomplete' field
       // that we can set to true (upon building and checking for valid data) and have some
       // minimum bit of information saying the error that occured and/or the field that was not built.
-      return (
+      var incompleteFamily = true
+    } 
+    let completeData = this.props.selectedReconstruction && !incompleteFamily
+    return (
         <div>
-          <h2>Insufficient data to display clonal family: {this.props.selectedFamily.id}</h2>
-          <p>Selected family object has been logged to the console for inspection:</p>
-          <div>
-            <pre>
-              <code>
-                { JSON.stringify(this.props.selectedFamily, null, 2) }
-              </code>
-            </pre>
-          </div>
-        </div>)
-    } else {
-      return (
-        <div>
-          <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
-          <div>
-            <p>
-              Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
-              On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
-              These sequences are ordered so as to align with the corresponding tree tips.
-            </p>
-            <label>Ancestral reconstruction method: </label>
-            <select value={this.props.treeNodes.ident}
-              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
-              {this.props.selectedFamily.reconstructions.map((recon) =>
-                <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
-            </select>
-            <Vega onParseError={(...args) => console.error("parse error:", args)}      
-              onSignalPts_tuple={(...args) => {
-                let node = args.slice(1)[0]
-                if(node.parent){
-                  // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                  this.props.dispatchSelectedSeq(node.id)
-                }
-              }}
-              debug={/* true for debugging */ true}
-              data={{source_0: this.props.treeNodes.asr_tree,
-                     source_1: this.props.treeNodes.tips_alignment,
-                     naive_data: this.props.naiveData.source,
-                     cdr3_bounds: this.props.cdr3Bounds,
-                     leaves_count_incl_naive: this.props.treeNodes.leaves_count_incl_naive,
-                     pts_tuple: this.props.selectedFamily,
-                    // Here we create a separate dataset only containing the id of the
-                    // seed sequence so as to check quickly for this id within the 
-                    // viz to color the seed blue
-                     seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
-                  }}
-              spec={this.spec}
-              // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
-              // spec={concatTreeWithAlignmentSpec()}
-
-              />
+          {incompleteFamily && <IncompleteFamilyWarning family={this.props.selectedFamily}/>}
+          <TreeHeader selectedFamily={this.props.selectedFamily} selectedReconstruction={this.props.selectedReconstruction} treeNodes={this.props.treeNodes}/>
+          <Vega onParseError={(...args) => console.error("parse error:", args)}      
+            onSignalPts_tuple={(...args) => {
+              let node = args.slice(1)[0]
+              if(node.parent){
+                // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
+                this.props.dispatchSelectedSeq(node.id)
+              }
+            }}
+            debug={/* true for debugging */ true}
+            data={completeData ? this.treeDataFromProps() : this.tempVegaData}
+            spec={this.spec}
+            // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
+            // spec={concatTreeWithAlignmentSpec()}
+          />
+          {completeData && <div>
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
-                           filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
-                           label="Download Fasta: Unique Sequences In This Tree"/>
+                          filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
+                          label="Download Fasta: Unique Sequences In This Tree"/>
             <DownloadText  text={this.props.selectedReconstruction.newick_string}
-                           filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
-                           label="Download Clonal Family Tree Newick String"/>
-          </div>
-        </div>)
-    }}};
+                          filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
+                          label="Download Clonal Family Tree Newick String"/>
+          </div>}
+        </div>
+    )
+  }
+};
 
 
 // Lineage focus viz
