@@ -216,8 +216,7 @@ class ClonalFamiliesViz extends React.Component {
 
 // Tree header component
 // =================================
-// Describes the tree viz, includes dropdown for selecting reconstructions,
-// and provides loading message while reconstructions are being requested.
+// Describes the tree viz, includes dropdown for selecting reconstructions.
 @connect(null, (dispatch) => ({
   dispatchSelectedReconstruction: (reconIdent, selectedFamily, selectedSeq) => {
     dispatch(explorerActions.updateSelectedReconstruction(reconIdent, selectedFamily, selectedSeq))
@@ -225,49 +224,39 @@ class ClonalFamiliesViz extends React.Component {
 }))
 class TreeHeader extends React.Component {
   render(){
-     if (!this.props.selectedReconstruction) {
-      return (
+    return (
+      <div>
+        <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
         <div>
-          <h2>Loading data for clonal family: {this.props.selectedFamily.id}...</h2>
-        </div>)
-    } else {
-      return (
-        <div>
-          <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
-          <div>
-            <p>
-              Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
-              On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
-              These sequences are ordered so as to align with the corresponding tree tips.
-            </p>
-            <label>Ancestral reconstruction method: </label>
-            <select value={this.props.treeNodes.ident}
-              onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
-              {this.props.selectedFamily.reconstructions.map((recon) =>
-                <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
-            </select>
-            </div>
+          <p>
+            Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
+            On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
+            These sequences are ordered so as to align with the corresponding tree tips.
+          </p>
+          <label>Ancestral reconstruction method: </label>
+          <select value={this.props.treeNodes.ident}
+            onChange={(event) => this.props.dispatchSelectedReconstruction(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
+            {this.props.selectedFamily.reconstructions.map((recon) =>
+              <option key={recon.ident} value={recon.ident}>{recon.id}</option>)}
+          </select>
           </div>
-      )
-    }
+        </div>
+    )
   }
 }
 
-// Warning about incomplete clonal family
-// =================================
-// TODO: abstract a generic incomplete data component that takes
-// props and use generic component nested in specific one here
-// TODO: see TODO #94 below 
-class IncompleteFamilyWarning extends React.Component {
+// Print an object to the DOM because it is broken somehow
+class IncompleteDataWarning extends React.Component {
   render(){
+    let id_of_broken_data = this.props.datum.id || this.props.datum.ident
     return (
       <div>
-        <h2>Insufficient data to display clonal family: {this.props.family.id}</h2>
-        <p>Selected family object has been logged to the console for inspection:</p>
+        <h2>Insufficient data to display {this.props.data_type}{id_of_broken_data && ": " + id_of_broken_data}</h2>
+        <p>{this.props.data_type} object has been logged to the console for inspection:</p>
         <div>
           <pre>
             <code>
-              { JSON.stringify(this.props.family, null, 2) }
+              { JSON.stringify(this.props.datum, null, 2) }
             </code>
           </pre>
         </div>
@@ -276,7 +265,7 @@ class IncompleteFamilyWarning extends React.Component {
   }
 }
 
-
+const isReconstructionComplete = (recon) => recon.asr_tree && !recon.asr_tree.error
 
 // Phylogenetic tree & alignment viz
 // =================================
@@ -289,7 +278,7 @@ const mapStateToPropsTree = (state) => {
   let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
   let selectedReconstruction = reconstructionsSelector.getSelectedReconstruction(state)
   // idea is that none of these selectors will work (or be needed) if reconstruction data isn't in yet
-  if (selectedFamily && selectedReconstruction) {
+  if (selectedFamily && selectedReconstruction && isReconstructionComplete(selectedReconstruction)) {
     let naiveData = getNaiveVizData(selectedFamily)
     return {
       selectedFamily,
@@ -327,6 +316,8 @@ class TreeViz extends React.Component {
     }
   }  
 
+  // Try to source data for the vega viz from props instead of faking
+  // with the empty data attribute set in the constructor
   treeDataFromProps(){
     return {
       source_0: this.props.treeNodes.asr_tree,
@@ -343,18 +334,33 @@ class TreeViz extends React.Component {
   }
 
   render() { 
-    if (!this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions){
-      // TODO #94: We need to have a better way to tell if a family should not be
-      // displayed because its data are incomplete. One idea is an 'incomplete' field
-      // that we can set to true (upon building and checking for valid data) and have some
-      // minimum bit of information saying the error that occured and/or the field that was not built.
-      var incompleteFamily = true
-    } 
-    let completeData = this.props.selectedReconstruction && !incompleteFamily
+    // TODO #94: We need to have a better way to tell if a family should not be
+    // displayed because its data are incomplete. One idea is an 'incomplete' field
+    // that we can set to true (upon building and checking for valid data) and have some
+    // minimum bit of information saying the error that occured and/or the field that was not built.
+    let incompleteFamily = !this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions
+
+    // Being explicit about the fact that we are relying on the reconstruction being
+    // defined vs undefined instead of keeping track of its true loading state
+    let reconstructionLoading = this.props.selectedReconstruction ? false : true
+
+    let incompleteRecon = !reconstructionLoading && !isReconstructionComplete(this.props.selectedReconstruction)
+    let completeData = !incompleteFamily && !reconstructionLoading && isReconstructionComplete(this.props.selectedReconstruction)
     return (
         <div>
-          {incompleteFamily && <IncompleteFamilyWarning family={this.props.selectedFamily}/>}
-          <TreeHeader selectedFamily={this.props.selectedFamily} selectedReconstruction={this.props.selectedReconstruction} treeNodes={this.props.treeNodes}/>
+          {/* Reconstruction still loading aka undefined*/}
+          {!incompleteFamily && reconstructionLoading &&
+            <div>
+              <h2>Loading data for clonal family: {this.props.selectedFamily.id}...</h2>
+            </div>
+          }
+          {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteRecon */}
+          {incompleteFamily && <IncompleteDataWarning data_type={"clonal family"} datum={this.props.selectedFamily}/>}
+          {incompleteRecon && <IncompleteDataWarning data_type={"reconstruction"} datum={this.props.selectedReconstruction}/>}
+          {/* Show tree header if complete family, reconstruction */}
+          {completeData && <TreeHeader selectedFamily={this.props.selectedFamily} selectedReconstruction={this.props.selectedReconstruction} treeNodes={this.props.treeNodes}/>}
+          {/* Vega component always gets rendered, its data are faked if necessary;
+              this allows us to not reset its UI controls between selecting trees */}
           <Vega onParseError={(...args) => console.error("parse error:", args)}      
             onSignalPts_tuple={(...args) => {
               let node = args.slice(1)[0]
@@ -369,6 +375,7 @@ class TreeViz extends React.Component {
             // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
             // spec={concatTreeWithAlignmentSpec()}
           />
+          {/* Show downloads if complete family, reconstruction */}
           {completeData && <div>
             <DownloadFasta sequencesSet={this.props.treeNodes.download_unique_family_seqs.slice()}
                           filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
