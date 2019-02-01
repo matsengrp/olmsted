@@ -358,7 +358,7 @@ class TreeViz extends React.Component {
           {incompleteFamily && <IncompleteDataWarning data_type={"clonal family"} datum={this.props.selectedFamily}/>}
           {incompleteRecon && <IncompleteDataWarning data_type={"reconstruction"} datum={this.props.selectedReconstruction}/>}
           {/* Show tree header if complete family, reconstruction */}
-          {completeData && <TreeHeader selectedFamily={this.props.selectedFamily} selectedReconstruction={this.props.selectedReconstruction} treeNodes={this.props.treeNodes}/>}
+          {completeData && <TreeHeader selectedFamily={this.props.selectedFamily} selectedReconstruction={this.props.selectedReconstruction} selectedSeq={this.props.selectedSeq} treeNodes={this.props.treeNodes}/>}
           {/* Vega component always gets rendered, its data are faked if necessary;
               this allows us to not reset its UI controls between selecting trees */}
           <Vega onParseError={(...args) => console.error("parse error:", args)}      
