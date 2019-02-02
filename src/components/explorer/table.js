@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as explorerActions from "../../actions/explorer.js"
 import {getClonalFamiliesPage, getLastPage} from "../../selectors/clonalFamilies";
-import {NaiveSequence} from './visualization';
+import {NaiveSequence} from './naive';
 
 
 @connect((state) => ({last_page: getLastPage(state)}),
