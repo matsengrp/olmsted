@@ -118,7 +118,7 @@ class ClonalFamiliesViz extends React.Component {
                 // Here we create a separate dataset only containing the id of the
                 // selected family so as to check quickly for this id within the 
                 // viz to highlight the selected family.
-                selected: [{'ident': this.props.selectedFamily ? this.props.selectFamily.ident : "none"}],
+                selected: [{'ident': this.props.selectedFamily ? this.props.selectedFamily.ident : "none"}],
                 locus: [{'locus': this.props.locus}] }}
           spec={this.spec}/>}
       </div>
