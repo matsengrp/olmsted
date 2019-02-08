@@ -185,21 +185,35 @@ const concatTreeWithAlignmentSpec = () => {
                                        ],
           "source": "tree"
         },
-        {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"},
-                  { "type": "formula", "expr": "isNumber(datum[\"affinity\"]) ? pow(10, 100*datum[\"affinity\"]) : NaN", "as": "scaled_affinity"},
-                  { "type": "formula", "expr": "(isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", "as": "leaf_size_by"},
+        {"name": "leaves", "transform": [
+            // Get just leaf nodes
+            { "expr": "datum.type == 'leaf'", "type": "filter"},
+            // Scale affinity for values with little variance
+            { "type": "formula", "expr": "isNumber(datum[\"affinity\"]) ? pow(10, 100*datum[\"affinity\"]) : NaN", "as": "scaled_affinity"},
+            // Choose field according to "leaf_size_by" signal and write it
+            // to a new field named "leaf_size_by" so we can always expect to 
+            // use that field from here on with respect to sizing the leaves. 
+            // Make sure it is a number / not NaN (vega differentiates these)
+            { "type": "formula", "expr": "(isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", "as": "leaf_size_by"},
         ], "source": "tree"},
+        // For the leaf marks / pie charts, we only want to show these for those
+        // leaves which actually have the appropriate data, so we filter out null values (which are coerced to NaN above in "leaves" dataset)
         {"name": "valid_leaves", "transform": [
           {"expr": "datum[\"leaf_size_by\"] !== NaN", "type": "filter"},
         ], "source": "leaves"},
-        // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
-        // // in order to normalize by this sum instead of trusting the total multiplicity values
+        // "leaf pies" does a "pie" transformation for timepoint multiplicity data
+        // For other data like affinity (and for nonexistant timepoint multiplicity data)
+        // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with 
+        // one value), which explains the confusing logic going on here.
         {
+          // TODO
+          // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
+          // in order to normalize by this sum instead of trusting the total multiplicity values
           "name": "leaf_pies",
           "transform": [ 
             {
               "type": "formula",
-              "expr": "( isArray( datum[leaf_size_by_map[leaf_size_by]] ) && datum[leaf_size_by_map[leaf_size_by]].length > 0 ) ? datum[leaf_size_by_map[leaf_size_by]] : ['none']",
+              "expr": "( isArray( datum[leaf_data_map[leaf_size_by]] ) && datum[leaf_data_map[leaf_size_by]].length > 0 ) ? datum[leaf_data_map[leaf_size_by]] : ['none']",
               "as": "timepoint_mult_data"
             },
             {
@@ -379,8 +393,8 @@ const concatTreeWithAlignmentSpec = () => {
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]} 
         },
         {
-          // Defines what to use for pie chart data, specifically in the cases of timepoint multiplicities
-          "name": "leaf_size_by_map",
+          // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
+          "name": "leaf_data_map",
           "update": "{\"scaled_affinity\": \"scaled_affinity\", \"affinity\": \"affinity\", \"cluster_multiplicity\": \"cluster_timepoint_multiplicities\", \"multiplicity\": \"timepoint_multiplicities\"}"
         },
         {
@@ -831,6 +845,9 @@ const concatTreeWithAlignmentSpec = () => {
                   },
                   "outerRadius": {
                       "scale": "leaf_size_scale",
+                      // Here we actually use the field named "leaf_size_by" instead of the signal
+                      // value because we have written the value of the appropriate field 
+                      // into a new field named "leaf_size_by"
                       "field": "leaf_size_by"
                   },        
                 }
