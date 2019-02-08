@@ -148,7 +148,7 @@ class TreeViz extends React.Component {
               }
             }}
             debug={/* true for debugging */ true}
-            logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+            // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
             data={completeData ? this.treeDataFromProps() : this.tempVegaData}
             spec={this.spec}
             // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
