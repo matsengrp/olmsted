@@ -87,7 +87,6 @@ def clean_dataset_record(d):
     return d
 
 def pull_datasets(t):
-    records = t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'})
     #import pdb; pdb.set_trace()
     records = list(t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'}))
     return map(comp(clean_record, clean_dataset_record), records)
