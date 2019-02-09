@@ -153,7 +153,7 @@ This application relies on React.js and Redux for basic framework, and Vega and 
 
 ## License and copyright
 
-Copyright 2018 Christopher Small and Erick Matsen 
+Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen 
 forked from Auspice Copyright 2014-2018 Trevor Bedford and Richard Neher.
 
 Source code to Olmsted is made available under the terms of the [GNU Affero General Public License](LICENSE.txt) (AGPL). Olmsted is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
