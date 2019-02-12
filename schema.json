@@ -162,6 +162,8 @@
    "db:cardinality": "db.cardinality:one"},
   {"db:ident": "cft.seq:cluster_timepoint_multiplicities",
    "db:cardinality": "db.cardinality:one"},
+  {"db:ident": "cft.seq:affinity",
+   "db:cardinality": "db.cardinality:one"},
 
   {"db:ident": "cft.tree.node:lbi",
    "db:cardinality": "db.cardinality:one"},

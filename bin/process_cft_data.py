@@ -87,7 +87,6 @@ def clean_dataset_record(d):
     return d
 
 def pull_datasets(t):
-    records = t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'})
     #import pdb; pdb.set_trace()
     records = list(t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'}))
     return map(comp(clean_record, clean_dataset_record), records)
@@ -105,6 +104,7 @@ sequence_pull_pattern = [
     "cft.seq:cluster_multiplicity",
     "cft.seq:timepoint_multiplicities",
     "cft.seq:cluster_timepoint_multiplicities",
+    "cft.seq:affinity",
     "cft.tree.node:lbi",
     "cft.tree.node:lbr"]
 
@@ -194,7 +194,6 @@ def parse_tree_data(args, c):
     aa_seqs_dict = create_seqs_dict(c['cft.reconstruction:cluster_aa']['bio.seq:set'])
     nt_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])
     seqmeta_dict = create_seqmeta_dict(c['cft.reconstruction:seqmeta']['tripl.csv:data'])
-
     # Note that this function is impure; it's mutable over leaves_counter and the internal nodes
     leaves_counter = {'count': 1}
     def process_node(node):
@@ -209,6 +208,7 @@ def parse_tree_data(args, c):
                 ['cft.seq:timepoint', None],
                 ['cft.seq:timepoints', listof],
                 ['cft.seq:cluster_timepoints', listof],
+                ['cft.seq:affinity', float],
                 ['cft.tree.node:lbi', float],
                 ['cft.tree.node:lbr', float]]:
             seqmeta = seqmeta_dict.get(node.name, {})
@@ -254,6 +254,7 @@ def parse_tree_data(args, c):
                  'height': node.height,
                  'nt_seq': node.nt_seq,
                  'aa_seq': node.aa_seq,
+                 'affinity': node.affinity,
                  'lbi': node.lbi,
                  'lbr': node.lbr,
                  'timepoint': node.timepoint,

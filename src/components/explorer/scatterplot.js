@@ -5,6 +5,7 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
+import * as vega from 'vega';
 
 // Clonal Families Viz
 // ===================
@@ -113,12 +114,12 @@ class ClonalFamiliesViz extends React.Component {
           }}
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ true}
-          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+        //   logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
           data={{source: this.props.availableClonalFamilies,
                 // Here we create a separate dataset only containing the id of the
                 // selected family so as to check quickly for this id within the 
                 // viz to highlight the selected family.
-                selected: [{'ident': this.props.selectedFamily ? this.props.selectFamily.ident : "none"}],
+                selected: [{'ident': this.props.selectedFamily ? this.props.selectedFamily.ident : "none"}],
                 locus: [{'locus': this.props.locus}] }}
           spec={this.spec}/>}
       </div>

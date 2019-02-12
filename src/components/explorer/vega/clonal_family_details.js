@@ -185,30 +185,65 @@ const concatTreeWithAlignmentSpec = () => {
                                        ],
           "source": "tree"
         },
-        {"name": "leaves", "transform": [{ "expr": "datum.type == 'leaf'", "type": "filter"}], "source": "tree"},
-        // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
-        // in order to normalize by this sum instead of trusting the total multiplicity values
-        {"name": "leaf_pies", "transform": [
-                                            // Make these depend on the cluster multiplicity vs multiplicity dropdown signal
-                                            // so as to update the pie chart values according to the appropriate timepoint mults
-                                            { "type": "formula", "expr": "leaf_size_by == 'cluster_multiplicity' ? datum['cluster_timepoint_multiplicities'] : datum['timepoint_multiplicities']", "as": "timepoint_mult_data"},
-                                            { "type": "flatten", "fields": ["timepoint_mult_data"]},
-                                            {
-                                              "type": "formula",
-                                              "expr": "datum.timepoint_mult_data.timepoint", "as": "timepoint_multiplicity_key"
-                                            },
-                                            {
-                                              "type": "formula",
-                                              "expr": "datum.timepoint_mult_data.multiplicity/datum[leaf_size_by]", "as": "timepoint_multiplicity_value"
-                                            },
-                                            {
-                                              "type": "pie",
-                                              "field": "timepoint_multiplicity_value",
-                                              "startAngle": 0,
-                                              "endAngle": {"signal": "length(data('leaves'))*6.29"}
-                                            }
-                                          ],
-          "source": "leaves"},
+        {"name": "leaves", "transform": [
+            // Get just leaf nodes
+            { "expr": "datum.type == 'leaf'", "type": "filter"},
+            // Scale affinity for values with little variance
+            { "type": "formula", "expr": "isNumber(datum[\"affinity\"]) ? pow(10, 100*datum[\"affinity\"]) : NaN", "as": "scaled_affinity"},
+            // Choose field according to "leaf_size_by" signal and write it
+            // to a new field named "leaf_size_by" so we can always expect to 
+            // use that field from here on with respect to sizing the leaves. 
+            // Make sure it is a number / not NaN (vega differentiates these)
+            { "type": "formula", "expr": "(isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", "as": "leaf_size_by"},
+        ], "source": "tree"},
+        // For the leaf marks / pie charts, we only want to show these for those
+        // leaves which actually have the appropriate data, so we filter out null values (which are coerced to NaN above in "leaves" dataset)
+        {"name": "valid_leaves", "transform": [
+          {"expr": "datum[\"leaf_size_by\"] !== NaN", "type": "filter"},
+        ], "source": "leaves"},
+        // "leaf pies" does a "pie" transformation for timepoint multiplicity data
+        // For other data like affinity (and for nonexistant timepoint multiplicity data)
+        // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with 
+        // one value), which explains the confusing logic going on here.
+        {
+          // TODO
+          // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
+          // in order to normalize by this sum instead of trusting the total multiplicity values
+          "name": "leaf_pies",
+          "transform": [ 
+            {
+              "type": "formula",
+              "expr": "( isArray( datum[leaf_data_map[leaf_size_by]] ) && datum[leaf_data_map[leaf_size_by]].length > 0 ) ? datum[leaf_data_map[leaf_size_by]] : ['none']",
+              "as": "timepoint_mult_data"
+            },
+            {
+              "type": "flatten", 
+              "fields": [
+                "timepoint_mult_data"
+              ]
+            },
+             {
+              "type": "formula",
+              "expr": "datum.timepoint_mult_data.timepoint",
+              "as": "timepoint_multiplicity_key"
+            },
+            {
+              "type": "formula",
+              "expr": "datum.timepoint_multiplicity_key ? datum.timepoint_mult_data.multiplicity/datum[leaf_size_by] : 1",
+              "as": "timepoint_multiplicity_value"
+            },
+            {
+              "type": "pie",
+              "field": "timepoint_multiplicity_value",
+              "startAngle": 0,
+              "endAngle": {
+                "signal": "length(data('valid_leaves'))*6.29"
+              }
+            }
+            
+          ],
+          "source": "valid_leaves"
+        },
         // Mutations Data
         {
           // Raw alignment data / mutations records
@@ -355,11 +390,16 @@ const concatTreeWithAlignmentSpec = () => {
           // Metadata field to use for sizing the leaves
           "name": "leaf_size_by",
           "value": "multiplicity",
-          "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity"]} 
+          "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]} 
         },
         {
-          // Seq metric to use for sizing branches; 
-          // uses value from the child of the branch
+          // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
+          "name": "leaf_data_map",
+          "update": "{\"scaled_affinity\": \"scaled_affinity\", \"affinity\": \"affinity\", \"cluster_multiplicity\": \"cluster_timepoint_multiplicities\", \"multiplicity\": \"timepoint_multiplicities\"}"
+        },
+        {
+         // Seq metric to use for sizing branches; 
+         // uses value from the child of the branch
           "name": "branch_width_by",
           "value": "lbr",
           "bind": {"input": "select", "options": ["none", "lbr", "lbi"]} 
@@ -372,13 +412,18 @@ const concatTreeWithAlignmentSpec = () => {
           "bind": {"input": "select", "options": ["none", "lbr", "lbi", "parent"]} 
         },
         {
+          "name": "branch_color_scheme",
+          "value": "redblue",
+          "bind": {"input": "select", "options": ["redblue", "purples"]} 
+        },
+        {
+          "name": "branch_color_scheme_map",
+          "update": "{purples: slice(full_purple_range, min_color_value), redblue: [\"darkblue\", \"red\"]}"
+        },
+        {
           "name": "min_color_value",
           "value": 0,
           "bind": {"input": "range", "max": 4, "step": 1, "min": 0}
-        },
-        {
-          "name": "branch_color_range",
-          "update": "slice(full_purple_range, min_color_value)"
         },
         {
           "name": "full_purple_range",
@@ -796,9 +841,15 @@ const concatTreeWithAlignmentSpec = () => {
                   // Set inner radius to get donuts instead of pie charts
                   // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   },
-                  "outerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
+                  "outerRadius": {
+                      "scale": "leaf_size_scale",
+                      // Here we actually use the field named "leaf_size_by" instead of the signal
+                      // value because we have written the value of the appropriate field 
+                      // into a new field named "leaf_size_by"
+                      "field": "leaf_size_by"
+                  },        
                 }
               }
             },
@@ -811,15 +862,19 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "y"
                     },
                   "fill": {"value": "#000"},
-                  "stroke": {"value": "#000"},
+                  "fillOpacity": {"value": "0.5"},
                   "x": {
                     "field": "x"
                   },
-                  "size": [
-                    {"test": "show_labels", "value": 1},
-                    {"signal": "leaf_size*2"}
-                  ],
-                  "cursor": {"value": "pointer"}
+                  "size": 
+                    [
+                      {"test": "show_labels", "value": 1},
+                      {"signal": "leaf_size*2"}
+                    ],
+                  "cursor": {"value": "pointer"},
+                  "tooltip": {
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
+                  }
                 },
               },
               "type": "symbol",
@@ -830,12 +885,11 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "text",
               "encode": {
                 "update": {
-                  "text": [
-                    {"test": "show_labels", "field": "label"},
+                  "text":  [
+                    {"test": "show_labels",  "field": "label"},
                     {"value": null}
                   ],
                   "limit": {"signal": "leaf_label_length_limit"},
-
                   // Show selected sequence as darker, default to all grey #80
                   "opacity":
                   [
@@ -863,7 +917,7 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "x"
                   },
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"]}"
+                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   }
                 }  
               },
@@ -1179,16 +1233,8 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "branch_color_sequential",
           "type": "sequential",
           "domain": {"signal": "branch_color_extent"},
-          "range": {"signal": "branch_color_range"}
-          // blue to purple to red
-          // "range": [
-          //   "#0032c8", "#2400c8", "#5000c8", "#8500c8", "#c800c4", "#c80000"
-          // ]
-          // Light to dark purples
-          // "range": {"scheme": "purples"},
-          // Set this to true to reverse range order (flip the scale)
-          // "reverse": true
-        }, 
+          "range": {"signal": "branch_color_scheme_map[branch_color_scheme]"}
+        },  
         {
           "name": "branch_width",
           "type": "linear",
