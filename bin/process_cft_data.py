@@ -156,8 +156,6 @@ clonal_family_pull_pattern = [
        "cft.cluster:j_per_gene_support": ["db:ident", "cft.gene_support:gene", "cft.gene_support:prob"],
        "cft.reconstruction:_cluster": reconstruction_pull_pattern}]
 
-def create_node_records(args, tree, nt_seqs_dict, aa_seqs_dict, seqmeta_dict):
-    "This currently does a bunch of work"
 
 def create_seqs_dict(seq_records):
     d = dict()
