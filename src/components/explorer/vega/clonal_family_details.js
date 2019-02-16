@@ -150,10 +150,18 @@ const concatTreeWithAlignmentSpec = () => {
                         { "type": "extent", "field": "y", "signal": "yext" },
 
                         // Then we can scale by x and y scales to fit into zoomed domains
-                        {"expr": "scale(\"time\", datum.distance)", "type": "formula", "as": "x"}, 
-                        {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"},
-                        
+                                           
                         {"key": "id", "type": "stratify", "parentKey": "parent"},
+                        {
+                          "type": "tree",
+                          "method": "cluster",
+                          "separation": false,
+                          "size": [{"signal": "span(yext)"}, {"signal": "span(xrange)"}],
+                          "as": ["y_tree", "x_tree", "depth", "children"]
+                        },
+                        {"expr": "scale(\"time\", datum.distance)", "type": "formula", "as": "x"}, 
+                        // {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"},
+                        {"expr": "scale(\"yscale\", datum.y_tree)", "type": "formula", "as": "y"},
                         {
                           "type": "formula",
                           "expr": "branch_width_by !== 'none' ? datum[branch_width_by] : null",

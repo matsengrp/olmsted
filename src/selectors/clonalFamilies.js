@@ -104,8 +104,12 @@ const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
 
 // selector for clonal family record
 export const getSelectedFamily = createSelector(
-  [getAvailableClonalFamilies,
+  [getClonalFamiliesPage,
    (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
-  (available, selected) => selected || available[0])
+  (page, selected) => {
+    if(selected){return selected}
+    console.log(page[0])
+    return page[0]
+  })
 
 
