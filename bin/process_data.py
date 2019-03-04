@@ -2,22 +2,16 @@
 
 from __future__ import division
 import argparse
+import jsonschema
 import json
-import csv
-from tripl import tripl
+import uuid
+import traceback
 import warnings
-from ete3 import PhyloTree
+import ete3
 import functools as fun
+import sys
 import os
 
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--inputs', nargs='+')
-    parser.add_argument('-o', '--data-outdir')
-    parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
-    parser.add_argument('-v', '--verbose', action='store_true')
-    return parser.parse_args()
 
 # Some generic data processing helpers helpers
 
@@ -36,6 +30,9 @@ def merge(d, d2):
     d = d.copy()
     d.update(d2)
     return d
+
+def get_in(d, path):
+    return d if len(path) == 0 else get_in(d[path[0]], path[1:])
 
 inf = float("inf")
 neginf = float("-inf")
@@ -77,7 +74,8 @@ def id_spec(desc=None):
     return dict(description=(desc or "Identifier"), type="string")
 
 def multiplicity_spec(desc=None):
-    return dict(description=(desc or "Number of times sequence was observed"), type="integer", "minimum"=0)
+    # QUESTION not sure if we actually want nullable here...
+    return dict(description=(desc or "Number of times sequence was observed"), type=["integer", "null"], minimum=0)
 
 
 ident_spec = {
@@ -91,7 +89,7 @@ build_spec = {
     "properties": {
       "commit": {
         "description": "Commit sha of whatever build system you used to process the data",
-        "type": "integer"},
+        "type": "string"},
       "time": {
         "description": "Time at which build was initiated",
         "type": "string"}}}
@@ -121,7 +119,8 @@ sequence_spec = {
             "type": "string"},
         "timepoint": {
             "description": "Timepoint associated with sequence, if any",
-            "type": "string"},
+            # QUESTION not sure if we actually want nullable here...
+            "type": ["string", "null"]},
         "multiplicity": multiplicity_spec(),
         "cluster_multiplicity": multiplicity_spec(
             "If clonal family sequences were downsampled by clustering, the cummulative number of times" +
@@ -147,7 +146,7 @@ sequence_spec = {
             "type": "number"},
         "affinity": {
             # TODO are there units associated with this? Better description?
-            "description": "Immunological affinity",
+            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
             "type": "number"}}}
 
 
@@ -167,7 +166,7 @@ reconstruction_spec = {
         "prune_count": {
             "description": "If applicable, the maximum number of sequences kept in the downsampling process",
             "minumum": 3,
-            "type": "ineger"},
+            "type": "integer"},
         # TODO currently named newick_string; need to change
         "newick_tree": {
             "description": "Reconstructed tree in newick format",
@@ -199,8 +198,8 @@ clonal_family_spec = {
         # do we currently compute this pre prune or what? account for multiplicity?
         "mean_mut_freq": {
             "description": "Mean mutation frequency across sequences in the cluster",
-            "minimum": 1,
-            "type": "integer"},
+            "minimum": 0,
+            "type": "number"},
         "naive_seq": {
             "description": "Naive nucleotide sequence",
             "type": "string"},
@@ -250,7 +249,8 @@ clonal_family_spec = {
         # TODO need to clean this up as well; probably doesn't need to be specified like this
         "seed": {
             "description": "Seed",
-            "type": "object",
+            # QUESTION not sure if we actually want nullable here...
+            "type": ["object", "null"],
             "required": ["id"],
             "properties": {
                 "ident": ident_spec,
@@ -282,5 +282,112 @@ dataset_spec = {
             "description": "Information about each of the clonal families",
             "type": "array",
             "items": clonal_family_spec}}}
+
+# Should update to get draft7?
+dataset_schema = jsonschema.Draft4Validator(dataset_spec)
+
+
+def ensure_ident(record):
+    return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
+
+
+def process_tree(tree, sequences):
+    seq_dict = {seq['id']: seq for seq in sequences}
+    def process_node(node):
+        node.update(seq_dict.get(node['id'], {}))
+    return map(process_node, tree.traverse('postorder'))
+
+
+def process_clonal_family(clonal_family):
+    tree = ete3.PhyloTree(clonal_family['newick_tree'], format=1)
+    clonal_family['tree'] = process_tree(tree, clonal_family['sequences'])
+    # Once we've merged into the tree nodes, don't need this anymore
+    del clonal_family['sequences']
+    return ensure_ident(clonal_family)
+
+def process_dataset(dataset):
+    dataset['n_clonal_families'] = len(dataset['clonal_families'])
+    dataset['n_subjects'] = len(set(get_in(cf, ['subject', 'id']) for cf in dataset['clonal_families']))
+    dataset['n_timepoints'] = len(set(get_in(cf, ['sample', 'timepoint']) for cf in dataset['clonal_families']))
+    return ensure_ident(dataset)
+
+
+def json_rep(x):
+    if isinstance(x, uuid.UUID):
+        return str(x)
+    else:
+        return list(x)
+
+
+def write_out(data, dirname, filename, args):
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    full_path = os.path.normpath(os.path.join(dirname, filename))
+    with open(full_path, 'w') as fh:
+        print('writing '+ full_path)
+        # Then assume json
+        json.dump(data, fh, default=json_rep,
+            indent=4,
+            #allow_nan=False
+            )
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--inputs', nargs='+')
+    parser.add_argument('-o', '--data-outdir', required=True)
+    parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
+    parser.add_argument('-v', '--verbose', action='store_true')
+    return parser.parse_args()
+
+
+def main():
+    args = get_args()
+    datasets, clonal_families_dict, reconstructions = [], {}, []
+
+    for infile in args.inputs:
+        print "\nProcessing infile:", str(infile)
+        try:
+            with open(infile, 'r') as fh:
+                dataset = json.load(fh)
+                if dataset_schema.is_valid(dataset):
+                    dataset = process_dataset(dataset)
+                    clonal_families = dataset['clonal_families']
+                    clonal_families_dict[dataset['id']] = clonal_families
+                    reconstructions += reduce(lambda recons, cf: recons + cf['reconstructions'],
+                            clonal_families, [])
+                    del dataset['clonal_families']
+                    datasets.append(dataset)
+                else:
+                    message = "Dataset doesn't conform to spec." + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
+                    print(message)
+                    if args.verbose:
+                        last_error_path = None
+                        for error in dataset_schema.iter_errors(dataset):
+                            error_path = list(error.path)
+                            if last_error_path != error_path:
+                                print("  Error at " + str(error_path) + ":")
+                                last_error_path = error_path
+                            print("    " + error.message)
+                            # import pdb; pdb.set_trace()
+        except Exception as e:
+            message = "Unable to process infile: " + str(infile) + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
+            print(message)
+            if args.verbose:
+                exc_info = sys.exc_info()
+                traceback.print_exception(*exc_info)
+
+    # write out data
+    write_out(datasets, args.data_outdir, 'datasets.json', args)
+    for dataset_id, clonal_families in clonal_families_dict.items():
+        write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
+    for reconstruction in reconstructions:
+        write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident']  + '.json' , args)
+
+
+if __name__ == '__main__':
+    main()
+
+
 
 
