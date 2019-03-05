@@ -97,6 +97,10 @@ const concatTreeWithAlignmentSpec = () => {
       // these are a current way around being able to set
       // the initial values of signals through the props 
       // of a react-vega component. See https://github.com/kristw/react-vega/issues/13
+
+      // /DATA: 
+      // ---------------------------------------------------------------------------
+
       "data": [
         {
           // The number of sequences to show in the 
@@ -107,10 +111,13 @@ const concatTreeWithAlignmentSpec = () => {
           // This is for the naive gene regions shown 
           // at the top of the viz
           "name": "naive_data",
+          "transform":[
+            {"type": "extent", "field": "end", "signal": "dna_j_gene_end"}
+          ]
         },
         {
           // For showing the cdr3 with dotted lines in the alignment
-          "name": "cdr3_bounds",
+          "name": "cdr3_bounds"
         },
         {
           // Stores points that have been clicked on
@@ -120,9 +127,12 @@ const concatTreeWithAlignmentSpec = () => {
           // Stores the id of the seed
           "name": "seed"
         },
-        // Tree Data
+
+        // /TREE DATA:
+        // ---------------------------------------------------------------------------
+
         {
-          // Raw tree data
+          // raw tree data
           "name": "source_0",
         },
         {
@@ -147,20 +157,24 @@ const concatTreeWithAlignmentSpec = () => {
 
                         // xscale and y scale depend on these extents
                         { "type": "extent", "field": "x", "signal": "xext" },
-                        { "type": "extent", "field": "y", "signal": "yext" },
 
                         // Then we can scale by x and y scales to fit into zoomed domains
                                            
                         {"key": "id", "type": "stratify", "parentKey": "parent"},
                         {
+                          // The size of the tree here should be constant with the number of leaves;
+                          // the zoom signals rely on xext, yext to be the same no matter the zoom
+                          // status of the tree. Important that x, y values are scaled after we take xext and yext.
                           "type": "tree",
                           "method": "cluster",
                           "separation": false,
-                          "size": [{"signal": "span(yext)"}, {"signal": "span(xrange)"}],
+                          // We are only using the y values from this transform, x comes from "distance"
+                          "size": [{"signal": "leaves_count_incl_naive"}, {"signal": "span(xext)"}],
                           "as": ["y_tree", "x_tree", "depth", "children"]
                         },
+                        { "type": "extent", "field": "y_tree", "signal": "yext" },
+
                         {"expr": "scale(\"time\", datum.distance)", "type": "formula", "as": "x"}, 
-                        // {"expr": "scale(\"yscale\", datum.height)", "type": "formula", "as": "y"},
                         {"expr": "scale(\"yscale\", datum.y_tree)", "type": "formula", "as": "y"},
                         {
                           "type": "formula",
@@ -252,10 +266,25 @@ const concatTreeWithAlignmentSpec = () => {
           ],
           "source": "valid_leaves"
         },
-        // Mutations Data
+        
+        // /ALIGNMENT DATA:
+        // ---------------------------------------------------------------------------
         {
           // Raw alignment data / mutations records
           "name": "source_1",
+          // Get y values from the tree so we can line up leaves with the alignment
+          "transform": [
+            {
+              "type": "lookup",
+              "from": "tree",
+              "values": [
+                "y"
+              ],
+              "key": "id",
+              "fields": ["seq_id"],
+              "as": ["y"]
+            }
+          ]
         },
         {
           "name": "data_1",
@@ -265,8 +294,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "formula",
               "expr": "toNumber(datum[\"position\"])",
               "as": "position"
-            },
-            {"expr": "datum.height", "type": "formula", "as": "y"},
+            },            
             { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
             {
               "type": "filter",
@@ -282,13 +310,15 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "filter",
               "expr": "datum.mut_to == \"-\" || datum.mut_to == \"X\""
             },
-            {"expr": "datum.height", "type": "formula", "as": "y"},
             {
               "type": "filter",
               "expr": "datum.type !== 'naive'"
             }
           ]
         },
+
+        // /NAIVE DATA:
+        // ---------------------------------------------------------------------------
         // Naive mutations data for static plot above alignment
         {
           "name": "naive_mutations",
@@ -320,6 +350,10 @@ const concatTreeWithAlignmentSpec = () => {
           ]
       },
       ],
+      
+      // /SIGNALS:
+      // ---------------------------------------------------------------------------
+
       "signals": [
         {
           // Update height from window size see https://github.com/matsengrp/olmsted/issues/83)
@@ -344,16 +378,8 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ]
         },
-        {
-          "name": "tree_group_width_ratio",
-          "value": 0.3,
-          "bind": {"name": "Tree width ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
-        },
-        {
-          "name": "tree_group_width",
-          "update": "tree_group_width_ratio*width",
-        },
-        // ZOOM SIGNALS
+
+        // /ZOOM SIGNALS
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
         { "name": "xrange", "update": "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
@@ -369,7 +395,18 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "slice(yext)",
         },
 
-        // TREE SIGNALS
+        // /TREE SIGNALS:
+        // ---------------------------------------------------------------------------
+
+        {
+          "name": "tree_group_width_ratio",
+          "value": 0.3,
+          "bind": {"name": "Tree width ratio", "input": "range", "max": 1, "min": 0.2, "step": 0.01}
+        },
+        {
+          "name": "tree_group_width",
+          "update": "tree_group_width_ratio*width",
+        },
         // Number of leaves
         {
           "name": "leaves_count_incl_naive",
@@ -384,7 +421,7 @@ const concatTreeWithAlignmentSpec = () => {
         // mutation marks in the alignment
         {
           "name": "leaf_size",
-          "update": "clamp(height/span(ydom), 5, 1000)"
+          "update": "clamp(height/leaves_count_incl_naive, 5, 1000)"
         },
          // Size of leaves - they are mapped to a range with
          // the value of this signal as the maximum
@@ -513,17 +550,25 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-        // ALIGNMENT SIGNALS
+
+        // /ALIGNMENT SIGNALS:
+        // ---------------------------------------------------------------------------
+
+        // max length for the amino acid scale
         {
-          // Size of mutation marks vertically, clamped to max 20
-          // Scale factor to give space between each mark
+          "name": "max_aa_seq_length",
+          "update": "ceil(dna_j_gene_end[1]/3)"
+        },
+        // Size of mutation marks vertically, clamped to max 20;
+        // with scale factor to give space between each mark
+        {
           "name": "mutation_mark_height",
           "update": "clamp(leaf_size*0.75, 0, 20)"
         },
+        // Padding value to not cut off marks on fully zoomed out
         {
-          // Padding value to not cut off marks on fully zoomed out
           "name": "mutation_mark_padding",
-          "value": 5
+          "update": "mutation_mark_height/2"
         },
         {
           "name": "mutation_mark_width",
@@ -535,7 +580,11 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "width-tree_group_width"
         }
       ],
-      //LAYOUT: how top level group marks are formatted in a grid
+
+
+      // /LAYOUT: how top level group marks are formatted in a grid
+      // ---------------------------------------------------------------------------
+
       "layout": {
         "padding": {"column": 0},
         // 2 columns so the grid repeats on the next row after two items (group marks)
@@ -543,6 +592,10 @@ const concatTreeWithAlignmentSpec = () => {
         "bounds": "full",
         "align": "each"
       },
+
+      // /MARKS:
+      // ---------------------------------------------------------------------------
+
       "marks": [ 
         // Evolution axis below the tree
         {
@@ -580,12 +633,15 @@ const concatTreeWithAlignmentSpec = () => {
               "title": "Amino acid position",
               "labelFlush": true,
               "labelOverlap": true,
-              "values": {"signal": "sequence(131)"},
+              "values": {"signal": "sequence(max_aa_seq_length)"},
               "zindex": 1
             },                  
           ]
         },
-        // TREE
+
+        // /TREE:
+        // ---------------------------------------------------------------------------
+
         {
           "type": "group",
           "name": "tree_group",
@@ -773,7 +829,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
           ],
           "marks": [
-            // LINKS
+            // /LINKS
             {
               "encode": {
                 "update": {
@@ -804,7 +860,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "path",
               "from": {"data": "links"}
             },
-            // INTERNAL NODES
+            // /INTERNAL NODES
             {
               "name": "ancestor",
               "encode": {
@@ -829,7 +885,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "symbol",
               "from": {"data": "nodes"}
             },
-            // LEAVES
+            // /LEAVES
             // Pie charts: size depends on multiplicity 
             { "name": "pie",
               "type": "arc",
@@ -861,7 +917,7 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               }
             },
-            // LEAF CENTER
+            // /LEAF CENTERS
             {
               "name": "leaf_center",
               "encode": {
@@ -888,7 +944,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "symbol",
               "from": {"data": "leaves"}
             },
-            // LEAF LABELS
+            // /LEAF LABELS
             {
               "type": "text",
               "encode": {
@@ -933,7 +989,10 @@ const concatTreeWithAlignmentSpec = () => {
             },
           ],
         },
-        // SEQUENCE ALIGNMENT
+
+        // /SEQUENCE ALIGNMENT
+        // ---------------------------------------------------------------------------
+
         {
           "type": "group",
           "name": "alignment_group",
@@ -952,8 +1011,8 @@ const concatTreeWithAlignmentSpec = () => {
               "name": "naive_group_height",
               "value": 30
             },
-             // This is an SVG path used to assign a special clipping region (not the default
-            // which is the height and width of the group mark) for the alignment. This is
+             // This is an SVG path used to assign a special clipping region (not the default,
+            // i.e. the height and width of the group mark) for the alignment. This is
             // necessary to get the naive viz as close as possible to the alignment so one 
             // can align mutations with the naive by eye. Doing so became difficult when 
             // allowing the tree to have padding, as it shares a y-scale with the alignment
@@ -975,7 +1034,7 @@ const concatTreeWithAlignmentSpec = () => {
               },
               "type": "path",
             },
-            // Naive
+            // /NAIVE
             {
               "name": "naive_group",
               "type": "group",
@@ -1049,7 +1108,7 @@ const concatTreeWithAlignmentSpec = () => {
                     }
                   }
                 },
-                // Gap character labels
+                // /GAP character labels (naive)
                 {
                   "name": "x_and_gaps_labels",
                   "type": "text",
@@ -1094,7 +1153,7 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               ],   
             },
-            // Alignment
+            // /ALIGNMENT
             {
               "type": "group",
               "name": "mutations_group",
@@ -1108,6 +1167,23 @@ const concatTreeWithAlignmentSpec = () => {
                 }
               },
               "marks": [
+                {
+                  "name": "y_grid",
+                  "type": "rule",
+                  "from": {"data": "leaves"},
+                  "encode": {
+                    "enter": {
+                      "stroke": {"signal": "rgb(221, 221, 221)"},
+                      "opacity": {"value": 1},
+                      "x": {"scale": "aa_position", "value": "-5"},
+                      "x2": {"scale": "aa_position", "signal": "max_aa_seq_length"},
+                      "strokeWidth": {"value": 1},
+                    },
+                    "update": {                      
+                      "y": {"field": "y"},
+                    }
+                  }
+                },
                 {
                   "name": "rule_cdr3",
                   "type": "rule",
@@ -1131,7 +1207,7 @@ const concatTreeWithAlignmentSpec = () => {
                     }
                   }
                 },
-                // MUTATIONS MARKS
+                // /MUTATIONS MARKS
                 {
                   "name": "marks",
                   "type": "rect",
@@ -1156,13 +1232,15 @@ const concatTreeWithAlignmentSpec = () => {
                         "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                       },
                       "xc": {"scale": "aa_position", "field": "position"},
-                      "yc": {"scale": "yscale", "field": "y"},
+                      "yc": {
+                        "field": "y"
+                        },
                       "height": {"signal": "mutation_mark_height"},
                       "width": {"signal": "mutation_mark_width"}
                     }
                   }
                 },
-                // Gap character labels
+                // /GAP character labels
                 {
                   "name": "x_and_gaps_labels",
                   "type": "text",
@@ -1187,7 +1265,9 @@ const concatTreeWithAlignmentSpec = () => {
                       //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.type == 'naive'"", "value": 0.9},
                       //   {"value": 0.1}
                       // ],
-                      "y": {"scale": "yscale", "field": "y"},
+                      "y": {
+                        "field": "y"
+                      },
                       "x": {"scale": "aa_position", "field": "position"},
                       "tooltip": {
                         "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
@@ -1196,14 +1276,14 @@ const concatTreeWithAlignmentSpec = () => {
                   },
                 } 
               ],
-              // MUTATIONS GRIDLINES
+              // ALIGNMENT GRIDLINES
               "axes": [
                 // x grid
                 {
                   "scale": "aa_position",
                   "orient": "bottom",
                   "grid": true,
-                  "tickCount": 128,
+                  "tickCount": {"signal": "max_aa_seq_length"},
                   "domain": false,
                   "labels": false,
                   "maxExtent": 0,
@@ -1211,25 +1291,14 @@ const concatTreeWithAlignmentSpec = () => {
                   "ticks": false,
                   "zindex": 0
                 },
-                // y grid
-                {
-                  "scale": "yscale",
-                  "orient": "left",
-                  "grid": true,
-                  "values": {"signal": "sequence(mutations_height_extent[0], mutations_height_extent[1]+1)"},
-                  "offset": 5,
-                  "domain": false,
-                  "labels": false,
-                  "ticks": false,
-                  "maxExtent": 0,
-                  "minExtent": 0,
-                  "zindex": 0
-                }
               ],     
             }
           ]
         }
       ],    
+
+      // /SCALES
+      // ---------------------------------------------------------------------------
       "scales": [ 
         {
           "name": "branch_color_categorical",
@@ -1260,7 +1329,7 @@ const concatTreeWithAlignmentSpec = () => {
             "J gene",
             "CDR3"
           ],
-          // COLORS
+          // /COLORS
           "range": [
             "#762a83",
             "#af8dc3",
@@ -1303,7 +1372,7 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "name": "aa_position",
           "type": "linear",
-          "domain": [-1, 130],
+          "domain": [-1, {"signal": "max_aa_seq_length"}],
           "range": [0, {"signal": "alignment_group_width"}],
           "zero": true
         },
@@ -1314,6 +1383,8 @@ const concatTreeWithAlignmentSpec = () => {
           "range": tableau20plusColors
         }
       ],
+      // LEGENDS
+      // ---------------------------------------------------------------------------
       "legends": [
         {
           "orient": "right",
@@ -1348,10 +1419,13 @@ const seqAlignSpec = (family) => {
           // This is for the naive gene regions shown 
           // at the top of the viz
           "name": "naive_data",
+          "transform":[
+            {"type": "extent", "field": "end", "signal": "dna_j_gene_end"}
+          ]
         },
         {
           // For showing the cdr3 with dotted lines in the alignment
-          "name": "cdr3_bounds",
+          "name": "cdr3_bounds"
         },
         {
           "name": "source_0",
@@ -1380,6 +1454,10 @@ const seqAlignSpec = (family) => {
         }
       ],
       "signals": [
+        {
+          "name": "max_aa_seq_length",
+          "update": "ceil(dna_j_gene_end[1]/3)"
+        },
         {
           "name": "mutation_mark_height",
           "value": mutation_mark_height
@@ -1530,7 +1608,7 @@ const seqAlignSpec = (family) => {
         {
           "name": "aa_position",
           "type": "linear",
-          "domain": {"data": "data_0", "field": "position"},
+          "domain": [0, {"signal": "max_aa_seq_length"}],
           "range": [5, {"signal": "width"}],
           "nice": true,
           "zero": true
@@ -1565,7 +1643,7 @@ const seqAlignSpec = (family) => {
           "orient": "bottom",
           "gridScale": "y",
           "grid": true,
-          "tickCount": 128,
+          "tickCount": {"signal": "max_aa_seq_length"},
           "domain": false,
           "labels": false,
           "maxExtent": 0,
@@ -1585,7 +1663,7 @@ const seqAlignSpec = (family) => {
           "orient": "left",
           "gridScale": "aa_position",
           "grid": true,
-          "tickCount": 128,
+          "tickCount": {"signal": "max_aa_seq_length"},
           "domain": false,
           "labels": false,
           "maxExtent": 0,
