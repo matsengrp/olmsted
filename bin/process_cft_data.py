@@ -196,8 +196,7 @@ def parse_tree_data(args, c):
     aa_seqs_dict = create_seqs_dict(c['cft.reconstruction:cluster_aa']['bio.seq:set'])
     nt_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])
     seqmeta_dict = create_seqmeta_dict(c['cft.reconstruction:seqmeta']['tripl.csv:data'])
-    # Note that this function is impure; it's mutable over leaves_counter and the internal nodes
-    leaves_counter = {'count': 1}
+    # Note that this function is impure; it's mutable over the internal nodes
     def process_node(node):
         node.label = node.id = node.name
         node.nt_seq = nt_seqs_dict[node.name]
@@ -216,18 +215,7 @@ def parse_tree_data(args, c):
             seqmeta = seqmeta_dict.get(node.name, {})
             node.__dict__[attr.split(':')[1]] = (parser or (lambda x: x))(seqmeta.get(attr)) if seqmeta.get(attr) else None
         node.type = "node"
-        if node.is_leaf():
-            # get height for leaves
-            node.type = "leaf"
-            node.height = leaves_counter['count']
-            leaves_counter['count'] += 1
-        else:
-            # get height for non leaves
-            total_height = 0
-            for child in node.children:
-                total_height += child.height
-            avg_height = total_height/len(node.children)
-            node.height = avg_height
+        
         if node.up:
             # get parent info, distance for non root
             node.parent = node.up.name
@@ -253,7 +241,6 @@ def parse_tree_data(args, c):
                  'parent': node.parent,
                  'length': node.length,
                  'distance': node.distance,
-                 'height': node.height,
                  'nt_seq': node.nt_seq,
                  'aa_seq': node.aa_seq,
                  'affinity': node.affinity,
