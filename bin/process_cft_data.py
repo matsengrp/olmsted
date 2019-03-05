@@ -215,7 +215,8 @@ def parse_tree_data(args, c):
             seqmeta = seqmeta_dict.get(node.name, {})
             node.__dict__[attr.split(':')[1]] = (parser or (lambda x: x))(seqmeta.get(attr)) if seqmeta.get(attr) else None
         node.type = "node"
-        
+        if node.is_leaf():
+            node.type = "leaf"
         if node.up:
             # get parent info, distance for non root
             node.parent = node.up.name
