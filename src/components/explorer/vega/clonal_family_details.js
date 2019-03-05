@@ -153,7 +153,6 @@ const concatTreeWithAlignmentSpec = () => {
         {"name": "tree", 
          "transform": [
                         {"expr": "datum.distance", "type": "formula", "as": "x"}, 
-                        {"expr": "datum.height", "type": "formula", "as": "y"},
 
                         // xscale and y scale depend on these extents
                         { "type": "extent", "field": "x", "signal": "xext" },
