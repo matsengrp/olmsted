@@ -75,7 +75,7 @@ def id_spec(desc=None):
 
 def multiplicity_spec(desc=None):
     # QUESTION not sure if we actually want nullable here...
-    return dict(description=(desc or "Number of times sequence was observed"), type=["integer", "null"], minimum=0)
+    return dict(description=(desc or "Number of times sequence was observed in the sample"), type=["integer", "null"], minimum=0)
 
 
 ident_spec = {
@@ -197,7 +197,7 @@ clonal_family_spec = {
             "type": "integer"},
         # do we currently compute this pre prune or what? account for multiplicity?
         "mean_mut_freq": {
-            "description": "Mean mutation frequency across sequences in the cluster",
+            "description": "Mean mutation frequency across sequences in the clonal family",
             "minimum": 0,
             "type": "number"},
         "naive_seq": {
@@ -288,21 +288,78 @@ dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 
 
 def ensure_ident(record):
+    "Want to let people choose their own uuids if they like, but not require them to"
     return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
 
 
-def process_tree(tree, sequences):
+# TODO We may want to get away from args.inferred_naive_name and go to clonal families having
+# their own inferred_naive_name
+
+# reroot the tree on node matching regex pattern.
+# Usually this is used to root on the naive germline sequence
+# NOTE duplicates fcn in plot_tree.py
+def reroot_tree(args, tree):
+    # find naive node
+    node = tree.search_nodes(name=args.inferred_naive_name)[0]
+    # if equal, then the root is already the inferred naive, so done
+    if tree != node:
+        # In general this would be necessary, but we are actually assuming that naive has been set as an
+        # outgroup in dnaml, and if it hasn't, we want to raise an error, as below
+        tree.set_outgroup(node)
+        # This actually assumes the `not in` condition above, but we check as above for clarity
+        tree.remove_child(node)
+        node.add_child(tree)
+        tree.dist = node.dist
+
+        # TODO Verify that this makes sense, generally speaking; I'm guessing this is how things come out of
+        # set_outgroup (with 0 branch length leading up to), but want to make sure.
+        node.dist = 0
+        tree = node
+    return tree
+
+
+def process_tree(args, tree, sequences):
+    tree = reroot_tree(args, tree)
     seq_dict = {seq['id']: seq for seq in sequences}
     def process_node(node):
-        node.update(seq_dict.get(node['id'], {}))
+        datum = seq_dict.get(node.name, {})
+        # QUESTION are we even using this?
+        datum['type'] = 'leaf' if node.is_leaf() else 'node'
+        datum.update(seq_dict.get(node.name, {}))
+        if node.up:
+            datum['parent'] = node.up.name
+            datum['length'] = node.get_distance(node.up)
+            datum['distance'] = node.get_distance(args.inferred_naive_name)
+        else:
+            # node is root
+            datum['type'] = "root"
+            datum['parent'] = None
+            datum['length'] = 0.0
+            datum['distance'] = 0.0
+        # TODO currently olmsted using label; should probably switch to just using id
+        datum['label'] = node.id = node.name
+        return datum
     return map(process_node, tree.traverse('postorder'))
 
 
-def process_clonal_family(clonal_family):
-    tree = ete3.PhyloTree(clonal_family['newick_tree'], format=1)
-    clonal_family['tree'] = process_tree(tree, clonal_family['sequences'])
+def process_reconstruction(args, reconstruction):
+    tree = ete3.PhyloTree(reconstruction['newick_tree'], format=1)
+    # TODO switch back to tree
+    reconstruction['asr_tree'] = process_tree(args, tree, reconstruction['sequences'])
     # Once we've merged into the tree nodes, don't need this anymore
-    del clonal_family['sequences']
+    del reconstruction['sequences']
+    return ensure_ident(reconstruction)
+
+
+def process_clonal_family(args, dataset, clonal_family):
+    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for
+    # viz convenience
+    _dataset = dataset.copy()
+    del _dataset['clonal_families']
+    clonal_family['dataset'] = _dataset
+    # prepare reconstruction(s)
+    clonal_family['reconstructions'] = map(fun.partial(process_reconstruction, args), clonal_family.get('reconstructions', []))
+    clonal_family['naive'] = args.inferred_naive_name
     return ensure_ident(clonal_family)
 
 def process_dataset(dataset):
@@ -352,7 +409,7 @@ def main():
                 dataset = json.load(fh)
                 if dataset_schema.is_valid(dataset):
                     dataset = process_dataset(dataset)
-                    clonal_families = dataset['clonal_families']
+                    clonal_families = map(fun.partial(process_clonal_family, args, dataset), dataset['clonal_families'])
                     clonal_families_dict[dataset['id']] = clonal_families
                     reconstructions += reduce(lambda recons, cf: recons + cf['reconstructions'],
                             clonal_families, [])
