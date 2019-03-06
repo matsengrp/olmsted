@@ -13,6 +13,7 @@ import sys
 import os
 
 
+
 # Some generic data processing helpers helpers
 
 def comp(f, g):
@@ -110,11 +111,17 @@ sequence_spec = {
     "description": "Nucelotide sequence record",
     "id": "Sequence id",
     "type": "object",
-    "required": ["id", "nt_seq"],
+    "required": ["id", "nt_seq", 'aa_seq'],
     "properties": {
         "id": id_spec("Sequence id"),
         "nt_seq": {
-            "description": "Literal nucleotide sequence",
+            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family",
+            # add pattern matching for AGCT-* etc?
+            "type": "string"},
+        # Would be nice if we translated for users, but can't really do that without removing gaps and
+        # realigning, which is assuming a lot
+        "aa_seq": {
+            "description": "Literal amino acid sequence, aligned to other sequences in clonal family",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         "timepoint": {
