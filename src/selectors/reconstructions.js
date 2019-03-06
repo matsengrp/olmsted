@@ -52,11 +52,11 @@ const createAlignment = (naive_seq, tree) => {
       let aa = pair[1]
       if (aa != naive_seq[i] ){
         // add a mutation for a sequence deviating from the naive
-        mutations.push( { 'height': node.height, 'type': node.type,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'type': node.type,'parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
       else if(is_naive){
         // add a mutation for the naive so it shows up in the viz
-        mutations.push( { 'height': 0, 'type': 'naive','parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
+        mutations.push( { 'type': 'naive','parent': node.parent,'seq_id': seq_id, 'position': i, 'mut_from': naive_seq[i], 'mut_to': aa })
       }
     });
     all_mutations = all_mutations.concat(mutations);    

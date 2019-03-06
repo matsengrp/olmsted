@@ -8,7 +8,6 @@ import * as explorerActions from "../../actions/explorer";
 import {TreeViz} from "../explorer/tree";
 import {ClonalFamiliesViz} from "../explorer/scatterplot";
 import {Lineage} from "../explorer/lineage";
-import {getSelectedFamily} from "../../selectors/clonalFamilies";
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -52,7 +51,7 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,
   availableDatasets: state.datasets.availableDatasets,
-  selectedFamily: state.clonalFamilies.selectedFamily,
+  selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
   selectedSeq: state.clonalFamilies.selectedSeq,
   locus: state.clonalFamilies.locus
 }), {
