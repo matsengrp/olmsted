@@ -410,9 +410,13 @@ def main():
                 if dataset_schema.is_valid(dataset):
                     dataset = process_dataset(dataset)
                     clonal_families = map(fun.partial(process_clonal_family, args, dataset), dataset['clonal_families'])
-                    clonal_families_dict[dataset['id']] = clonal_families
                     reconstructions += reduce(lambda recons, cf: recons + cf['reconstructions'],
                             clonal_families, [])
+                    for cf in clonal_families:
+                        cf['reconstructions'] = [
+                                dict_subset(recon, ['prune_strategy', 'ident', 'type', 'id', 'prune_count'])
+                                for recon in cf['reconstructions']]
+                    clonal_families_dict[dataset['id']] = clonal_families
                     del dataset['clonal_families']
                     datasets.append(dataset)
                 else:
@@ -439,7 +443,7 @@ def main():
     for dataset_id, clonal_families in clonal_families_dict.items():
         write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
     for reconstruction in reconstructions:
-        write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident']  + '.json' , args)
+        write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident'] + '.json' , args)
 
 
 if __name__ == '__main__':
