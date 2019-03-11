@@ -76,6 +76,9 @@ const mapStateToProps = (state) => {
 @connect(mapStateToProps, (dispatch) => ({
   dispatchSelectedSeq: (seq) => {
     dispatch(explorerActions.updateSelectedSeq(seq))
+  },
+  dispatchSelectFamily: (family_ident) => {
+    dispatch(explorerActions.selectFamily(family_ident))
   }
 }))
 class TreeViz extends React.Component {
@@ -92,7 +95,13 @@ class TreeViz extends React.Component {
       pts_tuple: [],
       seed:[]
     }
-  }  
+  }
+
+  componentDidMount(){
+    // Automatically request a reconstruction for the selected family
+    // when the component is first inserted into the DOM tree.
+    this.props.dispatchSelectFamily(this.props.selectedFamily.ident)
+  }
 
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor

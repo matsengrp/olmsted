@@ -107,9 +107,7 @@ export const getSelectedFamily = createSelector(
   [getClonalFamiliesPage,
    (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
   (page, selected) => {
-    if(selected){return selected}
-    console.log(page[0])
-    return page[0]
+    return selected ? selected : page[0]
   })
 
 
