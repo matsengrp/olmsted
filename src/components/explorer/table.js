@@ -86,8 +86,8 @@ class Table extends React.Component {
 
 @connect((store) => ({}),
         (dispatch) => ({
-          dispatchSelect: (family_id) => {
-            dispatch(explorerActions.selectFamily(family_id))
+          dispatchSelect: (family_ident) => {
+            dispatch(explorerActions.selectFamily(family_ident))
           }
         })
       )

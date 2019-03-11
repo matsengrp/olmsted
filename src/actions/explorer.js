@@ -12,11 +12,11 @@ export const toggleSort = (attribute) => {
 // Second argument specifies whether we would like to 
 // include just this family in our brush selection
 // and therefore in the table since we have clicked it
-export const selectFamily = (id, updateBrushSelection=false) => {
+export const selectFamily = (ident, updateBrushSelection=false) => {
   return (dispatch, getState) => {
-    dispatch({type: types.TOGGLE_FAMILY, family_id: id, updateBrushSelection})
+    dispatch({type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection})
     let {reconstructions, clonalFamilies} = getState()
-    let clonalFamily = clonalFamilies.byIdent[id]
+    let clonalFamily = clonalFamilies.byIdent[ident]
     let clonalFamilyRecons = clonalFamily ? (clonalFamily.reconstructions || []) : []
     _.forEach(clonalFamilyRecons, (recon) => loadData.getReconstruction(dispatch, recon.ident))}}
 

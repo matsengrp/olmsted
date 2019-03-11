@@ -116,7 +116,7 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       });
     } case types.TOGGLE_FAMILY: {
       let updates = {
-        selectedFamily: action.family_id,
+        selectedFamily: action.family_ident,
         selectedSeq: {},
       }
       // action.updateBrushSelection specifies whether we would like to 
