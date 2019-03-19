@@ -6,7 +6,7 @@ import json
 import csv
 from tripl import tripl
 import warnings
-from ete3 import PhyloTree
+import ete3
 import functools as fun
 import os
 
@@ -189,7 +189,7 @@ def parse_tree_data(args, c):
     # create a phylo tree object
     newick_tree = c['cft.reconstruction:asr_tree']['tripl.file:contents']
     newick_tree_path = str(c['cft.reconstruction:asr_tree']['tripl.file:path'])
-    tree = PhyloTree(newick_tree, format=1)
+    tree = ete3.PhyloTree(newick_tree, format=1)
     # parse out sequences and other sequence metadata
     aa_seqs_dict = create_seqs_dict(c['cft.reconstruction:cluster_aa']['bio.seq:set'])
     nt_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])

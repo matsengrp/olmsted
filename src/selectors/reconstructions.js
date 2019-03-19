@@ -136,7 +136,7 @@ export const computeReconstructionData = (reconstruction) => {
 
   if (recon["asr_tree"] && recon["asr_tree"].length > 0){
     let data = recon["asr_tree"].slice(0);
-    let naive = findNaive(data);    
+    let naive = findNaive(data);
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
     recon["leaves_count_incl_naive"] = data.length;
     let alignment = createAlignment(naive.aa_seq, data)
