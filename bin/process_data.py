@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import division
+import cottonmouth.html as hiccup
 import argparse
 import jsonschema
 import json
+import pprint
 import uuid
 import traceback
 import warnings
@@ -11,6 +13,7 @@ import ete3
 import functools as fun
 import sys
 import os
+
 
 
 
@@ -87,6 +90,7 @@ build_spec = {
     "description": "Information about how a dataset was built",
     "type": "object",
     "required": ["commit"],
+    "title": "Build info",
     "properties": {
       "commit": {
         "description": "Commit sha of whatever build system you used to process the data",
@@ -108,8 +112,8 @@ timepoint_multiplicity_spec = {
 
 
 sequence_spec = {
-    "description": "Nucelotide sequence record",
-    "id": "Sequence id",
+    "title": "Sequence & node record",
+    "description": "Information about the nucelotide sequence and/or phylogenetic tree node",
     "type": "object",
     "required": ["id", "nt_seq", 'aa_seq'],
     "properties": {
@@ -152,7 +156,6 @@ sequence_spec = {
             "description": "Local branching rate (derivative of lbi)",
             "type": "number"},
         "affinity": {
-            # TODO are there units associated with this? Better description?
             "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
             "type": "number"}}}
 
@@ -160,6 +163,7 @@ sequence_spec = {
 
 # Do we want to keep calling these reconstructions? trees?
 reconstruction_spec = {
+    "title": "Reconstruction",
     "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family",
     "type": "object",
     "required": ["newick_tree", "sequences"],
@@ -191,6 +195,7 @@ def natural_number(desc):
     return dict(description=desc, minimum=0, type="integer")
 
 clonal_family_spec = {
+    "title": "Clonal family",
     "description": "Clonal family of sequences deriving from a particular reassortment event",
     "type": "object",
     "required": ["n_seqs", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
@@ -233,7 +238,8 @@ clonal_family_spec = {
         "cdr3_start": natural_number("Start of the CDR3 region"),
         # Should this really be nested this way or the other way?
         "sample": {
-            "description": "Sample information",
+            "title": "Sample",
+            "description": "A sample is generally a collection of sequences",
             "type": "object",
             "required": ["locus"],
             "properties": {
@@ -396,20 +402,57 @@ def write_out(data, dirname, filename, args):
             )
 
 
+def hiccup_rep(schema, depth=1, property=None):
+    depth = min(depth, 2)
+    style = merge({"padding-left": 10, "margin-left": 25, 'margin-top': 10},
+                  {"border-left-style": "solid", "border-color": "grey", 'margin-top': 40}
+                  if schema['type'] == 'object' else {})
+
+    return ["div", {"style": style},
+            ["h"+str(depth), schema.get('title')] if schema.get('title') else '',
+            ["p",
+                ['b', "Description: "],
+                schema.get('description')] if schema.get('description') else '',
+            ["p",
+                ['b', "Required: "],
+                ["code", str(schema.get('required'))]] if schema.get('required') else '',
+            ["p",
+                ['b', "Type: "],
+                ['code', str(schema.get('type'))]] if schema.get('type') else '',
+
+            ["div",
+                ["h"+str(depth+1), "Properties:"]] +
+            [["div", {"style": {"margin-left": "10px"}},
+                ["h3", ["code", k]],
+                hiccup_rep(get_in(schema, ['properties', k]), depth=depth+1)]
+                for k in schema.get('properties')] if schema.get('properties') else '',
+            
+            ["div",
+                ["h"+str(depth+1), "Array Items:"],
+                hiccup_rep(schema.get('items'), depth=depth+1)] if schema.get('items') else '']
+
+
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--inputs', nargs='+')
-    parser.add_argument('-o', '--data-outdir', required=True)
+    parser.add_argument('-o', '--data-outdir',
+            help="directory in which data will be saved; required for data output")
     parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-S', '--display-schema-html')
+    parser.add_argument('-s', '--display-schema', action="store_true",
+            help="print schema to stdout for display")
     return parser.parse_args()
+
 
 
 def main():
     args = get_args()
     datasets, clonal_families_dict, reconstructions = [], {}, []
 
-    for infile in args.inputs:
+    for infile in args.inputs or []:
         print "\nProcessing infile:", str(infile)
         try:
             with open(infile, 'r') as fh:
@@ -445,12 +488,18 @@ def main():
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
 
+    if args.display_schema:
+        pprint.pprint(dataset_spec)
+    if args.display_schema_html:
+        with open(args.display_schema_html, 'w') as fh:
+            fh.write(hiccup.render(["html", ["body", hiccup_rep(dataset_spec)]]))
     # write out data
-    write_out(datasets, args.data_outdir, 'datasets.json', args)
-    for dataset_id, clonal_families in clonal_families_dict.items():
-        write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
-    for reconstruction in reconstructions:
-        write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident'] + '.json' , args)
+    if args.data_outdir:
+        write_out(datasets, args.data_outdir, 'datasets.json', args)
+        for dataset_id, clonal_families in clonal_families_dict.items():
+            write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
+        for reconstruction in reconstructions:
+            write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident'] + '.json' , args)
 
 
 if __name__ == '__main__':
