@@ -36,7 +36,7 @@ def merge(d, d2):
     return d
 
 def get_in(d, path):
-    return d if len(path) == 0 else get_in(d[path[0]], path[1:])
+    return d if len(path) == 0 else get_in(d.get(path[0]) if isinstance(d, dict) else {}, path[1:])
 
 inf = float("inf")
 neginf = float("-inf")
@@ -406,7 +406,7 @@ def hiccup_rep(schema, depth=1, property=None):
     depth = min(depth, 2)
     style = merge({"padding-left": 10, "margin-left": 25, 'margin-top': 10},
                   {"border-left-style": "solid", "border-color": "grey", 'margin-top': 40}
-                  if schema['type'] == 'object' else {})
+                  if depth == 1 or schema['type'] == 'object' else {})
 
     return ["div", {"style": style},
             ["h"+str(depth), schema.get('title')] if schema.get('title') else '',
@@ -424,13 +424,45 @@ def hiccup_rep(schema, depth=1, property=None):
                 ["h"+str(depth+1), "Properties:"]] +
             [["div", {"style": {"margin-left": "10px"}},
                 ["h3", ["code", k]],
-                hiccup_rep(get_in(schema, ['properties', k]), depth=depth+1)]
-                for k in schema.get('properties')] if schema.get('properties') else '',
+                # Assume val is either a title, as produced in hiccup_rep2, or an actual schema
+                ["b", {'style': {'padding-left': 15, 'font-size': 18}}, "{", val, "}"]
+                    if isinstance(val, str)
+                    else hiccup_rep(val, depth=depth+1)]
+                for k, val in schema.get('properties').items()] if schema.get('properties') else '',
             
             ["div",
                 ["h"+str(depth+1), "Array Items:"],
-                hiccup_rep(schema.get('items'), depth=depth+1)] if schema.get('items') else '']
+                # As above, assume and display a title if string, otherwise recurse
+                ["b", {'style': {'padding-left': 15, 'font-size': 18}}, "{", schema['items'], "}"]
+                    if isinstance(schema.get('items'), str)
+                    else hiccup_rep(schema.get('items'), depth=depth+1)]
+                if schema.get('items') else '']
 
+
+
+def hiccup_rep2(schema):
+    def flatten_schema_by_title(schema):
+        items_schemas, properties_schemas = [], []
+        items = schema.get('items')
+        # if this is an array, check title
+        if items and items.get('title'):
+            schema['items'] = items['title']
+            items_schemas = flatten_schema_by_title(items)
+        for key, subschema in schema.get('properties', {}).items():
+            # handle case of being a single reference, with a title
+            title = subschema.get('title')
+            if title:
+                properties_schemas += flatten_schema_by_title(subschema)
+                schema['properties'][key] = title
+            # handle array/items case
+            items = subschema.get('items')
+            if items and items.get('title'):
+                properties_schemas += flatten_schema_by_title(items)
+                subschema['items'] = items['title']
+        return [schema] + items_schemas + properties_schemas
+
+    return ["div",
+            map(hiccup_rep, flatten_schema_by_title(schema))]
 
 
 
@@ -492,7 +524,12 @@ def main():
         pprint.pprint(dataset_spec)
     if args.display_schema_html:
         with open(args.display_schema_html, 'w') as fh:
-            fh.write(hiccup.render(["html", ["body", hiccup_rep(dataset_spec)]]))
+            fh.write(hiccup.render(
+                ["html",
+                    ["body",
+                        hiccup_rep2(dataset_spec),
+                        # hiccup_rep(dataset_spec)
+                        ]]))
     # write out data
     if args.data_outdir:
         write_out(datasets, args.data_outdir, 'datasets.json', args)
