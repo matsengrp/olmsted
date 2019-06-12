@@ -30,7 +30,7 @@ import * as vega from 'vega';
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
-    this.xField = "n_seqs";
+    this.xField = "n_unique_seqs";
     this.yField = "mean_mut_freq";
     this.facetOptions = ["none", "has_seed", "sample.timepoint", "dataset.id", "subject.id", "v_gene", "d_gene", "j_gene", "sample.locus"]
     this.spec = facetClonalFamiliesVizSpec()

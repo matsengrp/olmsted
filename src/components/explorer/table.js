@@ -141,7 +141,7 @@ class ClonalFamiliesTable extends React.Component {
            ["Select", SelectAttribute],
            ["Naive sequence", NaiveSequence],
            ["ID", "id"],
-           ["N seqs", "n_seqs"],
+           ["Unique seqs", "n_unique_seqs"],
            ["V gene", "v_gene"],
            ["D gene", "d_gene"],
            ["J gene", "j_gene"],

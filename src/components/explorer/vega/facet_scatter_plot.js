@@ -35,7 +35,7 @@ const facetClonalFamiliesVizSpec = () => {
       "source": "source",
       "format": {
         "type": "json",
-        "parse": {"n_seqs": "number", "mean_mut_freq": "number"},
+        "parse": {"n_unique_seqs": "number", "mean_mut_freq": "number"},
         "copy": true
       },
       "transform": [
@@ -64,7 +64,7 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           "type": "filter",
-          "expr": "datum[\"n_seqs\"] !== null && !isNaN(datum[\"n_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
+          "expr": "datum[\"n_unique_seqs\"] !== null && !isNaN(datum[\"n_unique_seqs\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
         },
         // Add the facet by field work around since it cannot be updated directly 
         // with a signal see https://github.com/vega/vega/issues/1461
@@ -211,9 +211,9 @@ const facetClonalFamiliesVizSpec = () => {
       "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "n_seqs"]} },
-    { "name": "xField", "value": "n_seqs",
-       "bind": {"name": "X variable ", "input": "select", "options": ["n_seqs", "cdr3_length", "mean_mut_freq"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "n_unique_seqs"]} },
+    { "name": "xField", "value": "n_unique_seqs",
+       "bind": {"name": "X variable ", "input": "select", "options": ["n_unique_seqs", "cdr3_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject.id",
        "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint",

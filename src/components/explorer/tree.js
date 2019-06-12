@@ -125,7 +125,7 @@ class TreeViz extends React.Component {
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
     // minimum bit of information saying the error that occured and/or the field that was not built.
-    let incompleteFamily = !this.props.selectedFamily.n_seqs || !this.props.selectedFamily.reconstructions
+    let incompleteFamily = !this.props.selectedFamily.n_unique_seqs || !this.props.selectedFamily.reconstructions
 
     // Being explicit about the fact that we are relying on the reconstruction being
     // defined vs undefined instead of keeping track of its true loading state

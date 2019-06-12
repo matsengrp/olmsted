@@ -9,7 +9,7 @@ const initialState = {
   // 2 indexes so that we can access data differently depending on what we need to get to
   byDatasetId: {},
   byIdent: {},
-  pagination: {page: 0, per_page: 10, order_by: "n_seqs", desc: true},
+  pagination: {page: 0, per_page: 10, order_by: "n_unique_seqs", desc: true},
   // EH:facet field is no longer required to update the spec but 
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
