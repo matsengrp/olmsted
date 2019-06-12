@@ -212,7 +212,11 @@ def parse_tree_data(args, c):
                 ['cft.tree.node:lbi', float],
                 ['cft.tree.node:lbr', float]]:
             seqmeta = seqmeta_dict.get(node.name, {})
-            node.__dict__[attr.split(':')[1]] = (parser or (lambda x: x))(seqmeta.get(attr)) if seqmeta.get(attr) else None
+            try:
+                value = (parser or (lambda x: x))(seqmeta.get(attr)) if seqmeta.get(attr) else None
+            except ValueError as e:
+                value = None
+            node.__dict__[attr.split(':')[1]] = value
         node.type = "node"
         if node.is_leaf():
             node.type = "leaf"
