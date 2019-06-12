@@ -12,13 +12,14 @@ const devServer = process.argv.indexOf("dev") !== -1;
 let localDataIndex = process.argv.indexOf("localData")
 let localData = localDataIndex !== -1;
 let localDataPath = localData ? (process.argv[localDataIndex + 1]) || "data" : undefined
+let port = (process.argv[localDataIndex + 2]) || 3999
 globals.setGlobals({localData, localDataPath})
 
 
 /* if we are in dev-mode, we need to import specific libraries & set flags */
 
 const app = express();
-app.set('port', process.env.PORT || 3999);
+app.set('port', process.env.PORT || port);
 
 // gzip all files matching *.clonal_families.json in the data dir
 exec(['find', global.LOCAL_DATA_PATH, '-name', 'clonal_families.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
