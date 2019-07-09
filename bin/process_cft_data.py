@@ -9,7 +9,7 @@ import warnings
 import ete3
 import functools as fun
 import os
-
+import copy
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
 
@@ -32,7 +32,10 @@ def comp(f, g):
     return h
 
 def strip_ns(a):
-    return a.split(':')[-1]
+    after_colon_name = a.split(':')[-1]
+    if after_colon_name.startswith('_'):
+        return a.split(':')[-2].split('.')[-1] + 's'
+    return after_colon_name
 
 def dict_subset(d, keys):
     return {k: d[k] for k in keys if k in d}
@@ -65,6 +68,27 @@ def lspy(xs):
 def nospy(xs):
     return xs
 
+partition_pull_pattern = [
+      "db:ident",
+      "cft.partition:partition-file",
+      "cft.partition:id",
+      "cft.partition:logprob",
+      "cft.partition:step"]
+
+subject_pull_pattern = [
+      "db:ident",
+      "cft.subject:id"]
+
+seed_pull_pattern = [
+      "db:ident",
+      "cft.seed:id"]
+
+sample_pull_pattern = [
+      "db:ident",
+      "cft.sample:id",
+      "cft.sample:timepoint",
+      "cft.sample:locus",
+      {"cft.partition:_sample": partition_pull_pattern}]
 
 # Pulling datasets information out
 
@@ -73,17 +97,21 @@ datasets_pull_pattern = [
     "tripl:type",
     "cft.dataset:id",
     "cft.cluster:_dataset",
-    "cft.subject:_dataset",
-    "cft.timepoint:_dataset",
+    {"cft.subject:_dataset": subject_pull_pattern},
+    {"cft.seed:_dataset": seed_pull_pattern},
+    {"cft.sample:_dataset": sample_pull_pattern},
     {"cft.dataset:build": ["cft.build:id", "cft.build:time", "cft.build:commit"]}]
 
 
 def clean_dataset_record(d):
     d = d.copy()
-    d['n_clonal_families'] = len(d['cft.cluster:_dataset'])
-    d['n_subjects'] = len(d['cft.subject:_dataset'])
-    d['n_timepoints'] = len(d['cft.timepoint:_dataset'])
-    del d['cft.cluster:_dataset'], d['cft.subject:_dataset'], d['cft.timepoint:_dataset']
+    d['clonal_families_count'] = len(d['cft.cluster:_dataset'])
+    d['subjects_count'] = len(d['cft.subject:_dataset'])
+    for sample in d['cft.sample:_dataset']:
+        #rename timepoint to timepoint_id to match olmsted schema. this and other code like it in this script can be removed upon #267
+        sample['cft.sample:timepoint_id'] = sample.pop('cft.sample:timepoint')
+    d['timepoints_count'] = len(set([sample['cft.sample:timepoint_id'] for sample in d['cft.sample:_dataset']]))
+    del d['cft.cluster:_dataset']
     return d
 
 def pull_datasets(t):
@@ -114,7 +142,6 @@ reconstruction_pull_pattern = [
     "cft.reconstruction:id",
     "cft.reconstruction:prune_strategy",
     "cft.reconstruction:prune_count",
-    "cft.reconstruction:prune_count",
     {"cft.reconstruction:seqmeta": [{"tripl.csv:data": sequence_pull_pattern}],
 # comment this in and make necessary changes to properly read out timepoint multiplicity metadata when we can for #56
 #    {"cft.reconstruction:seqmeta": [{"tripl.csv:data": ["bio.seq:id", "cft.seq:cluster_multiplicity", "cft.seq:multiplicity", "cft.seq:timepoints", "cft.seq:timepoint_multiplicities"]}],
@@ -128,9 +155,9 @@ clonal_family_pull_pattern = [
       "cft.cluster:id",
       "cft.cluster:naive_seq",
       "cft.cluster:has_seed",
-      "cft.cluster:n_unique_seqs",
-      "cft.cluster:n_total_reads",
-      "cft.cluster:n_sampled_seqs",
+      "cft.cluster:unique_seqs_count",
+      "cft.cluster:total_read_count",
+      "cft.cluster:sampled_seqs_count",
       "cft.cluster:size",
       "cft.cluster:sorted_index",
       "cft.cluster:v_end",
@@ -147,15 +174,16 @@ clonal_family_pull_pattern = [
       "cft.cluster:path",
       "cft.cluster:naive_seq",
       "cft.cluster:mean_mut_freq",
-      {"cft.cluster:seed": ["db:ident", "cft.seed:id"],
-       "cft.cluster:sample": ["db:ident", "cft.sample:id", "cft.sample:timepoint", "cft.sample:locus"],
-       "cft.cluster:dataset": ["db:ident", "cft.dataset:id"],
-       "cft.cluster:partition": ["db:ident", "cft.partition:id", "cft.partition:logprob", "cft.partition:step"],
-       "cft.cluster:subject": ["db:ident", "cft.subject:id"],
+      {"cft.cluster:seed": ["cft.seed:id"],
+       "cft.cluster:sample": ["cft.sample:id"],
+       "cft.cluster:dataset": ["cft.dataset:id"],
+       "cft.cluster:partition": ["cft.partition:id"],
+       "cft.cluster:subject": ["cft.subject:id"],
        "cft.cluster:v_per_gene_support": ["db:ident", "cft.gene_support:gene", "cft.gene_support:prob"],
        "cft.cluster:d_per_gene_support": ["db:ident", "cft.gene_support:gene", "cft.gene_support:prob"],
        "cft.cluster:j_per_gene_support": ["db:ident", "cft.gene_support:gene", "cft.gene_support:prob"],
        "cft.reconstruction:_cluster": reconstruction_pull_pattern}]
+
 
 
 def create_seqs_dict(seq_records):
@@ -188,17 +216,15 @@ def listofint(xs_str):
 
 def parse_tree_data(args, c):
     # create a phylo tree object
-    newick_tree = c['cft.reconstruction:asr_tree']['tripl.file:contents']
-    newick_tree_path = str(c['cft.reconstruction:asr_tree']['tripl.file:path'])
-    tree = ete3.PhyloTree(newick_tree, format=1)
+    newick = c['newick']
+    tree = ete3.PhyloTree(newick, format=1)
     # parse out sequences and other sequence metadata
     aa_seqs_dict = create_seqs_dict(c['cft.reconstruction:cluster_aa']['bio.seq:set'])
-    nt_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])
+    dna_seqs_dict = create_seqs_dict(c['cft.reconstruction:asr_seqs']['bio.seq:set'])
     seqmeta_dict = create_seqmeta_dict(c['cft.reconstruction:seqmeta']['tripl.csv:data'])
     # Note that this function is impure; it's mutable over the internal nodes
     def process_node(node):
-        node.label = node.id = node.name
-        node.nt_seq = nt_seqs_dict[node.name]
+        node.dna_seq = dna_seqs_dict[node.name]
         node.aa_seq = aa_seqs_dict[node.name]
         for attr, parser in [
                 ['cft.seq:multiplicity', int],
@@ -228,8 +254,8 @@ def parse_tree_data(args, c):
                 node.distance = node.get_distance(args.inferred_naive_name)
             except Exception as e:
                 if args.verbose:
-                    warnings.warn("Unable to compute distance to naive '" + str(args.inferred_naive_name) + "' in file " + newick_tree_path)
-                    print("newick tree:", newick_tree)
+                    warnings.warn("Unable to compute distance to naive '{}' in file {}".format(str(args.inferred_naive_name), str(c['cft.reconstruction:asr_tree']['tripl.file:path'])))
+                    print("newick:", newick)
                 raise e
         else:
             # node is root
@@ -239,24 +265,23 @@ def parse_tree_data(args, c):
             node.distance = 0.0
         node = node
         #import pdb; pdb.set_trace()
-        return ({'id': node.id,
-                 'label': node.label,
+        return ({'id': node.name,
                  'type': node.type,
                  'parent': node.parent,
                  'length': node.length,
                  'distance': node.distance,
-                 'nt_seq': node.nt_seq,
+                 'dna_seq': node.dna_seq,
                  'aa_seq': node.aa_seq,
                  'affinity': node.affinity,
                  'lbi': node.lbi,
                  'lbr': node.lbr,
-                 'timepoint': node.timepoint,
+                 'timepoint_id': node.timepoint,
                  'multiplicity': node.multiplicity,
                  'cluster_multiplicity': node.cluster_multiplicity,
                  # change this to real list of key value objects for timepoint multiplicities for #56
-                 'timepoint_multiplicities': [{'timepoint': t, 'multiplicity': m} for t, m in
+                 'timepoint_multiplicities': [{'timepoint_id': t, 'multiplicity': m} for t, m in
                      zip(node.timepoints or [], node.timepoint_multiplicities or [])],
-                 'cluster_timepoint_multiplicities': [{'timepoint': t, 'multiplicity': m} for t, m in
+                 'cluster_timepoint_multiplicities': [{'timepoint_id': t, 'multiplicity': m} for t, m in
                      zip(node.cluster_timepoints or [], node.cluster_timepoint_multiplicities or [])]
               })
 
@@ -265,12 +290,12 @@ def parse_tree_data(args, c):
 
 def clean_reconstruction_record(args, d):
     c = d.copy()
-    #import pdb; pdb.set_trace()
+    c["cft.reconstruction:downsampling_strategy"] = c["cft.reconstruction:prune_strategy"]
+    c["cft.reconstruction:downsampled_count"] = c["cft.reconstruction:prune_count"]
     if c['cft.reconstruction:asr_tree'].get('tripl.file:contents'):
-        c['cft.reconstruction:newick_string'] = c['cft.reconstruction:asr_tree']['tripl.file:contents']
-        c['cft.reconstruction:asr_tree'] = parse_tree_data(args, c)
-    # Do we want to remove the raw data to keep size down?
-    for var in ['cft.reconstruction:cluster_aa', 'cft.reconstruction:asr_seqs', 'cft.reconstruction:seqmeta']:
+        c['newick'] = c['cft.reconstruction:asr_tree']['tripl.file:contents']
+        c['nodes'] = parse_tree_data(args, c)
+    for var in ['cft.reconstruction:cluster_aa', 'cft.reconstruction:asr_seqs', 'cft.reconstruction:seqmeta', 'cft.reconstruction:prune_strategy', 'cft.reconstruction:prune_count', 'cft.reconstruction:asr_tree']:
         try_del(c, var)
     return c
 
@@ -278,7 +303,9 @@ def clean_reconstruction_record(args, d):
 def clean_clonal_family_record(args, d):
     try:
         c = d.copy()
-        c['cft.cluster:reconstructions'] = map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster'])
+        c['cft.cluster:trees'] = map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster'])
+        for attr_key, attr_id_key in [('cft.cluster:seed', 'cft.seed:id'), ('cft.cluster:dataset', 'cft.dataset:id'), ('cft.cluster:sample', 'cft.sample:id'), ('cft.cluster:subject', 'cft.subject:id')]:
+            c[attr_key + '_id'] = (c.pop(attr_key) or {}).get(attr_id_key)
         try_del(c, 'cft.reconstruction:_cluster')
         try_del(c, 'cft.cluster:unique_ids')
         return c
@@ -298,7 +325,6 @@ def pull_clonal_families(args, t):
         warnings.warn("{} (of {}) clonal families couldn't be processed".format(len(bad_families), len(result)))
     else:
         print("processed {} clonal families successfully".format(len(result)))
-    #result[0]['cft.reconstruction:cluster']['cft.reconstruction:asr_tree'] = parse_tree_data(list(result['cft.reconstruction:cluster']['cft.reconstruction:asr_tree']['tripl.file:contents'])[0])
     return good_families
 
 def write_out(data, dirname, filename, args):
@@ -323,6 +349,7 @@ def write_out(data, dirname, filename, args):
 def main():
     args = get_args()
     datasets, clonal_families_dict, reconstructions = [], {}, []
+    full_schema_datasets = []
     for infile in args.inputs:
         print("\nProcessing infile: " + str(infile))
         t = tripl.TripleStore.loads([args.schema, infile])
@@ -332,18 +359,22 @@ def main():
                 assert len(file_datasets) == 1, "Must have exactly one dataset per file (for now); instead had %s" % len(file_datasets)
                 dataset = file_datasets[0]
                 datasets.append(dataset)
+                full_schema_dataset = copy.deepcopy(dataset)
                 clonal_families = pull_clonal_families(args, t)
+                full_schema_dataset['clonal_families'] = copy.deepcopy(clonal_families)
                 for clonal_family in clonal_families:
-                    recons = clonal_family['reconstructions']
-                    reconstructions += recons
-                    clonal_family['reconstructions'] = [
-                            dict_subset(r, ['ident', 'id', 'prune_strategy', 'prune_count', 'type'])
-                            for r in recons]
+                    trees = clonal_family['trees']
+                    reconstructions += trees
+                    clonal_family['trees'] = [
+                            dict_subset(r, ['ident', 'id', 'downsampling_strategy', 'downsampled_count', 'type'])
+                            for r in trees]
                 clonal_families_dict[dataset['id']] = clonal_families
+                full_schema_datasets.append(full_schema_dataset)
         except Exception as e:
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
     if args.data_outdir:
+        write_out(full_schema_datasets[0], args.data_outdir, 'full_schema_datasets.json', args)
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
