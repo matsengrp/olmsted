@@ -2,27 +2,24 @@ import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect'
 import * as clonalFamiliesSelectors from './clonalFamilies';
 import * as _ from 'lodash';
 
-// The naming structure here needs to be cleaned up; 
-// This should all probably be in a reconstructions selector ns
-
 
 // selector for selected tree
-const getSelectedReconstructionIdent = (state) =>
-  state.reconstructions.selectedReconstructionIdent
+const getSelectedTreeIdent = (state) =>
+  state.trees.selectedTreeIdent
 
 
-export const getReconstructionFromCache = (cache, family, selectedIdent) => {
+export const getTreeFromCache = (cache, family, selectedIdent) => {
   let ident = selectedIdent ||
-    (_.find(_.values(family.reconstructions), {prune_strategy: "seed_lineage"}) ||
-     _.find(_.values(family.reconstructions), {prune_strategy: "min_adcl"}) ||
-     _.values(family.reconstructions)[0]).ident
+    (_.find(_.values(family.trees), {downsampling_strategy: "seed_lineage"}) ||
+     _.find(_.values(family.trees), {downsampling_strategy: "min_adcl"}) ||
+     _.values(family.trees)[0]).ident
   return cache[ident]
 }
 
-// combine these to select out the actual selected reconstruction entity
-export const getSelectedReconstruction = createSelector(
-  [(state) => state.reconstructions.cache, clonalFamiliesSelectors.getSelectedFamily, getSelectedReconstructionIdent],
-  getReconstructionFromCache
+// combine these to select out the actual selected tree entity
+export const getSelectedTree = createSelector(
+  [(state) => state.trees.cache, clonalFamiliesSelectors.getSelectedFamily, getSelectedTreeIdent],
+  getTreeFromCache
 )
 
 
@@ -31,8 +28,8 @@ export const getSelectedReconstruction = createSelector(
 const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq
 
 export const getSelectedSeq = createSelector(
-  [getSelectedSeqId, getSelectedReconstruction],
-  (seq_id, recon) => _.find(recon.asr_tree, {"id": seq_id})
+  [getSelectedSeqId, getSelectedTree],
+  (seq_id, tree) => _.find(tree.nodes, {"id": seq_id})
 )
 
 // computing mutations for tree node records relative to naive_seq
@@ -66,19 +63,19 @@ const createAlignment = (naive_seq, tree) => {
 }
 
 
-const followLineage = (asr_tree, leaf, naive) => {
+const followLineage = (nodes, leaf, naive) => {
   // this tracks unique intermediate nodes to be downloaded bewtween naive and leaf
   var curr_node = leaf;
   var uniq_int_nodes = [];
   // Prioritize leaf and naive
-  let taken_seqs = new Set([leaf.nt_seq, naive.nt_seq])
+  let taken_seqs = new Set([leaf.dna_seq, naive.dna_seq])
   // Loop through the intermediate nodes to find unique sequences, keeping back mutations,
   // prioritizing the closest to naive in a series of duplicates
   while (curr_node.parent){
     let parent_id = curr_node.parent;
-    let parent = _.find(asr_tree, {"id": parent_id});
+    let parent = _.find(nodes, {"id": parent_id});
     //Prioritize the seq closest to root if two are identical and make sure it isnt the same as leaf or naive
-    if(parent.nt_seq !== curr_node.nt_seq && !taken_seqs.has(curr_node.nt_seq)){
+    if(parent.dna_seq !== curr_node.dna_seq && !taken_seqs.has(curr_node.dna_seq)){
       uniq_int_nodes.push(curr_node)
     }
     curr_node = parent;
@@ -92,22 +89,22 @@ const followLineage = (asr_tree, leaf, naive) => {
   return lineage
 }
 
-const uniqueSeqs = (asr_tree) => {
+const uniqueSeqs = (nodes) => {
   //this relies on node records having been added in postorder
-  let seq_records = asr_tree.slice()
+  let seq_records = nodes.slice()
   //remove from a copy so that we dont loop through the whole thing several times filtering
   let naive = _.remove(seq_records, function(o) { return o.type == "root" })[0]
   let leaves = _.remove(seq_records, function(o) { return o.type == "leaf" })
   //seq_records should now just have internal nodes, reassign for readability
   let internal_nodes = seq_records
 
-  let taken_seqs = new Set([_.map(leaves, (leaf) => {leaf.nt_seq}).concat([naive.nt_seq])]) 
+  let taken_seqs = new Set([_.map(leaves, (leaf) => {leaf.dna_seq}).concat([naive.dna_seq])]) 
   var download_seqs = [];
   let uniq_int_nodes = _.filter(
                           _.uniqBy(
                               _.reverse(internal_nodes),
-                              'nt_seq'),
-                          function(node) {return !taken_seqs.has(node.nt_seq)})
+                              'dna_seq'),
+                          function(node) {return !taken_seqs.has(node.dna_seq)})
 
   download_seqs.push(naive)
   download_seqs = download_seqs.concat(uniq_int_nodes)
@@ -120,7 +117,7 @@ const findNaive = (data) => {
   return _.find(data, {"type": "root"});
 }
 
-// Create an alignment for naive + all of the leaves of the tree (reconstruction)
+// Create an alignment for naive + all of the leaves of the tree 
 // and find unique set of sequences (giving preference to leaves, naive, and duplicate
 // internal nodes that are closer to naive)
 
@@ -129,51 +126,51 @@ const dissoc = (d, key) => {
   newD[key] = undefined
   return newD}
 
-export const computeReconstructionData = (reconstruction) => { 
-  let recon = _.clone(reconstruction)   //clone for assign by value
+export const computeTreeData = (tree) => { 
+  tree = _.clone(tree)   //clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  recon.asr_tree = _.map(recon.asr_tree, (x) => (x.parent == "inferred_naive" || x.id == "inferred_naive") ? dissoc(x, "lbr") : x)
+  tree.nodes = _.map(tree.nodes, (x) => (x.parent == "inferred_naive" || x.id == "inferred_naive") ? dissoc(x, "lbr") : x)
 
-  if (recon["asr_tree"] && recon["asr_tree"].length > 0){
-    let data = recon["asr_tree"].slice(0);
+  if (tree["nodes"] && tree["nodes"].length > 0){
+    let data = tree["nodes"].slice(0);
     let naive = findNaive(data);
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf")
-    recon["leaves_count_incl_naive"] = data.length;
+    tree["leaves_count_incl_naive"] = data.length;
     let alignment = createAlignment(naive.aa_seq, data)
-    recon["tips_alignment"] = alignment;
-    recon["download_unique_family_seqs"] = uniqueSeqs(recon.asr_tree)
-    return recon;
+    tree["tips_alignment"] = alignment;
+    tree["download_unique_family_seqs"] = uniqueSeqs(tree.nodes)
+    return tree;
   }
   else{
-    return recon;
+    return tree;
   }
 }
 
 // Create an alignment for the lineage of a particular sequence from naive
 // and find lineage sequences, removing repeat sequences but preserving back mutations.
-const computeLineageData = (reconstruction, seq) => { 
-  let recon = _.clone(reconstruction)   //clone for assign by value
-  if (recon["asr_tree"] && recon["asr_tree"].length > 0 && !_.isEmpty(seq)){
-    let data = recon["asr_tree"].slice(0);
+const computeLineageData = (tree, seq) => { 
+  tree = _.clone(tree)   //clone for assign by value
+  if (tree["nodes"] && tree["nodes"].length > 0 && !_.isEmpty(seq)){
+    let data = tree["nodes"].slice(0);
     let naive = findNaive(data);
     let lineage = followLineage(data, seq, naive);
-    recon["download_lineage_seqs"] = lineage;
+    tree["download_lineage_seqs"] = lineage;
     //Count unique aa sequences to set the height of the lineage viz accordingly
-    recon["lineage_seq_counter"] = _.uniqBy(lineage, "aa_seq").length;
+    tree["lineage_seq_counter"] = _.uniqBy(lineage, "aa_seq").length;
     let alignment = createAlignment(naive.aa_seq, lineage)
-    recon["lineage_alignment"] = alignment;
-    return recon;
+    tree["lineage_alignment"] = alignment;
+    return tree;
   }
   else{
-    return recon
+    return tree
   }
 }
 
-export const getReconstructionData = createSelector(
-  [getSelectedReconstruction],
-  computeReconstructionData)
+export const getTreeData = createSelector(
+  [getSelectedTree],
+  computeTreeData)
 
 export const getLineageData =  createSelector(
-  [getSelectedReconstruction, getSelectedSeq],
+  [getSelectedTree, getSelectedSeq],
   computeLineageData)
 

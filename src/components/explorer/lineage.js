@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import React from "react";
 import Vega from 'react-vega';
-import * as reconstructionsSelector from "../../selectors/reconstructions";
+import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import {seqAlignSpec} from './vega/clonal_family_details';
 import * as _ from "lodash";
@@ -18,8 +18,8 @@ import {getNaiveVizData} from "./naive";
 
 const mapStateToProps = (state) => {
     return {
-      lineageData: reconstructionsSelector.getLineageData(state),
-      selectedSeq: reconstructionsSelector.getSelectedSeq(state),
+      lineageData: treesSelector.getLineageData(state),
+      selectedSeq: treesSelector.getSelectedSeq(state),
       selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
     }
 }
@@ -36,7 +36,7 @@ class Lineage extends React.Component {
         <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
         <h3>Amino acid sequence:</h3>
         <p>{this.props.selectedSeq.aa_seq}</p>
-        <Copy value={this.props.selectedSeq.nt_seq ? this.props.selectedSeq.nt_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
+        <Copy value={this.props.selectedSeq.dna_seq ? this.props.selectedSeq.dna_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
         <DownloadFasta sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
                          filename={this.props.selectedSeq.id.concat('-lineage.fasta')}
                          label="Download Fasta: Lineage Sequences"/>

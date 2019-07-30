@@ -140,7 +140,7 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "max_label_length", 
           "transform": [
             { "expr": "datum.type == 'leaf'", "type": "filter"},
-            {"expr": "length(datum.label)", "type": "formula", "as": "label_length"}, 
+            {"expr": "length(datum.id)", "type": "formula", "as": "label_length"}, 
             {
               "type": "aggregate",
               "fields": ["label_length"],
@@ -245,7 +245,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
              {
               "type": "formula",
-              "expr": "datum.timepoint_mult_data.timepoint",
+              "expr": "datum.timepoint_mult_data.timepoint_id",
               "as": "timepoint_multiplicity_key"
             },
             {
@@ -301,7 +301,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-        // Separate dataset for just gap characters and Xs to label them with text marks
+        // Separate dataset for just gap characters and Xs toid label them with text marks
         {"name": "x_and_gaps",
          "source": "source_1",
          "transform": [
@@ -949,7 +949,7 @@ const concatTreeWithAlignmentSpec = () => {
               "encode": {
                 "update": {
                   "text":  [
-                    {"test": "show_labels",  "field": "label"},
+                    {"test": "show_labels",  "field": "id"},
                     {"value": null}
                   ],
                   "limit": {"signal": "leaf_label_length_limit"},

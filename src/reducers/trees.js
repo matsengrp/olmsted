@@ -2,23 +2,23 @@ import * as types from "../actions/types";
 import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
 
-const reconstructions = (state = {
-  selectedReconstructionIdent: undefined,
+const trees = (state = {
+  selectedTreeIdent: undefined,
   cache: {},
 }, action) => {
   switch (action.type) {
-    case types.RECONSTRUCTION_RECEIVED: {
+    case types.TREE_RECEIVED: {
       let updates = {};
-      updates[action.reconstruction_id] = action.reconstruction
+      updates[action.tree_id] = action.tree
       return Object.assign({}, state, {
         cache: Object.assign({}, state.cache, updates)})
-    } case types.UPDATE_SELECTED_RECONSTRUCTION: {
+    } case types.UPDATE_SELECTED_TREE: {
       return Object.assign({}, state, {
-        selectedReconstructionIdent: action.reconstruction,
+        selectedTreeIdent: action.tree,
       });
     } case types.TOGGLE_FAMILY: {
       let updates = {
-        selectedReconstructionIdent: undefined,
+        selectedTreeIdent: undefined,
       }
       return Object.assign({}, state, updates);
     } default: {
@@ -27,8 +27,8 @@ const reconstructions = (state = {
   }
 };
 
-export const getSelectedReconstruction = (reconstructions) => {
-  return reconstructions.cache[reconstructions.selectedReconstruction];
+export const getSelectedTree = (trees) => {
+  return trees.cache[trees.selectedTree];
 };
 
-export default reconstructions;
+export default trees;

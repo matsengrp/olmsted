@@ -382,6 +382,8 @@ def process_clonal_family(args, dataset, clonal_family):
     _dataset = dataset.copy()
     del _dataset['clonal_families']
     clonal_family['dataset'] = _dataset
+    clonal_family['sample'] = filter(lambda sample: sample['id'] == clonal_family['sample_id'], clonal_family['dataset']['samples'])[0]
+    del clonal_family['dataset']['samples']
     # prepare tree(s)
     clonal_family['trees'] = map(fun.partial(process_tree, args), clonal_family.get('trees', []))
     clonal_family['naive'] = args.naive_name
