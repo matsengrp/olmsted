@@ -301,7 +301,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           ]
         },
-        // Separate dataset for just gap characters and Xs toid label them with text marks
+        // Separate dataset for just gap characters and Xs to label them with text marks
         {"name": "x_and_gaps",
          "source": "source_1",
          "transform": [
