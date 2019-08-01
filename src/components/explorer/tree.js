@@ -24,7 +24,7 @@ class TreeHeader extends React.Component {
   render(){
     return (
       <div>
-        <h2>Clonal family details for {this.props.selectedFamily.sample.id} {this.props.selectedFamily.id}</h2>
+        <h2>Clonal family details for {this.props.selectedFamily.sample_id} {this.props.selectedFamily.id}</h2>
         <div>
           <p>
             Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
@@ -116,7 +116,7 @@ class TreeViz extends React.Component {
       // Here we create a separate dataset only containing the id of the
       // seed sequence so as to check quickly for this id within the 
       // viz to color the seed blue
-      seed: this.props.selectedFamily.seed == null ? [] : [{'id': this.props.selectedFamily.seed.id}]
+      seed: this.props.selectedFamily.seed_id == null ? [] : [{'id': this.props.selectedFamily.seed_id}]
     }
   }
 
@@ -166,10 +166,10 @@ class TreeViz extends React.Component {
           {/* Show downloads if complete family, tree */}
           {completeData && <div>
             <DownloadFasta sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
-                          filename={this.props.selectedFamily.sample.id.concat('-',this.props.selectedFamily.id, '.fasta')}
+                          filename={this.props.selectedFamily.sample_id.concat('-',this.props.selectedFamily.id, '.fasta')}
                           label="Download Fasta: Unique Sequences In This Tree"/>
             <DownloadText  text={this.props.selectedTree.newick}
-                          filename={this.props.selectedFamily.sample.id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
+                          filename={this.props.selectedFamily.sample_id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
                           label="Download Clonal Family Tree Newick String"/>
           </div>}
         </div>
