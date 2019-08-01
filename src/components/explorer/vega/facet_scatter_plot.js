@@ -44,11 +44,6 @@ const facetClonalFamiliesVizSpec = () => {
         // sometimes has issues with nested fields https://vega.github.io/vega/docs/data/
         {
           "type": "formula",
-          "expr": "datum[\"subject\"] && datum[\"subject\"][\"id\"]",
-          "as": "subject.id"
-        },
-        {
-          "type": "formula",
           "expr": "datum[\"sample\"] && datum[\"sample\"][\"timepoint_id\"]",
           "as": "sample.timepoint_id"
         },
@@ -208,16 +203,16 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "facet_by_signal",
       "value": "none",
-      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject.id", "sample.timepoint_id", "sample.locus"]}
+      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject_id", "sample.timepoint_id", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
       "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "unique_seqs_count"]} },
     { "name": "xField", "value": "unique_seqs_count",
        "bind": {"name": "X variable ", "input": "select", "options": ["unique_seqs_count", "cdr3_length", "mean_mut_freq"]} },
-    { "name": "colorBy", "value": "subject.id",
-       "bind": {"name": "Color by ", "input": "select", "options": ["subject.id", "sample.timepoint_id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
+    { "name": "colorBy", "value": "subject_id",
+       "bind": {"name": "Color by ", "input": "select", "options": ["subject_id", "sample.timepoint_id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint_id",
-       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint_id", "subject.id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
+       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint_id", "subject_id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
     // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field",

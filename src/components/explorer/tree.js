@@ -133,8 +133,6 @@ class TreeViz extends React.Component {
 
     let incompleteTree = !treeLoading && !isTreeComplete(this.props.selectedTree)
     let completeData = !incompleteFamily && !treeLoading && isTreeComplete(this.props.selectedTree)
-    console.log('TREEE* ')
-    console.log(this.props.tree)
     return (
         <div>
           {/* Tree still loading aka undefined*/}

@@ -33,7 +33,7 @@ class Lineage extends React.Component {
       let naiveData = getNaiveVizData(this.props.selectedFamily)
       let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
       return <div>
-        <h2>Ancestral sequences for {this.props.selectedSeq.label} lineage</h2>
+        <h2>Ancestral sequences for {this.props.selectedSeq.id} lineage</h2>
         <h3>Amino acid sequence:</h3>
         <p>{this.props.selectedSeq.aa_seq}</p>
         <Copy value={this.props.selectedSeq.dna_seq ? this.props.selectedSeq.dna_seq: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>

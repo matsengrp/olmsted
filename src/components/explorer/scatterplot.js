@@ -114,7 +114,7 @@ class ClonalFamiliesViz extends React.Component {
           }}
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ true}
-          //logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
           data={{source: this.props.availableClonalFamilies,
                 // Here we create a separate dataset only containing the id of the
                 // selected family so as to check quickly for this id within the 
