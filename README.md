@@ -93,8 +93,14 @@ sudo apt-get install libcairo2 libcairo2-dev
 
 ## Input data
 
-Olmsted uses [json-schema](https://json-schema.org/) to standardize input data. For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html
+
+Olmsted uses [json-schema](https://json-schema.org/) to standardize input data.
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html
 ) on [htmlpreview.github.io](https://htmlpreview.github.io)
+
+Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema. 
+The script takes one JSON file containing one or many datasets with all schema attributes nested under one another, and breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized. 
+
 
 To parse input JSON files, use bin/process_data.py. E.g.:
 
@@ -103,6 +109,12 @@ To parse input JSON files, use bin/process_data.py. E.g.:
 ```
 
 Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the json-schema.
+
+### Generating input data
+
+Olmsted is a visualization tool and should not depend on the methods used for clustering sequences into clonal families, inferring phylogenetic trees among them, etc.
+
+One set of tools we have had success with is [partis](https://github.com/psathyrella/partis) for inferring clonal families and naive sequences, and [CFT](https://github.com/matsengrp/cft) for inferring phylogenetic trees and ancestral sequences. 
 
 ## Deployment
 
