@@ -1,0 +1,95 @@
+[
+    {
+        "ident": "cbc21868-2d69-3f42-9fd4-f7e37ed588ef", 
+        "clonal_families_count": 1, 
+        "timepoints_count": 1, 
+        "subjects": [
+            {
+                "ident": "3de1483f-2ca8-3da0-af1c-f28e7387f09b", 
+                "id": "QA013"
+            }
+        ], 
+        "build": {
+            "commit": "d62e403e5e3d6fd914a7314e94a7998aea754130\n", 
+            "id": "cft-build-2019-07-08-15:43:18", 
+            "time": "2019-07-08 15:43:18"
+        }, 
+        "samples": [
+            {
+                "id": "QA013-l-d765-m8", 
+                "partitions": [
+                    {
+                        "step": 8, 
+                        "ident": "b3376d15-0d3f-34c3-994a-007d1e5d1ea9", 
+                        "logprob": -2928019.987766123, 
+                        "id": "unseeded--50k-isub-2-part-8", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-2/partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 9, 
+                        "ident": "2c21a784-7d57-316e-bda0-123255a42c5e", 
+                        "logprob": -2929178.3180063954, 
+                        "id": "unseeded--50k-isub-0-part-9", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-0/partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 29, 
+                        "ident": "11e01622-85b7-3341-a8fb-510637d4a0b9", 
+                        "logprob": -495228.90348665765, 
+                        "id": "seed-part-29", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.19-igl/QA013-l-d765-m8/partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 29, 
+                        "ident": "f1adbedb-4d09-33e5-bb87-11c845dcbb32", 
+                        "logprob": -51084.05631256726, 
+                        "id": "seed-part-29", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.2-igl/QA013-l-d765-m8/partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 9, 
+                        "ident": "b77f2649-f1dc-34df-a3ba-e526019656dd", 
+                        "logprob": -2928452.124309074, 
+                        "id": "unseeded--50k-isub-1-part-9", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-1/partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 29, 
+                        "ident": "af0c9f24-11b2-39b1-a42d-02a647b35c30", 
+                        "logprob": -488317.5538460686, 
+                        "id": "seed-part-29", 
+                        "partition-file": [
+                            "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.32-igl/QA013-l-d765-m8/partition.yaml"
+                        ]
+                    }
+                ], 
+                "ident": "fdafebc3-7025-3def-8737-5bff56fae313", 
+                "timepoint_id": "d765", 
+                "locus": "igl"
+            }
+        ], 
+        "seeds": [
+            {
+                "ident": "8457d4a2-1baf-3366-bf5a-4b7eec861ba6", 
+                "id": "QA013.19-igh"
+            }, 
+            {
+                "ident": "781c6ec4-abeb-37d0-9a2a-0ae1284a98b0", 
+                "id": "QA013.19-igl"
+            }
+        ], 
+        "type": "cft.dataset", 
+        "id": "test-qa013-synth-v19-2019.07.08", 
+        "subjects_count": 1
+    }
+]

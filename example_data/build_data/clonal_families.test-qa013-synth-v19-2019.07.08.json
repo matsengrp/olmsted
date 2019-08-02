@@ -1,0 +1,193 @@
+[
+    {
+        "dataset": {
+            "ident": "cbc21868-2d69-3f42-9fd4-f7e37ed588ef", 
+            "clonal_families_count": 1, 
+            "timepoints_count": 1, 
+            "subjects": [
+                {
+                    "ident": "3de1483f-2ca8-3da0-af1c-f28e7387f09b", 
+                    "id": "QA013"
+                }
+            ], 
+            "build": {
+                "commit": "d62e403e5e3d6fd914a7314e94a7998aea754130\n", 
+                "id": "cft-build-2019-07-08-15:43:18", 
+                "time": "2019-07-08 15:43:18"
+            }, 
+            "seeds": [
+                {
+                    "ident": "8457d4a2-1baf-3366-bf5a-4b7eec861ba6", 
+                    "id": "QA013.19-igh"
+                }, 
+                {
+                    "ident": "781c6ec4-abeb-37d0-9a2a-0ae1284a98b0", 
+                    "id": "QA013.19-igl"
+                }
+            ], 
+            "type": "cft.dataset", 
+            "id": "test-qa013-synth-v19-2019.07.08", 
+            "subjects_count": 1
+        }, 
+        "sample": {
+            "id": "QA013-l-d765-m8", 
+            "partitions": [
+                {
+                    "step": 8, 
+                    "ident": "b3376d15-0d3f-34c3-994a-007d1e5d1ea9", 
+                    "logprob": -2928019.987766123, 
+                    "id": "unseeded--50k-isub-2-part-8", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-2/partition.yaml"
+                    ]
+                }, 
+                {
+                    "step": 9, 
+                    "ident": "2c21a784-7d57-316e-bda0-123255a42c5e", 
+                    "logprob": -2929178.3180063954, 
+                    "id": "unseeded--50k-isub-0-part-9", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-0/partition.yaml"
+                    ]
+                }, 
+                {
+                    "step": 29, 
+                    "ident": "11e01622-85b7-3341-a8fb-510637d4a0b9", 
+                    "logprob": -495228.90348665765, 
+                    "id": "seed-part-29", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.19-igl/QA013-l-d765-m8/partition.yaml"
+                    ]
+                }, 
+                {
+                    "step": 29, 
+                    "ident": "f1adbedb-4d09-33e5-bb87-11c845dcbb32", 
+                    "logprob": -51084.05631256726, 
+                    "id": "seed-part-29", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.2-igl/QA013-l-d765-m8/partition.yaml"
+                    ]
+                }, 
+                {
+                    "step": 9, 
+                    "ident": "b77f2649-f1dc-34df-a3ba-e526019656dd", 
+                    "logprob": -2928452.124309074, 
+                    "id": "unseeded--50k-isub-1-part-9", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/partitions/QA013-l-d765-m8-50k-isub-1/partition.yaml"
+                    ]
+                }, 
+                {
+                    "step": 29, 
+                    "ident": "af0c9f24-11b2-39b1-a42d-02a647b35c30", 
+                    "logprob": -488317.5538460686, 
+                    "id": "seed-part-29", 
+                    "partition-file": [
+                        "/fh/fast/matsen_e/processed-data/partis/qa013-synth/v19/seeds/QA013.32-igl/QA013-l-d765-m8/partition.yaml"
+                    ]
+                }
+            ], 
+            "ident": "fdafebc3-7025-3def-8737-5bff56fae313", 
+            "timepoint_id": "d765", 
+            "locus": "igl"
+        }, 
+        "j_end": 349, 
+        "seed_id": "QA013.19-igl", 
+        "sample_id": "QA013-l-d765-m8", 
+        "dataset_id": "test-qa013-synth-v19-2019.07.08", 
+        "j_gene": "IGLJ2*01", 
+        "id": "seed-cluster", 
+        "d_start": 310, 
+        "size": 4981, 
+        "naive_seq": "NNNNNNNNNNNNNNNNNNCAGTCTGCCCTGACTCAGCCTGCCTCCGTGTCTGGGTCTCCTGGACAGTCGATCACCATCTCCTGCACTGGAACCAGCAGTGATGTTGGGAGTTATAACCTTGTCTCCTGGTACCAACAGCACCCAGGCAAAGCCCCCAAACTCATGATTTATGAGGTCAGTAAGCGGCCCTCAGGGGTTTCTAATCGCTTCTCTGGCTCCAAGTCTGGCAACACGGCCTCCCTGACAATCTCTGGGCTCCAGGCTGAGGACGAGGCTGATTATTACTGCTGCTCATATGCAGGTAGTAGCACTTTGGTGTTCGGCGGAGGGACCAAGCTGACCGTCCTAG", 
+        "cdr3_length": 36, 
+        "subject_id": "QA013", 
+        "j_start": 318, 
+        "d_end": 310, 
+        "mean_mut_freq": 0.054712889502399754, 
+        "type": "cft.cluster", 
+        "unique_seqs_count": 4982, 
+        "v_start": 18, 
+        "total_read_count": 155843, 
+        "naive": "inferred_naive", 
+        "trees": [
+            {
+                "type": "cft.reconstruction", 
+                "ident": "8b614f4e-b346-3144-b40a-dbc729a26364", 
+                "downsampling_strategy": "seed_lineage", 
+                "id": "seed_lineage-dnaml", 
+                "downsampled_count": 100
+            }
+        ], 
+        "v_gene": "IGLV2-23*02", 
+        "path": [
+            "output/test-qa013-synth-v19/QA013/QA013-l-d765-m8/QA013.19-igl/seed-part-29/seed-cluster"
+        ], 
+        "has_seed": true, 
+        "d_per_gene_support": [
+            {
+                "ident": "e314bfe8-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 1.0, 
+                "gene": "IGLDx-x*x"
+            }
+        ], 
+        "ident": "7f7b7dc5-3fb5-3969-a406-7724d87f68db", 
+        "v_end": 310, 
+        "partition": {
+            "id": "seed-part-29"
+        }, 
+        "sampled_seqs_count": 4981, 
+        "v_per_gene_support": [
+            {
+                "ident": "e314a6ca-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLV2-8*01"
+            }, 
+            {
+                "ident": "e3149f18-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLV2-11*01"
+            }, 
+            {
+                "ident": "e314a2f6-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLV2-14*01"
+            }, 
+            {
+                "ident": "e3149770-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLV2-14*01+G155T"
+            }, 
+            {
+                "ident": "e3149b58-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLV2-18*02"
+            }, 
+            {
+                "ident": "e31493a6-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 1.0, 
+                "gene": "IGLV2-23*02"
+            }
+        ], 
+        "sorted_index": null, 
+        "j_per_gene_support": [
+            {
+                "ident": "e31453c8-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLJ1*01"
+            }, 
+            {
+                "ident": "e3144c16-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 1.0, 
+                "gene": "IGLJ2*01"
+            }, 
+            {
+                "ident": "e3145008-a1e1-11e9-9c8e-3f364ef0af82", 
+                "prob": 0.0, 
+                "gene": "IGLJ3*02"
+            }
+        ], 
+        "d_gene": "IGLDx-x*x", 
+        "cdr3_start": 285
+    }
+]
