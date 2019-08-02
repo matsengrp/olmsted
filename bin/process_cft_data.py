@@ -348,7 +348,7 @@ def write_out(data, dirname, filename, args):
 
 def main():
     args = get_args()
-    datasets, clonal_families_dict, reconstructions = [], {}, []
+    datasets, clonal_families_dict, all_trees = [], {}, []
     full_schema_datasets = []
     for infile in args.inputs:
         print("\nProcessing infile: " + str(infile))
@@ -364,7 +364,7 @@ def main():
                 full_schema_dataset['clonal_families'] = copy.deepcopy(clonal_families)
                 for clonal_family in clonal_families:
                     trees = clonal_family['trees']
-                    reconstructions += trees
+                    all_trees += trees
                     clonal_family['trees'] = [
                             dict_subset(r, ['ident', 'id', 'downsampling_strategy', 'downsampled_count', 'type'])
                             for r in trees]
@@ -378,8 +378,8 @@ def main():
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
-        for reconstruction in reconstructions:
-            write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident']  + '.json' , args)
+        for tree in all_trees:
+            write_out(tree, args.data_outdir + '/', 'tree.' + tree['ident']  + '.json' , args)
 
 if __name__ == '__main__':
     main()
