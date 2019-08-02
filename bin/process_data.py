@@ -499,7 +499,7 @@ def main():
     datasets, clonal_families_dict, trees = [], {}, []
 
     for infile in args.inputs or []:
-        print("\nProcessing infile:", str(infile))
+        print("\nProcessing infile: {}".format(str(infile)))
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
