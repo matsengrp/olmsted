@@ -10,6 +10,7 @@ import ete3
 import functools as fun
 import os
 import copy
+import inflect
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
 
@@ -19,7 +20,6 @@ def get_args():
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-o', '--data-outdir')
-    # parser.add_argument('-s', '--split'
     parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
     parser.add_argument('-v', '--verbose', action='store_true')
     return parser.parse_args()
@@ -31,11 +31,21 @@ def comp(f, g):
         return f(g(*args, **kw_args))
     return h
 
-def strip_ns(a):
-    after_colon_name = a.split(':')[-1]
-    if after_colon_name.startswith('_'):
-        return a.split(':')[-2].split('.')[-1] + 's'
-    return after_colon_name
+ple = inflect.engine()
+def trim_tripl_naming(a):
+    """ 
+    tripl works like: <namespace>.<entity>:<attribute>
+    This handles that in the following way:
+    if a reverse lookup, take the name before the colon and make it plural
+    e.g. if cft.partition:_sample (lookup of all partitions for a sample),
+    the result should be the plural of 'partition'. Otherwise just take the 
+    name after the colon, e.g. 'cft.sample.locus' -> 'locus'. 
+    """
+    attr_name = a.split(':')[-1]
+    if attr_name.startswith('_'):
+        entity_name = a.split(':')[-2].split('.')[-1]
+        return ple.plural(entity_name)
+    return attr_name
 
 def dict_subset(d, keys):
     return {k: d[k] for k in keys if k in d}
@@ -47,7 +57,7 @@ def clean_record(d):
     if isinstance(d, list):
         return map(clean_record, d)
     elif isinstance(d, dict):
-        return {strip_ns(k): clean_record(v)
+        return {trim_tripl_naming(k): clean_record(v)
                 for k, v in d.items()}
     # can't have infinity in json
     elif d == inf or d == neginf:
