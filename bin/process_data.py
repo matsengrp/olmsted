@@ -104,21 +104,55 @@ timepoint_multiplicity_spec = {
     "description": "Multiplicity at a specific time",
     "type": "object",
     "properties": {
-        # TODO timepoint_id?
         "timepoint_id": {
             "description": "Id associated with the timepoint in question",
             "type": "string"},
         "multiplicity": multiplicity_spec("Number of times sequence was observed at the given timepoint")}}
 
+sample_spec = {
+        "title": "Sample",
+        "description": "A sample is generally a collection of sequences",
+        "type": "object",
+        "required": ["locus"],
+        "properties": {
+            "ident": ident_spec,
+            "id": id_spec("Sample id"),
+            "timepoint_id": {
+                "description": "Timepoint associated with this sample (may choose 'merged' if data has" +
+                    " been combined from multiple timepoints)",
+                "type": "string"},
+            "locus": {
+                "description": "B-cell Locus",
+                "type": "string"}}}
 
-sequence_spec = {
-    "title": "Sequence & node record",
-    "description": "Information about the nucelotide sequence and/or phylogenetic tree node",
+subject_spec = {
+        "title": "Subject",
+        "description": "Subject from which the clonal family was sampled",
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+            "ident": ident_spec,
+            "id": id_spec("Subjectd id")}}
+    # TODO need to clean this up as well; probably doesn't need to be specified like this
+
+seed_spec = {
+        "title": "Seed",
+        "description": "A sequence of interest among other clonal family members",
+        # QUESTION not sure if we actually want nullable here...
+        "type": ["object", "null"],
+        "required": ["id"],
+        "properties": {
+            "ident": ident_spec,
+            "id": id_spec("Seed id")}}
+
+node_spec = {
+    "title": "Node",
+    "description": "Information about the phylogenetic tree nodes and the sequences they represent",
     "type": "object",
-    "required": ["id", "nt_seq", 'aa_seq'],
+    "required": ["id", "dna_seq", 'aa_seq'],
     "properties": {
         "id": id_spec("Sequence id"),
-        "nt_seq": {
+        "dna_seq": {
             "description": "Literal nucleotide sequence, aligned to other sequences in clonal family",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
@@ -128,7 +162,7 @@ sequence_spec = {
             "description": "Literal amino acid sequence, aligned to other sequences in clonal family",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
-        "timepoint": {
+        "timepoint_id": {
             "description": "Timepoint associated with sequence, if any",
             # QUESTION not sure if we actually want nullable here...
             "type": ["string", "null"]},
@@ -148,66 +182,63 @@ sequence_spec = {
         # compute:
         # * lbi, lbr? we should have the tree available to do this but need to coordinate with Duncan
         # * aa_seq
-        # * label: do we need to compute this? we include this already but may not need to
         "lbi": {
             "description": "Local branching index",
-            "type": "number"},
+            "type": ["number", "null"]},
         "lbr": {
             "description": "Local branching rate (derivative of lbi)",
-            "type": "number"},
+            "type": ["number", "null"]},
         "affinity": {
             "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
-            "type": "number"}}}
+            "type": ["number", "null"]}}}
 
 
 
-# Do we want to keep calling these reconstructions? trees?
-reconstruction_spec = {
-    "title": "Reconstruction",
+tree_spec = {
+    "title": "Tree",
     "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family",
     "type": "object",
-    "required": ["newick_tree", "sequences"],
+    "required": ["newick", "nodes"],
     "properties": {
         "ident": ident_spec,
-        "id": id_spec("Reconstruction id"),
+        "id": id_spec("tree id"),
         # optional
-        "prune_strategy": {
+        "downsampling_strategy": {
             "description": "If applicable, the downsampling method",
             "type": "string"},
-        "prune_count": {
+        "downsampled_count": {
             "description": "If applicable, the maximum number of sequences kept in the downsampling process",
             "minumum": 3,
             "type": "integer"},
-        # TODO currently named newick_string; need to change
-        "newick_tree": {
-            "description": "Reconstructed tree in newick format",
+        "newick": {
+            "description": "Tree in newick format",
             "type": "string"},
-        # TODO instead of asr_tree
-        "sequences": {
-            "description": "Sequences and sequence metadata",
+        "nodes": {
+            "description": "Nodes in the clonal family tree and corresponding sequences and metadata",
             "type": "array",
-            "items": sequence_spec}
-        # TODO need inferred_naive_name?
-        # We should also change from asr_tree as the output key to just `tree_nodes` or something
+            "items": node_spec}
         }}
 
 def natural_number(desc):
     return dict(description=desc, minimum=0, type="integer")
 
 clonal_family_spec = {
-    "title": "Clonal family",
+    "title": "Clonal Family",
     "description": "Clonal family of sequences deriving from a particular reassortment event",
     "type": "object",
-    "required": ["n_seqs", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
+    "required": ["unique_seqs_count", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
     "properties": {
         "id": id_spec("Clonal family id"),
         "ident": ident_spec,
-        # Do we also need another value for the number of seqs counting multiplicity?
-        "n_seqs": {
-            "description": "Number of sequences in the clonal family",
+        "unique_seqs_count": {
+            "description": "Number of unique sequences in the clonal family",
             "minimum": 1,
             "type": "integer"},
-        # do we currently compute this pre prune or what? account for multiplicity?
+        "total_read_count": {
+            "description": "Number of total reads represented by sequences in the clonal family",
+            "minimum": 1,
+            "type": "integer"},
+        # do we currently compute this pre downsampling or what? account for multiplicity?
         "mean_mut_freq": {
             "description": "Mean mutation frequency across sequences in the clonal family",
             "minimum": 0,
@@ -236,42 +267,19 @@ clonal_family_spec = {
             "type": "string"},
         "cdr3_length": natural_number("Length of CDR3 region"),
         "cdr3_start": natural_number("Start of the CDR3 region"),
-        # Should this really be nested this way or the other way?
-        "sample": {
-            "title": "Sample",
-            "description": "A sample is generally a collection of sequences",
-            "type": "object",
-            "required": ["locus"],
-            "properties": {
-                "ident": ident_spec,
-                "id": id_spec("Sample id"),
-                "timepoint": {
-                    "description": "Timepoint associated with this sample (may choose 'merged' if data has" +
-                        " been combined from multiple timepoints)",
-                    "type": "string"},
-                "locus": {
-                    "description": "B-cell Locus",
-                    "type": "string"}}},
-        "subject": {
-            "description": "Subject from which the clonal family was sampled",
-            "type": "object",
-            "required": ["id"],
-            "properties": {
-                "ident": ident_spec,
-                "id": id_spec("Subjectd id")}},
-        # TODO need to clean this up as well; probably doesn't need to be specified like this
-        "seed": {
-            "description": "Seed",
-            # QUESTION not sure if we actually want nullable here...
-            "type": ["object", "null"],
-            "required": ["id"],
-            "properties": {
-                "ident": ident_spec,
-                "id": id_spec("Seed id")}},
-        "reconstructions": {
-            "description": "Phylogenetic reconstructions, and possibly ancestral sequence reconstructions",
+        "sample_id": {
+            "description": "sample id associated with this clonal family",
+            "type": "string"},
+        "subject_id": {
+            "description": "Id of subject from which the clonal family was sampled",
+            "type": "string"},
+        "seed_id": {
+            "description": "Seed sequence id if any",
+            "type": ["string", "null"]},
+        "trees": {
+            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions",
             "type": "array",
-            "items": reconstruction_spec}}}
+            "items": tree_spec}}}
         # leaving out for now
         # 'partition': ['ident', 'id', 'logprob', 'step'],
         # 'v_per_gene_support': ['ident', 'gene', 'prob'],
@@ -291,6 +299,18 @@ dataset_spec = {
             "description": "Unique identifier for a collection of data",
             "type": "string"},
         "build": build_spec,
+        "samples": {
+            "description": "Information about each of the samples",
+            "type": "array",
+            "items": sample_spec}, 
+        "subjects": {
+            "description": "Information about each of the subjects",
+            "type": "array",
+            "items": subject_spec}, 
+        "seeds": {
+            "description": "Information about each of the seed sequences",
+            "type": "array",
+            "items": seed_spec}, 
         "clonal_families": {
             "description": "Information about each of the clonal families",
             "type": "array",
@@ -305,16 +325,14 @@ def ensure_ident(record):
     return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
 
 
-# TODO We may want to get away from args.inferred_naive_name and go to clonal families having
-# their own inferred_naive_name
 
 # reroot the tree on node matching regex pattern.
 # Usually this is used to root on the naive germline sequence
 # NOTE duplicates fcn in plot_tree.py
 def reroot_tree(args, tree):
     # find naive node
-    node = tree.search_nodes(name=args.inferred_naive_name)[0]
-    # if equal, then the root is already the inferred naive, so done
+    node = tree.search_nodes(name=args.naive_name)[0]
+    # if equal, then the root is already the naive, so done
     if tree != node:
         # In general this would be necessary, but we are actually assuming that naive has been set as an
         # outgroup in dnaml, and if it hasn't, we want to raise an error, as below
@@ -331,37 +349,31 @@ def reroot_tree(args, tree):
     return tree
 
 
-def process_tree(args, tree, sequences):
+def process_tree_nodes(args, tree, nodes):
     tree = reroot_tree(args, tree)
-    seq_dict = {seq['id']: seq for seq in sequences}
+    node_dict = {n['id']: n for n in nodes}
     def process_node(node):
-        datum = seq_dict.get(node.name, {})
-        # QUESTION are we even using this?
+        datum = node_dict.get(node.name, {})
         datum['type'] = 'leaf' if node.is_leaf() else 'node'
-        datum.update(seq_dict.get(node.name, {}))
+        datum.update(node_dict.get(node.name, {}))
         if node.up:
             datum['parent'] = node.up.name
             datum['length'] = node.get_distance(node.up)
-            datum['distance'] = node.get_distance(args.inferred_naive_name)
+            datum['distance'] = node.get_distance(args.naive_name)
         else:
             # node is root
             datum['type'] = "root"
             datum['parent'] = None
             datum['length'] = 0.0
             datum['distance'] = 0.0
-        # TODO currently olmsted using label; should probably switch to just using id
-        datum['label'] = node.id = node.name
         return datum
     return map(process_node, tree.traverse('postorder'))
 
 
-def process_reconstruction(args, reconstruction):
-    tree = ete3.PhyloTree(reconstruction['newick_tree'], format=1)
-    # TODO switch back to tree
-    reconstruction['asr_tree'] = process_tree(args, tree, reconstruction['sequences'])
-    # Once we've merged into the tree nodes, don't need this anymore
-    del reconstruction['sequences']
-    return ensure_ident(reconstruction)
+def process_tree(args, tree):
+    ete_tree = ete3.PhyloTree(tree['newick'], format=1)
+    tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'])
+    return ensure_ident(tree)
 
 
 def process_clonal_family(args, dataset, clonal_family):
@@ -370,15 +382,17 @@ def process_clonal_family(args, dataset, clonal_family):
     _dataset = dataset.copy()
     del _dataset['clonal_families']
     clonal_family['dataset'] = _dataset
-    # prepare reconstruction(s)
-    clonal_family['reconstructions'] = map(fun.partial(process_reconstruction, args), clonal_family.get('reconstructions', []))
-    clonal_family['naive'] = args.inferred_naive_name
+    clonal_family['sample'] = filter(lambda sample: sample['id'] == clonal_family['sample_id'], clonal_family['dataset']['samples'])[0]
+    del clonal_family['dataset']['samples']
+    # prepare tree(s)
+    clonal_family['trees'] = map(fun.partial(process_tree, args), clonal_family.get('trees', []))
+    clonal_family['naive'] = args.naive_name
     return ensure_ident(clonal_family)
 
 def process_dataset(dataset):
-    dataset['n_clonal_families'] = len(dataset['clonal_families'])
-    dataset['n_subjects'] = len(set(get_in(cf, ['subject', 'id']) for cf in dataset['clonal_families']))
-    dataset['n_timepoints'] = len(set(get_in(cf, ['sample', 'timepoint']) for cf in dataset['clonal_families']))
+    dataset['clonal_families_count'] = len(dataset['clonal_families'])
+    dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clonal_families']))
+    dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
     return ensure_ident(dataset)
 
 
@@ -471,7 +485,7 @@ def get_args():
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-o', '--data-outdir',
             help="directory in which data will be saved; required for data output")
-    parser.add_argument('-n', '--inferred-naive-name', default='inferred_naive')
+    parser.add_argument('-n', '--naive-name', default='naive')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
@@ -482,22 +496,22 @@ def get_args():
 
 def main():
     args = get_args()
-    datasets, clonal_families_dict, reconstructions = [], {}, []
+    datasets, clonal_families_dict, trees = [], {}, []
 
     for infile in args.inputs or []:
-        print "\nProcessing infile:", str(infile)
+        print("\nProcessing infile: {}".format(str(infile)))
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
                 if dataset_schema.is_valid(dataset):
                     dataset = process_dataset(dataset)
                     clonal_families = map(fun.partial(process_clonal_family, args, dataset), dataset['clonal_families'])
-                    reconstructions += reduce(lambda recons, cf: recons + cf['reconstructions'],
+                    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
                             clonal_families, [])
                     for cf in clonal_families:
-                        cf['reconstructions'] = [
-                                dict_subset(recon, ['prune_strategy', 'ident', 'type', 'id', 'prune_count'])
-                                for recon in cf['reconstructions']]
+                        cf['trees'] = [
+                                dict_subset(tree, ['downsampling_strategy', 'ident', 'type', 'id', 'downsampled_count'])
+                                for tree in cf['trees']]
                     clonal_families_dict[dataset['id']] = clonal_families
                     del dataset['clonal_families']
                     datasets.append(dataset)
@@ -535,8 +549,8 @@ def main():
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
-        for reconstruction in reconstructions:
-            write_out(reconstruction, args.data_outdir + '/', 'reconstruction.' + reconstruction['ident'] + '.json' , args)
+        for tree in trees:
+            write_out(tree, args.data_outdir + '/', 'tree.' + tree['ident'] + '.json' , args)
 
 
 if __name__ == '__main__':

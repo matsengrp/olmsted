@@ -46,8 +46,8 @@ class DatasetRow extends React.Component {
           <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
         </td>
         <td>{this.props.dataset.id}</td>
-        <td>{this.props.dataset.n_subjects}</td>
-        <td>{this.props.dataset.n_clonal_families}</td>
+        <td>{this.props.dataset.subjects_count}</td>
+        <td>{this.props.dataset.clonal_families_count}</td>
         <td>{this.props.dataset.build.time}</td>
       </tr>
     );

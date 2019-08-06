@@ -30,9 +30,9 @@ import * as vega from 'vega';
 class ClonalFamiliesViz extends React.Component {
   constructor(props) {
     super(props);
-    this.xField = "n_unique_seqs";
+    this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
-    this.facetOptions = ["none", "has_seed", "sample.timepoint", "dataset.id", "subject.id", "v_gene", "d_gene", "j_gene", "sample.locus"]
+    this.facetOptions = ["none", "has_seed", "sample.timepoint_id", "dataset_id", "subject_id", "v_gene", "d_gene", "j_gene", "sample.locus"]
     this.spec = facetClonalFamiliesVizSpec()
   }
 
@@ -114,7 +114,7 @@ class ClonalFamiliesViz extends React.Component {
           }}
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ true}
-        //   logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
           data={{source: this.props.availableClonalFamilies,
                 // Here we create a separate dataset only containing the id of the
                 // selected family so as to check quickly for this id within the 

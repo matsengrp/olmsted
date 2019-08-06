@@ -91,30 +91,39 @@ You may also need to install libcairo
 sudo apt-get install libcairo2 libcairo2-dev
 ```
 
-## Running
-
-Before you run, you'll need some data in the `data` directory.
-For convenience, there's a small test dataset available in the `testdata` directory.
-To use this data just copy over like `cp -r testdata data`.
-(See the data processing section below for more info on building custom data.)
-
-you can now run Olmsted locally in development mode with `npm start localData`.
-Once that's ready, you can open a browser to [http://localhost:3999](http://localhost:3999/) to interact with the app.
+## Input data
 
 
-## Data processing - Partis & CFT
+Olmsted uses [json-schema](https://json-schema.org/) to standardize input data.
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html
+) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
-Olmsted requires that you run your B-cell repertoire data through [Partis](https://github.com/psathyrella/partis), followed by the [CFT](https://github.com/matsengrp/cft) pipeline (let us know if this won't work for you for some reason).
+Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema. 
+The script takes one JSON file containing one or many datasets with all schema attributes nested under one another, and breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized. 
 
-Partis takes your raw B-cell data, sorts it into _clonal families_ of related sequences, and infers for each such family the _naive_ B-cell sequence from which that family evolved.
-CFT then takes those clonal families and builds phylogenetic trees for them (hence the name), as well as ancestral state reconstructions so that you can see how each sequence evolved from its clonal family's naive sequence.
 
-The process for getting data out of CFT and into Olmsted now is a script in `cft/bin/build_olmsted_data.py`, which takes the JSON files output by CFT and extracts several data files at the paths you specify.
-Olmsted will read in the files you specify at `olmsted/data/{datasets,clonal_families}.csv`.
-This flow will likely eventually be improved, but for now let us know if you'd like help getting your data into Olmsted.
+To parse input JSON files, use bin/process_data.py. E.g.:
 
+``` 
+./bin/process_data.py -i example_data/full_schema_input.json -o example_data/build_data -v -n inferred_naive
+```
+
+Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the json-schema.
+
+### Generating input data
+
+Olmsted is a visualization tool and should not depend on the methods used for clustering sequences into clonal families, inferring phylogenetic trees among them, etc.
+
+One set of tools we have had success with is [partis](https://github.com/psathyrella/partis) for inferring clonal families and naive sequences, and [CFT](https://github.com/matsengrp/cft) for inferring phylogenetic trees and ancestral sequences. 
 
 ## Deployment
+
+A local server can be deployed like this:
+`npm start localData ./example_data/build_data 8080`
+After building your own data as in the above section, replace `./example_data/build_data` with the output (`-o`) from `bin/process_data.py`.
+Navigate to `localhost:8080` in your browser to see the application. 
+
+## Static Build
 
 Olmsted is designed to statically compile as a single page app, which can then be deployed using a simple CDN setup.
 
@@ -134,16 +143,6 @@ Once you've verified that your static build works, you simply have to deploy the
 If you're content deploying with AWS S3, there is a deploy script at `bin/deploy.py` which you can use to push your static deployment up to an S3 bucket.
 For deploy script usage run `./bin/deploy.py -h`.
 To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
-
-
-## Build Electron App
-
-_Have no idea if this still works._
-
-```
-npm install -g electron-builder
-npm run dist:electron
-```
 
 
 ## Implementation notes

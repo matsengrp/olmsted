@@ -1,7 +1,7 @@
 
 import * as types from "./types"
 import * as loadData from "../actions/loadData.js"
-import * as reconstructionsSelector from "../selectors/reconstructions"
+import * as treesSelector from "../selectors/trees"
 
 export const pageDown = {type: types.PAGE_DOWN}
 export const pageUp = {type: types.PAGE_UP}
@@ -15,28 +15,28 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (ident, updateBrushSelection=false) => {
   return (dispatch, getState) => {
     dispatch({type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection})
-    let {reconstructions, clonalFamilies} = getState()
+    let {trees, clonalFamilies} = getState()
     let clonalFamily = clonalFamilies.byIdent[ident]
-    let clonalFamilyRecons = clonalFamily ? (clonalFamily.reconstructions || []) : []
-    _.forEach(clonalFamilyRecons, (recon) => loadData.getReconstruction(dispatch, recon.ident))}}
+    let clonalFamilyTrees = clonalFamily ? (clonalFamily.trees || []) : []
+    _.forEach(clonalFamilyTrees, (tree) => loadData.getTree(dispatch, tree.ident))}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-export const updateSelectedReconstruction = (reconIdent, selectedFamily, selectedSeq) => {
+export const updateSelectedTree = (treeIdent, selectedFamily, selectedSeq) => {
   return (dispatch, getState) => {
-    let {reconstructions} = getState()
+    let {trees} = getState()
     let deselectSeq = true
     if (selectedSeq) {
-      let newSelectedReconstruction = reconstructionsSelector.getReconstructionFromCache(reconstructions.cache, selectedFamily, reconIdent)
-      let selectedSeqInNewReconstruction = _.find(newSelectedReconstruction.asr_tree, {"id": selectedSeq})
+      let newSelectedTree = treesSelector.getTreeFromCache(trees.cache, selectedFamily, treeIdent)
+      let selectedSeqInNewTree = _.find(newSelectedTree.nodes, {"id": selectedSeq})
       
-      deselectSeq = !selectedSeqInNewReconstruction
+      deselectSeq = !selectedSeqInNewTree
     }
     if (deselectSeq) {
       dispatch(updateSelectedSeq(undefined))}
     // This is how we deselect the currently selected sequence
-    dispatch({type: types.UPDATE_SELECTED_RECONSTRUCTION, reconstruction: reconIdent})
+    dispatch({type: types.UPDATE_SELECTED_TREE, tree: treeIdent})
   }
 }
 

@@ -14,36 +14,36 @@ const charonErrorHandler = () => {
 };
 
 
-export const getReconstruction = (dispatch, reconstruction_id) => {
-  const processData = (data, reconstruction_id) => {
-    let reconstruction
+export const getTree = (dispatch, tree_id) => {
+  const processData = (data, tree_id) => {
+    let tree
     try{
-      reconstruction = JSON.parse(data);
+      tree = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch( err ){
-      alert("Failed parsing json for " + reconstruction_id + 
+      alert("Failed parsing json for " + tree_id + 
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
 
     dispatch({
-      type: types.RECONSTRUCTION_RECEIVED,
-      reconstruction_id,
-      reconstruction
+      type: types.TREE_RECEIVED,
+      tree_id,
+      tree
     });
   };
 
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
-      processData(request.responseText, reconstruction_id);
+      processData(request.responseText, tree_id);
     } else {
       charonErrorHandler();
     }
   };
 
   request.onerror = charonErrorHandler;
-  request.open("get", `${charonAPIAddress}/reconstruction.${reconstruction_id}.json`, true); // true for asynchronous
+  request.open("get", `${charonAPIAddress}/tree.${tree_id}.json`, true); // true for asynchronous
  
   request.send(null);
   // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
