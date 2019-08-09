@@ -3,7 +3,7 @@
 
 ![tree logo](src/images/olmsted.svg)
 
-*After [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted), a tree-hugger considered the father of Landscape architecture*
+*After [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted), a tree-hugger considered the father of landscape architecture*
 
 
 
@@ -128,13 +128,13 @@ Navigate to `localhost:8080` in your browser to see the application.
 Olmsted is designed to statically compile as a single page app, which can then be deployed using a simple CDN setup.
 
 To create a static deployment, run `npm run build` from within the project directory.
-This will generate most of a deployment in a `dist` directory.
-To complete the static deployment, you simply have to place the data you want to deploy at `dist/data`.
+This will generate most of a deployment in a `deploy` directory.
+To complete the static deployment, you simply have to place the data you want to deploy at `deploy/data`.
 
 You can test the local static build by running the following:
 
 ```
-cd dist
+cd deploy
 python -m SimpleHTTPServer 4000
 ```
 
