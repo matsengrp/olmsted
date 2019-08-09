@@ -32,7 +32,7 @@ def content_type(path):
 
 def push_asset(args, localpath, key):
     if args.verbose:
-        print "publishing", key, content_type(key)
+        print "publishing", key, content_type(key), "from local file", localpath
     args.client.upload_file(Filename=localpath, Bucket=args.bucket, Key=key,
             ExtraArgs={'ContentType': content_type(key), 'ACL': "public-read"})
 
@@ -54,7 +54,7 @@ def push_data(args, basepath=None):
         if os.path.isfile(localpath):
             push_asset(args, localpath, os.path.join('data', path))
         elif os.path.isdir(localpath):
-            push_app(args, os.path.join(basepath, path) if basepath else path)
+            push_data(args, os.path.join(basepath, path) if basepath else path)
 
 
 def get_args():

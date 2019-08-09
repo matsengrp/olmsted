@@ -11,7 +11,7 @@
   },
   "scripts": {
     "postinstall": "npm run create-data-dir",
-    "clean": "rimraf dist",
+    "clean": "rimraf deploy/dist",
     "server": "node server.dist.js",
     "build:client": "NODE_ENV=production BABEL_ENV=production webpack --config webpack.config.prod.js",
     "build:client:perf": "NODE_ENV=production BABEL_ENV=productiontiming webpack --config webpack.config.prod.js",
