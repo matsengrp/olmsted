@@ -144,6 +144,14 @@ If you're content deploying with AWS S3, there is a deploy script at `bin/deploy
 For deploy script usage run `./bin/deploy.py -h`.
 To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
 
+## Versioning
+
+We use git tags to tag [releases of Olmsted](https://github.com/matsengrp/olmsted/releases) using the [semver](https://semver.org/) versioning strategy.
+
+
+Tag messages, e.g. `schema v1.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/master/bin/process_data.py#L18) with which a given version of Olmsted is compatible. 
+
+The tagged release's major version of Olmsted should always match that of its compatible schema version; should we need to make breaking changes to the schema, we will bump the major versions of both Olmsted and the input schema.
 
 ## Implementation notes
 
