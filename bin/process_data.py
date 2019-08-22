@@ -15,7 +15,7 @@ import sys
 import os
 
 
-
+SCHEMA_VERSION = 1.0.0
 
 # Some generic data processing helpers helpers
 
@@ -514,6 +514,7 @@ def main():
                                 for tree in cf['trees']]
                     clonal_families_dict[dataset['id']] = clonal_families
                     del dataset['clonal_families']
+                    dataset['schema_version'] = SCHEMA_VERSION
                     datasets.append(dataset)
                 else:
                     message = "Dataset doesn't conform to spec." + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
