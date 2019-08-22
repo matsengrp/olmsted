@@ -15,7 +15,7 @@ import sys
 import os
 
 
-SCHEMA_VERSION = 1.0.0
+SCHEMA_VERSION = "1.0.0"
 
 # Some generic data processing helpers helpers
 
