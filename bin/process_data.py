@@ -79,7 +79,7 @@ def id_spec(desc=None):
 
 def multiplicity_spec(desc=None):
     # QUESTION not sure if we actually want nullable here...
-    return dict(description=(desc or "Number of times sequence was observed in the sample"), type=["integer", "null"], minimum=0)
+    return dict(description=(desc or "Number of times sequence was observed in the sample. AIRR: see duplicate_count, consensus_count"), type=["integer", "null"], minimum=0)
 
 
 ident_spec = {
@@ -87,7 +87,7 @@ ident_spec = {
     "type": "string"}
 
 build_spec = {
-    "description": "Information about how a dataset was built",
+    "description": "Information about how a dataset was built. AIRR: see DataProcessing",
     "type": "object",
     "required": ["commit"],
     "title": "Build info",
@@ -101,7 +101,7 @@ build_spec = {
 
 
 timepoint_multiplicity_spec = {
-    "description": "Multiplicity at a specific time",
+    "description": "Multiplicity at a specific time. AIRR: ?",
     "type": "object",
     "properties": {
         "timepoint_id": {
@@ -111,7 +111,7 @@ timepoint_multiplicity_spec = {
 
 sample_spec = {
         "title": "Sample",
-        "description": "A sample is generally a collection of sequences",
+        "description": "A sample is generally a collection of sequences. AIRR: see Sample",
         "type": "object",
         "required": ["locus"],
         "properties": {
@@ -122,12 +122,12 @@ sample_spec = {
                     " been combined from multiple timepoints)",
                 "type": "string"},
             "locus": {
-                "description": "B-cell Locus",
+                "description": "B-cell Locus. AIRR: see locus",
                 "type": "string"}}}
 
 subject_spec = {
         "title": "Subject",
-        "description": "Subject from which the clonal family was sampled",
+        "description": "Subject from which the clonal family was sampled. AIRR: see Subject",
         "type": "object",
         "required": ["id"],
         "properties": {
@@ -137,7 +137,7 @@ subject_spec = {
 
 seed_spec = {
         "title": "Seed",
-        "description": "A sequence of interest among other clonal family members",
+        "description": "A sequence of interest among other clonal family members. AIRR: see query sequence (which is not a key but a concept around which the schema seems oriented). Unsure if all sequences in sequencing data are recorded as query sequences or just subset of interest.",
         # QUESTION not sure if we actually want nullable here...
         "type": ["object", "null"],
         "required": ["id"],
@@ -151,52 +151,52 @@ node_spec = {
     "type": "object",
     "required": ["id", "dna_seq", 'aa_seq'],
     "properties": {
-        "id": id_spec("Sequence id"),
+        "id": id_spec("Sequence id. AIRR: see sequence_id"),
         "dna_seq": {
-            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family",
+            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family. AIRR: see sequence",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         # Would be nice if we translated for users, but can't really do that without removing gaps and
         # realigning, which is assuming a lot
         "aa_seq": {
-            "description": "Literal amino acid sequence, aligned to other sequences in clonal family",
+            "description": "Literal amino acid sequence, aligned to other sequences in clonal family. AIRR: see sequence_aa",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         "timepoint_id": {
-            "description": "Timepoint associated with sequence, if any",
+            "description": "Timepoint associated with sequence, if any. AIRR: see collection_time_point_relative",
             # QUESTION not sure if we actually want nullable here...
             "type": ["string", "null"]},
         "multiplicity": multiplicity_spec(),
         "cluster_multiplicity": multiplicity_spec(
             "If clonal family sequences were downsampled by clustering, the cummulative number of times" +
-                " sequences in cluster were observed"),
+                " sequences in cluster were observed. AIRR: ?"),
         "timepoint_multiplicities": {
-            "description": "Sequence multiplicity, broken down by timepoint",
+            "description": "Sequence multiplicity, broken down by timepoint. AIRR: ?",
             "type": "array",
             "items": timepoint_multiplicity_spec},
         "cluster_timepoint_multiplicities": {
             "description": "Sequence multiplicity, broken down by timepoint, including sequences falling in" +
-                " the same cluster if clustering-based downsampling was performed.",
+                " the same cluster if clustering-based downsampling was performed. AIRR: ?",
             "type": "array",
             "items": timepoint_multiplicity_spec},
         # compute:
         # * lbi, lbr? we should have the tree available to do this but need to coordinate with Duncan
         # * aa_seq
         "lbi": {
-            "description": "Local branching index",
+            "description": "Local branching index. AIRR: no trees in airr",
             "type": ["number", "null"]},
         "lbr": {
-            "description": "Local branching rate (derivative of lbi)",
+            "description": "Local branching rate (derivative of lbi). AIRR: no trees in airr",
             "type": ["number", "null"]},
         "affinity": {
-            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
+            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data. AIRR: no trees in airr",
             "type": ["number", "null"]}}}
 
 
 
 tree_spec = {
     "title": "Tree",
-    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family",
+    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family. AIRR: no trees in airr",
     "type": "object",
     "required": ["newick", "nodes"],
     "properties": {
@@ -228,56 +228,56 @@ clonal_family_spec = {
     "type": "object",
     "required": ["unique_seqs_count", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
     "properties": {
-        "id": id_spec("Clonal family id"),
+        "id": id_spec("Clonal family id. AIRR: see rearrangement_id, clone_id"),
         "ident": ident_spec,
         "unique_seqs_count": {
-            "description": "Number of unique sequences in the clonal family",
+            "description": "Number of unique sequences in the clonal family. AIRR: ?",
             "minimum": 1,
             "type": "integer"},
         "total_read_count": {
-            "description": "Number of total reads represented by sequences in the clonal family",
+            "description": "Number of total reads represented by sequences in the clonal family. AIRR: ?",
             "minimum": 1,
             "type": "integer"},
         # do we currently compute this pre downsampling or what? account for multiplicity?
         "mean_mut_freq": {
-            "description": "Mean mutation frequency across sequences in the clonal family",
+            "description": "Mean mutation frequency across sequences in the clonal family. AIRR: ?",
             "minimum": 0,
             "type": "number"},
         "naive_seq": {
-            "description": "Naive nucleotide sequence",
+            "description": "Naive nucleotide sequence. AIRR: see germline_alignment",
             "type": "string"},
         "has_seed": {
-            "description": "Does this clonal family have a seed sequence in it?",
+            "description": "Does this clonal family have a seed sequence in it?. AIRR: ?",
             "type": "boolean"},
         # Rearrangement data
-        "v_start": natural_number("Position in v gene at which rearrangement starts"),
-        "v_end": natural_number("Position in v gene at which rearrangement ends"),
+        "v_start": natural_number("Position in v gene at which rearrangement starts. AIRR: see v_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
+        "v_end": natural_number("Position in v gene at which rearrangement ends. AIRR: see v_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "v_gene": {
-            "description": "V gene used in rearrangement",
+            "description": "V gene used in rearrangement. AIRR: see v_call",
             "type": "string"},
-        "d_start": natural_number("Position in d gene at which rearrangement starts"),
-        "d_end": natural_number("Position in d gene at which rearrangement ends"),
+        "d_start": natural_number("Position in d gene at which rearrangement starts. AIRR: see d_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
+        "d_end": natural_number("Position in d gene at which rearrangement ends. AIRR: see d_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "d_gene": {
-            "description": "D gene used in rearrangement",
+            "description": "D gene used in rearrangement. AIRR: see d_call",
             "type": "string"},
-        "j_start": natural_number("Position in j gene at which rearrangement starts"),
-        "j_end": natural_number("Position in j gene at which rearrangement ends"),
+        "j_start": natural_number("Position in j gene at which rearrangement starts. AIRR: see j_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
+        "j_end": natural_number("Position in j gene at which rearrangement ends. AIRR: see j_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "j_gene": {
-            "description": "J gene used in rearrangement",
+            "description": "J gene used in rearrangement. AIRR: see j_call",
             "type": "string"},
-        "cdr3_length": natural_number("Length of CDR3 region"),
-        "cdr3_start": natural_number("Start of the CDR3 region"),
+        "cdr3_length": natural_number("Length of CDR3 region. AIRR: see junction_length"),
+        "cdr3_start": natural_number("Start of the CDR3 region. From partis 'zero-indexed indel-reversed-sequence positions of the conserved cyst and tryp/phen codons'. AIRR: see cdr3_start, which excludes the conserved residue and uses a '1-based closed interval'"),
         "sample_id": {
-            "description": "sample id associated with this clonal family",
+            "description": "sample id associated with this clonal family. AIRR: see sample_id",
             "type": "string"},
         "subject_id": {
-            "description": "Id of subject from which the clonal family was sampled",
+            "description": "Id of subject from which the clonal family was sampled. AIRR: see subject_id",
             "type": "string"},
         "seed_id": {
-            "description": "Seed sequence id if any",
+            "description": "Seed sequence id if any. AIRR: ?",
             "type": ["string", "null"]},
         "trees": {
-            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions",
+            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions. AIRR: ?",
             "type": "array",
             "items": tree_spec}}}
         # leaving out for now
@@ -290,7 +290,7 @@ dataset_spec = {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "$id": "https://olmstedviz.org/input.schema.json",
     "title": "Olmsted Dataset",
-    "description": "Olmsted dataset input file",
+    "description": "Olmsted dataset input file. AIRR: see Study",
     "type": "object",
     "required": ["id", "clonal_families"],
     "properties": {
