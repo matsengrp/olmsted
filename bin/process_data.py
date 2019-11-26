@@ -111,23 +111,23 @@ timepoint_multiplicity_spec = {
 
 sample_spec = {
         "title": "Sample",
-        "description": "A sample is generally a collection of sequences. AIRR: see Sample",
+        "description": "A sample is generally a collection of sequences.",
         "type": "object",
         "required": ["locus"],
         "properties": {
             "ident": ident_spec,
             "id": id_spec("Sample id"),
             "timepoint_id": {
-                "description": "Timepoint associated with this sample (may choose 'merged' if data has" +
+                "description": "Timepoint associated with this sample (may choose \"merged\" if data has" +
                     " been combined from multiple timepoints)",
                 "type": "string"},
             "locus": {
-                "description": "B-cell Locus. AIRR: see locus",
+                "description": "B-cell Locus.",
                 "type": "string"}}}
 
 subject_spec = {
         "title": "Subject",
-        "description": "Subject from which the clonal family was sampled. AIRR: see Subject",
+        "description": "Subject from which the clonal family was sampled.",
         "type": "object",
         "required": ["id"],
         "properties": {
@@ -137,7 +137,7 @@ subject_spec = {
 
 seed_spec = {
         "title": "Seed",
-        "description": "A sequence of interest among other clonal family members. AIRR: see query sequence (which is not a key but a concept around which the schema seems oriented). Unsure if all sequences in sequencing data are recorded as query sequences or just subset of interest.",
+        "description": "A sequence of interest among other clonal family members. AIRR: ?",
         # QUESTION not sure if we actually want nullable here...
         "type": ["object", "null"],
         "required": ["id"],
@@ -149,17 +149,17 @@ node_spec = {
     "title": "Node",
     "description": "Information about the phylogenetic tree nodes and the sequences they represent",
     "type": "object",
-    "required": ["id", "dna_seq", 'aa_seq'],
+    "required": ["sequence_id", "sequence", 'sequence_aa'],
     "properties": {
-        "id": id_spec("Sequence id. AIRR: see sequence_id"),
-        "dna_seq": {
-            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family. AIRR: see sequence",
+        "sequence_id": id_spec("Sequence id."),
+        "sequencedna_seq": {
+            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family.",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         # Would be nice if we translated for users, but can't really do that without removing gaps and
         # realigning, which is assuming a lot
-        "aa_seq": {
-            "description": "Literal amino acid sequence, aligned to other sequences in clonal family. AIRR: see sequence_aa",
+        "sequence_aa": {
+            "description": "Literal amino acid sequence, aligned to other sequences in clonal family.",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         "timepoint_id": {
@@ -189,7 +189,7 @@ node_spec = {
             "description": "Local branching rate (derivative of lbi). AIRR: no trees in airr",
             "type": ["number", "null"]},
         "affinity": {
-            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data. AIRR: no trees in airr",
+            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data. AIRR: no affinity in airr",
             "type": ["number", "null"]}}}
 
 
@@ -228,7 +228,7 @@ clonal_family_spec = {
     "type": "object",
     "required": ["unique_seqs_count", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
     "properties": {
-        "id": id_spec("Clonal family id. AIRR: see rearrangement_id, clone_id"),
+        "id": id_spec("Clonal family id. AIRR: see clone_id, rearrangement_id"),
         "ident": ident_spec,
         "unique_seqs_count": {
             "description": "Number of unique sequences in the clonal family. AIRR: ?",
@@ -252,26 +252,26 @@ clonal_family_spec = {
         # Rearrangement data
         "v_start": natural_number("Position in v gene at which rearrangement starts. AIRR: see v_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "v_end": natural_number("Position in v gene at which rearrangement ends. AIRR: see v_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
-        "v_gene": {
-            "description": "V gene used in rearrangement. AIRR: see v_call",
+        "v_call": {
+            "description": "V gene used in rearrangement.",
             "type": "string"},
         "d_start": natural_number("Position in d gene at which rearrangement starts. AIRR: see d_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "d_end": natural_number("Position in d gene at which rearrangement ends. AIRR: see d_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
-        "d_gene": {
-            "description": "D gene used in rearrangement. AIRR: see d_call",
+        "d_call": {
+            "description": "D gene used in rearrangement.",
             "type": "string"},
         "j_start": natural_number("Position in j gene at which rearrangement starts. AIRR: see j_germline_start, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
         "j_end": natural_number("Position in j gene at which rearrangement ends. AIRR: see j_germline_end, which uses 1-based closed interval as opposed to 0-based python slice convention intervals used by partis."),
-        "j_gene": {
-            "description": "J gene used in rearrangement. AIRR: see j_call",
+        "j_call": {
+            "description": "J gene used in rearrangement.",
             "type": "string"},
-        "cdr3_length": natural_number("Length of CDR3 region. AIRR: see junction_length"),
-        "cdr3_start": natural_number("Start of the CDR3 region. From partis 'zero-indexed indel-reversed-sequence positions of the conserved cyst and tryp/phen codons'. AIRR: see cdr3_start, which excludes the conserved residue and uses a '1-based closed interval'"),
+        "junction_length": natural_number("Length of CDR3 region including both conserved codons in their entirety."),
+        "cdr3_start": natural_number("Start of the CDR3 region. From partis \"zero-indexed indel-reversed-sequence positions of the conserved cyst and tryp/phen codons\". AIRR: see cdr3_start, which excludes the conserved residue and uses a \"1-based closed interval\""),
         "sample_id": {
-            "description": "sample id associated with this clonal family. AIRR: see sample_id",
+            "description": "sample id associated with this clonal family.",
             "type": "string"},
         "subject_id": {
-            "description": "Id of subject from which the clonal family was sampled. AIRR: see subject_id",
+            "description": "Id of subject from which the clonal family was sampled.",
             "type": "string"},
         "seed_id": {
             "description": "Seed sequence id if any. AIRR: ?",
