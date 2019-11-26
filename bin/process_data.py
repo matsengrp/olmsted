@@ -13,6 +13,7 @@ import ete3
 import functools as fun
 import sys
 import os
+import yaml
 
 
 SCHEMA_VERSION = "1.0.0"
@@ -319,7 +320,6 @@ dataset_spec = {
 # Should update to get draft7?
 dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 
-
 def ensure_ident(record):
     "Want to let people choose their own uuids if they like, but not require them to"
     return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
@@ -490,6 +490,8 @@ def get_args():
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
+    parser.add_argument('-y', '--write-schema-yaml', action="store_true",
+            help="write the schema to a yaml format file.")
     return parser.parse_args()
 
 
@@ -535,6 +537,9 @@ def main():
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
 
+    if args.write_schema_yaml:
+        with open('schema.yaml', 'w') as yamlf:
+            yaml.dump(dataset_spec, yamlf)
     if args.display_schema:
         pprint.pprint(dataset_spec)
     if args.display_schema_html:
