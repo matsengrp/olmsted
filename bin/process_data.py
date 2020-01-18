@@ -487,6 +487,8 @@ def get_args():
             help="directory in which data will be saved; required for data output")
     parser.add_argument('-n', '--naive-name', default='naive')
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-c', '--clean-clonal-families', action="store_true",
+                help="validate clonal families individually, removing the invalid ones and try to build the dataset using the remaining clonal families.")
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
@@ -503,6 +505,8 @@ def main():
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
+                if args.clean_clonal_families:
+                    dataset['clonal_families'] = filter(jsonschema.Draft4Validator(clonal_family_spec).is_valid, dataset['clonal_families'])
                 if dataset_schema.is_valid(dataset):
                     dataset = process_dataset(dataset)
                     clonal_families = map(fun.partial(process_clonal_family, args, dataset), dataset['clonal_families'])
