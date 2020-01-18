@@ -384,7 +384,8 @@ def main():
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
     if args.data_outdir:
-        write_out(full_schema_datasets[0], args.data_outdir, 'full_schema_datasets.json', args)
+        for d in full_schema_datasets:
+            write_out(d, args.data_outdir, d['id'] + '.full_schema_dataset.json', args)
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
