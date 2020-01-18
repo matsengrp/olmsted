@@ -349,8 +349,9 @@ def reroot_tree(args, tree):
     return tree
 
 
-def process_tree_nodes(args, tree, nodes):
-    tree = reroot_tree(args, tree)
+def process_tree_nodes(args, tree, nodes, reroot=False):
+    if reroot:
+        tree = reroot_tree(args, tree)
     node_dict = {n['id']: n for n in nodes}
     def process_node(node):
         datum = node_dict.get(node.name, {})
@@ -372,7 +373,7 @@ def process_tree_nodes(args, tree, nodes):
 
 def process_tree(args, tree):
     ete_tree = ete3.PhyloTree(tree['newick'], format=1)
-    tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'])
+    tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'], reroot=args.root_trees)
     return ensure_ident(tree)
 
 
@@ -492,6 +493,8 @@ def get_args():
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
+    parser.add_argument('-r', '--root-trees', action="store_true",
+            help="Root trees using --naive-name.")
     return parser.parse_args()
 
 
