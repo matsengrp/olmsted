@@ -14,6 +14,70 @@ import inflect
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
 
+cft_to_olmsted_mappings = {
+    "seeds": {
+                "id": "seed_id"
+                  },
+    "subjects": {
+                    "id": "subject_id"
+                  },
+    "samples": {
+                   "id": "sample_id"
+                  },
+    "nodes": {
+                 "id": "sequence_id",
+                 "dna_seq": "sequence_alignment",
+                 "aa_seq": "sequence_alignment_aa"
+                },
+    "trees": {
+                 "id": "tree_id"
+                },
+    "clonal_families": {
+                          "id": "clone_id",
+                          "v_gene": "v_call",
+                          "j_gene": "j_call",
+                          "d_gene": "d_call",
+                          "v_start": "v_alignment_start", #TODO need to change all of the intervals of these things to reflect 1-based closed intervals used by AIRR
+                          "v_end": "v_alignment_end",
+                          "d_start": "d_alignment_start",
+                          "d_end": "d_alignment_end",
+                          "j_start": "j_alignment_start",
+                          "j_end": "j_alignment_end",
+                          "naive_seq": "germline_alignment",
+                          # TODO make sure intervals match up or are converted for junction fields
+                          "cdr3_length": "junction_length",
+                          "cdr3_start": "junction_start",
+                          "unique_seqs_count": "rearrangement_count"
+                         },
+    "dataset": {
+                    "id": "dataset_id",
+                    "clonal_families": "clones"
+                   }
+}
+
+
+def rename_keys(record, mapping):
+    for k in mapping.keys():
+        record[mapping[k]] = record.pop(k)
+
+def remap_data_in_place(record, mappings):
+    if isinstance(record, list):
+        for r in record:
+            remap_data_in_place(r, mappings)
+    elif isinstance(record, dict):
+        for k, v in record.items():
+            remap_data_in_place(v, mappings)
+            if k in mappings.keys():
+                if isinstance(v, list):
+                    for r in v:
+                        rename_keys(r, mappings[k])
+                elif isinstance(v, dict):
+                    if k == "nodes":
+                        for node in v.values():
+                            rename_keys(node, mappings[k])
+                    else:
+                        rename_keys(v, mappings[k])
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-S', '--schema', default=default_schema_path)
@@ -296,7 +360,7 @@ def parse_tree_data(args, c):
               })
 
     # map through and process the nodes
-    return map(process_node, tree.traverse('postorder'))
+    return {n.name: process_node(n) for n in tree.traverse('postorder')}
 
 def clean_reconstruction_record(args, d):
     c = d.copy()
@@ -379,8 +443,10 @@ def main():
                             dict_subset(r, ['ident', 'id', 'downsampling_strategy', 'downsampled_count', 'type'])
                             for r in trees]
                 clonal_families_dict[dataset['id']] = clonal_families
+                remap_data_in_place({"dataset": full_schema_dataset}, cft_to_olmsted_mappings)
                 full_schema_datasets.append(full_schema_dataset)
         except Exception as e:
+            raise
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
     if args.data_outdir:
