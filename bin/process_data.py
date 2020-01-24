@@ -383,7 +383,7 @@ def process_clone(args, dataset, clone):
     clone['sample'] = filter(lambda sample: sample['sample_id'] == clone['sample_id'], clone['dataset']['samples'])[0]
     del clone['dataset']['samples']
     # prepare tree(s)
-    clone['trees'] = map(fun.partial(process_tree, clone['clone_id'], args), clone.get('trees', []))
+    clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
     clone['naive'] = args.naive_name
     # TODO see https://python-jsonschema.readthedocs.io/en/stable/validate/#validating-with-additional-types to see if you can force the schema to accept null /None in place of a string even for cases where it is not explicitly allowed to be null in the schema
     # add repertoire_id to satisfy AIRR schema
@@ -507,6 +507,7 @@ def main():
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
+                # TODO we will want to include the AIRR validation with an "and" in the same line, following the olmsted schema validation below
                 if dataset_schema.is_valid(dataset):
                     dataset = process_dataset(dataset)
                     clones = map(fun.partial(process_clone, args, dataset), dataset['clones'])

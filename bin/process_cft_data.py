@@ -14,6 +14,21 @@ import inflect
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
 
+def rename_keys(record, mapping):
+    for k in mapping.keys():
+        record[mapping[k]] = record.pop(k)
+
+def remap_list(l, mapping):
+    for element in l:
+        rename_keys(element, mapping)
+
+def remap_dict_values(d, mapping):
+    for v in d.values():
+        rename_keys(v, mapping)
+
+cft_to_olmsted_fns = dict((key, remap_list) for key in ["datasets", "seeds", "subjects", "samples", "clonal_families", "trees"])
+cft_to_olmsted_fns["nodes"] = remap_dict_values
+
 cft_to_olmsted_mappings = {
     "seeds": {
                 "id": "seed_id"
@@ -49,16 +64,11 @@ cft_to_olmsted_mappings = {
                           "cdr3_start": "junction_start",
                           "unique_seqs_count": "rearrangement_count"
                          },
-    "dataset": {
+    "datasets": {
                     "id": "dataset_id",
                     "clonal_families": "clones"
                    }
 }
-
-
-def rename_keys(record, mapping):
-    for k in mapping.keys():
-        record[mapping[k]] = record.pop(k)
 
 def remap_data_in_place(record, mappings):
     if isinstance(record, list):
@@ -68,15 +78,7 @@ def remap_data_in_place(record, mappings):
         for k, v in record.items():
             remap_data_in_place(v, mappings)
             if k in mappings.keys():
-                if isinstance(v, list):
-                    for r in v:
-                        rename_keys(r, mappings[k])
-                elif isinstance(v, dict):
-                    if k == "nodes":
-                        for node in v.values():
-                            rename_keys(node, mappings[k])
-                    else:
-                        rename_keys(v, mappings[k])
+               cft_to_olmsted_fns[k](v, mappings[k])
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -443,7 +445,7 @@ def main():
                             dict_subset(r, ['ident', 'id', 'downsampling_strategy', 'downsampled_count', 'type'])
                             for r in trees]
                 clonal_families_dict[dataset['id']] = clonal_families
-                remap_data_in_place({"dataset": full_schema_dataset}, cft_to_olmsted_mappings)
+                remap_data_in_place({"datasets": [full_schema_dataset]}, cft_to_olmsted_mappings)
                 full_schema_datasets.append(full_schema_dataset)
         except Exception as e:
             raise
