@@ -398,9 +398,6 @@ def process_clone(args, dataset, clone):
     return ensure_ident(clone)
 
 def process_dataset(args, dataset, clones_dict, trees):
-    if args.remove_invalid_clones:
-        # TODO decide whether to add AIRR schema validation as part of cleaning invalid clones
-        dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
     dataset['clone_count'] = len(dataset['clones'])
     dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clones']))
     dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
@@ -521,6 +518,9 @@ def main():
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
+                if args.remove_invalid_clones:
+                    # TODO decide whether to add AIRR schema validation as part of cleaning invalid clones
+                    dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
                 validate(dataset, olmsted_dataset_schema, verbose=args.verbose, object_name="Dataset")
                 dataset = process_dataset(args, dataset, clones_dict, trees)
                 datasets.append(dataset)
