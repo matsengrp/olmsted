@@ -32,7 +32,8 @@ def remap_clonal_families(clonal_families, mapping):
         rename_keys(cf, mapping)
         # +=1 *_start positions since AIRR schema uses 1-based closed interval. See bin/process_data.py
         for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
-            cf[start_pos_key] += 1
+            if cf.get(start_pos_key) is not None:
+                cf[start_pos_key] += 1
 
 cft_to_olmsted_fns["clonal_families"] = remap_clonal_families
 cft_to_olmsted_fns["nodes"] = remap_dict_values
@@ -179,7 +180,6 @@ datasets_pull_pattern = [
     "db:ident",
     "tripl:type",
     "cft.dataset:id",
-    "cft.cluster:_dataset",
     {"cft.subject:_dataset": subject_pull_pattern},
     {"cft.seed:_dataset": seed_pull_pattern},
     {"cft.sample:_dataset": sample_pull_pattern},
@@ -188,13 +188,9 @@ datasets_pull_pattern = [
 
 def clean_dataset_record(d):
     d = d.copy()
-    d['clonal_families_count'] = len(d['cft.cluster:_dataset'])
-    d['subjects_count'] = len(d['cft.subject:_dataset'])
     for sample in d['cft.sample:_dataset']:
-        #rename timepoint to timepoint_id to match olmsted schema. this and other code like it in this script can be removed upon #267
+        #rename timepoint to timepoint_id to match olmsted schema. this and other code like it in this script can be removed upon https://github.com/matsengrp/cft/issues/267
         sample['cft.sample:timepoint_id'] = sample.pop('cft.sample:timepoint')
-    d['timepoints_count'] = len(set([sample['cft.sample:timepoint_id'] for sample in d['cft.sample:_dataset']]))
-    del d['cft.cluster:_dataset']
     return d
 
 def pull_datasets(t):
@@ -460,7 +456,7 @@ def main():
             warnings.warn("Processing error: " + str(e))
     if args.data_outdir:
         for d in full_schema_datasets:
-            write_out(d, args.data_outdir, d['id'] + '.full_schema_dataset.json', args)
+            write_out(d, args.data_outdir, d['dataset_id'] + '.full_schema_dataset.json', args)
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
