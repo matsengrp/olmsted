@@ -350,10 +350,9 @@ def reroot_tree(args, tree):
         tree = node
     return tree
 
-def process_tree_nodes(args, tree, nodes):
-    # the nodes come in currently as a list, so we need to change how we process them to reflect that we now expect a dict
-    # however, we still want to output a list in postorder since parts of the Olmsted code rely on that!
-    tree = reroot_tree(args, tree)
+def process_tree_nodes(args, tree, nodes, reroot=False):
+    if reroot:
+        tree = reroot_tree(args, tree)
     def process_node(node):
         datum = nodes.get(node.name, {})
         datum['type'] = 'leaf' if node.is_leaf() else 'node'
@@ -375,7 +374,7 @@ def process_tree(args, clone_id, tree):
     # add clone_id to satisfy AIRR schema
     tree['clone_id'] = clone_id
     ete_tree = ete3.PhyloTree(tree['newick'], format=1)
-    tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'])
+    tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'], reroot=args.root_trees)
     return ensure_ident(tree)
 
 def validate_airr_clone_and_trees(args, clone):
@@ -399,6 +398,9 @@ def process_clone(args, dataset, clone):
     return ensure_ident(clone)
 
 def process_dataset(args, dataset, clones_dict, trees):
+    if args.remove_invalid_clones:
+        # TODO decide whether to add AIRR schema validation as part of cleaning invalid clones
+        dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
     dataset['clone_count'] = len(dataset['clones'])
     dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clones']))
     dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
@@ -500,11 +502,15 @@ def get_args():
             help="directory in which data will be saved; required for data output")
     parser.add_argument('-n', '--naive-name', default='naive')
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-c', '--remove-invalid-clones', action="store_true",
+                help="validate clones individually, removing the invalid ones and try to build the dataset using the remaining clones.")
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
     parser.add_argument('-y', '--write-schema-yaml', action="store_true",
             help="write the schema to a yaml format file.")
+    parser.add_argument('-r', '--root-trees', action="store_true",
+            help="Root trees using --naive-name.")
     return parser.parse_args()
 
 def main():
