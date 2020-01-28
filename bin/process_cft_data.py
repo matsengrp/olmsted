@@ -26,7 +26,15 @@ def remap_dict_values(d, mapping):
     for v in d.values():
         rename_keys(v, mapping)
 
-cft_to_olmsted_fns = dict((key, remap_list) for key in ["datasets", "seeds", "subjects", "samples", "clonal_families", "trees"])
+cft_to_olmsted_fns = dict((key, remap_list) for key in ["datasets", "seeds", "subjects", "samples", "trees"])
+def remap_clonal_families(clonal_families, mapping):
+    for cf in clonal_families:
+        rename_keys(cf, mapping)
+        # +=1 *_start positions since AIRR schema uses 1-based closed interval. See bin/process_data.py
+        for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
+            cf[start_pos_key] += 1
+
+cft_to_olmsted_fns["clonal_families"] = remap_clonal_families
 cft_to_olmsted_fns["nodes"] = remap_dict_values
 
 cft_to_olmsted_mappings = {
@@ -52,15 +60,14 @@ cft_to_olmsted_mappings = {
                           "v_gene": "v_call",
                           "j_gene": "j_call",
                           "d_gene": "d_call",
-                          "v_start": "v_alignment_start", #TODO need to change all of the intervals of these things to reflect 1-based closed intervals used by AIRR
-                          "v_end": "v_alignment_end",
+                          "v_start": "v_alignment_start", # _start positions gets +=1 to reflect 1-based closed intervals
+                          "v_end": "v_alignment_end", # _end positions remains the same to reflect 1-based closed intervals
                           "d_start": "d_alignment_start",
                           "d_end": "d_alignment_end",
                           "j_start": "j_alignment_start",
                           "j_end": "j_alignment_end",
                           "naive_seq": "germline_alignment",
-                          # TODO make sure intervals match up or are converted for junction fields
-                          "cdr3_length": "junction_length",
+                          "cdr3_length": "junction_length", #length stays the same regardless of intervals
                           "cdr3_start": "junction_start",
                           "unique_seqs_count": "rearrangement_count"
                          },

@@ -81,12 +81,6 @@ def multiplicity_spec(desc=None):
     # QUESTION not sure if we actually want nullable here...
     return dict(description=(desc or "Number of times sequence was observed in the sample."), type=["integer", "null"], minimum=0)
 
-
-clone_schema = None
-with open("airr-standards/specs/airr-schema.yaml") as stream:
-    clone_schema_dict = yaml.load(stream).get("Clone")
-    clone_schema = jsonschema.Draft4Validator(clone_schema_dict)
-
 ident_spec = {
     "description": "UUID specific to the given object",
     "type": "string"}
@@ -297,32 +291,48 @@ dataset_spec = {
         "samples": {
             "description": "Information about each of the samples",
             "type": "array",
-            "items": sample_spec}, 
+            "items": sample_spec},
         "subjects": {
             "description": "Information about each of the subjects",
             "type": "array",
-            "items": subject_spec}, 
+            "items": subject_spec},
         "seeds": {
             "description": "Information about each of the seed sequences",
             "type": "array",
-            "items": seed_spec}, 
+            "items": seed_spec},
         "clones": {
             "description": "Information about each of the clonal families",
             "type": "array",
             "items": clone_spec}}}
 
 # Should update to get draft7?
-dataset_schema = jsonschema.Draft4Validator(dataset_spec)
+olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
+airr_clone_schema = None
+with open("airr-standards/specs/airr-schema.yaml") as stream:
+    airr_clone_schema_dict = yaml.load(stream).get("Clone")
+    airr_clone_schema = jsonschema.Draft4Validator(airr_clone_schema_dict)
+
+def validate(data, schema, verbose=False, object_name=None):
+    if not schema.is_valid(data):
+        print("{} doesn't conform to spec.{}".format(object_name if object_name is not None else "Input data",
+                                                     "" if verbose else " Please rerunn with `-v` for detailed errors"))
+        if verbose:
+            last_error_path = None
+            for error in schema.iter_errors(data):
+                error_path = list(error.path)
+                if last_error_path != error_path:
+                    print("  Error at " + str(error_path) + ":")
+                    last_error_path = error_path
+                print("    " + error.message)
 
 def ensure_ident(record):
     "Want to let people choose their own uuids if they like, but not require them to"
     return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
 
-
-
 # reroot the tree on node matching regex pattern.
 # Usually this is used to root on the naive germline sequence
 # NOTE duplicates fcn in plot_tree.py
+# TODO this is just one way to "reroot" trees; it's worth considering removing this function from the script so that we are not responsible for this job since it isn't trivial (e.g. if given an unrooted tree, ete3.Tree.set_outgroup will add an empty-string-named taxon)
 def reroot_tree(args, tree):
     # find naive node
     node = tree.search_nodes(name=args.naive_name)[0]
@@ -336,15 +346,11 @@ def reroot_tree(args, tree):
         node.add_child(tree)
         tree.dist = node.dist
 
-        # TODO Verify that this makes sense, generally speaking; I'm guessing this is how things come out of
-        # set_outgroup (with 0 branch length leading up to), but want to make sure.
         node.dist = 0
         tree = node
     return tree
 
-
 def process_tree_nodes(args, tree, nodes):
-    # TODO: (should be working, remove this when validated):
     # the nodes come in currently as a list, so we need to change how we process them to reflect that we now expect a dict
     # however, we still want to output a list in postorder since parts of the Olmsted code rely on that!
     tree = reroot_tree(args, tree)
@@ -365,7 +371,6 @@ def process_tree_nodes(args, tree, nodes):
         return datum
     return map(process_node, tree.traverse('postorder'))
 
-
 def process_tree(args, clone_id, tree):
     # add clone_id to satisfy AIRR schema
     tree['clone_id'] = clone_id
@@ -373,37 +378,47 @@ def process_tree(args, clone_id, tree):
     tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'])
     return ensure_ident(tree)
 
+def validate_airr_clone_and_trees(args, clone):
+    # add repertoire_id to satisfy AIRR schema TODO see https://python-jsonschema.readthedocs.io/en/stable/validate/#validating-with-additional-types to see if you can force the schema to accept null /None in place of a string even for cases where it is not explicitly allowed to be null in the schema
+    clone['repertoire_id'] = 'None'
+    # prepare tree(s)
+    clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
+    validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
 
 def process_clone(args, dataset, clone):
-    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for
-    # viz convenience
+    validate_airr_clone_and_trees(args, clone)
+    # -=1 *_start positions since AIRR schema uses 1-based closed interval but we need python slice conventions (0-based, open interval) for source code (vega visualization). See bin/process_data.py
+    for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
+        clone[start_pos_key] -= 1
+    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for viz convenience
     _dataset = dataset.copy()
     del _dataset['clones']
     clone['dataset'] = _dataset
     clone['sample'] = filter(lambda sample: sample['sample_id'] == clone['sample_id'], clone['dataset']['samples'])[0]
     del clone['dataset']['samples']
-    # prepare tree(s)
-    clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
-    clone['naive'] = args.naive_name
-    # TODO see https://python-jsonschema.readthedocs.io/en/stable/validate/#validating-with-additional-types to see if you can force the schema to accept null /None in place of a string even for cases where it is not explicitly allowed to be null in the schema
-    # add repertoire_id to satisfy AIRR schema
-    clone['repertoire_id'] = 'None'
-    clone_schema.validate(clone)
     return ensure_ident(clone)
 
-def process_dataset(dataset):
+def process_dataset(args, dataset, clones_dict, trees):
     dataset['clone_count'] = len(dataset['clones'])
     dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clones']))
     dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
+    clones = map(fun.partial(process_clone, args, dataset), dataset['clones'])
+    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
+            clones, [])
+    for cf in clones:
+        cf['trees'] = [
+                dict_subset(tree, set(tree.keys()) - {'nodes'})
+                for tree in cf['trees']]
+    clones_dict[dataset['dataset_id']] = clones
+    del dataset['clones']
+    dataset['schema_version'] = SCHEMA_VERSION
     return ensure_ident(dataset)
-
 
 def json_rep(x):
     if isinstance(x, uuid.UUID):
         return str(x)
     else:
         return list(x)
-
 
 def write_out(data, dirname, filename, args):
     if not os.path.exists(dirname):
@@ -416,7 +431,6 @@ def write_out(data, dirname, filename, args):
             indent=4,
             #allow_nan=False
             )
-
 
 def hiccup_rep(schema, depth=1, property=None):
     depth = min(depth, 2)
@@ -445,7 +459,6 @@ def hiccup_rep(schema, depth=1, property=None):
                     if isinstance(val, str)
                     else hiccup_rep(val, depth=depth+1)]
                 for k, val in schema.get('properties').items()] if schema.get('properties') else '',
-            
             ["div",
                 ["h"+str(depth+1), "Array Items:"],
                 # As above, assume and display a title if string, otherwise recurse
@@ -453,8 +466,6 @@ def hiccup_rep(schema, depth=1, property=None):
                     if isinstance(schema.get('items'), str)
                     else hiccup_rep(schema.get('items'), depth=depth+1)]
                 if schema.get('items') else '']
-
-
 
 def hiccup_rep2(schema):
     def flatten_schema_by_title(schema):
@@ -496,50 +507,24 @@ def get_args():
             help="write the schema to a yaml format file.")
     return parser.parse_args()
 
-
-
 def main():
     args = get_args()
     datasets, clones_dict, trees = [], {}, []
-
     for infile in args.inputs or []:
         print("\nProcessing infile: {}".format(str(infile)))
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
-                # TODO we will want to include the AIRR validation with an "and" in the same line, following the olmsted schema validation below
-                if dataset_schema.is_valid(dataset):
-                    dataset = process_dataset(dataset)
-                    clones = map(fun.partial(process_clone, args, dataset), dataset['clones'])
-                    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
-                            clones, [])
-                    for cf in clones:
-                        cf['trees'] = [
-                                dict_subset(tree, set(tree.keys()) - {'nodes'})
-                                for tree in cf['trees']]
-                    clones_dict[dataset['dataset_id']] = clones
-                    del dataset['clones']
-                    dataset['schema_version'] = SCHEMA_VERSION
-                    datasets.append(dataset)
-                else:
-                    message = "Dataset doesn't conform to spec." + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
-                    print(message)
-                    if args.verbose:
-                        last_error_path = None
-                        for error in dataset_schema.iter_errors(dataset):
-                            error_path = list(error.path)
-                            if last_error_path != error_path:
-                                print("  Error at " + str(error_path) + ":")
-                                last_error_path = error_path
-                            print("    " + error.message)
-                            # import pdb; pdb.set_trace()
+                validate(dataset, olmsted_dataset_schema, verbose=args.verbose, object_name="Dataset")
+                dataset = process_dataset(args, dataset, clones_dict, trees)
+                datasets.append(dataset)
         except Exception as e:
             message = "Unable to process infile: " + str(infile) + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
             print(message)
             if args.verbose:
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
-
+    # write out schema
     if args.write_schema_yaml:
         with open('schema.yaml', 'w') as yamlf:
             yaml.dump(dataset_spec, yamlf)
@@ -561,10 +546,5 @@ def main():
         for tree in trees:
             write_out(tree, args.data_outdir + '/', 'tree.' + tree['ident'] + '.json' , args)
 
-
 if __name__ == '__main__':
     main()
-
-
-
-
