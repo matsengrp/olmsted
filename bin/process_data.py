@@ -305,12 +305,19 @@ dataset_spec = {
             "type": "array",
             "items": clone_spec}}}
 
+def is_nullable_string(checker, instance):
+    return (
+        jsonschema.Draft4Validator.TYPE_CHECKER.is_type(instance, "string") or jsonschema.Draft4Validator.TYPE_CHECKER.is_type(instance, "null")
+    )
+type_checker = jsonschema.Draft4Validator.TYPE_CHECKER.redefine("string", is_nullable_string)
+CustomValidator = jsonschema.validators.extend(jsonschema.Draft4Validator, type_checker=type_checker)
+
 # Should update to get draft7?
 olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 airr_clone_schema = None
 with open("airr-standards/specs/airr-schema.yaml") as stream:
     airr_clone_schema_dict = yaml.load(stream).get("Clone")
-    airr_clone_schema = jsonschema.Draft4Validator(airr_clone_schema_dict)
+    airr_clone_schema = CustomValidator(airr_clone_schema_dict)
 
 def validate(data, schema, verbose=False, object_name=None):
     if not schema.is_valid(data):
@@ -379,7 +386,7 @@ def process_tree(args, clone_id, tree):
 
 def validate_airr_clone_and_trees(args, clone):
     # add repertoire_id to satisfy AIRR schema TODO see https://python-jsonschema.readthedocs.io/en/stable/validate/#validating-with-additional-types to see if you can force the schema to accept null /None in place of a string even for cases where it is not explicitly allowed to be null in the schema
-    clone['repertoire_id'] = 'None'
+    clone['repertoire_id'] = None
     # prepare tree(s)
     clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
     validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
