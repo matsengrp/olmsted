@@ -24,7 +24,7 @@ class TreeHeader extends React.Component {
   render(){
     return (
       <div>
-        <h2>Clonal family details for {this.props.selectedFamily.sample_id} {this.props.selectedFamily.id}</h2>
+        <h2>Clonal family details for {this.props.selectedFamily.sample_id} {this.props.selectedFamily.clone_id}</h2>
         <div>
           <p>
             Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
@@ -35,7 +35,7 @@ class TreeHeader extends React.Component {
           <select value={this.props.tree.ident}
             onChange={(event) => this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
             {this.props.selectedFamily.trees.map((tree) =>
-              <option key={tree.ident} value={tree.ident}>{tree.id}</option>)}
+              <option key={tree.ident} value={tree.ident}>{tree.tree_id}</option>)}
           </select>
           </div>
         </div>
@@ -125,7 +125,7 @@ class TreeViz extends React.Component {
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
     // minimum bit of information saying the error that occured and/or the field that was not built.
-    let incompleteFamily = !this.props.selectedFamily.unique_seqs_count || !this.props.selectedFamily.trees
+    let incompleteFamily = !this.props.selectedFamily.rearrangement_count || !this.props.selectedFamily.trees
 
     // Being explicit about the fact that we are relying on the tree being
     // defined vs undefined instead of keeping track of its true loading state
@@ -138,7 +138,7 @@ class TreeViz extends React.Component {
           {/* Tree still loading aka undefined*/}
           {!incompleteFamily && treeLoading &&
             <div>
-              <h2>Loading data for clonal family: {this.props.selectedFamily.id}...</h2>
+              <h2>Loading data for clonal family: {this.props.selectedFamily.clone_id}...</h2>
             </div>
           }
           {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
@@ -153,11 +153,11 @@ class TreeViz extends React.Component {
               let node = args.slice(1)[0]
               if(node.parent){
                 // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                this.props.dispatchSelectedSeq(node.id)
+                this.props.dispatchSelectedSeq(node.sequence_id)
               }
             }}
             debug={/* true for debugging */ true}
-            //logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+            // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
             data={completeData ? this.treeDataFromProps() : this.tempVegaData}
             spec={this.spec}
             // Reload spec every render (comment above line and uncomment below) for Hot Reloading of viz during dev
@@ -166,10 +166,10 @@ class TreeViz extends React.Component {
           {/* Show downloads if complete family, tree */}
           {completeData && <div>
             <DownloadFasta sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
-                          filename={this.props.selectedFamily.sample_id.concat('-',this.props.selectedFamily.id, '.fasta')}
+                          filename={this.props.selectedFamily.sample_id.concat('-',this.props.selectedFamily.clone_id, '.fasta')}
                           label="Download Fasta: Unique Sequences In This Tree"/>
             <DownloadText  text={this.props.selectedTree.newick}
-                          filename={this.props.selectedFamily.sample_id.concat('-', this.props.selectedFamily.id, '-newick', '.txt')}
+                          filename={this.props.selectedFamily.sample_id.concat('-', this.props.selectedFamily.clone_id, '-newick', '.txt')}
                           label="Download Clonal Family Tree Newick String"/>
           </div>}
         </div>
