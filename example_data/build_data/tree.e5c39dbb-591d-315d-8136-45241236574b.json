@@ -1,0 +1,372 @@
+{
+    "ident": "e5c39dbb-591d-315d-8136-45241236574b", 
+    "newick": "(((-8618362989581765203:0.005969,(1477016370066448711:0.002923,7149536309474484942:0.005968)Node1:1e-06)Node2:0.02189,(-3627880579701721485:0.012059,(-9131356152997783679:0.002947,(8303664072926056912:0.002948,(2840739614718694956:0.00589,8679008442710779815:1e-06)Node6:0.002938)Node7:1e-06)Node5:1e-06)Node4:0.012359)Node3:0.008958)inferred_naive:0;", 
+    "downsampling_strategy": "min_adcl", 
+    "nodes": [
+        {
+            "distance": 0.036817, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node2", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAACTGGTGCAGTCTGGTGCTGAGGTGAAGAACCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCCTGTGTGGATGGGATGGTTCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGCCTGTCAGCCTGGGGCCAGGGCACCCTGGTCATCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVQSGAEVKNPGASVKVSCKAFGYTFTSYGISWVRQAPGQGPVWMGWFSAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVIVSS", 
+            "length": 0.005969, 
+            "affinity": null, 
+            "lbi": 0.024291843347107146, 
+            "type": "leaf", 
+            "id": "-8618362989581765203"
+        }, 
+        {
+            "distance": 0.033771999999999996, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node1", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAACTGGTGCAGTCTGGTCCTGAGGTGAAGAAACCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCCTGTGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGCCTGTCAGCCTGGGGCCAGGGCACCCTGGTCATCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVQSGPEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGPVWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVIVSS", 
+            "length": 0.002923, 
+            "affinity": null, 
+            "lbi": 0.09339341352878275, 
+            "type": "leaf", 
+            "id": "1477016370066448711"
+        }, 
+        {
+            "distance": 0.036817, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node1", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAACTGGTGCAGTCTGGTGCTGAGGTGAAGCAACCTGGGGCCTCAGTGAAGGTCTCCTGCAAGACTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCCTGTGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGCCTGTCAGCCTGGGGCCAGGGCACCCTGGTCATCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVQSGAEVKQPGASVKVSCKTFGYTFTSYGISWVRQAPGQGPVWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVIVSS", 
+            "length": 0.005968, 
+            "affinity": null, 
+            "lbi": 0.024300230087000756, 
+            "type": "leaf", 
+            "id": "7149536309474484942"
+        }, 
+        {
+            "distance": 0.030849, 
+            "lbr": 0.11277305487678058, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node2", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAACTGGTGCAGTCTGGTGCTGAGGTGAAGAAACCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCCTGTGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGCCTGTCAGCCTGGGGCCAGGGCACCCTGGTCATCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVQSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGPVWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVIVSS", 
+            "length": 1e-06, 
+            "affinity": null, 
+            "lbi": 0.4148087909096077, 
+            "type": "node", 
+            "id": "Node1"
+        }, 
+        {
+            "distance": 0.030848, 
+            "lbr": 0.20295548356014195, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node3", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAACTGGTGCAGTCTGGTGCTGAGGTGAAGAAACCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCCTGTGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGCCTGTCAGCCTGGGGCCAGGGCACCCTGGTCATCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVQSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGPVWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVIVSS", 
+            "length": 0.02189, 
+            "affinity": null, 
+            "lbi": 0.41482937038482315, 
+            "type": "node", 
+            "id": "Node2"
+        }, 
+        {
+            "distance": 0.033376, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node4", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTGTCCTGCGAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCATCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCEAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVIVSS", 
+            "length": 0.012059, 
+            "affinity": null, 
+            "lbi": 0.003143264552605572, 
+            "type": "leaf", 
+            "id": "-3627880579701721485"
+        }, 
+        {
+            "distance": 0.024265000000000002, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node5", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCTCCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVSVSS", 
+            "length": 0.002947, 
+            "affinity": null, 
+            "lbi": 0.13557672162753423, 
+            "type": "leaf", 
+            "id": "-9131356152997783679"
+        }, 
+        {
+            "distance": 0.024267, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node7", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCGTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 0.002948, 
+            "affinity": null, 
+            "lbi": 0.13549531136697876, 
+            "type": "leaf", 
+            "id": "8303664072926056912"
+        }, 
+        {
+            "distance": 0.030147, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node6", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGACCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTAACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCCTGGTCACCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVLSGAEVKKPGTSVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSNDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 0.00589, 
+            "affinity": null, 
+            "lbi": 0.01155351441957049, 
+            "type": "leaf", 
+            "id": "2840739614718694956"
+        }, 
+        {
+            "distance": 0.024258000000000002, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node6", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTAACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSNDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 1e-06, 
+            "affinity": null, 
+            "lbi": 0.27156714801656745, 
+            "type": "leaf", 
+            "id": "8679008442710779815"
+        }, 
+        {
+            "distance": 0.024257, 
+            "lbr": 0.06518675251601283, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node7", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTAACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSNDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 0.002938, 
+            "affinity": null, 
+            "lbi": 0.27174200852633873, 
+            "type": "node", 
+            "id": "Node6"
+        }, 
+        {
+            "distance": 0.021319, 
+            "lbr": 0.12962525807878134, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node5", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 1e-06, 
+            "affinity": null, 
+            "lbi": 0.5552480601436632, 
+            "type": "node", 
+            "id": "Node7"
+        }, 
+        {
+            "distance": 0.021318, 
+            "lbr": 0.16922143123852548, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node4", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 1e-06, 
+            "affinity": null, 
+            "lbi": 0.5553161072268387, 
+            "type": "node", 
+            "id": "Node5"
+        }, 
+        {
+            "distance": 0.021317000000000003, 
+            "lbr": 0.3458145730457632, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node3", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAGCTGGTGCTGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGGCTGGGGCCAGGGGACCTTGGTCACCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVLSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSGWGQGTLVTVSS", 
+            "length": 0.012359, 
+            "affinity": null, 
+            "lbi": 0.5552925143759502, 
+            "type": "node", 
+            "id": "Node4"
+        }, 
+        {
+            "distance": 0.008958, 
+            "lbr": 1.1387353422412863, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "inferred_naive", 
+            "timepoint_multiplicities": [], 
+            "dna_seq": "CAGGTTCAGCTGGTGCAGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTTTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTGACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTCAGCCTGGGGCCAGGGCACCCTGGTCACCGTCTCCTCAG", 
+            "multiplicity": null, 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "aa_seq": "QVQLVQSGAEVKKPGASVKVSCKAFGYTFTSYGISWVRQAPGQGLEWMGWISAYNGDTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRLSAWGQGTLVTVSS", 
+            "length": 0.008958, 
+            "affinity": null, 
+            "lbi": 0.3339348002421614, 
+            "type": "node", 
+            "id": "Node3"
+        }, 
+        {
+            "distance": 0.0, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": null, 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "dna_seq": "CAGGTTCAGCTGGTGCAGTCTGGAGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGTTACACCTTTACCAGCTATGGTATCAGCTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAGCGCTTACAATGGTAACACAAACTATGCACAGAAGCTCCAGGGCAGAGTCACCATGACCACAGACACATCCACGAGCACAGCCTACATGGAGCTGAGGAGCCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGATCCCAGCGGCTGTGAGCCTGGGGCCAGGGCACCCTGGTCACCGTCTCCTCAG", 
+            "multiplicity": 1, 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "aa_seq": "QVQLVQSGAEVKKPGASVKVSCKASGYTFTSYGISWVRQAPGQGLEWMGWISAYNGNTNYAQKLQGRVTMTTDTSTSTAYMELRSLRSDDTAVYYCARSQRL*AWGQGTLVTVSS", 
+            "length": 0.0, 
+            "affinity": null, 
+            "lbi": 0.17023389192081492, 
+            "type": "root", 
+            "id": "inferred_naive"
+        }
+    ], 
+    "type": "cft.reconstruction", 
+    "id": "min_adcl-raxml_ng", 
+    "downsampled_count": 100
+}
