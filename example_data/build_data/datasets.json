@@ -1,13 +1,14 @@
 [
     {
         "ident": "c927cd38-6e0d-37c2-a5da-4f04131a12a5", 
-        "clonal_families_count": 8, 
+        "subjects_count": 1, 
+        "clone_count": 8, 
         "timepoints_count": 1, 
         "schema_version": "1.0.0", 
-        "subjects": [
+        "seeds": [
             {
-                "ident": "80f29d53-1398-39e7-b7bc-c1904be99775", 
-                "id": "None"
+                "ident": "3e9d5e49-cf09-3455-840e-6f881c5106f1", 
+                "seed_id": "-1118600317502690934"
             }
         ], 
         "build": {
@@ -17,7 +18,7 @@
         }, 
         "samples": [
             {
-                "id": "simulation-test", 
+                "sample_id": "simulation-test", 
                 "partitions": [
                     {
                         "step": 3, 
@@ -43,14 +44,13 @@
                 "locus": "igh"
             }
         ], 
-        "seeds": [
-            {
-                "ident": "3e9d5e49-cf09-3455-840e-6f881c5106f1", 
-                "id": "-1118600317502690934"
-            }
-        ], 
+        "dataset_id": "test-input-2020.01.30", 
         "type": "cft.dataset", 
-        "id": "test-input-2020.01.30", 
-        "subjects_count": 1
+        "subjects": [
+            {
+                "subject_id": "None", 
+                "ident": "80f29d53-1398-39e7-b7bc-c1904be99775"
+            }
+        ]
     }
 ]
