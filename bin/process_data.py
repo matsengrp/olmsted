@@ -220,12 +220,12 @@ clone_spec = {
     "title": "Clone",
     "description": "Clonal family of sequences deriving from a particular reassortment event",
     "type": "object",
-    "required": ["rearrangement_count", "mean_mut_freq", "v_alignment_start", "v_alignment_end", "j_alignment_start", "j_alignment_end"],
+    "required": ["unique_seqs_count", "mean_mut_freq", "v_alignment_start", "v_alignment_end", "j_alignment_start", "j_alignment_end"],
     "properties": {
         "clone_id": id_spec("AIRR: Identifier for the clone."),
         "ident": ident_spec,
-        "rearrangement_count": {
-            "description": "AIRR: Number of rearrangements included in this clone",
+        "unique_seqs_count": {
+            "description": "Number of unique sequences in the clone",
             "minimum": 1,
             "type": "integer"},
         "total_read_count": {

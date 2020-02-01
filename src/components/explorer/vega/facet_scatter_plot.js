@@ -35,7 +35,7 @@ const facetClonalFamiliesVizSpec = () => {
       "source": "source",
       "format": {
         "type": "json",
-        "parse": {"rearrangement_count": "number", "mean_mut_freq": "number"},
+        "parse": {"unique_seqs_count": "number", "mean_mut_freq": "number"},
         "copy": true
       },
       "transform": [
@@ -59,7 +59,7 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           "type": "filter",
-          "expr": "datum[\"rearrangement_count\"] !== null && !isNaN(datum[\"rearrangement_count\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
+          "expr": "datum[\"unique_seqs_count\"] !== null && !isNaN(datum[\"unique_seqs_count\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
         },
         // Add the facet by field work around since it cannot be updated directly 
         // with a signal see https://github.com/vega/vega/issues/1461
@@ -206,9 +206,9 @@ const facetClonalFamiliesVizSpec = () => {
       "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.dataset_id", "subject_id", "sample.timepoint_id", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "junction_length", "rearrangement_count"]} },
-    { "name": "xField", "value": "rearrangement_count",
-       "bind": {"name": "X variable ", "input": "select", "options": ["rearrangement_count", "junction_length", "mean_mut_freq"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "junction_length", "unique_seqs_count"]} },
+    { "name": "xField", "value": "unique_seqs_count",
+       "bind": {"name": "X variable ", "input": "select", "options": ["unique_seqs_count", "junction_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject_id",
        "bind": {"name": "Color by ", "input": "select", "options": ["subject_id", "sample.timepoint_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint_id",

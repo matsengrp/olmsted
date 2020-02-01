@@ -14,9 +14,9 @@ import inflect
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
 
-def rename_keys(record, mapping):
+def rename_keys(record, mapping, to_keep=[]):
     for k in mapping.keys():
-        record[mapping[k]] = record.pop(k)
+        record[mapping[k]] = record.pop(k) if k not in to_keep else record[k]
 
 def remap_list(l, mapping):
     for element in l:
@@ -28,8 +28,10 @@ def remap_dict_values(d, mapping):
 
 cft_to_olmsted_fns = dict((key, remap_list) for key in ["datasets", "seeds", "subjects", "samples", "trees"])
 def remap_clonal_families(clonal_families, mapping):
+    # we keep "unique_seqs_count" because "rearrangement_count" isn't very intuitive in the absence of a definition of the AIRR rearrangement object.
+    to_keep = {"unique_seqs_count"}
     for cf in clonal_families:
-        rename_keys(cf, mapping)
+        rename_keys(cf, mapping, to_keep=to_keep)
         # +=1 *_start positions since AIRR schema uses 1-based closed interval. See bin/process_data.py
         for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
             if cf.get(start_pos_key) is not None:
