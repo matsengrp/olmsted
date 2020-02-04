@@ -25,7 +25,7 @@ When you first hit the application at it's root address, you'll be presented wit
 
 ![splash](docs/splash.png)
 
-Once selected, hitting "Explore" takes you to a page displays selected datasets with the following visualizations:
+Once selected, hitting "Explore" takes you to a page displaying selected datasets using the following visualizations:
 
 ### Clonal family scatterplot
 
