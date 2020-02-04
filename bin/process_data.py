@@ -385,7 +385,6 @@ def process_tree(args, clone_id, tree):
     return ensure_ident(tree)
 
 def validate_airr_clone_and_trees(args, clone):
-    # add repertoire_id to satisfy AIRR schema TODO see https://python-jsonschema.readthedocs.io/en/stable/validate/#validating-with-additional-types to see if you can force the schema to accept null /None in place of a string even for cases where it is not explicitly allowed to be null in the schema
     clone['repertoire_id'] = None
     # prepare tree(s)
     clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
@@ -507,7 +506,7 @@ def get_args():
     parser.add_argument('-n', '--naive-name', default='naive')
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-c', '--remove-invalid-clones', action="store_true",
-                help="validate clones individually, removing the invalid ones and try to build the dataset using the remaining clones.")
+                help="validate clones individually against the olmsted schema, removing the invalid ones and try to build the dataset using the remaining clones. Note that processing can still be crashed by clones which are invalid according to the AIRR clones and trees schema (see airr-standards/specs/airr-schema.yaml).")
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
@@ -526,9 +525,9 @@ def main():
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
                 if args.remove_invalid_clones:
-                    # TODO decide whether to add AIRR schema validation as part of cleaning invalid clones
                     dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
                 validate(dataset, olmsted_dataset_schema, verbose=args.verbose, object_name="Dataset")
+                # Process the dataset, including validation of clones, trees against the AIRR schema
                 dataset = process_dataset(args, dataset, clones_dict, trees)
                 datasets.append(dataset)
         except Exception as e:
