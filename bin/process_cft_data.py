@@ -12,7 +12,7 @@ import os
 import copy
 import inflect
 
-default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
+default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'cft_schema.json')
 
 def rename_keys(record, mapping, to_keep=[]):
     for k in mapping.keys():
@@ -92,7 +92,8 @@ def remap_data_in_place(record, mappings):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-S', '--schema', default=default_schema_path)
+    parser.add_argument('-S', '--schema', default=default_schema_path,
+        help="Path to the CFT data schema which defines the attributes used from CFT output metadata files. Default is cft_schema.json")
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-o', '--data-outdir')
