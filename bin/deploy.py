@@ -32,7 +32,7 @@ def content_type(path):
 
 def push_asset(args, localpath, key):
     if args.verbose:
-        print "publishing", key, content_type(key), "from local file", localpath
+        print("publishing", key, content_type(key), "from local file", localpath)
     args.client.upload_file(Filename=localpath, Bucket=args.bucket, Key=key,
             ExtraArgs={'ContentType': content_type(key), 'ACL': "public-read"})
 
