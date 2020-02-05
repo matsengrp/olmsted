@@ -11,7 +11,7 @@ var exec = require('exec');
 const devServer = process.argv.indexOf("dev") !== -1;
 let localDataIndex = process.argv.indexOf("localData")
 let localData = localDataIndex !== -1;
-let localDataPath = localData ? (process.argv[localDataIndex + 1]) || "data" : undefined
+let localDataPath = localData ? (process.argv[localDataIndex + 1]) || "example_data/build_data" : undefined
 let port = (process.argv[localDataIndex + 2]) || 3999
 globals.setGlobals({localData, localDataPath})
 
