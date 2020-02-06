@@ -71,17 +71,19 @@ To run Olmsted, you can either:
 - clone this repository and use npm to install the necessary dependencies (see "Install")
 - use Docker:
 
-0. Install Docker
-1. Choose a port number available to you locally, e.g. 8080
-2. Run:
+1. Install [Docker](https://www.docker.com/get-started)
+2. Choose a port number available to you locally, e.g. 8080
+3. Run:
 ```
-docker run --rm -p 8080:3999 quay.io/matsengrp/olmsted
+docker run -p 8080:3999 quay.io/matsengrp/olmsted
 ```
+4. Navigate to `localhost:8080` in your browser to see the application.
 
-To run on your own data (see "Input data") instead of the example data, simply point the command to your data
-For example, if your data is located on your system at `/my/local/data/path`, that would look like this:
+To run on your own data (see "Input data") instead of the example data, you need to point Docker to your data.
+
+For example, if your data is located on your system at `/local/data/path`, that would look like this:
 ```
-docker run --rm -p 8080:3999 -v /my/local/data/path:/data quay.io/matsengrp/olmsted npm start localData /data
+docker run -p 8080:3999 -v /local/data/path:/data quay.io/matsengrp/olmsted npm start localData /data
 ```
 
 ## Install
