@@ -20,7 +20,7 @@ class DatasetRow extends React.Component {
       case "DONE":{
         this.props.dispatch({
           type: types.LOADING_DATASET,
-          dataset_id: this.props.dataset.id,
+          dataset_id: this.props.dataset.dataset_id,
           loading: false
         });
         break;
@@ -28,10 +28,10 @@ class DatasetRow extends React.Component {
       default :{
         this.props.dispatch({
           type: types.LOADING_DATASET,
-          dataset_id: this.props.dataset.id,
+          dataset_id: this.props.dataset.dataset_id,
           loading: "LOADING"
         });
-        getClonalFamilies(this.props.dispatch, this.props.dataset.id)
+        getClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id)
         break;
       }
     }    
@@ -39,15 +39,15 @@ class DatasetRow extends React.Component {
 
   render(){
     return (
-      <tr key={this.props.dataset.id}
+      <tr key={this.props.dataset.dataset_id}
         style={{backgroundColor: this.props.dataset.loading ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"}}
         onClick={this.selectDataset}>
         <td>
           <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
         </td>
-        <td>{this.props.dataset.id}</td>
+        <td>{this.props.dataset.dataset_id}</td>
         <td>{this.props.dataset.subjects_count}</td>
-        <td>{this.props.dataset.clonal_families_count}</td>
+        <td>{this.props.dataset.clone_count}</td>
         <td>{this.props.dataset.build.time}</td>
       </tr>
     );
@@ -77,7 +77,7 @@ export class DatasetsTable extends React.Component {
               <th>Clonal Families</th>
               <th>Build time</th>
             </tr>
-            {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.id} dataset={dataset} dispatch={this.props.dispatch}/> )}
+            {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} dispatch={this.props.dispatch}/> )}
           </tbody>
         </table>
       </div>

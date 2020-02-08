@@ -21,7 +21,7 @@ export const getTree = (dispatch, tree_id) => {
       tree = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch( err ){
-      alert("Failed parsing json for " + tree_id + 
+      alert("Failed parsing json for " + tree_id +
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
@@ -44,10 +44,10 @@ export const getTree = (dispatch, tree_id) => {
 
   request.onerror = charonErrorHandler;
   request.open("get", `${charonAPIAddress}/tree.${tree_id}.json`, true); // true for asynchronous
- 
+
   request.send(null);
   // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
-  
+
 };
 
 export const getClonalFamilies = (dispatch, dataset_id) => {
@@ -57,7 +57,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
       clonalFamilies = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch( err ){
-      alert("Failed parsing json for " + dataset_id + 
+      alert("Failed parsing json for " + dataset_id +
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
@@ -85,11 +85,11 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
   };
 
   request.onerror = charonErrorHandler;
-  request.open("get", `${charonAPIAddress}/clonal_families.${dataset_id}.json`, true); // true for asynchronous
- 
+  request.open("get", `${charonAPIAddress}/clones.${dataset_id}.json`, true); // true for asynchronous
+
   request.send(null);
   // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
-  
+
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {
@@ -97,14 +97,14 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     // console.log("SERVER API REQUEST RETURNED:", datasets);
     var availableDatasets = JSON.parse(data);
     const selectedDatasets = [].concat(query.selectedDatasets);
-    
+
     availableDatasets = availableDatasets.map(dataset =>
-       Object.assign({...dataset, selected: selectedDatasets.includes(dataset.id)}) 
+       Object.assign({...dataset, selected: selectedDatasets.includes(dataset.dataset_id)})
     )
-    
+
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app" ?
     // getDatapath(window.location.pathname, availableDatasets) :
-    
+
     window.location.pathname + window.location.search:
       undefined;
     dispatch({

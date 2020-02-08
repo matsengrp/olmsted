@@ -25,9 +25,7 @@ When you first hit the application at it's root address, you'll be presented wit
 
 ![splash](docs/splash.png)
 
-Once selected, hitting "Explore" takes you to a page which encodes for the selected datasets:
-
-<http://olmstedviz.org/app?selectedDatasets=bf520-synth-v17-2018.12.21&selectedDatasets=kate-qrs-v17-2018.12.21&selectedDatasets=mg505-synth-v17-2018.12.21>
+Once selected, hitting "Explore" takes you to a page displaying selected datasets using the following visualizations:
 
 ### Clonal family scatterplot
 
@@ -99,7 +97,8 @@ For a human-readable version of the schema, see [olmstedviz.org/schema.html](htt
 ) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
 Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema. 
-The script takes one JSON file containing one or many datasets with all schema attributes nested under one another, and breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized. 
+The script takes any number of JSON files, each one containing one complete dataset.
+It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized. 
 
 
 To parse input JSON files, use bin/process_data.py. E.g.:

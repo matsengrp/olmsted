@@ -13,9 +13,9 @@ import ete3
 import functools as fun
 import sys
 import os
+import yaml
 
-
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 
 # Some generic data processing helpers helpers
 
@@ -79,15 +79,14 @@ def id_spec(desc=None):
 
 def multiplicity_spec(desc=None):
     # QUESTION not sure if we actually want nullable here...
-    return dict(description=(desc or "Number of times sequence was observed in the sample"), type=["integer", "null"], minimum=0)
-
+    return dict(description=(desc or "Number of times sequence was observed in the sample."), type=["integer", "null"], minimum=0)
 
 ident_spec = {
     "description": "UUID specific to the given object",
     "type": "string"}
 
 build_spec = {
-    "description": "Information about how a dataset was built",
+    "description": "Information about how a dataset was built.",
     "type": "object",
     "required": ["commit"],
     "title": "Build info",
@@ -101,7 +100,7 @@ build_spec = {
 
 
 timepoint_multiplicity_spec = {
-    "description": "Multiplicity at a specific time",
+    "description": "Multiplicity at a specific time.",
     "type": "object",
     "properties": {
         "timepoint_id": {
@@ -111,67 +110,65 @@ timepoint_multiplicity_spec = {
 
 sample_spec = {
         "title": "Sample",
-        "description": "A sample is generally a collection of sequences",
+        "description": "A sample is generally a collection of sequences.",
         "type": "object",
         "required": ["locus"],
         "properties": {
             "ident": ident_spec,
-            "id": id_spec("Sample id"),
+            "sample_id": id_spec("Sample id"),
             "timepoint_id": {
-                "description": "Timepoint associated with this sample (may choose 'merged' if data has" +
+                "description": "Timepoint associated with this sample (may choose \"merged\" if data has" +
                     " been combined from multiple timepoints)",
                 "type": "string"},
             "locus": {
-                "description": "B-cell Locus",
+                "description": "B-cell Locus.",
                 "type": "string"}}}
 
 subject_spec = {
         "title": "Subject",
-        "description": "Subject from which the clonal family was sampled",
+        "description": "Subject from which the clonal family was sampled.",
         "type": "object",
-        "required": ["id"],
+        "required": ["subject_id"],
         "properties": {
             "ident": ident_spec,
-            "id": id_spec("Subjectd id")}}
-    # TODO need to clean this up as well; probably doesn't need to be specified like this
+            "subject_id": id_spec("Subject id")}}
 
 seed_spec = {
+# TODO https://github.com/matsengrp/olmsted/commit/4992ac4af5be0ef1d12034de37666c6cf7258988#r32297022
         "title": "Seed",
-        "description": "A sequence of interest among other clonal family members",
+        "description": "A sequence of interest among other clonal family members.",
         # QUESTION not sure if we actually want nullable here...
         "type": ["object", "null"],
-        "required": ["id"],
+        "required": ["seed_id"],
         "properties": {
             "ident": ident_spec,
-            "id": id_spec("Seed id")}}
+            "seed_id": id_spec("Seed id")}}
 
 node_spec = {
     "title": "Node",
     "description": "Information about the phylogenetic tree nodes and the sequences they represent",
     "type": "object",
-    "required": ["id", "dna_seq", 'aa_seq'],
+    "required": ["sequence_id", "sequence_alignment", 'sequence_alignment_aa'],
     "properties": {
-        "id": id_spec("Sequence id"),
-        "dna_seq": {
-            "description": "Literal nucleotide sequence, aligned to other sequences in clonal family",
+        "sequence_id": id_spec("AIRR: Identifier for this node that matches the id in the newick string and, where possible, the sequence_id in the source repertoire."),
+        "sequence_alignment": {
+            "description": "AIRR: Nucleotide sequence of the node, aligned to the germline_alignment for this clone, including any indel corrections or spacers.",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
-        # Would be nice if we translated for users, but can't really do that without removing gaps and
-        # realigning, which is assuming a lot
-        "aa_seq": {
-            "description": "Literal amino acid sequence, aligned to other sequences in clonal family",
+        "sequence_alignment_aa": {
+            "description": "Amino acid sequence of the node, aligned to the germline_alignment for this clone, including any indel corrections or spacers.",
             # add pattern matching for AGCT-* etc?
             "type": "string"},
         "timepoint_id": {
-            "description": "Timepoint associated with sequence, if any",
+            "description": "Timepoint associated with sequence, if any.",
             # QUESTION not sure if we actually want nullable here...
             "type": ["string", "null"]},
         "multiplicity": multiplicity_spec(),
         "cluster_multiplicity": multiplicity_spec(
             "If clonal family sequences were downsampled by clustering, the cummulative number of times" +
-                " sequences in cluster were observed"),
+                " sequences in cluster were observed."),
         "timepoint_multiplicities": {
-            "description": "Sequence multiplicity, broken down by timepoint",
+            "description": "Sequence multiplicity, broken down by timepoint.",
             "type": "array",
             "items": timepoint_multiplicity_spec},
         "cluster_timepoint_multiplicities": {
@@ -179,14 +176,11 @@ node_spec = {
                 " the same cluster if clustering-based downsampling was performed.",
             "type": "array",
             "items": timepoint_multiplicity_spec},
-        # compute:
-        # * lbi, lbr? we should have the tree available to do this but need to coordinate with Duncan
-        # * aa_seq
         "lbi": {
-            "description": "Local branching index",
+            "description": "Local branching index.",
             "type": ["number", "null"]},
         "lbr": {
-            "description": "Local branching rate (derivative of lbi)",
+            "description": "Local branching rate (derivative of lbi).",
             "type": ["number", "null"]},
         "affinity": {
             "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
@@ -196,13 +190,13 @@ node_spec = {
 
 tree_spec = {
     "title": "Tree",
-    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family",
+    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family.",
     "type": "object",
     "required": ["newick", "nodes"],
     "properties": {
         "ident": ident_spec,
-        "id": id_spec("tree id"),
-        # optional
+        "tree_id": id_spec("AIRR: Identifier for the tree."),
+        "clone_id": id_spec("AIRR: Identifier for the clone."),
         "downsampling_strategy": {
             "description": "If applicable, the downsampling method",
             "type": "string"},
@@ -211,124 +205,141 @@ tree_spec = {
             "minumum": 3,
             "type": "integer"},
         "newick": {
-            "description": "Tree in newick format",
+            "description": "AIRR: Newick string of the tree edges.",
             "type": "string"},
         "nodes": {
-            "description": "Nodes in the clonal family tree and corresponding sequences and metadata",
-            "type": "array",
-            "items": node_spec}
+            "description": "AIRR: Dictionary of nodes in the tree, keyed by sequence_id string.",
+            "type": "object",
+            "additionalProperties": node_spec}
         }}
 
 def natural_number(desc):
     return dict(description=desc, minimum=0, type="integer")
 
-clonal_family_spec = {
-    "title": "Clonal Family",
+clone_spec = {
+    "title": "Clone",
     "description": "Clonal family of sequences deriving from a particular reassortment event",
     "type": "object",
-    "required": ["unique_seqs_count", "mean_mut_freq", "v_start", "v_end", "j_start", "j_end"],
+    "required": ["unique_seqs_count", "mean_mut_freq", "v_alignment_start", "v_alignment_end", "j_alignment_start", "j_alignment_end"],
     "properties": {
-        "id": id_spec("Clonal family id"),
+        "clone_id": id_spec("AIRR: Identifier for the clone."),
         "ident": ident_spec,
         "unique_seqs_count": {
-            "description": "Number of unique sequences in the clonal family",
+            "description": "Number of unique sequences in the clone",
             "minimum": 1,
             "type": "integer"},
         "total_read_count": {
-            "description": "Number of total reads represented by sequences in the clonal family",
+            "description": "Number of total reads represented by sequences in the clone.",
             "minimum": 1,
             "type": "integer"},
         # do we currently compute this pre downsampling or what? account for multiplicity?
         "mean_mut_freq": {
-            "description": "Mean mutation frequency across sequences in the clonal family",
+            "description": "Mean mutation frequency across sequences in the clone.",
             "minimum": 0,
             "type": "number"},
-        "naive_seq": {
-            "description": "Naive nucleotide sequence",
+        "germline_alignment": {
+            "description": "AIRR: Assembled, aligned, full-length inferred ancestor of the clone spanning the same region as the sequence_alignment field of nodes (typically the V(D)J region) and including the same set of corrections and spacers (if any).",
             "type": "string"},
         "has_seed": {
-            "description": "Does this clonal family have a seed sequence in it?",
+            "description": "Does this clone have a seed sequence in it?",
             "type": "boolean"},
         # Rearrangement data
-        "v_start": natural_number("Position in v gene at which rearrangement starts"),
-        "v_end": natural_number("Position in v gene at which rearrangement ends"),
-        "v_gene": {
-            "description": "V gene used in rearrangement",
+        "v_alignment_start": natural_number("AIRR: Start position in the V segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "v_alignment_end": natural_number("AIRR: End position in the V segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "v_call": {
+            "description": "AIRR: V gene with allele of the inferred ancestral of the clone. For example, IGHV4-59*01.",
             "type": "string"},
-        "d_start": natural_number("Position in d gene at which rearrangement starts"),
-        "d_end": natural_number("Position in d gene at which rearrangement ends"),
-        "d_gene": {
-            "description": "D gene used in rearrangement",
+        "d_alignment_start": natural_number("AIRR: Start position of the D segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "d_alignment_end": natural_number("AIRR: End position of the D segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "d_call": {
+            "description": "AIRR: D gene with allele of the inferred ancestor of the clone. For example, IGHD3-10*01.",
             "type": "string"},
-        "j_start": natural_number("Position in j gene at which rearrangement starts"),
-        "j_end": natural_number("Position in j gene at which rearrangement ends"),
-        "j_gene": {
-            "description": "J gene used in rearrangement",
+        "j_alignment_start": natural_number("AIRR: Start position of the J segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "j_alignment_end": natural_number("AIRR: End position of the J segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."),
+        "j_call": {
+            "description": "AIRR: J gene with allele of the inferred ancestor of the clone. For example, IGHJ4*02.",
             "type": "string"},
-        "cdr3_length": natural_number("Length of CDR3 region"),
-        "cdr3_start": natural_number("Start of the CDR3 region"),
+        "junction_length": natural_number("AIRR: Number of nucleotides in the junction. (see AIRR 'junction': Nucleotide sequence for the junction region of the inferred ancestor of the clone, where the junction is defined as the CDR3 plus the two flanking conserved codons.)"),
+        "junction_start": natural_number("AIRR: Junction region start position in the alignment (1-based closed interval)."),
         "sample_id": {
-            "description": "sample id associated with this clonal family",
+            "description": "sample id associated with this clonal family.",
             "type": "string"},
         "subject_id": {
-            "description": "Id of subject from which the clonal family was sampled",
+            "description": "Id of subject from which the clonal family was sampled.",
             "type": "string"},
         "seed_id": {
-            "description": "Seed sequence id if any",
+            "description": "Seed sequence id if any.",
             "type": ["string", "null"]},
         "trees": {
-            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions",
+            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions.",
             "type": "array",
             "items": tree_spec}}}
-        # leaving out for now
-        # 'partition': ['ident', 'id', 'logprob', 'step'],
-        # 'v_per_gene_support': ['ident', 'gene', 'prob'],
-        # 'd_per_gene_support': ['ident', 'gene', 'prob'],
-        # 'j_per_gene_support': ['ident', 'gene', 'prob'],
 
 dataset_spec = {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "$id": "https://olmstedviz.org/input.schema.json",
     "title": "Olmsted Dataset",
-    "description": "Olmsted dataset input file",
+    "description": "Olmsted dataset input file.",
     "type": "object",
-    "required": ["id", "clonal_families"],
+    "required": ["dataset_id", "clones"],
     "properties": {
         "ident": ident_spec,
-        "id": {
+        "dataset_id": {
             "description": "Unique identifier for a collection of data",
             "type": "string"},
         "build": build_spec,
         "samples": {
             "description": "Information about each of the samples",
             "type": "array",
-            "items": sample_spec}, 
+            "items": sample_spec},
         "subjects": {
             "description": "Information about each of the subjects",
             "type": "array",
-            "items": subject_spec}, 
+            "items": subject_spec},
         "seeds": {
             "description": "Information about each of the seed sequences",
             "type": "array",
-            "items": seed_spec}, 
-        "clonal_families": {
+            "items": seed_spec},
+        "clones": {
             "description": "Information about each of the clonal families",
             "type": "array",
-            "items": clonal_family_spec}}}
+            "items": clone_spec}}}
+
+def is_nullable_string(checker, instance):
+    return (
+        jsonschema.Draft4Validator.TYPE_CHECKER.is_type(instance, "string") or jsonschema.Draft4Validator.TYPE_CHECKER.is_type(instance, "null")
+    )
+type_checker = jsonschema.Draft4Validator.TYPE_CHECKER.redefine("string", is_nullable_string)
+CustomValidator = jsonschema.validators.extend(jsonschema.Draft4Validator, type_checker=type_checker)
 
 # Should update to get draft7?
-dataset_schema = jsonschema.Draft4Validator(dataset_spec)
+olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
+airr_clone_schema = None
+with open("airr-standards/specs/airr-schema.yaml") as stream:
+    airr_clone_schema_dict = yaml.load(stream).get("Clone")
+    airr_clone_schema = CustomValidator(airr_clone_schema_dict)
 
+def validate(data, schema, verbose=False, object_name=None):
+    if not schema.is_valid(data):
+        print("{} doesn't conform to spec.{}".format(object_name if object_name is not None else "Input data",
+                                                     "" if verbose else " Please rerunn with `-v` for detailed errors"))
+        if verbose:
+            last_error_path = None
+            for error in schema.iter_errors(data):
+                error_path = list(error.path)
+                if last_error_path != error_path:
+                    print("  Error at " + str(error_path) + ":")
+                    last_error_path = error_path
+                print("    " + error.message)
 
 def ensure_ident(record):
     "Want to let people choose their own uuids if they like, but not require them to"
     return record if record.get('ident') else merge(record, {'ident': uuid.uuid4()})
 
-
-
 # reroot the tree on node matching regex pattern.
 # Usually this is used to root on the naive germline sequence
 # NOTE duplicates fcn in plot_tree.py
+# TODO this is just one way to "reroot" trees; it's worth considering removing this function from the script so that we are not responsible for this job since it isn't trivial (e.g. if given an unrooted tree, ete3.Tree.set_outgroup will add an empty-string-named taxon)
 def reroot_tree(args, tree):
     # find naive node
     node = tree.search_nodes(name=args.naive_name)[0]
@@ -342,21 +353,17 @@ def reroot_tree(args, tree):
         node.add_child(tree)
         tree.dist = node.dist
 
-        # TODO Verify that this makes sense, generally speaking; I'm guessing this is how things come out of
-        # set_outgroup (with 0 branch length leading up to), but want to make sure.
         node.dist = 0
         tree = node
     return tree
 
-
 def process_tree_nodes(args, tree, nodes, reroot=False):
     if reroot:
         tree = reroot_tree(args, tree)
-    node_dict = {n['id']: n for n in nodes}
     def process_node(node):
-        datum = node_dict.get(node.name, {})
+        datum = nodes.get(node.name, {})
         datum['type'] = 'leaf' if node.is_leaf() else 'node'
-        datum.update(node_dict.get(node.name, {}))
+        datum.update(nodes.get(node.name, {}))
         if node.up:
             datum['parent'] = node.up.name
             datum['length'] = node.get_distance(node.up)
@@ -370,39 +377,53 @@ def process_tree_nodes(args, tree, nodes, reroot=False):
         return datum
     return map(process_node, tree.traverse('postorder'))
 
-
-def process_tree(args, tree):
+def process_tree(args, clone_id, tree):
+    # add clone_id to satisfy AIRR schema
+    tree['clone_id'] = clone_id
     ete_tree = ete3.PhyloTree(tree['newick'], format=1)
     tree['nodes'] = process_tree_nodes(args, ete_tree, tree['nodes'], reroot=args.root_trees)
     return ensure_ident(tree)
 
-
-def process_clonal_family(args, dataset, clonal_family):
-    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for
-    # viz convenience
-    _dataset = dataset.copy()
-    del _dataset['clonal_families']
-    clonal_family['dataset'] = _dataset
-    clonal_family['sample'] = filter(lambda sample: sample['id'] == clonal_family['sample_id'], clonal_family['dataset']['samples'])[0]
-    del clonal_family['dataset']['samples']
+def validate_airr_clone_and_trees(args, clone):
+    clone['repertoire_id'] = None
     # prepare tree(s)
-    clonal_family['trees'] = map(fun.partial(process_tree, args), clonal_family.get('trees', []))
-    clonal_family['naive'] = args.naive_name
-    return ensure_ident(clonal_family)
+    clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
+    validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
 
-def process_dataset(dataset):
-    dataset['clonal_families_count'] = len(dataset['clonal_families'])
-    dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clonal_families']))
+def process_clone(args, dataset, clone):
+    validate_airr_clone_and_trees(args, clone)
+    # -=1 *_start positions since AIRR schema uses 1-based closed interval but we need python slice conventions (0-based, open interval) for source code (vega visualization). See bin/process_data.py
+    for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
+        clone[start_pos_key] -= 1
+    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for viz convenience
+    _dataset = dataset.copy()
+    del _dataset['clones']
+    clone['dataset'] = _dataset
+    clone['sample'] = filter(lambda sample: sample['sample_id'] == clone['sample_id'], clone['dataset']['samples'])[0]
+    del clone['dataset']['samples']
+    return ensure_ident(clone)
+
+def process_dataset(args, dataset, clones_dict, trees):
+    dataset['clone_count'] = len(dataset['clones'])
+    dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clones']))
     dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
+    clones = map(fun.partial(process_clone, args, dataset), dataset['clones'])
+    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
+            clones, [])
+    for cf in clones:
+        cf['trees'] = [
+                dict_subset(tree, set(tree.keys()) - {'nodes'})
+                for tree in cf['trees']]
+    clones_dict[dataset['dataset_id']] = clones
+    del dataset['clones']
+    dataset['schema_version'] = SCHEMA_VERSION
     return ensure_ident(dataset)
-
 
 def json_rep(x):
     if isinstance(x, uuid.UUID):
         return str(x)
     else:
         return list(x)
-
 
 def write_out(data, dirname, filename, args):
     if not os.path.exists(dirname):
@@ -415,7 +436,6 @@ def write_out(data, dirname, filename, args):
             indent=4,
             #allow_nan=False
             )
-
 
 def hiccup_rep(schema, depth=1, property=None):
     depth = min(depth, 2)
@@ -444,7 +464,6 @@ def hiccup_rep(schema, depth=1, property=None):
                     if isinstance(val, str)
                     else hiccup_rep(val, depth=depth+1)]
                 for k, val in schema.get('properties').items()] if schema.get('properties') else '',
-            
             ["div",
                 ["h"+str(depth+1), "Array Items:"],
                 # As above, assume and display a title if string, otherwise recurse
@@ -452,8 +471,6 @@ def hiccup_rep(schema, depth=1, property=None):
                     if isinstance(schema.get('items'), str)
                     else hiccup_rep(schema.get('items'), depth=depth+1)]
                 if schema.get('items') else '']
-
-
 
 def hiccup_rep2(schema):
     def flatten_schema_by_title(schema):
@@ -488,60 +505,41 @@ def get_args():
             help="directory in which data will be saved; required for data output")
     parser.add_argument('-n', '--naive-name', default='naive')
     parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument('-c', '--clean-clonal-families', action="store_true",
-                help="validate clonal families individually, removing the invalid ones and try to build the dataset using the remaining clonal families.")
+    parser.add_argument('-c', '--remove-invalid-clones', action="store_true",
+                help="validate clones individually against the olmsted schema, removing the invalid ones and try to build the dataset using the remaining clones. Note that processing can still be crashed by clones which are invalid according to the AIRR clones and trees schema (see airr-standards/specs/airr-schema.yaml).")
     parser.add_argument('-S', '--display-schema-html')
     parser.add_argument('-s', '--display-schema', action="store_true",
             help="print schema to stdout for display")
+    parser.add_argument('-y', '--write-schema-yaml', action="store_true",
+            help="write the schema to a yaml format file.")
     parser.add_argument('-r', '--root-trees', action="store_true",
             help="Root trees using --naive-name.")
     return parser.parse_args()
 
-
-
 def main():
     args = get_args()
-    datasets, clonal_families_dict, trees = [], {}, []
-
+    datasets, clones_dict, trees = [], {}, []
     for infile in args.inputs or []:
         print("\nProcessing infile: {}".format(str(infile)))
         try:
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
-                if args.clean_clonal_families:
-                    dataset['clonal_families'] = filter(jsonschema.Draft4Validator(clonal_family_spec).is_valid, dataset['clonal_families'])
-                if dataset_schema.is_valid(dataset):
-                    dataset = process_dataset(dataset)
-                    clonal_families = map(fun.partial(process_clonal_family, args, dataset), dataset['clonal_families'])
-                    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
-                            clonal_families, [])
-                    for cf in clonal_families:
-                        cf['trees'] = [
-                                dict_subset(tree, ['downsampling_strategy', 'ident', 'type', 'id', 'downsampled_count'])
-                                for tree in cf['trees']]
-                    clonal_families_dict[dataset['id']] = clonal_families
-                    del dataset['clonal_families']
-                    dataset['schema_version'] = SCHEMA_VERSION
-                    datasets.append(dataset)
-                else:
-                    message = "Dataset doesn't conform to spec." + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
-                    print(message)
-                    if args.verbose:
-                        last_error_path = None
-                        for error in dataset_schema.iter_errors(dataset):
-                            error_path = list(error.path)
-                            if last_error_path != error_path:
-                                print("  Error at " + str(error_path) + ":")
-                                last_error_path = error_path
-                            print("    " + error.message)
-                            # import pdb; pdb.set_trace()
+                if args.remove_invalid_clones:
+                    dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
+                validate(dataset, olmsted_dataset_schema, verbose=args.verbose, object_name="Dataset")
+                # Process the dataset, including validation of clones, trees against the AIRR schema
+                dataset = process_dataset(args, dataset, clones_dict, trees)
+                datasets.append(dataset)
         except Exception as e:
             message = "Unable to process infile: " + str(infile) + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
             print(message)
             if args.verbose:
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
-
+    # write out schema
+    if args.write_schema_yaml:
+        with open('schema.yaml', 'w') as yamlf:
+            yaml.dump(dataset_spec, yamlf)
     if args.display_schema:
         pprint.pprint(dataset_spec)
     if args.display_schema_html:
@@ -555,15 +553,10 @@ def main():
     # write out data
     if args.data_outdir:
         write_out(datasets, args.data_outdir, 'datasets.json', args)
-        for dataset_id, clonal_families in clonal_families_dict.items():
-            write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
+        for dataset_id, clones in clones_dict.items():
+            write_out(clones, args.data_outdir + '/', 'clones.' + dataset_id + '.json' , args)
         for tree in trees:
             write_out(tree, args.data_outdir + '/', 'tree.' + tree['ident'] + '.json' , args)
 
-
 if __name__ == '__main__':
     main()
-
-
-
-

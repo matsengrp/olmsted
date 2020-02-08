@@ -29,7 +29,7 @@ export const updateSelectedTree = (treeIdent, selectedFamily, selectedSeq) => {
     let deselectSeq = true
     if (selectedSeq) {
       let newSelectedTree = treesSelector.getTreeFromCache(trees.cache, selectedFamily, treeIdent)
-      let selectedSeqInNewTree = _.find(newSelectedTree.nodes, {"id": selectedSeq})
+      let selectedSeqInNewTree = _.find(newSelectedTree.nodes, {"sequence_id": selectedSeq})
       
       deselectSeq = !selectedSeqInNewTree
     }
