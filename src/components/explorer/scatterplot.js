@@ -32,7 +32,6 @@ class ClonalFamiliesViz extends React.Component {
     super(props);
     this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
-    this.facetOptions = ["none", "has_seed", "sample.timepoint_id", "dataset_id", "subject_id", "v_gene", "d_gene", "j_gene", "sample.locus"]
     this.spec = facetClonalFamiliesVizSpec()
   }
 

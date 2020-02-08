@@ -21,7 +21,7 @@ const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
   if(datasets.length > 0){ 
     _.forEach(datasets, (dataset) => {
       if(dataset.loading && dataset.loading == "DONE"){ 
-        availableClonalFamilies = availableClonalFamilies.concat(byDatasetId[dataset.id]) }
+        availableClonalFamilies = availableClonalFamilies.concat(byDatasetId[dataset.dataset_id]) }
     })
   }
   return locus == "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, {"sample": {"locus": locus}})
@@ -51,7 +51,7 @@ const checkBrushSelection = (brushSelection, datum) => {
   // }
   if(brushSelection.filter &&
      brushSelection.filter.fieldName !== "none" && 
-    // Using _.at to allow indexing nested fields like dataset.id; reject datum if it does not match filter
+    // Using _.at to allow indexing nested fields like dataset.dataset_id; reject datum if it does not match filter
      _.at(datum, brushSelection.filter.fieldName).length && _.at(datum, brushSelection.filter.fieldName)[0] !== brushSelection.filter.range){
        return false
   }

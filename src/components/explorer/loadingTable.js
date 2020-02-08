@@ -18,8 +18,8 @@ export default class LoadingTable extends React.Component {
                     </tr>
                     {this.props.datasets.map((dataset) => 
                         dataset.loading &&
-                        <tr key={dataset.id}>
-                            <td>{dataset.id}</td>
+                        <tr key={dataset.dataset_id}>
+                            <td>{dataset.dataset_id}</td>
                             <td>
                                 <LoadingStatus loadingStatus={dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={''}/>
                             </td>

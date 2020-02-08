@@ -12,11 +12,88 @@ import os
 import copy
 import inflect
 
-default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'schema.json')
+default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'cft_schema.json')
+
+def rename_keys(record, mapping, to_keep=[]):
+    for k in mapping.keys():
+        record[mapping[k]] = record.pop(k) if k not in to_keep else record[k]
+
+def remap_list(l, mapping):
+    for element in l:
+        rename_keys(element, mapping)
+
+def remap_dict_values(d, mapping):
+    for v in d.values():
+        rename_keys(v, mapping)
+
+cft_to_olmsted_fns = dict((key, remap_list) for key in ["datasets", "seeds", "subjects", "samples", "trees"])
+def remap_clonal_families(clonal_families, mapping):
+    # we keep "unique_seqs_count" because "rearrangement_count" isn't very intuitive in the absence of a definition of the AIRR rearrangement object.
+    to_keep = {"unique_seqs_count"}
+    for cf in clonal_families:
+        rename_keys(cf, mapping, to_keep=to_keep)
+        # +=1 *_start positions since AIRR schema uses 1-based closed interval. See bin/process_data.py
+        for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
+            if cf.get(start_pos_key) is not None:
+                cf[start_pos_key] += 1
+
+cft_to_olmsted_fns["clonal_families"] = remap_clonal_families
+cft_to_olmsted_fns["nodes"] = remap_dict_values
+
+cft_to_olmsted_mappings = {
+    "seeds": {
+                "id": "seed_id"
+                  },
+    "subjects": {
+                    "id": "subject_id"
+                  },
+    "samples": {
+                   "id": "sample_id"
+                  },
+    "nodes": {
+                 "id": "sequence_id",
+                 "dna_seq": "sequence_alignment",
+                 "aa_seq": "sequence_alignment_aa"
+                },
+    "trees": {
+                 "id": "tree_id"
+                },
+    "clonal_families": {
+                          "id": "clone_id",
+                          "v_gene": "v_call",
+                          "j_gene": "j_call",
+                          "d_gene": "d_call",
+                          "v_start": "v_alignment_start", # _start positions gets +=1 to reflect 1-based closed intervals
+                          "v_end": "v_alignment_end", # _end positions remains the same to reflect 1-based closed intervals
+                          "d_start": "d_alignment_start",
+                          "d_end": "d_alignment_end",
+                          "j_start": "j_alignment_start",
+                          "j_end": "j_alignment_end",
+                          "naive_seq": "germline_alignment",
+                          "cdr3_length": "junction_length", #length stays the same regardless of intervals
+                          "cdr3_start": "junction_start",
+                          "unique_seqs_count": "rearrangement_count"
+                         },
+    "datasets": {
+                    "id": "dataset_id",
+                    "clonal_families": "clones"
+                   }
+}
+
+def remap_data_in_place(record, mappings):
+    if isinstance(record, list):
+        for r in record:
+            remap_data_in_place(r, mappings)
+    elif isinstance(record, dict):
+        for k, v in record.items():
+            remap_data_in_place(v, mappings)
+            if k in mappings.keys():
+               cft_to_olmsted_fns[k](v, mappings[k])
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-S', '--schema', default=default_schema_path)
+    parser.add_argument('-S', '--schema', default=default_schema_path,
+        help="Path to the CFT data schema which defines the attributes used from CFT output metadata files. Default is cft_schema.json")
     parser.add_argument('-i', '--inputs', nargs='+')
     parser.add_argument('-C', '--csv', action="store_true")
     parser.add_argument('-o', '--data-outdir')
@@ -106,7 +183,6 @@ datasets_pull_pattern = [
     "db:ident",
     "tripl:type",
     "cft.dataset:id",
-    "cft.cluster:_dataset",
     {"cft.subject:_dataset": subject_pull_pattern},
     {"cft.seed:_dataset": seed_pull_pattern},
     {"cft.sample:_dataset": sample_pull_pattern},
@@ -115,13 +191,9 @@ datasets_pull_pattern = [
 
 def clean_dataset_record(d):
     d = d.copy()
-    d['clonal_families_count'] = len(d['cft.cluster:_dataset'])
-    d['subjects_count'] = len(d['cft.subject:_dataset'])
     for sample in d['cft.sample:_dataset']:
-        #rename timepoint to timepoint_id to match olmsted schema. this and other code like it in this script can be removed upon #267
+        #rename timepoint to timepoint_id to match olmsted schema. this and other code like it in this script can be removed upon https://github.com/matsengrp/cft/issues/267
         sample['cft.sample:timepoint_id'] = sample.pop('cft.sample:timepoint')
-    d['timepoints_count'] = len(set([sample['cft.sample:timepoint_id'] for sample in d['cft.sample:_dataset']]))
-    del d['cft.cluster:_dataset']
     return d
 
 def pull_datasets(t):
@@ -296,7 +368,7 @@ def parse_tree_data(args, c):
               })
 
     # map through and process the nodes
-    return map(process_node, tree.traverse('postorder'))
+    return {n.name: process_node(n) for n in tree.traverse('postorder')}
 
 def clean_reconstruction_record(args, d):
     c = d.copy()
@@ -379,13 +451,15 @@ def main():
                             dict_subset(r, ['ident', 'id', 'downsampling_strategy', 'downsampled_count', 'type'])
                             for r in trees]
                 clonal_families_dict[dataset['id']] = clonal_families
+                remap_data_in_place({"datasets": [full_schema_dataset]}, cft_to_olmsted_mappings)
                 full_schema_datasets.append(full_schema_dataset)
         except Exception as e:
+            raise
             warnings.warn("Unable to process infile: " + str(infile))
             warnings.warn("Processing error: " + str(e))
     if args.data_outdir:
         for d in full_schema_datasets:
-            write_out(d, args.data_outdir, d['id'] + '.full_schema_dataset.json', args)
+            write_out(d, args.data_outdir, d['dataset_id'] + '.full_schema_dataset.json', args)
         write_out(datasets, args.data_outdir, 'datasets.json', args)
         for dataset_id, clonal_families in clonal_families_dict.items():
             write_out(clonal_families, args.data_outdir + '/', 'clonal_families.' + dataset_id + '.json' , args)
