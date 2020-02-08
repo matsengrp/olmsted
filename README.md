@@ -93,6 +93,11 @@ sudo apt-get install libcairo2 libcairo2-dev
 
 ## Input data
 
+### To prepare an environment for processing Olmsted data:
+
+1. Install conda
+2. run `conda create --name olmsted --file requirements.txt`
+3. run `source activate olmsted`
 
 Olmsted uses [json-schema](https://json-schema.org/) to standardize input data.
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html
