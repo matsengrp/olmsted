@@ -1,0 +1,3 @@
+[submodule "airr-standards"]
+	path = airr-standards
+	url = https://github.com/airr-community/airr-standards.git

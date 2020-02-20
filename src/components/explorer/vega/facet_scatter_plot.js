@@ -54,8 +54,8 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           "type": "formula",
-          "expr": "datum[\"dataset\"] && datum[\"dataset\"][\"id\"]",
-          "as": "dataset.id"
+          "expr": "datum[\"dataset\"] && datum[\"dataset\"][\"dataset_id\"]",
+          "as": "dataset.dataset_id"
         },
         {
           "type": "filter",
@@ -203,16 +203,16 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "facet_by_signal",
       "value": "none",
-      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.id", "subject_id", "sample.timepoint_id", "sample.locus"]}
+      "bind": {"name": "Facet by field ", "input": "select", "options": ["none", "has_seed", "dataset.dataset_id", "subject_id", "sample.timepoint_id", "sample.locus"]}
     },
     { "name": "yField", "value": "mean_mut_freq",
-      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "cdr3_length", "unique_seqs_count"]} },
+      "bind": {"name": "Y variable ", "input": "select", "options": ["mean_mut_freq", "junction_length", "unique_seqs_count"]} },
     { "name": "xField", "value": "unique_seqs_count",
-       "bind": {"name": "X variable ", "input": "select", "options": ["unique_seqs_count", "cdr3_length", "mean_mut_freq"]} },
+       "bind": {"name": "X variable ", "input": "select", "options": ["unique_seqs_count", "junction_length", "mean_mut_freq"]} },
     { "name": "colorBy", "value": "subject_id",
-       "bind": {"name": "Color by ", "input": "select", "options": ["subject_id", "sample.timepoint_id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
+       "bind": {"name": "Color by ", "input": "select", "options": ["subject_id", "sample.timepoint_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]} },
     { "name": "shapeBy", "value": "sample.timepoint_id",
-       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint_id", "subject_id", "v_gene", "d_gene", "j_gene", "has_seed", "sample.locus"]} },
+       "bind": {"name": "Shape by ", "input": "select", "options": ["sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]} },
     // Outer level brush signals to subscribe to
     {
       "name": "brush_x_field",

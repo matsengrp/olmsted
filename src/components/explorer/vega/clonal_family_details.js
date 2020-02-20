@@ -2,34 +2,34 @@
 import * as _ from "lodash";
 
 // Defines the order in which we specify corresponding colors
-const aminoAcidDomain = [ 
+const aminoAcidDomain = [
   '-',
   'X',
-  'A', 
+  'A',
   'C',
   'D',
   'E',
   'F',
   'G',
-  'H', 
-  'I', 
-  'K', 
+  'H',
+  'I',
+  'K',
   'L',
   'M',
-  'N', 
-  'P', 
-  'Q', 
-  'R', 
-  'S', 
+  'N',
+  'P',
+  'Q',
+  'R',
+  'S',
   'T',
-  'V', 
+  'V',
   'W',
-  'Y' 
+  'Y'
  ]
 
 // AMINO ACID COLORS
 // tableau20 colorset of unique colors, with transparent added for gaps and X (any).
-// We are using text rather than color to distinguish these characters 
+// We are using text rather than color to distinguish these characters
 // See https://github.com/matsengrp/olmsted/issues/48
 // Also note that this order of characters is IMPORTANT because
 // it maps directly to the order of the domain (see above aminoAcidDomain) of the mutations marks
@@ -58,7 +58,7 @@ const tableau20plusColors = [
   "#9edae5"      //	 Y - Tyr - Tyrosine
 ]
 
-// Alternatively: 
+// Alternatively:
 // As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
 // again, with transparent added for gaps and X (any) see https://github.com/matsengrp/olmsted/issues/48
 // (EH) these are pretty vibrant and hard to look at
@@ -84,7 +84,7 @@ const IMGTScientificChartColors = [
   '#00FF99',     //	 T - Thr - Threonine
   '#0000FF',     //	 V - Val - Valine
   '#CC99FF',     //	 W - Trp - Tryptophan
-  '#CCFFCC',     //	 Y - Tyr - Tyrosine    
+  '#CCFFCC',     //	 Y - Tyr - Tyrosine
 ]
 
 const concatTreeWithAlignmentSpec = () => {
@@ -95,20 +95,20 @@ const concatTreeWithAlignmentSpec = () => {
       "autosize": {"type": "pad", "resize": true},
       // Note that we have some datasets named for signals
       // these are a current way around being able to set
-      // the initial values of signals through the props 
+      // the initial values of signals through the props
       // of a react-vega component. See https://github.com/kristw/react-vega/issues/13
 
-      // /DATA: 
+      // /DATA:
       // ---------------------------------------------------------------------------
 
       "data": [
         {
-          // The number of sequences to show in the 
+          // The number of sequences to show in the
           // alignment is the leaves + the naive
           "name": "leaves_count_incl_naive"
         },
         {
-          // This is for the naive gene regions shown 
+          // This is for the naive gene regions shown
           // at the top of the viz
           "name": "naive_data",
           "transform":[
@@ -137,10 +137,10 @@ const concatTreeWithAlignmentSpec = () => {
         },
         {
           "source": "source_0",
-          "name": "max_label_length", 
+          "name": "max_label_length",
           "transform": [
             { "expr": "datum.type == 'leaf'", "type": "filter"},
-            {"expr": "length(datum.id)", "type": "formula", "as": "label_length"}, 
+            {"expr": "length(datum.sequence_id)", "type": "formula", "as": "label_length"},
             {
               "type": "aggregate",
               "fields": ["label_length"],
@@ -150,16 +150,16 @@ const concatTreeWithAlignmentSpec = () => {
           ]
 
         },
-        {"name": "tree", 
+        {"name": "tree",
          "transform": [
-                        {"expr": "datum.distance", "type": "formula", "as": "x"}, 
+                        {"expr": "datum.distance", "type": "formula", "as": "x"},
 
                         // xscale and y scale depend on these extents
                         { "type": "extent", "field": "x", "signal": "xext" },
 
                         // Then we can scale by x and y scales to fit into zoomed domains
-                                           
-                        {"key": "id", "type": "stratify", "parentKey": "parent"},
+
+                        {"key": "sequence_id", "type": "stratify", "parentKey": "parent"},
                         {
                           // The size of the tree here should be constant with the number of leaves;
                           // the zoom signals rely on xext, yext to be the same no matter the zoom
@@ -173,7 +173,7 @@ const concatTreeWithAlignmentSpec = () => {
                         },
                         { "type": "extent", "field": "y_tree", "signal": "yext" },
 
-                        {"expr": "scale(\"time\", datum.distance)", "type": "formula", "as": "x"}, 
+                        {"expr": "scale(\"time\", datum.distance)", "type": "formula", "as": "x"},
                         {"expr": "scale(\"yscale\", datum.y_tree)", "type": "formula", "as": "y"},
                         {
                           "type": "formula",
@@ -188,11 +188,11 @@ const concatTreeWithAlignmentSpec = () => {
                       ],
          "source": "source_0"},
         {"name": "links",
-         "transform": [ {"key": "id", "type": "treelinks"},
+         "transform": [ {"key": "sequence_id", "type": "treelinks"},
                         {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
          "source": "tree"},
         {"name": "nodes", "transform": [
-                                          {"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"},           
+                                          {"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"},
                                           {
                                             "type": "extent",
                                             "field": "branch_width_by_field",
@@ -212,8 +212,8 @@ const concatTreeWithAlignmentSpec = () => {
             // Scale affinity for values with little variance
             { "type": "formula", "expr": "isNumber(datum[\"affinity\"]) ? pow(10, 100*datum[\"affinity\"]) : NaN", "as": "scaled_affinity"},
             // Choose field according to "leaf_size_by" signal and write it
-            // to a new field named "leaf_size_by" so we can always expect to 
-            // use that field from here on with respect to sizing the leaves. 
+            // to a new field named "leaf_size_by" so we can always expect to
+            // use that field from here on with respect to sizing the leaves.
             // Make sure it is a number / not NaN (vega differentiates these)
             { "type": "formula", "expr": "(isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", "as": "leaf_size_by"},
         ], "source": "tree"},
@@ -224,21 +224,21 @@ const concatTreeWithAlignmentSpec = () => {
         ], "source": "leaves"},
         // "leaf pies" does a "pie" transformation for timepoint multiplicity data
         // For other data like affinity (and for nonexistant timepoint multiplicity data)
-        // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with 
+        // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with
         // one value), which explains the confusing logic going on here.
         {
           // TODO
           // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
           // in order to normalize by this sum instead of trusting the total multiplicity values
           "name": "leaf_pies",
-          "transform": [ 
+          "transform": [
             {
               "type": "formula",
               "expr": "( isArray( datum[leaf_data_map[leaf_size_by]] ) && datum[leaf_data_map[leaf_size_by]].length > 0 ) ? datum[leaf_data_map[leaf_size_by]] : ['none']",
               "as": "timepoint_mult_data"
             },
             {
-              "type": "flatten", 
+              "type": "flatten",
               "fields": [
                 "timepoint_mult_data"
               ]
@@ -261,11 +261,11 @@ const concatTreeWithAlignmentSpec = () => {
                 "signal": "length(data('valid_leaves'))*6.29"
               }
             }
-            
+
           ],
           "source": "valid_leaves"
         },
-        
+
         // /ALIGNMENT DATA:
         // ---------------------------------------------------------------------------
         {
@@ -279,7 +279,7 @@ const concatTreeWithAlignmentSpec = () => {
               "values": [
                 "y"
               ],
-              "key": "id",
+              "key": "sequence_id",
               "fields": ["seq_id"],
               "as": ["y"]
             }
@@ -293,7 +293,7 @@ const concatTreeWithAlignmentSpec = () => {
               "type": "formula",
               "expr": "toNumber(datum[\"position\"])",
               "as": "position"
-            },            
+            },
             { "type": "extent", "field": "y", "signal": "mutations_height_extent" },
             {
               "type": "filter",
@@ -349,7 +349,7 @@ const concatTreeWithAlignmentSpec = () => {
           ]
       },
       ],
-      
+
       // /SIGNALS:
       // ---------------------------------------------------------------------------
 
@@ -357,9 +357,9 @@ const concatTreeWithAlignmentSpec = () => {
         {
           // Update height from window size see https://github.com/matsengrp/olmsted/issues/83)
           "name": "height",
-         
+
           "update": "floor(windowSize()[1]*0.8)",
-         
+
           "on": [
             {
               "events": {"source": "window", "type": "resize"},
@@ -382,7 +382,7 @@ const concatTreeWithAlignmentSpec = () => {
         // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
         // are all visible when fully zoomed out
         { "name": "xrange", "update": "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
-        { "name": "yrange", "update": "[pie_chart_padding , height - pie_chart_padding]" },    
+        { "name": "yrange", "update": "[pie_chart_padding , height - pie_chart_padding]" },
         // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
         // in the outer scope to allow scales/axes to update accordingly
         {
@@ -409,14 +409,14 @@ const concatTreeWithAlignmentSpec = () => {
         // Number of leaves
         {
           "name": "leaves_count_incl_naive",
-          // This - like other signals we'd like to initialize 
-          // from outside the spec, is passed in dynamically as 
+          // This - like other signals we'd like to initialize
+          // from outside the spec, is passed in dynamically as
           // data and read from the data here, so as to not re-initialize
           // the spec
           "update": "data(\"leaves_count_incl_naive\")[0].data"
         },
         // This is used through out as the unit defining
-        // the vertical spacing of leaves in the tree and 
+        // the vertical spacing of leaves in the tree and
         // mutation marks in the alignment
         {
           "name": "leaf_size",
@@ -434,7 +434,7 @@ const concatTreeWithAlignmentSpec = () => {
           // Metadata field to use for sizing the leaves
           "name": "leaf_size_by",
           "value": "multiplicity",
-          "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]} 
+          "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]}
         },
         {
           // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
@@ -442,23 +442,23 @@ const concatTreeWithAlignmentSpec = () => {
           "update": "{\"scaled_affinity\": \"scaled_affinity\", \"affinity\": \"affinity\", \"cluster_multiplicity\": \"cluster_timepoint_multiplicities\", \"multiplicity\": \"timepoint_multiplicities\"}"
         },
         {
-         // Seq metric to use for sizing branches; 
+         // Seq metric to use for sizing branches;
          // uses value from the child of the branch
           "name": "branch_width_by",
           "value": "lbr",
-          "bind": {"input": "select", "options": ["none", "lbr", "lbi"]} 
+          "bind": {"input": "select", "options": ["none", "lbr", "lbi"]}
         },
         {
-          // Seq metric to use for coloring branches; 
+          // Seq metric to use for coloring branches;
           // uses value from the child of the branch
           "name": "branch_color_by",
           "value": "lbi",
-          "bind": {"input": "select", "options": ["none", "lbr", "lbi", "parent"]} 
+          "bind": {"input": "select", "options": ["none", "lbr", "lbi", "parent"]}
         },
         {
           "name": "branch_color_scheme",
           "value": "redblue",
-          "bind": {"input": "select", "options": ["redblue", "purples"]} 
+          "bind": {"input": "select", "options": ["redblue", "purples"]}
         },
         {
           "name": "branch_color_scheme_map",
@@ -512,7 +512,7 @@ const concatTreeWithAlignmentSpec = () => {
           // Label size for tree leaves (clamped to max value of 10)
           "name": "label_size",
           "update": "clamp(leaf_size, 0, 10)"
-        },        
+        },
         {
           "value": "datum",
           "name": "cladify",
@@ -573,7 +573,7 @@ const concatTreeWithAlignmentSpec = () => {
           "name": "mutation_mark_width",
           "update": "ceil(alignment_group_width/150)"
         },
-        // #59 this will need to be controlled by slider 
+        // #59 this will need to be controlled by slider
         {
           "name": "alignment_group_width",
           "update": "width-tree_group_width"
@@ -595,7 +595,7 @@ const concatTreeWithAlignmentSpec = () => {
       // /MARKS:
       // ---------------------------------------------------------------------------
 
-      "marks": [ 
+      "marks": [
         // Evolution axis below the tree
         {
           "name": "tree_x_axis",
@@ -613,9 +613,9 @@ const concatTreeWithAlignmentSpec = () => {
               "labelBound": true,
               "zindex": 1
             }
-            
+
           ]
-        },  
+        },
         // Amino acid position axis
         {
           "name": "alignment_x_axis",
@@ -634,7 +634,7 @@ const concatTreeWithAlignmentSpec = () => {
               "labelOverlap": true,
               "values": {"signal": "sequence(max_aa_seq_length)"},
               "zindex": 1
-            },                  
+            },
           ]
         },
 
@@ -648,12 +648,12 @@ const concatTreeWithAlignmentSpec = () => {
           "encode": {
            "update": {
             "clip": {"value": true},
-             // #59 this will need to be controlled by slider 
+             // #59 this will need to be controlled by slider
              "width": {"signal": "tree_group_width"},
              "height": {"signal": "height"}
            }
           },
-          "signals": [        
+          "signals": [
             // Zoom signals, {x,y}dom (and {xdom,ydom}_delta) are push: outer to allow access
             // at the top level other places in the spec
             {
@@ -721,13 +721,13 @@ const concatTreeWithAlignmentSpec = () => {
             },
             // Zoom factor
             {
-              "name": "zoom", 
+              "name": "zoom",
               "value": 1,
               "on": [
                 {
                   "events": "wheel!",
                   "force": true,
-                  "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))" 
+                  "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
                 },
                 {
                   "events": {"signal": "dist2"},
@@ -822,7 +822,7 @@ const concatTreeWithAlignmentSpec = () => {
                   // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
                   // Limiting zoom to the boundaries of the tree
                   "update": "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0]), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] ) ] "
-                 
+
                 }
               ]
             },
@@ -839,7 +839,7 @@ const concatTreeWithAlignmentSpec = () => {
                                       "test": "branch_width_by !== \"none\"",
                                       "scale": "branch_width",
                                       "field": "target.branch_width_by_field",
-                                      
+
                                     },
                                     // Size all branches the same if branch_width_by is "none"
                                     {"value": "2"}
@@ -872,7 +872,7 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "x"
                   },
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"]}"
+                    "signal": "{\"id\": datum[\"sequence_id\"], \"parent\": datum[\"parent\"]}"
                   }
                 },
                 "enter": {
@@ -885,7 +885,7 @@ const concatTreeWithAlignmentSpec = () => {
               "from": {"data": "nodes"}
             },
             // /LEAVES
-            // Pie charts: size depends on multiplicity 
+            // Pie charts: size depends on multiplicity
             { "name": "pie",
               "type": "arc",
               "from": {"data": "leaf_pies"},
@@ -904,15 +904,15 @@ const concatTreeWithAlignmentSpec = () => {
                   // Set inner radius to get donuts instead of pie charts
                   // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
+                    "signal": "{\"id\": datum[\"sequence_id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   },
                   "outerRadius": {
                       "scale": "leaf_size_scale",
                       // Here we actually use the field named "leaf_size_by" instead of the signal
-                      // value because we have written the value of the appropriate field 
+                      // value because we have written the value of the appropriate field
                       // into a new field named "leaf_size_by"
                       "field": "leaf_size_by"
-                  },        
+                  },
                 }
               }
             },
@@ -929,14 +929,14 @@ const concatTreeWithAlignmentSpec = () => {
                   "x": {
                     "field": "x"
                   },
-                  "size": 
+                  "size":
                     [
                       {"test": "show_labels", "value": 1},
                       {"signal": "leaf_size*2"}
                     ],
                   "cursor": {"value": "pointer"},
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
+                    "signal": "{\"id\": datum[\"sequence_id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   }
                 },
               },
@@ -949,25 +949,25 @@ const concatTreeWithAlignmentSpec = () => {
               "encode": {
                 "update": {
                   "text":  [
-                    {"test": "show_labels",  "field": "id"},
+                    {"test": "show_labels",  "field": "sequence_id"},
                     {"value": null}
                   ],
                   "limit": {"signal": "leaf_label_length_limit"},
                   // Show selected sequence as darker, default to all grey #80
                   "opacity":
                   [
-                    {"test": "!pts || pts && datum.id !== data(\"pts_store\")[0].id", "value": 0.5},
+                    {"test": "!pts || pts && datum.sequence_id !== data(\"pts_store\")[0].sequence_id", "value": 0.5},
                     {"value": 1}
                   ],
                   // Make seed larger #78
                   "fontSize":
                   [
-                    {"test": "indata('seed', 'id', datum.id)",  "signal": "label_size*1.5"},
+                    {"test": "indata('seed', 'id', datum.sequence_id)",  "signal": "label_size*1.5"},
                     {"signal": "label_size"}
                   ]  ,
                   // Bold the seed #78
                   "fontWeight": [
-                    {"test": "indata('seed', 'id', datum.id)", "value": "bold"},
+                    {"test": "indata('seed', 'id', datum.sequence_id)", "value": "bold"},
                     {"value": "normal"}
                   ],
                   "cursor": {"value": "pointer"},
@@ -980,9 +980,9 @@ const concatTreeWithAlignmentSpec = () => {
                     "field": "x"
                   },
                   "tooltip": {
-                    "signal": "{\"id\": datum[\"id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
+                    "signal": "{\"id\": datum[\"sequence_id\"], \"parent\": datum[\"parent\"], \"distance\": datum[\"distance\"],\"lbi\": datum[\"lbi\"],\"lbr\": datum[\"lbr\"],\"affinity\": datum[\"affinity\"],\"scaled_affinity\": datum[\"scaled_affinity\"], \"multiplicity\": datum[\"multiplicity\"], \"cluster_multiplicity\": datum[\"cluster_multiplicity\"], \"timepoint\": datum[\"timepoint_multiplicity_key\"], \"timepoint multiplicity\": datum[\"timepoint_multiplicity_value\"]}"
                   }
-                }  
+                }
               },
               "from": {"data": "leaves"}
             },
@@ -1000,7 +1000,7 @@ const concatTreeWithAlignmentSpec = () => {
             "update": {
               // Hide cell border
               "stroke": {"value": "transparent"},
-              // #59 this will need to be controlled by slider 
+              // #59 this will need to be controlled by slider
               "width": {"signal": "alignment_group_width"},
               "height": {"signal": "height"}
             }
@@ -1012,8 +1012,8 @@ const concatTreeWithAlignmentSpec = () => {
             },
              // This is an SVG path used to assign a special clipping region (not the default,
             // i.e. the height and width of the group mark) for the alignment. This is
-            // necessary to get the naive viz as close as possible to the alignment so one 
-            // can align mutations with the naive by eye. Doing so became difficult when 
+            // necessary to get the naive viz as close as possible to the alignment so one
+            // can align mutations with the naive by eye. Doing so became difficult when
             // allowing the tree to have padding, as it shares a y-scale with the alignment
             // , so the mutation marks were not flush agaisnt the border of their plot.
             {
@@ -1041,7 +1041,7 @@ const concatTreeWithAlignmentSpec = () => {
               "encode": {
                 "update": {
                   "stroke": {"value": "transparent"},
-                  // #59 this will need to be controlled by slider 
+                  // #59 this will need to be controlled by slider
                   "y": {"signal": "pie_chart_padding-naive_group_height-mutation_mark_padding"},
                   "width": {"signal": "alignment_group_width"},
                   "height": {"signal": "naive_group_height"}
@@ -1077,7 +1077,7 @@ const concatTreeWithAlignmentSpec = () => {
                           "test": "datum[\"region\"] == 'CDR3'",
                           "signal": "naive_group_height/2"
                         },
-                        {"signal": "naive_group_height/4"}      
+                        {"signal": "naive_group_height/4"}
                     ],
                     }
                   }
@@ -1132,9 +1132,9 @@ const concatTreeWithAlignmentSpec = () => {
                       "tooltip": {
                         "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                       }
-                    }  
+                    }
                   },
-                } 
+                }
               ],
               // Color legend for naive
               "legends": [
@@ -1150,7 +1150,7 @@ const concatTreeWithAlignmentSpec = () => {
                     }
                   }
                 }
-              ],   
+              ],
             },
             // /ALIGNMENT
             {
@@ -1160,7 +1160,7 @@ const concatTreeWithAlignmentSpec = () => {
               "clip": {"path": {"signal": "mutations_clip"}},
               "encode": {
                 "update": {
-                  // #59 this will need to be controlled by slider 
+                  // #59 this will need to be controlled by slider
                   "width": {"signal": "alignment_group_width"},
                   "height": {"signal": "height"}
                 }
@@ -1178,7 +1178,7 @@ const concatTreeWithAlignmentSpec = () => {
                       "x2": {"scale": "aa_position", "signal": "max_aa_seq_length"},
                       "strokeWidth": {"value": 1},
                     },
-                    "update": {                      
+                    "update": {
                       "y": {"field": "y"},
                     }
                   }
@@ -1271,9 +1271,9 @@ const concatTreeWithAlignmentSpec = () => {
                       "tooltip": {
                         "signal": "{\"position\": format(datum[\"position\"], \"\"), \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
                       }
-                    }  
+                    }
                   },
-                } 
+                }
               ],
               // ALIGNMENT GRIDLINES
               "axes": [
@@ -1290,27 +1290,27 @@ const concatTreeWithAlignmentSpec = () => {
                   "ticks": false,
                   "zindex": 0
                 },
-              ],     
+              ],
             }
           ]
         }
-      ],    
+      ],
 
       // /SCALES
       // ---------------------------------------------------------------------------
-      "scales": [ 
+      "scales": [
         {
           "name": "branch_color_categorical",
           "type": "ordinal",
           "domain": {"data": "tree", "field": "branch_color_by_field"},
           "range": {"scheme": "category10"}
-        },    
+        },
         {
           "name": "branch_color_sequential",
           "type": "sequential",
           "domain": {"signal": "branch_color_extent"},
           "range": {"signal": "branch_color_scheme_map[branch_color_scheme]"}
-        },  
+        },
         {
           "name": "branch_width",
           "type": "linear",
@@ -1337,7 +1337,7 @@ const concatTreeWithAlignmentSpec = () => {
             "#7fbf7b",
             "#1b7837"
           ]
-        }, 
+        },
         {
           "name": "simple_color",
           "type": "ordinal",
@@ -1359,13 +1359,13 @@ const concatTreeWithAlignmentSpec = () => {
         {
           "name": "time", "zero": false,
           "domain": {"signal": "xdom"},
-          "range": {"signal":  "xrange"}, 
+          "range": {"signal":  "xrange"},
         },
         // Global y scale (leaves and alignment are on the same y scale)
         {
           "name": "yscale", "zero": false,
           "domain": {"signal": "ydom"},
-          "range": {"signal": "yrange"}, 
+          "range": {"signal": "yrange"},
         },
         // Alignment x scale
         {
@@ -1396,7 +1396,7 @@ const concatTreeWithAlignmentSpec = () => {
             }
           }
         }
-      ]     
+      ]
     }
   )
 }
@@ -1415,7 +1415,7 @@ const seqAlignSpec = (family) => {
       "style": "cell",
       "data": [
         {
-          // This is for the naive gene regions shown 
+          // This is for the naive gene regions shown
           // at the top of the viz
           "name": "naive_data",
           "transform":[
@@ -1501,7 +1501,7 @@ const seqAlignSpec = (family) => {
                   "test": "datum[\"region\"] == 'CDR3'",
                   "signal": "mutation_mark_height*2"
                 },
-                {"signal": "mutation_mark_height"}      
+                {"signal": "mutation_mark_height"}
             ],
             }
           }
@@ -1578,7 +1578,7 @@ const seqAlignSpec = (family) => {
               "tooltip": {
                 "signal": "{\"position\": format(datum[\"position\"], \"\"),  \"seq_id\": ''+datum[\"seq_id\"], \"mut_to\": ''+datum[\"mut_to\"], \"mut_from\": ''+datum[\"mut_from\"]}"
               }
-            }  
+            }
           },
         }
       ],
@@ -1603,7 +1603,7 @@ const seqAlignSpec = (family) => {
             "#7fbf7b",
             "#1b7837"
           ]
-        }, 
+        },
         {
           "name": "aa_position",
           "type": "linear",

@@ -30,7 +30,7 @@ const getDatasets = (query, res) => {
 };
 
 const getClonalFamilies = (query, res) => {
-  getDataFile(res, 'clonal_families.json', query.s3);
+  getDataFile(res, 'clones.json', query.s3);
 };
 
 const getSplashImage = (query, res) => {
