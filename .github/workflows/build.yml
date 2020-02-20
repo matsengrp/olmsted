@@ -22,7 +22,7 @@ jobs:
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
     - name: publish to Registry
-      run: docker push quay.io/matsengrp/linearham:$TAG
+      run: docker push quay.io/matsengrp/olmsted:$TAG
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2.0.0
       env:
