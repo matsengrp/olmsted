@@ -3,18 +3,19 @@
 
 ![tree logo](src/images/olmsted.svg)
 
-*After [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted), a tree-hugger considered the father of landscape architecture*
-
+*After landscape architect [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted)*
 
 
 ## Introduction
 
-Olmsted is an open-source tool for visualizing and exploring the adaptive immune system.
+Olmsted is an open-source tool for visualizing and exploring B cell lineages.
 
-B-cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_) on a virus or bacteria.
+B cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_), typically on a foreign object such as a virus or bacterium.
 Recently, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us an in depth snapshot of the adaptive immune system at a point in time.
+B cells evolve in a process called _affinity maturation_ from randomly generated starting sequences, which means that we can represent the data as a collection of phylogenetic trees.
+These trees are commonly called _lineages_.
 
-Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored in depth, unlocking a birds eye view of this data.
+Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored in depth, unlocking a bird's eye view of this data.
 
 You can visit a live demo application at <http://olmstedviz.org>, and use the guide below to direct your time there.
 
@@ -111,36 +112,28 @@ sudo apt-get install libcairo2 libcairo2-dev
 
 ## Input data
 
+Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
-Olmsted uses [json-schema](https://json-schema.org/) to standardize input data.
-For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html
-) on [htmlpreview.github.io](https://htmlpreview.github.io)
-
-Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema. 
+Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
 The script takes any number of JSON files, each one containing one complete dataset.
-It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized. 
+It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
 
+To parse input JSON files, use `bin/process_data.py`. E.g.:
 
-To parse input JSON files, use bin/process_data.py. E.g.:
-
-``` 
+```
 ./bin/process_data.py -i example_data/full_schema_input.json -o example_data/build_data -v -n inferred_naive
 ```
 
-Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the json-schema.
+Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the schema.
 
-### Generating input data
-
-Olmsted is a visualization tool and should not depend on the methods used for clustering sequences into clonal families, inferring phylogenetic trees among them, etc.
-
-One set of tools we have had success with is [partis](https://github.com/psathyrella/partis) for inferring clonal families and naive sequences, and [CFT](https://github.com/matsengrp/cft) for inferring phylogenetic trees and ancestral sequences. 
 
 ## Deployment
 
 A local server can be deployed like this:
 `npm start localData ./example_data/build_data 8080`
 After building your own data as in the above section, replace `./example_data/build_data` with the output (`-o`) from `bin/process_data.py`.
-Navigate to `localhost:8080` in your browser to see the application. 
+Navigate to `localhost:8080` in your browser to see the application.
 
 ## Static Build
 
@@ -163,14 +156,15 @@ If you're content deploying with AWS S3, there is a deploy script at `bin/deploy
 For deploy script usage run `./bin/deploy.py -h`.
 To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
 
+
 ## Versioning
 
 We use git tags to tag [releases of Olmsted](https://github.com/matsengrp/olmsted/releases) using the [semver](https://semver.org/) versioning strategy.
 
-
-Tag messages, e.g. `schema v1.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/master/bin/process_data.py#L18) with which a given version of Olmsted is compatible. 
+Tag messages, e.g. `schema v1.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/master/bin/process_data.py#L18) with which a given version of Olmsted is compatible.
 
 The tagged release's major version of Olmsted should always match that of its compatible schema version; should we need to make breaking changes to the schema, we will bump the major versions of both Olmsted and the input schema.
+
 
 ## Implementation notes
 
@@ -179,8 +173,8 @@ This application relies on React.js and Redux for basic framework, and Vega and 
 
 ## License and copyright
 
-Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen 
-forked from Auspice Copyright 2014-2018 Trevor Bedford and Richard Neher.
+Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen.
+Forked from [Auspice](https://github.com/nextstrain/auspice), copyright 2014-2018 Trevor Bedford and Richard Neher.
 
 Source code to Olmsted is made available under the terms of the [GNU Affero General Public License](LICENSE.txt) (AGPL). Olmsted is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
 
