@@ -79,7 +79,7 @@ docker run -p 8080:3999 quay.io/matsengrp/olmsted
 ```
 4. Navigate to `localhost:8080` in your browser to see the application.
 
-To run on your own data (see "Input data") instead of the example data, you need to point Docker to your data.
+To run on your own data (see "Input data" below for processing input) instead of the example data, you need to point Docker to your data.
 
 For example, if your data is located on your system at `/local/data/path`, that would look like this:
 ```
