@@ -75,11 +75,12 @@ To run Olmsted, you can either:
 
 1. Install [Docker](https://www.docker.com/get-started)
 2. Choose a port number available to you locally, e.g. 8080
-3. Run:
+3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.0.0-10-gab82117` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
+4. Run:
 ```
-docker run -p 8080:3999 quay.io/matsengrp/olmsted
+docker run -p 8080:3999 quay.io/matsengrp/olmsted:v2.0.0-10-gab82117
 ```
-4. Navigate to `localhost:8080` in your browser to see the application.
+5. Navigate to `localhost:8080` in your browser to see the application.
 
 To run on your own data (see "Input data" below for processing input) instead of the example data, you need to point Docker to your data.
 
