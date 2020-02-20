@@ -1,4 +1,3 @@
-
 # Olmsted
 
 ![tree logo](src/images/olmsted.svg)
@@ -28,6 +27,7 @@ When you first hit the application at it's root address, you'll be presented wit
 
 Once selected, hitting "Explore" takes you to a page displaying selected datasets using the following visualizations:
 
+
 ### Clonal family scatterplot
 
 The top level component in the explorer view is a scatterplot of all the clonal families in your selected datasets.
@@ -40,6 +40,7 @@ For example, we might want to facet by subject to get a better sense of how tren
 
 ![facet](docs/facet.png)
 
+
 ### Clonal family table
 
 In the main clonal family scatterplot, you can click and drag to select a set of points in the plot.
@@ -50,12 +51,14 @@ You can also click on a column header of the table to sort by that column.
 
 ![tree align view](docs/clonal-families-table2.png)
 
+
 ### Tree and alignment view
 
 Clicking on a row of the table presents further details about the clonal family, including a phylogenetic tree of select sequences from the family, and a visualization of the mutation patterns in the selected sequences.
 As with other visualizations in the application, the details of color and node size can be controlled.
 
 ![tree align view](docs/tree-align-view.png)
+
 
 ### Lineage view
 
@@ -80,10 +83,12 @@ docker run -p 8080:3999 quay.io/matsengrp/olmsted
 
 To run on your own data (see "Input data" below for processing input) instead of the example data, you need to point Docker to your data.
 
-For example, if your data is located on your system at `/local/data/path`, that would look like this:
+For example, if you wanted to use the example data in this repo, that would look like this:
 ```
-docker run -p 8080:3999 -v /local/data/path:/data quay.io/matsengrp/olmsted npm start localData /data
+git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data/build_data
+docker run -p 8080:3999 -v $(pwd):/data quay.io/matsengrp/olmsted npm start localData /data
 ```
+
 
 ## Install
 
@@ -110,6 +115,7 @@ You may also need to install libcairo
 sudo apt-get install libcairo2 libcairo2-dev
 ```
 
+
 ## Input data
 
 Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
@@ -134,6 +140,7 @@ A local server can be deployed like this:
 `npm start localData ./example_data/build_data 8080`
 After building your own data as in the above section, replace `./example_data/build_data` with the output (`-o`) from `bin/process_data.py`.
 Navigate to `localhost:8080` in your browser to see the application.
+
 
 ## Static Build
 
@@ -177,5 +184,3 @@ Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen.
 Forked from [Auspice](https://github.com/nextstrain/auspice), copyright 2014-2018 Trevor Bedford and Richard Neher.
 
 Source code to Olmsted is made available under the terms of the [GNU Affero General Public License](LICENSE.txt) (AGPL). Olmsted is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
-
-
