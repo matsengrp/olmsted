@@ -1,0 +1,32 @@
+name: build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout tags
+      run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
+    - name: Set git tag variable
+      run: echo ::set-env name=TAG::$(git describe --tags)
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: Build the Docker image
+      run: docker build . -t quay.io/matsengrp/olmsted:$TAG
+    - name: Run example in the Docker image
+      run: docker run --rm quay.io/matsengrp/olmsted:$TAG &
+    - name: Login to Registry
+      run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
+    - name: publish to Registry
+      run: docker push quay.io/matsengrp/olmsted:$TAG
+    - name: Slack Notification
+      uses: homoluctus/slatify@master
+      if: always()
+      with:
+        type: ${{ job.status }}
+        job_name: 'Olmsted Build'
+        url: ${{ secrets.SLACK_NOTIFICATION_WEBHOOK}}
