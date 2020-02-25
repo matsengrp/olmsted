@@ -16,7 +16,7 @@ jobs:
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Build the Docker image
-      run: docker build . -t quay.io/matsengrp/olmsted:$TAG
+      run: docker build . -t quay.io/matsengrp/blah:$TAG
     - name: Run example in the Docker image
       run: docker run --rm quay.io/matsengrp/olmsted:$TAG &
     - name: Login to Registry
@@ -25,7 +25,7 @@ jobs:
       run: docker push quay.io/matsengrp/olmsted:$TAG
     - name: Slack Notification
       uses: homoluctus/slatify@master
-      if: always()
+      if: failure()
       with:
         type: ${{ job.status }}
         job_name: 'Olmsted Build'
