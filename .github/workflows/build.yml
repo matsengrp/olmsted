@@ -25,7 +25,7 @@ jobs:
       run: docker push quay.io/matsengrp/olmsted:$TAG
     - name: Slack Notification
       uses: homoluctus/slatify@master
-      if: always()
+      if: failure()
       with:
         type: ${{ job.status }}
         job_name: 'Olmsted Build'
