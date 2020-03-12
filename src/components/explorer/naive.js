@@ -12,41 +12,41 @@ const getNaiveVizData = (datum) => {
     {
       family: "5p",
       region: "CDR3",
-      start: datum.cdr3_start,
-      end: datum.cdr3_start + datum.cdr3_length
+      start: datum.junction_start,
+      end: datum.junction_start+ datum.junction_length
     },
     {
       family: "5p",
       region: "V gene",
-      gene: datum.v_gene,
-      start: datum.v_start,
-      end: datum.v_end
+      gene: datum.v_call,
+      start: datum.v_alignment_start,
+      end: datum.v_alignment_end
     },
     {
       family: "5p",
       region: "5' Insertion",
-      start: datum.v_end,
-      end: datum.d_start
+      start: datum.v_alignment_end,
+      end: datum.d_alignment_start
     },
     {
       family: "5p",
       region: "D gene",
-      gene: datum.d_gene,
-      start: datum.d_start,
-      end: datum.d_end
+      gene: datum.d_call,
+      start: datum.d_alignment_start,
+      end: datum.d_alignment_end
     },
     {
       family: "5p",
       region: "3' Insertion",
-      start: datum.d_end,
-      end: datum.j_start
+      start: datum.d_alignment_end,
+      end: datum.j_alignment_start
     },
     {
       family: "5p",
       region: "J gene",
-      gene: datum.j_gene,
-      start: datum.j_start,
-      end: datum.j_end
+      gene: datum.j_call,
+      start: datum.j_alignment_start,
+      end: datum.j_alignment_end
     }
   ]} 
   return result 

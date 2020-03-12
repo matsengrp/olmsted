@@ -9,7 +9,7 @@ class DownloadFasta extends React.Component {
   }
 
   createFastaDownload(seqRecords){
-    return _.reduce(seqRecords, (fastaString, seqRecord) => fastaString.concat('>', seqRecord.id, '\n', seqRecord.dna_seq, '\n'), '')    
+    return _.reduce(seqRecords, (fastaString, seqRecord) => fastaString.concat('>', seqRecord.sequence_id, '\n', seqRecord.sequence_alignment, '\n'), '')
   }
 
   render(){

@@ -140,11 +140,12 @@ class ClonalFamiliesTable extends React.Component {
           [
            ["Select", SelectAttribute],
            ["Naive sequence", NaiveSequence],
-           ["ID", "id"],
+           ["ID", "clone_id"],
+           // TODO decide on language for unique seqs vs rearrangement count
            ["Unique seqs", "unique_seqs_count"],
-           ["V gene", "v_gene"],
-           ["D gene", "d_gene"],
-           ["J gene", "j_gene"],
+           ["V gene", "v_call"],
+           ["D gene", "d_call"],
+           ["J gene", "j_call"],
            ["Seed run", "has_seed"],
            ["Subject", "subject_id"],
            ["Sample", "sample_id"],

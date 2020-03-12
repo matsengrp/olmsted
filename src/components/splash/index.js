@@ -68,7 +68,7 @@ class Splash extends React.Component {
                   changePage(
                     {path: "/app", query: 
                       {selectedDatasets: getSelectedDatasets(
-                              this.props.availableDatasets).map(dataset => dataset.id)
+                              this.props.availableDatasets).map(dataset => dataset.dataset_id)
                       }
                     }
                   )

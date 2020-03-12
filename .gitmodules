@@ -4,3 +4,6 @@
 [submodule "cottonmouth"]
 	path = cottonmouth
 	url = https://github.com/metasoarous/cottonmouth.git
+[submodule "airr-standards"]
+	path = airr-standards
+	url = https://github.com/airr-community/airr-standards.git

@@ -21,7 +21,7 @@ const datasets = (state = {
   switch (action.type) {
     case types.LOADING_DATASET: {
       var updatedAvailableDatasets = state.availableDatasets.map(dataset =>
-        (dataset.id === action.dataset_id)
+        (dataset.dataset_id === action.dataset_id)
           ? {...dataset, loading: action.loading}
           : dataset
       )
