@@ -44,7 +44,7 @@ neginf = float("-inf")
 
 def clean_record(d):
     if isinstance(d, list):
-        return map(clean_record, d)
+        return list(map(clean_record, d))
     elif isinstance(d, dict):
         return {strip_ns(k): clean_record(v)
                 for k, v in d.items()}
@@ -376,7 +376,7 @@ def process_tree_nodes(args, tree, nodes, reroot=False):
             datum['length'] = 0.0
             datum['distance'] = 0.0
         return datum
-    return map(process_node, tree.traverse('postorder'))
+    return list(map(process_node, tree.traverse('postorder')))
 
 def process_tree(args, clone_id, tree):
     # add clone_id to satisfy AIRR schema
@@ -388,7 +388,7 @@ def process_tree(args, clone_id, tree):
 def validate_airr_clone_and_trees(args, clone):
     clone['repertoire_id'] = None
     # prepare tree(s)
-    clone['trees'] = map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', []))
+    clone['trees'] = list(map(fun.partial(process_tree, args, clone['clone_id']), clone.get('trees', [])))
     validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
 
 def process_clone(args, dataset, clone):
@@ -400,7 +400,7 @@ def process_clone(args, dataset, clone):
     _dataset = dataset.copy()
     del _dataset['clones']
     clone['dataset'] = _dataset
-    clone['sample'] = filter(lambda sample: sample['sample_id'] == clone['sample_id'], clone['dataset']['samples'])[0]
+    clone['sample'] = list(filter(lambda sample: sample['sample_id'] == clone['sample_id'], clone['dataset']['samples'])[0])
     del clone['dataset']['samples']
     return ensure_ident(clone)
 
@@ -408,8 +408,8 @@ def process_dataset(args, dataset, clones_dict, trees):
     dataset['clone_count'] = len(dataset['clones'])
     dataset['subjects_count'] = len(set(cf['subject_id'] for cf in dataset['clones']))
     dataset['timepoints_count'] = len(set(sample['timepoint_id'] for sample in dataset['samples']))
-    clones = map(fun.partial(process_clone, args, dataset), dataset['clones'])
-    trees += reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
+    clones = list(map(fun.partial(process_clone, args, dataset), dataset['clones']))
+    trees += fun.reduce(lambda agg_trees, cf: agg_trees + cf['trees'],
             clones, [])
     for cf in clones:
         cf['trees'] = [
@@ -495,7 +495,7 @@ def hiccup_rep2(schema):
         return [schema] + items_schemas + properties_schemas
 
     return ["div",
-            map(hiccup_rep, flatten_schema_by_title(schema))]
+            list(map(hiccup_rep, flatten_schema_by_title(schema)))]
 
 
 
@@ -526,7 +526,7 @@ def main():
             with open(infile, 'r') as fh:
                 dataset = json.load(fh)
                 if args.remove_invalid_clones:
-                    dataset['clones'] = filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones'])
+                    dataset['clones'] = list(filter(jsonschema.Draft4Validator(clone_spec).is_valid, dataset['clones']))
                 validate(dataset, olmsted_dataset_schema, verbose=args.verbose, object_name="Dataset")
                 # Process the dataset, including validation of clones, trees against the AIRR schema
                 dataset = process_dataset(args, dataset, clones_dict, trees)
