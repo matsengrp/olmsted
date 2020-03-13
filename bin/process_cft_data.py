@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import division
 import argparse
 import json
 import csv
@@ -135,7 +134,7 @@ neginf = float("-inf")
 
 def clean_record(d):
     if isinstance(d, list):
-        return map(clean_record, d)
+        return list(map(clean_record, d))
     elif isinstance(d, dict):
         return {trim_tripl_naming(k): clean_record(v)
                 for k, v in d.items()}
@@ -202,7 +201,7 @@ def clean_dataset_record(d):
 def pull_datasets(t):
     #import pdb; pdb.set_trace()
     records = list(t.pull_many(datasets_pull_pattern, {'tripl:type': 'cft.dataset'}))
-    return map(comp(clean_record, clean_dataset_record), records)
+    return list(map(comp(clean_record, clean_dataset_record), records))
 
 
 # Pulling clonal families information out
@@ -293,7 +292,7 @@ def try_del(d, attr):
         pass
 
 def listof(xs_str, f=lambda x: x):
-    return map(f, xs_str.split(':'))
+    return list(map(f, xs_str.split(':')))
 
 def listofint(xs_str):
     return listof(xs_str, int)
@@ -388,7 +387,7 @@ def clean_reconstruction_record(args, d):
 def clean_clonal_family_record(args, d):
     try:
         c = d.copy()
-        c['cft.cluster:trees'] = map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster'])
+        c['cft.cluster:trees'] = list(map(fun.partial(clean_reconstruction_record, args), c['cft.reconstruction:_cluster']))
         for attr_key, attr_id_key in [('cft.cluster:seed', 'cft.seed:id'), ('cft.cluster:dataset', 'cft.dataset:id'), ('cft.cluster:sample', 'cft.sample:id'), ('cft.cluster:subject', 'cft.subject:id')]:
             c[attr_key + '_id'] = (c.pop(attr_key) or {}).get(attr_id_key)
         try_del(c, 'cft.reconstruction:_cluster')
@@ -401,11 +400,11 @@ def clean_clonal_family_record(args, d):
         return None
 
 def pull_clonal_families(args, t):
-    result = map(comp(clean_record, fun.partial(clean_clonal_family_record, args)),
-            nospy(t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.cluster'})))
+    result = list(map(comp(clean_record, fun.partial(clean_clonal_family_record, args)),
+            nospy(t.pull_many(clonal_family_pull_pattern, {'tripl:type': 'cft.cluster'}))))
     #import pdb; pdb.set_trace()
-    bad_families = filter(lambda c: not c, result)
-    good_families = filter(None, result)
+    bad_families = list(filter(lambda c: not c, result))
+    good_families = list(filter(None, result))
     if bad_families:
         warnings.warn("{} (of {}) clonal families couldn't be processed".format(len(bad_families), len(result)))
     else:
