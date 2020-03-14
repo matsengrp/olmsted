@@ -121,7 +121,7 @@ sudo apt-get install libcairo2 libcairo2-dev
 ### To prepare an environment for processing Olmsted data:
 
 1. Install conda
-2. run `conda create --name olmsted --file requirements.txt`
+2. run `conda create -n olmsted --file requirements.txt -c conda-forge -y`
 3. run `source activate olmsted`
 
 ## Input data
