@@ -1,9 +1,11 @@
 output
+input
 node_modules
 npm-debug.log
 *.swp
 
 ### App specific ###
+deploy-credentials.yaml
 /dist/
 /data/
 /deploy/
