@@ -9,8 +9,8 @@ jobs:
       run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
     - name: Set git branch variable
       run: echo ::set-env name=BRANCH::$(git branch --show-current)            
-    - name: Set git tag variable
-      run: if [ $BRANCH == "master" ];then echo ::set-env name=TAG::$(git describe --tags);else echo ::set-env name=TAG::$BRANCH;fi
+    - name: Set image tag variable
+      run: if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "" ];then echo ::set-env name=TAG::$(git describe --tags);else echo ::set-env name=TAG::$BRANCH;fi
     - name: Checkout submodules
       shell: bash
       run: |
