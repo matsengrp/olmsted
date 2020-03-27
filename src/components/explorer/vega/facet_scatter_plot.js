@@ -192,8 +192,7 @@ const facetClonalFamiliesVizSpec = () => {
         {
           "events": {
             "source": "window",
-            "type": "mouseup",
-            "consume": true
+            "type": "mouseup"
           },
           "update": "[x(cell), y(cell)]"
         }
@@ -383,7 +382,6 @@ const facetClonalFamiliesVizSpec = () => {
                 "events": {
                     "source": "window",
                     "type": "mousemove",
-                    "consume": true,
                     "between": [
                     {
                         "source": "scope",
@@ -469,7 +467,6 @@ const facetClonalFamiliesVizSpec = () => {
               "events": {
                   "source": "window",
                   "type": "mousemove",
-                  "consume": true,
                   "between": [
                   {
                       "source": "scope",
@@ -576,7 +573,6 @@ const facetClonalFamiliesVizSpec = () => {
                 {
                   "source": "window",
                   "type": "mousemove",
-                  "consume": true,
                   "between": [
                       {
                       "source": "scope",

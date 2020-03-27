@@ -692,8 +692,12 @@ const concatTreeWithAlignmentSpec = () => {
                 {
                   "events": [
                     {
-                      "source": "window", "type": "mousemove", "consume": true,
-                      "between": [{"type": "mousedown"}, {"source": "window", "type": "mouseup"}]
+                      "source": "window",
+                      "type": "mousemove",
+                      "between": [
+                                    {"type": "mousedown"},
+                                    {"source": "window", "type": "mouseup"}
+                                 ]
                     },
                     {
                       "type": "touchmove", "consume": true,
