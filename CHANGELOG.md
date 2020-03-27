@@ -1,3 +1,7 @@
+## version 2.1.1 - 2020/03/27
+[PR149](https://github.com/matsengrp/olmsted/pull/149) Added:
+* Browser compatibility: Firefox, Safari, Edge, Chrome
+
 ## version 2.1.0 - 2020/03/27
 [PR148](https://github.com/matsengrp/olmsted/pull/148) Added:
 * Python dependencies to Dockerfile
