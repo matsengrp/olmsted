@@ -1,2 +1,24 @@
+output
+input
 node_modules
 npm-debug.log
+*.swp
+
+### App specific ###
+deploy-credentials.yaml
+/dist/
+/data/
+/deploy/
+/releases/
+server.dist.js
+/static/
+s3/
+/scratch/
+
+### OSX ###
+.DS_Store
+
+### npm ###
+node_modules/
+npm-debug.log
+proddata

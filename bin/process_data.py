@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import division
-import cottonmouth.html as hiccup
 import argparse
 import jsonschema
 import json
@@ -14,6 +13,9 @@ import functools as fun
 import sys
 import os
 import yaml
+
+sys.path = [os.path.join(os.getcwd(), "cottonmouth")] + sys.path
+import cottonmouth.html as hiccup
 
 SCHEMA_VERSION = "2.0.0"
 

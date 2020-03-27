@@ -4,13 +4,16 @@ from __future__ import division
 import argparse
 import json
 import csv
-from tripl import tripl
 import warnings
 import ete3
 import functools as fun
 import os
 import copy
 import inflect
+import sys
+
+sys.path = [os.path.join(os.getcwd(), "tripl")] + sys.path
+from tripl import tripl
 
 default_schema_path = os.path.join(os.path.dirname(__file__), '..', 'cft_schema.json')
 

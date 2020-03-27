@@ -66,23 +66,59 @@ Clicking on a tip in the phylogenetic tree displays additional details about the
 
 ![lineage view](docs/lineage-view.png)
 
+## Installation
 
-## Run with Docker
+Olmsted's dependencies are described in the Dockerfile. We recommend that you run Olmsted inside a Docker container, since this will make installation much easier (if you're new to Docker, read [this](http://erick.matsen.org/2018/04/19/docker.html)). However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile) that's on a line starting with RUN (treat WORKDIR as cd).
 
-To run Olmsted, you can either:
-- clone this repository and use npm to install the necessary dependencies (see "Install")
-- use Docker:
+## Preparing input data
+
+### Data processing dependencies
+The necessary python depencies for processing input data are installed in the Docker image using conda.
+You may also install them directly on your machine by running the `conda install` command from the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile).
+
+### Input format
+Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
+
+### Validation
+Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
+The script takes any number of JSON files, each one containing one complete dataset.
+It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
+
+Here is an example of how to parse input JSON files using `bin/process_data.py` in Docker:
+
+1. Change to the directory where you have your input JSON file(s) (this example uses the data from this repository):
+```
+git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
+```
+
+2. Run `bin/process_data.py` in Docker using `-v` to mount the current directory to `/data` in the container: 
+```
+docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py -i /data/full_schema_dataset.json -o /data/build_data -n inferred_naive
+```
+
+Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the schema.
+
+## Deployment with Docker
 
 1. Install [Docker](https://www.docker.com/get-started)
 2. Choose a port number available to you locally, e.g. 8080
 3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.0.0-10-gab82117` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
 4. Run:
 ```
-docker run -p 8080:3999 quay.io/matsengrp/olmsted:v2.0.0-10-gab82117
+docker run -p 8080:3999 quay.io/matsengrp/olmsted
 ```
 5. Navigate to `localhost:8080` in your browser to see the application.
 
-To run on your own data (see "Input data" below for processing input) instead of the example data, you need to point Docker to your data.
+To run an interactive session in the container:
+```
+docker run -it quay.io/matsengrp/olmsted /bin/bash
+```
+
+### Specifying input data
+The command that starts the Olmsted local server is `npm start localData`, followed by the location of your input JSON(s) (which should be the output, i.e. `-o`, from `bin/process_data.py` above).
+To run on your own data instead of the example data, you need to point Docker to your data.
+To access files on your machine from within the Docker container, or to persist output beyond the container, you must [use volumes by specifying -v](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container). 
 
 For example, if you wanted to use the example data in this repo, that would look like this:
 ```
@@ -90,64 +126,15 @@ git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data/bu
 docker run -p 8080:3999 -v $(pwd):/data quay.io/matsengrp/olmsted npm start localData /data
 ```
 
+## Deploying without using Docker
 
-## Install
-
-To install Olmsted, clone the git repository
-
-```
-git clone https://github.com/matsengrp/olmsted.git
-cd olmsted
-```
-
-You'll need Node.js to run Olmsted.
-You can check if node is installed with `node --version`.
-With Node.js present you can install olmsted with
-
-```
-npm install
-# or, if this fails due to permissions issues
-sudo npm install
-```
-
-You may also need to install libcairo
-
-```
-sudo apt-get install libcairo2 libcairo2-dev
-```
-
-
-## Input data
-
-Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
-For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
-
-Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
-The script takes any number of JSON files, each one containing one complete dataset.
-It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
-
-To parse input JSON files, use `bin/process_data.py`. E.g.:
-
-```
-./bin/process_data.py -i example_data/full_schema_input.json -o example_data/build_data -v -n inferred_naive
-```
-
-Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the schema.
-
-
-## Deployment
-
-A local server can be deployed like this:
-`npm start localData ./example_data/build_data 8080`
-After building your own data as in the above section, replace `./example_data/build_data` with the output (`-o`) from `bin/process_data.py`.
-Navigate to `localhost:8080` in your browser to see the application.
-
+Run `npm start localData /local/data/path 8080` (after installing the necessary dependencies specified in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile)) and navigate to `localhost:8080` in your browser to see the application.
 
 ## Static Build
 
 Olmsted is designed to statically compile as a single page app, which can then be deployed using a simple CDN setup.
 
-To create a static deployment, run `npm run build` from within the project directory.
+To create a static deployment, run `npm run build` from within the project directory (the path to your clone of this repository or `/usr/src/app` in the Docker image). 
 This will generate most of a deployment in a `deploy` directory.
 To complete the static deployment, you simply have to place the data you want to deploy at `deploy/data`.
 
