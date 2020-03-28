@@ -1,6 +1,6 @@
 import queryString from "query-string";
 import * as types from "./types";
-import { getClonalFamilies } from "./loadData";
+import { getClonalLineages } from "./loadData";
 import * as sets from "../util/sets";
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
@@ -46,9 +46,9 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
   }
 
   // If we were PREVIOUSLY on the app page and change to a different dataset or go 
-  // back to splash, we want to reset the clonal families state
+  // back to splash, we want to reset the clonal lineages state
   if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath){
-    dispatch({type: types.RESET_CLONAL_FAMILIES_STATE})
+    dispatch({type: types.RESET_CLONAL_LINEAGES_STATE})
   }
 
   if (query !== undefined) { d.query = query; }
@@ -83,7 +83,7 @@ export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push 
         dataset_id: id,
         loading: "LOADING"
       });
-      getClonalFamilies(dispatch, id)
+      getClonalLineages(dispatch, id)
     })
   }
   dispatch({

@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 //
 // Consider the following code
 //
-// const computeClonalFamiliesPage = (data, pagination) =>
+// const computeClonalLineagesPage = (data, pagination) =>
 //     _.take(    
 //        _.drop(
 //            _.orderBy(data,[pagination.order_by], [pagination.desc ? "desc":"asc"]),
@@ -17,7 +17,7 @@ import * as _ from 'lodash';
 //
 // Threading macros let you do this
 //
-// const computeClonalFamiliesPage = (data, pagination) => 
+// const computeClonalLineagesPage = (data, pagination) => 
 //   fun.threadf(data,
 //     [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
 //     [_.drop,     pagination.page * pagination.per_page],

@@ -1,12 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
-import ClonalFamiliesTable from "./table";
+import ClonalLineagesTable from "./table";
 import { hot } from 'react-hot-loader';
 import LoadingTable from './loadingTable';
-import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
+import * as clonalLineagesSelectors from "../../selectors/clonalLineages";
 import * as explorerActions from "../../actions/explorer";
 import {TreeViz} from "../explorer/tree";
-import {ClonalFamiliesViz} from "../explorer/scatterplot";
+import {ClonalLineagesViz} from "../explorer/scatterplot";
 import {Lineage} from "../explorer/lineage";
 
 // STYLES
@@ -29,16 +29,16 @@ const tableStyle = {marginBottom: 20, overflow:'auto'};
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 const mapStateToProps = (state) => {
-    let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
-    let nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length
-    return {selectedFamily, nClonalFamiliesBrushed}
+    let selectedLineage = clonalLineagesSelectors.getSelectedLineage(state)
+    let nClonalLineagesBrushed = clonalLineagesSelectors.getBrushedClonalLineages(state).length
+    return {selectedLineage, nClonalLineagesBrushed}
 }
 
 @connect(mapStateToProps)
-class SelectedFamiliesSummary extends React.Component {
+class SelectedLineagesSummary extends React.Component {
   render () {
     return (
-      <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
+      <p>Number of lineages currently selected: {this.props.nClonalLineagesBrushed}</p>)}}
 
 const Overlay = ({styles, mobileDisplay, handler}) => {
   return (
@@ -51,9 +51,9 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,
   availableDatasets: state.datasets.availableDatasets,
-  selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
-  selectedSeq: state.clonalFamilies.selectedSeq,
-  locus: state.clonalFamilies.locus
+  selectedLineage: clonalLineagesSelectors.getSelectedLineage(state),
+  selectedSeq: state.clonalLineages.selectedSeq,
+  locus: state.clonalLineages.locus
 }), {
   filterLocus: explorerActions.filterLocus,
   resetState: explorerActions.resetState
@@ -121,7 +121,7 @@ class App extends React.Component {
     return (
       <span>
         {/* <DownloadModal/> */}
-        {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
+        {/* App Contents - TODO: break this into smaller components like SelectedLineagesSummary */}
         <div>
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
@@ -130,8 +130,8 @@ class App extends React.Component {
               <LoadingTable datasets={this.props.availableDatasets}/>
             </div>
             <div style={sectionStyle}>
-              <h2>Clonal Families</h2>
-              <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
+              <h2>Clonal Lineages</h2>
+              <p>Choose a gene locus to explore clonal lineages with sequences sampled from that locus.</p>
               <select value={this.props.locus}
                   onChange={(event) => {
                     this.props.resetState()
@@ -140,23 +140,23 @@ class App extends React.Component {
                   {['igh','igk','igl', 'ALL'].map( (locus) =>
                     <option key={locus} value={locus}>{locus}</option>)}
               </select>
-              <p>Each point below represent a clonal family.
-                Click and drag to select a set of clonal families for deeper investigation.
+              <p>Each point below represent a clonal lineage.
+                Click and drag to select a set of clonal lineages for deeper investigation.
                 Color, shape and x & y axes can be controlled at the bottom of the plot.
               </p>
-              <SelectedFamiliesSummary/>
-              <ClonalFamiliesViz/>
+              <SelectedLineagesSummary/>
+              <ClonalLineagesViz/>
             </div>
 
             <div style={{paddingBottom: 40, ...sectionStyle}}>
-              <h2>Selected clonal families:</h2>
-              <p>Below are the clonal families selected in the scatterplot above.
+              <h2>Selected clonal lineages:</h2>
+              <p>Below are the clonal lineages selected in the scatterplot above.
                 Click on a column in the table to update the ordering of rows in the table.</p>
               <div style={tableStyle}>
-                <ClonalFamiliesTable/>
+                <ClonalLineagesTable/>
               </div>
             </div>
-            { this.props.selectedFamily &&
+            { this.props.selectedLineage &&
                 <div style={sectionStyle}>
                   <TreeViz availableHeight={availableHeight}/>
                 </div> }

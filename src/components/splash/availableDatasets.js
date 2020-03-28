@@ -1,6 +1,6 @@
 import React from "react";
 import { red } from "./displayError";
-import { getClonalFamilies } from "../../actions/loadData";
+import { getClonalLineages } from "../../actions/loadData";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
 
@@ -31,7 +31,7 @@ class DatasetRow extends React.Component {
           dataset_id: this.props.dataset.dataset_id,
           loading: "LOADING"
         });
-        getClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id)
+        getClonalLineages(this.props.dispatch, this.props.dataset.dataset_id)
         break;
       }
     }    
@@ -74,7 +74,7 @@ export class DatasetsTable extends React.Component {
               <th>Load Status</th>
               <th>ID</th>
               <th>Subjects</th>
-              <th>Clonal Families</th>
+              <th>Clonal Lineages</th>
               <th>Build time</th>
             </tr>
             {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} dispatch={this.props.dispatch}/> )}

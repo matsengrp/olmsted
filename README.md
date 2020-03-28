@@ -28,9 +28,9 @@ When you first hit the application at it's root address, you'll be presented wit
 Once selected, hitting "Explore" takes you to a page displaying selected datasets using the following visualizations:
 
 
-### Clonal family scatterplot
+### Clonal lineage scatterplot
 
-The top level component in the explorer view is a scatterplot of all the clonal families in your selected datasets.
+The top level component in the explorer view is a scatterplot of all the clonal lineages in your selected datasets.
 The axes, color and symbol mappings are all customizable.
 
 ![scatterplot](docs/scatterplot-viz.png)
@@ -41,20 +41,20 @@ For example, we might want to facet by subject to get a better sense of how tren
 ![facet](docs/facet.png)
 
 
-### Clonal family table
+### Clonal lineage table
 
-In the main clonal family scatterplot, you can click and drag to select a set of points in the plot.
-When you do, the selection acts as a filter for the clonal families table.
+In the main clonal lineage scatterplot, you can click and drag to select a set of points in the plot.
+When you do, the selection acts as a filter for the clonal lineages table.
 
-This table shows additional details about the selected clonal families, including a visual encoding of the gene rearrangement responsible for the clonal family's naive B-cell.
+This table shows additional details about the selected clonal lineages, including a visual encoding of the gene rearrangement responsible for the clonal lineage's naive B-cell.
 You can also click on a column header of the table to sort by that column.
 
-![tree align view](docs/clonal-families-table2.png)
+![tree align view](docs/clonal-lineages-table2.png)
 
 
 ### Tree and alignment view
 
-Clicking on a row of the table presents further details about the clonal family, including a phylogenetic tree of select sequences from the family, and a visualization of the mutation patterns in the selected sequences.
+Clicking on a row of the table presents further details about the clonal lineage, including a phylogenetic tree of select sequences from the lineage, and a visualization of the mutation patterns in the selected sequences.
 As with other visualizations in the application, the details of color and node size can be controlled.
 
 ![tree align view](docs/tree-align-view.png)
@@ -83,7 +83,7 @@ For a human-readable version of the schema, see [olmstedviz.org/schema.html](htt
 ### Validation
 Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
 The script takes any number of JSON files, each one containing one complete dataset.
-It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
+It breaks this apart into files summarizing individual records in the dataset (e.g. clonal lineages, trees) which can be served to the Olmsted client and visualized.
 
 Here is an example of how to parse input JSON files using `bin/process_data.py` in Docker:
 

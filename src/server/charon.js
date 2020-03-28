@@ -13,8 +13,8 @@ const applyCharonToApp = (app) => {
       case "datasets": {
         getFiles.getDatasets(query, res);
         break;
-      } case "clonalFamilies": {
-        getFiles.getClonalFamilies(query, res);
+      } case "clonalLineages": {
+        getFiles.getClonalLineages(query, res);
         break;
       } case "splashimage": {
         getFiles.getSplashImage(query, res);

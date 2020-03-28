@@ -1405,11 +1405,11 @@ const concatTreeWithAlignmentSpec = () => {
   )
 }
 
-const seqAlignSpec = (family) => {
+const seqAlignSpec = (lineage) => {
   let padding = 20;
   let mutation_mark_height = 8
   // Add some height here for padding and to accomodate naive gene regions section
-  let height = (family["lineage_seq_counter"]+2)*mutation_mark_height+padding;
+  let height = (lineage["lineage_seq_counter"]+2)*mutation_mark_height+padding;
   return(
     {
       "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -1432,7 +1432,7 @@ const seqAlignSpec = (family) => {
         },
         {
           "name": "source_0",
-          "values": family["lineage_alignment"]
+          "values": lineage["lineage_alignment"]
         },
         {
           "name": "data_0",
@@ -1467,7 +1467,7 @@ const seqAlignSpec = (family) => {
         },
         {
           "name": "lineage_seqs",
-          "value": family["lineage_seq_counter"]
+          "value": lineage["lineage_seq_counter"]
         },
         {
           "name": "mark_width",

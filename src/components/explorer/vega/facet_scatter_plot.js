@@ -1,4 +1,4 @@
-const facetClonalFamiliesVizSpec = () => {
+const facetClonalLineagesVizSpec = () => {
   return(       
   {
   "$schema": "https://vega.github.io/schema/vega/v4.json",
@@ -172,7 +172,7 @@ const facetClonalFamiliesVizSpec = () => {
     {
       "name": "cell", "value": null
     },
-    //Mouse down and mouse up being used for autoselecting a family upon completing a brush selection
+    //Mouse down and mouse up being used for autoselecting a lineage upon completing a brush selection
     {
       "name": "mouseDown",
       "on": [
@@ -861,4 +861,4 @@ const facetClonalFamiliesVizSpec = () => {
   )
 }
 
-export default facetClonalFamiliesVizSpec;
+export default facetClonalLineagesVizSpec;

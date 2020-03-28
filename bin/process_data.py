@@ -128,7 +128,7 @@ sample_spec = {
 
 subject_spec = {
         "title": "Subject",
-        "description": "Subject from which the clonal family was sampled.",
+        "description": "Subject from which the clonal lineage was sampled.",
         "type": "object",
         "required": ["subject_id"],
         "properties": {
@@ -138,7 +138,7 @@ subject_spec = {
 seed_spec = {
 # TODO https://github.com/matsengrp/olmsted/commit/4992ac4af5be0ef1d12034de37666c6cf7258988#r32297022
         "title": "Seed",
-        "description": "A sequence of interest among other clonal family members.",
+        "description": "A sequence of interest among other clonal lineage members.",
         # QUESTION not sure if we actually want nullable here...
         "type": ["object", "null"],
         "required": ["seed_id"],
@@ -167,7 +167,7 @@ node_spec = {
             "type": ["string", "null"]},
         "multiplicity": multiplicity_spec(),
         "cluster_multiplicity": multiplicity_spec(
-            "If clonal family sequences were downsampled by clustering, the cummulative number of times" +
+            "If clonal lineage sequences were downsampled by clustering, the cummulative number of times" +
                 " sequences in cluster were observed."),
         "timepoint_multiplicities": {
             "description": "Sequence multiplicity, broken down by timepoint.",
@@ -192,7 +192,7 @@ node_spec = {
 
 tree_spec = {
     "title": "Tree",
-    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family.",
+    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal lineage.",
     "type": "object",
     "required": ["newick", "nodes"],
     "properties": {
@@ -220,7 +220,7 @@ def natural_number(desc):
 
 clone_spec = {
     "title": "Clone",
-    "description": "Clonal family of sequences deriving from a particular reassortment event",
+    "description": "Clonal lineage of sequences deriving from a particular reassortment event",
     "type": "object",
     "required": ["unique_seqs_count", "mean_mut_freq", "v_alignment_start", "v_alignment_end", "j_alignment_start", "j_alignment_end"],
     "properties": {
@@ -264,10 +264,10 @@ clone_spec = {
         "junction_length": natural_number("AIRR: Number of nucleotides in the junction. (see AIRR 'junction': Nucleotide sequence for the junction region of the inferred ancestor of the clone, where the junction is defined as the CDR3 plus the two flanking conserved codons.)"),
         "junction_start": natural_number("AIRR: Junction region start position in the alignment (1-based closed interval)."),
         "sample_id": {
-            "description": "sample id associated with this clonal family.",
+            "description": "sample id associated with this clonal lineage.",
             "type": "string"},
         "subject_id": {
-            "description": "Id of subject from which the clonal family was sampled.",
+            "description": "Id of subject from which the clonal lineage was sampled.",
             "type": "string"},
         "seed_id": {
             "description": "Seed sequence id if any.",
@@ -303,7 +303,7 @@ dataset_spec = {
             "type": "array",
             "items": seed_spec},
         "clones": {
-            "description": "Information about each of the clonal families",
+            "description": "Information about each of the clonal lineages",
             "type": "array",
             "items": clone_spec}}}
 
@@ -397,7 +397,7 @@ def process_clone(args, dataset, clone):
     # -=1 *_start positions since AIRR schema uses 1-based closed interval but we need python slice conventions (0-based, open interval) for source code (vega visualization). See bin/process_data.py
     for start_pos_key in ["v_alignment_start", "d_alignment_start", "j_alignment_start", "junction_start"]:
         clone[start_pos_key] -= 1
-    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for viz convenience
+    # need to cretae a copy of the dataset without clonal lineages that we can nest under clonal lineage for viz convenience
     _dataset = dataset.copy()
     del _dataset['clones']
     clone['dataset'] = _dataset

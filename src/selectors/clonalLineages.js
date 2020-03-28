@@ -8,32 +8,32 @@ const createDeepEqualSelector = createSelectorCreator(
   _.isEqual
 )
 
-// FILTER CLONAL FAMILIES BY SELECTED DATASETS
+// FILTER CLONAL LINEAGES BY SELECTED DATASETS
 
-const getClonalFamiliesDict = (state) => state.clonalFamilies.byDatasetId
+const getClonalLineagesDict = (state) => state.clonalLineages.byDatasetId
 
 const getDatasets = (state) => state.datasets.availableDatasets
 
-const getLocusFilter = (state) => state.clonalFamilies.locus
+const getLocusFilter = (state) => state.clonalLineages.locus
 
-const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
-  var availableClonalFamilies = []
+const computeAvailableClonalLineages = (byDatasetId, datasets, locus) => {
+  var availableClonalLineages = []
   if(datasets.length > 0){ 
     _.forEach(datasets, (dataset) => {
       if(dataset.loading && dataset.loading == "DONE"){ 
-        availableClonalFamilies = availableClonalFamilies.concat(byDatasetId[dataset.dataset_id]) }
+        availableClonalLineages = availableClonalLineages.concat(byDatasetId[dataset.dataset_id]) }
     })
   }
-  return locus == "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, {"sample": {"locus": locus}})
+  return locus == "ALL" ? availableClonalLineages : _.filter(availableClonalLineages, {"sample": {"locus": locus}})
 }
 
-export const getAvailableClonalFamilies = createDeepEqualSelector(
-    [getClonalFamiliesDict, getDatasets, getLocusFilter],
-    computeAvailableClonalFamilies)
+export const getAvailableClonalLineages = createDeepEqualSelector(
+    [getClonalLineagesDict, getDatasets, getLocusFilter],
+    computeAvailableClonalLineages)
 
 // FILTER TABLE RESULTS BY BRUSH SELECTION
 
-const getBrushSelection = (state) => state.clonalFamilies.brushSelection
+const getBrushSelection = (state) => state.clonalLineages.brushSelection
 
 const checkInRange = (axis, datum, brushSelection) => {
   return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1])
@@ -66,8 +66,8 @@ const checkBrushSelection = (brushSelection, datum) => {
 
 const applyFilters = (data, brushSelection) => {
   if (brushSelection) {
-    // If we have clicked a family instead of doing a brush selection, that
-    // family's ident should be the value of brushSelection.clicked
+    // If we have clicked a lineage instead of doing a brush selection, that
+    // lineage's ident should be the value of brushSelection.clicked
     // Otherwise, we should filter as always on the bounds of the brush selection
     data = brushSelection.clicked ? [_.find(data, {"ident": brushSelection.clicked})] :
                                           _.filter(data, _.partial(checkBrushSelection, brushSelection))
@@ -75,37 +75,37 @@ const applyFilters = (data, brushSelection) => {
   return data
 }
 
-export const getBrushedClonalFamilies = createDeepEqualSelector(
-  [getAvailableClonalFamilies, getBrushSelection],
+export const getBrushedClonalLineages = createDeepEqualSelector(
+  [getAvailableClonalLineages, getBrushSelection],
   applyFilters)
 
-const getPagination = (state) => state.clonalFamilies.pagination;
+const getPagination = (state) => state.clonalLineages.pagination;
 
 export const getLastPage = createDeepEqualSelector(
-  [getPagination, getBrushedClonalFamilies],
-  (pagination, brushedClonalFamilies) => {
-    return Math.ceil(brushedClonalFamilies.length / pagination.per_page) - 1 // use ceil-1 because we start at page 0
+  [getPagination, getBrushedClonalLineages],
+  (pagination, brushedClonalLineages) => {
+    return Math.ceil(brushedClonalLineages.length / pagination.per_page) - 1 // use ceil-1 because we start at page 0
   }
 )
 
-const computeClonalFamiliesPage = (data, pagination) => 
+const computeClonalLineagesPage = (data, pagination) => 
   fun.threadf(data,
     [_.orderBy,  [pagination.order_by], [pagination.desc ? "desc":"asc"]],
     [_.drop,     pagination.page * pagination.per_page],
     [_.take,     pagination.per_page])
 
-export const getClonalFamiliesPage = createDeepEqualSelector(
-    [getBrushedClonalFamilies, getPagination],
-    computeClonalFamiliesPage)
+export const getClonalLineagesPage = createDeepEqualSelector(
+    [getBrushedClonalLineages, getPagination],
+    computeClonalLineagesPage)
 
 
-// selector for selected family ident
-const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily
+// selector for selected lineage ident
+const getSelectedLineageIdent = (state) => state.clonalLineages.selectedLineage
 
-// selector for clonal family record
-export const getSelectedFamily = createSelector(
-  [getClonalFamiliesPage,
-   (state) => state.clonalFamilies.byIdent[state.clonalFamilies.selectedFamily]],
+// selector for clonal lineage record
+export const getSelectedLineage = createSelector(
+  [getClonalLineagesPage,
+   (state) => state.clonalLineages.byIdent[state.clonalLineages.selectedLineage]],
   (page, selected) => {
     return selected ? selected : page[0]
   })

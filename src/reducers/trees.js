@@ -16,7 +16,7 @@ const trees = (state = {
       return Object.assign({}, state, {
         selectedTreeIdent: action.tree,
       });
-    } case types.TOGGLE_FAMILY: {
+    } case types.TOGGLE_LINEAGE: {
       let updates = {
         selectedTreeIdent: undefined,
       }

@@ -13,20 +13,20 @@ export default function configureStore(initialState) {
   ]
 
   const actionSanitizer = (action) => {
-    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.clonalFamilies ){
-      return { ...action, clonalFamilies: 'LARGE PAYLOAD, total families:'  + action.clonalFamilies.length } 
+    if (action.type === 'CLONAL_LINEAGES_RECEIVED' && action.clonalLineages ){
+      return { ...action, clonalLineages: 'LARGE PAYLOAD, total lineages:'  + action.clonalLineages.length } 
     }
     else{
       return action
     }
   }
   const stateSanitizer = (state) => {
-    if ( state.clonalFamilies.byDatasetId ){
-      let sumClonalFamiliesDict =  {}
-      Object.entries(state.clonalFamilies.byDatasetId).forEach((pair) => {
-        sumClonalFamiliesDict[pair[0]] = pair[1].length
+    if ( state.clonalLineages.byDatasetId ){
+      let sumClonalLineagesDict =  {}
+      Object.entries(state.clonalLineages.byDatasetId).forEach((pair) => {
+        sumClonalLineagesDict[pair[0]] = pair[1].length
       })
-      return { ...state, clonalFamilies: {...state.clonalFamilies, byDatasetId: sumClonalFamiliesDict}}
+      return { ...state, clonalLineages: {...state.clonalLineages, byDatasetId: sumClonalLineagesDict}}
     }
     return state
   }
@@ -34,7 +34,7 @@ export default function configureStore(initialState) {
   /* eslint-disable no-underscore-dangle */ 
   if(process.env.NODE_ENV !== 'production' && typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ){
     composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-      // Adding these to redux dev tools to handle huge action payload of clonal families
+      // Adding these to redux dev tools to handle huge action payload of clonal lineages
       actionSanitizer: actionSanitizer,
       stateSanitizer: stateSanitizer
     });

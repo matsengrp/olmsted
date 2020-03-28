@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from 'lodash';
 import * as explorerActions from "../../actions/explorer.js"
-import {getClonalFamiliesPage, getLastPage} from "../../selectors/clonalFamilies";
+import {getClonalLineagesPage, getLastPage} from "../../selectors/clonalLineages";
 import {NaiveSequence} from './naive';
 
 
@@ -73,12 +73,12 @@ class Table extends React.Component {
               return _.map(this.props.mappings, ([name, AttrOrComponent]) => {
                 let isAttr = ((typeof AttrOrComponent) == "string")
                 let key = datum.ident + '.' + (isAttr ? AttrOrComponent : name)
-                let style = this.props.selectedFamily ? {backgroundColor: datum.ident == this.props.selectedFamily.ident ? "lightblue" : "white"} : {}
+                let style = this.props.selectedLineage ? {backgroundColor: datum.ident == this.props.selectedLineage.ident ? "lightblue" : "white"} : {}
                 style = Object.assign(style, {padding: 3})
                 return <div className="grid-item" key={key} style={style}>
                   {isAttr ?
                     <div style={{marginTop: 5, marginBottom: 5}}>{String(_.get(datum, AttrOrComponent))}</div> :
-                    <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
+                    <AttrOrComponent datum={datum} selectedLineage={this.props.selectedLineage}/>}
                   </div>
               })})}
           </div>)}}
@@ -86,8 +86,8 @@ class Table extends React.Component {
 
 @connect((store) => ({}),
         (dispatch) => ({
-          dispatchSelect: (family_ident) => {
-            dispatch(explorerActions.selectFamily(family_ident))
+          dispatchSelect: (lineage_ident) => {
+            dispatch(explorerActions.selectLineage(lineage_ident))
           }
         })
       )
@@ -97,7 +97,7 @@ class SelectAttribute extends React.Component {
       <input
         type="checkbox"
         style={{cursor: "pointer"}}
-        checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
+        checked={this.props.selectedLineage? (this.props.datum.ident == this.props.selectedLineage.ident): false}
         onChange={() => this.props.dispatchSelect(this.props.datum.ident)}/>
     )
   }
@@ -105,37 +105,37 @@ class SelectAttribute extends React.Component {
 
 
 const mapStateToProps = (state) => {
-    let newClonalFamiliesPage = getClonalFamiliesPage(state)
+    let newClonalLineagesPage = getClonalLineagesPage(state)
     return {
-      visibleClonalFamilies: newClonalFamiliesPage,
-      pagination: state.clonalFamilies.pagination,
-      selectedFamily: state.clonalFamilies.selectedFamily,
-      selectingStatus: state.clonalFamilies.brushSelecting
+      visibleClonalLineages: newClonalLineagesPage,
+      pagination: state.clonalLineages.pagination,
+      selectedLineage: state.clonalLineages.selectedLineage,
+      selectingStatus: state.clonalLineages.brushSelecting
     }
 }
 
 
 @connect(mapStateToProps,
   {
-    selectFamily: explorerActions.selectFamily
+    selectLineage: explorerActions.selectLineage
   }
   )
-class ClonalFamiliesTable extends React.Component {
+class ClonalLineagesTable extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Checks:
     // 1. prevProps.selectingStatus: We were previously doing a brush selection
     // 2. !this.props.selectingStatus: We are done doing the brush selection
-    // 3. this.props.visibleClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
-    if (prevProps.selectingStatus && !this.props.selectingStatus && this.props.visibleClonalFamilies.length > 0) {
-      this.props.selectFamily(this.props.visibleClonalFamilies[0].ident);
+    // 3. this.props.visibleClonalLineages.length > 0: There is at least one clonal lineage in the selection to autoselect for detail view
+    if (prevProps.selectingStatus && !this.props.selectingStatus && this.props.visibleClonalLineages.length > 0) {
+      this.props.selectLineage(this.props.visibleClonalLineages[0].ident);
     }
   }
 
   render() {
-    this.selectedFamily = _.find(this.props.visibleClonalFamilies, {"ident": this.props.selectedFamily})
+    this.selectedLineage = _.find(this.props.visibleClonalLineages, {"ident": this.props.selectedLineage})
     return (
-      <Table data={this.props.visibleClonalFamilies}
+      <Table data={this.props.visibleClonalLineages}
         mappings={
           [
            ["Select", SelectAttribute],
@@ -157,9 +157,9 @@ class ClonalFamiliesTable extends React.Component {
            ["Ident", "ident"]
         ]}
         pagination = {this.props.pagination}
-        selectedFamily = {this.selectedFamily}/>
+        selectedLineage = {this.selectedLineage}/>
     )
   }       
 }
 
-export default ClonalFamiliesTable
+export default ClonalLineagesTable

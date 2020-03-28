@@ -4,7 +4,7 @@ import * as _ from "lodash";
 const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
-  selectedFamily: undefined,
+  selectedLineage: undefined,
   selectedSeq: {},
   // 2 indexes so that we can access data differently depending on what we need to get to
   byDatasetId: {},
@@ -16,21 +16,21 @@ const initialState = {
   locus: "igh"
 }
 
-const clonalFamilies = (state = _.clone(initialState), action) => {
+const clonalLineages = (state = _.clone(initialState), action) => {
   switch (action.type) {
-    case types.RESET_CLONAL_FAMILIES_STATE: {
-      // Want to reset the clonal families state without
-      // getting rid of our raw clonal families data
+    case types.RESET_CLONAL_LINEAGES_STATE: {
+      // Want to reset the clonal lineages state without
+      // getting rid of our raw clonal lineages data
       let reset_state = _.omit(_.clone(initialState), ['byDatasetId', 'byIdent'])
       return Object.assign({}, state, reset_state);
-    } case types.CLONAL_FAMILIES_RECEIVED: {
+    } case types.CLONAL_LINEAGES_RECEIVED: {
       // have to update both indices here
-      let newClonalFamiliesDictEntry = {}
-      newClonalFamiliesDictEntry[action.dataset_id] = action.clonalFamilies
-      let updatedClonalFamiliesDict = Object.assign({}, state.byDatasetId, newClonalFamiliesDictEntry);
-      let updatedByIdent = Object.assign({}, state.byIdent, _.fromPairs(_.map(action.clonalFamilies, (x) => [x.ident, x])));
+      let newClonalLineagesDictEntry = {}
+      newClonalLineagesDictEntry[action.dataset_id] = action.clonalLineages
+      let updatedClonalLineagesDict = Object.assign({}, state.byDatasetId, newClonalLineagesDictEntry);
+      let updatedByIdent = Object.assign({}, state.byIdent, _.fromPairs(_.map(action.clonalLineages, (x) => [x.ident, x])));
       return Object.assign({}, state, {
-        byDatasetId: updatedClonalFamiliesDict,
+        byDatasetId: updatedClonalLineagesDict,
         byIdent: updatedByIdent
       });
     } case types.SELECTING_STATUS: {
@@ -67,8 +67,8 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       brushDelta[axis] = {};
       brushDelta[axis]["fieldName"] = attr;
       brushDelta[axis]["range"] = range;
-      // brushSelection.clicked is set to the ident of a particular family if 
-      // we have clicked to select that family instead of doing a brush selection
+      // brushSelection.clicked is set to the ident of a particular lineage if 
+      // we have clicked to select that lineage instead of doing a brush selection
       // Set it false here so we can have default brush selection filtering
       brushDelta.clicked = false;
       let new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
@@ -114,16 +114,16 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       return Object.assign({}, state, {
         pagination: new_pagination
       });
-    } case types.TOGGLE_FAMILY: {
+    } case types.TOGGLE_LINEAGE: {
       let updates = {
-        selectedFamily: action.family_ident,
+        selectedLineage: action.lineage_ident,
         selectedSeq: {},
       }
       // action.updateBrushSelection specifies whether we would like to 
-      // include just this family in our brush selection
+      // include just this lineage in our brush selection
       // and therefore in the table since we have clicked it
       if(action.updateBrushSelection){
-        updates.brushSelection = {clicked: action.family_id}
+        updates.brushSelection = {clicked: action.lineage_id}
         updates.pagination = Object.assign({}, state.pagination, {page: 0})
       }
       return Object.assign({}, state, updates);
@@ -145,4 +145,4 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
   }
 };
 
-export default clonalFamilies;
+export default clonalLineages;

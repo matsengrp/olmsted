@@ -1,5 +1,5 @@
 import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect';
-import * as clonalFamiliesSelectors from './clonalFamilies';
+import * as clonalLineagesSelectors from './clonalLineages';
 import * as _ from 'lodash';
 
 
@@ -8,24 +8,24 @@ const getSelectedTreeIdent = (state) =>
   state.trees.selectedTreeIdent
 
 
-export const getTreeFromCache = (cache, family, selectedIdent) => {
+export const getTreeFromCache = (cache, lineage, selectedIdent) => {
   let ident = selectedIdent ||
-    (_.find(_.values(family.trees), {downsampling_strategy: "seed_lineage"}) ||
-     _.find(_.values(family.trees), {downsampling_strategy: "min_adcl"}) ||
-     _.values(family.trees)[0]).ident
+    (_.find(_.values(lineage.trees), {downsampling_strategy: "seed_lineage"}) ||
+     _.find(_.values(lineage.trees), {downsampling_strategy: "min_adcl"}) ||
+     _.values(lineage.trees)[0]).ident
   return cache[ident]
 }
 
 // combine these to select out the actual selected tree entity
 export const getSelectedTree = createSelector(
-  [(state) => state.trees.cache, clonalFamiliesSelectors.getSelectedFamily, getSelectedTreeIdent],
+  [(state) => state.trees.cache, clonalLineagesSelectors.getSelectedLineage, getSelectedTreeIdent],
   getTreeFromCache
 )
 
 
 // selector for sequence
 
-const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq
+const getSelectedSeqId = (state) => state.clonalLineages.selectedSeq
 
 export const getSelectedSeq = createSelector(
   [getSelectedSeqId, getSelectedTree],
@@ -138,7 +138,7 @@ export const computeTreeData = (tree) => {
     tree["leaves_count_incl_naive"] = data.length;
     let alignment = createAlignment(naive.sequence_alignment_aa, data)
     tree["tips_alignment"] = alignment;
-    tree["download_unique_family_seqs"] = uniqueSeqs(tree.nodes)
+    tree["download_unique_lineage_seqs"] = uniqueSeqs(tree.nodes)
     return tree;
   }
   else{

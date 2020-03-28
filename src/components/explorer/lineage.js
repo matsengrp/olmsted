@@ -2,8 +2,8 @@ import { connect } from "react-redux";
 import React from "react";
 import Vega from 'react-vega';
 import * as treesSelector from "../../selectors/trees";
-import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import {seqAlignSpec} from './vega/clonal_family_details';
+import * as clonalLineagesSelectors from "../../selectors/clonalLineages";
+import {seqAlignSpec} from './vega/clonal_lineage_details';
 import * as _ from "lodash";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadfasta";
@@ -20,7 +20,7 @@ const mapStateToProps = (state) => {
     return {
       lineageData: treesSelector.getLineageData(state),
       selectedSeq: treesSelector.getSelectedSeq(state),
-      selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
+      selectedLineage: clonalLineagesSelectors.getSelectedLineage(state)
     }
 }
 
@@ -29,8 +29,8 @@ const mapStateToProps = (state) => {
 @connect(mapStateToProps)
 class Lineage extends React.Component {
   render() {
-    if (this.props.selectedFamily) {
-      let naiveData = getNaiveVizData(this.props.selectedFamily)
+    if (this.props.selectedLineage) {
+      let naiveData = getNaiveVizData(this.props.selectedLineage)
       let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
       return <div>
         <h2>Ancestral sequences for {this.props.selectedSeq.sequence_id} lineage</h2>

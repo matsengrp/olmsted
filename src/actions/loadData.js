@@ -19,7 +19,7 @@ export const getTree = (dispatch, tree_id) => {
     let tree
     try{
       tree = JSON.parse(data);
-      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
+      // timerEnd("LOADING CLONAL LINEAGES (including JSON.parse)", "clonal lineages loaded", clonalLineages.length)
     } catch( err ){
       alert("Failed parsing json for " + tree_id +
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
@@ -46,25 +46,25 @@ export const getTree = (dispatch, tree_id) => {
   request.open("get", `${charonAPIAddress}/tree.${tree_id}.json`, true); // true for asynchronous
 
   request.send(null);
-  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  // timerStart("LOADING CLONAL LINEAGES (including JSON.parse)")
 
 };
 
-export const getClonalFamilies = (dispatch, dataset_id) => {
+export const getClonalLineages = (dispatch, dataset_id) => {
   const processData = (data, dataset_id) => {
-    let clonalFamilies = []
+    let clonalLineages = []
     try{
-      clonalFamilies = JSON.parse(data);
-      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
+      clonalLineages = JSON.parse(data);
+      // timerEnd("LOADING CLONAL LINEAGES (including JSON.parse)", "clonal lineages loaded", clonalLineages.length)
     } catch( err ){
       alert("Failed parsing json for " + dataset_id +
       ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file")
       console.log(data.substring(0,100))
     }
     dispatch({
-      type: types.CLONAL_FAMILIES_RECEIVED,
+      type: types.CLONAL_LINEAGES_RECEIVED,
       dataset_id,
-      clonalFamilies
+      clonalLineages
     });
     dispatch({
       type: types.LOADING_DATASET,
@@ -88,7 +88,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
   request.open("get", `${charonAPIAddress}/clones.${dataset_id}.json`, true); // true for asynchronous
 
   request.send(null);
-  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  // timerStart("LOADING CLONAL LINEAGES (including JSON.parse)")
 
 };
 

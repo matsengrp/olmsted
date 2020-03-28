@@ -10,25 +10,25 @@ export const toggleSort = (attribute) => {
   return {type: types.TOGGLE_SORT, column: attribute}}
 
 // Second argument specifies whether we would like to 
-// include just this family in our brush selection
+// include just this lineage in our brush selection
 // and therefore in the table since we have clicked it
-export const selectFamily = (ident, updateBrushSelection=false) => {
+export const selectLineage = (ident, updateBrushSelection=false) => {
   return (dispatch, getState) => {
-    dispatch({type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection})
-    let {trees, clonalFamilies} = getState()
-    let clonalFamily = clonalFamilies.byIdent[ident]
-    let clonalFamilyTrees = clonalFamily ? (clonalFamily.trees || []) : []
-    _.forEach(clonalFamilyTrees, (tree) => loadData.getTree(dispatch, tree.ident))}}
+    dispatch({type: types.TOGGLE_LINEAGE, lineage_ident: ident, updateBrushSelection})
+    let {trees, clonalLineages} = getState()
+    let clonalLineage = clonalLineages.byIdent[ident]
+    let clonalLineageTrees = clonalLineage ? (clonalLineage.trees || []) : []
+    _.forEach(clonalLineageTrees, (tree) => loadData.getTree(dispatch, tree.ident))}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
 
-export const updateSelectedTree = (treeIdent, selectedFamily, selectedSeq) => {
+export const updateSelectedTree = (treeIdent, selectedLineage, selectedSeq) => {
   return (dispatch, getState) => {
     let {trees} = getState()
     let deselectSeq = true
     if (selectedSeq) {
-      let newSelectedTree = treesSelector.getTreeFromCache(trees.cache, selectedFamily, treeIdent)
+      let newSelectedTree = treesSelector.getTreeFromCache(trees.cache, selectedLineage, treeIdent)
       let selectedSeqInNewTree = _.find(newSelectedTree.nodes, {"sequence_id": selectedSeq})
       
       deselectSeq = !selectedSeqInNewTree
@@ -57,5 +57,5 @@ export const filterLocus = (locus) => {
   return {type: types.FILTER_LOCUS, locus}}
 
 export const resetState = () => {
-  return {type: types.RESET_CLONAL_FAMILIES_STATE}}
+  return {type: types.RESET_CLONAL_LINEAGES_STATE}}
 

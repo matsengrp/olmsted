@@ -1,45 +1,45 @@
 import { connect } from "react-redux";
 import React from "react";
 import Vega from 'react-vega';
-import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
+import * as clonalLineagesSelectors from "../../selectors/clonalLineages";
+import facetClonalLineagesVizSpec from './vega/facet_scatter_plot';
 import * as explorerActions from "../../actions/explorer.js"
 import * as _ from "lodash";
 import * as vega from 'vega';
 
-// Clonal Families Viz
+// Clonal Lineages Viz
 // ===================
 //
 // This is the main view in the entire vizualization as it's the first thing we always see once we explore,
-// and it's the top level entry point for us in exploring datasets/clonal-families in gerater detail.
+// and it's the top level entry point for us in exploring datasets/clonal-lineages in gerater detail.
 // Goal is to be super configurable and powerful.
 
 @connect((state) => ({
-    availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
-    selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
-    locus: state.clonalFamilies.locus
+    availableClonalLineages: clonalLineagesSelectors.getAvailableClonalLineages(state),
+    selectedLineage: clonalLineagesSelectors.getSelectedLineage(state),
+    locus: state.clonalLineages.locus
   }),
   //This is a shorthand way of specifying mapDispatchToProps
   {
-    selectFamily: explorerActions.selectFamily,
+    selectLineage: explorerActions.selectLineage,
     updateBrushSelection: explorerActions.updateBrushSelection,
     filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
     updateFacet: explorerActions.updateFacet
   })
-class ClonalFamiliesViz extends React.Component {
+class ClonalLineagesViz extends React.Component {
   constructor(props) {
     super(props);
     this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
-    this.spec = facetClonalFamiliesVizSpec()
+    this.spec = facetClonalLineagesVizSpec()
   }
 
   render() {
-    if (this.props.availableClonalFamilies) {
+    if (this.props.availableClonalLineages) {
       return  <div>
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
-          {this.props.availableClonalFamilies.length > 0 && <Vega
+          {this.props.availableClonalLineages.length > 0 && <Vega
           // TURN THESE ON TO DEBUG SIGNALS
           // SEE https://github.com/matsengrp/olmsted/issues/65
           // onSignalWidth={(...args) => {
@@ -59,13 +59,13 @@ class ClonalFamiliesViz extends React.Component {
           //   console.log('brushy: ', result)  
           // }}
           onSignalPts_tuple={(...args) => {
-            let family = args.slice(1)[0]
-            if(family.ident){
+            let lineage = args.slice(1)[0]
+            if(lineage.ident){
               // Second argument specifies that we would like to 
-              // include just this family in our brush selection
+              // include just this lineage in our brush selection
               // and therefore in the table since we have clicked it
 
-              this.props.selectFamily(family.ident, true)
+              this.props.selectLineage(lineage.ident, true)
             }
           }}
           onSignalMouseDown={(...args) => {
@@ -114,11 +114,11 @@ class ClonalFamiliesViz extends React.Component {
           onParseError={(...args) => console.error("parse error:", args)}
           debug={/* true for debugging */ true}
           // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
-          data={{source: this.props.availableClonalFamilies,
+          data={{source: this.props.availableClonalLineages,
                 // Here we create a separate dataset only containing the id of the
-                // selected family so as to check quickly for this id within the 
-                // viz to highlight the selected family.
-                selected: [{'ident': this.props.selectedFamily ? this.props.selectedFamily.ident : "none"}],
+                // selected lineage so as to check quickly for this id within the 
+                // viz to highlight the selected lineage.
+                selected: [{'ident': this.props.selectedLineage ? this.props.selectedLineage.ident : "none"}],
                 locus: [{'locus': this.props.locus}] }}
           spec={this.spec}/>}
       </div>
@@ -128,4 +128,4 @@ class ClonalFamiliesViz extends React.Component {
   }
 };
 
-export {ClonalFamiliesViz}
+export {ClonalLineagesViz}

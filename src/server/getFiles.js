@@ -29,7 +29,7 @@ const getDatasets = (query, res) => {
   getDataFile(res, 'datasets.json', query.s3);
 };
 
-const getClonalFamilies = (query, res) => {
+const getClonalLineages = (query, res) => {
   getDataFile(res, 'clones.json', query.s3);
 };
 
@@ -47,7 +47,7 @@ const getDatasetJson = (query, res) => {
 
 module.exports = {
   getDatasets,
-  getClonalFamilies,
+  getClonalLineages,
   getSplashImage,
   // getImage,
   getDatasetJson

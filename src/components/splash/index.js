@@ -29,7 +29,7 @@ class Splash extends React.Component {
             <Title/>
           </Flex>
           <div className="row">
-            <h1 style={{textAlign: "center", marginTop: "-10px", fontSize: "29px"}}> B-cell repertoire and clonal family tree explorer </h1>
+            <h1 style={{textAlign: "center", marginTop: "-10px", fontSize: "29px"}}> B-cell repertoire and clonal lineage tree explorer </h1>
           </div>
           {/* First: either display the error message or the intro-paragraph */}
           {this.props.errorMessage ? (
@@ -45,7 +45,7 @@ class Splash extends React.Component {
 
           <CenterContent>
             <p style={{maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143}}>
-              Select datasets below and click "Explore!" to visualize clonal families.
+              Select datasets below and click "Explore!" to visualize clonal lineages.
             </p>
             {/*This only happens when the app loads up, not when we change the state.*/}
             <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
