@@ -335,8 +335,7 @@ with open("airr-standards/specs/airr-schema.yaml") as stream:
 
 def validate(data, schema, verbose=False, object_name=None):
     if not schema.is_valid(data):
-        print("{} doesn't conform to spec.{}".format(object_name if object_name is not None else "Input data",
-                                                     "" if verbose else " Please rerunn with `-v` for detailed errors"))
+        msg = "{} doesn't conform to spec.".format(object_name if object_name is not None else "Input data")
         if verbose:
             last_error_path = None
             for error in schema.iter_errors(data):
@@ -345,6 +344,10 @@ def validate(data, schema, verbose=False, object_name=None):
                     print("  Error at " + str(error_path) + ":")
                     last_error_path = error_path
                 print("    " + error.message)
+            msg += " See above for detailed errors."
+        else:
+            msg += "Please rerun with `-v` for detailed errors"
+        raise Exception(msg)
 
 def ensure_ident(record):
     "Want to let people choose their own uuids if they like, but not require them to"
@@ -545,11 +548,13 @@ def main():
                 dataset = process_dataset(args, dataset, clones_dict, trees)
                 datasets.append(dataset)
         except Exception as e:
-            message = "Unable to process infile: " + str(infile) + "" if args.verbose else " Please rerunn with `-v` for detailed errors"
-            print(message)
+            print("Unable to process infile: {}".format(infile))
             if args.verbose:
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
+            else:
+                print("Please rerun with `-v` for detailed errors.")
+            sys.exit(1)
     # write out schema
     if args.write_schema_yaml:
         with open('schema.yaml', 'w') as yamlf:
