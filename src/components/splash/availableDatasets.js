@@ -3,6 +3,7 @@ import { red } from "./displayError";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
+import * as _ from "lodash";
 
 class DatasetRow extends React.Component {
   constructor(props) {
@@ -49,6 +50,9 @@ class DatasetRow extends React.Component {
         <td>{this.props.dataset.subjects_count}</td>
         <td>{this.props.dataset.clone_count}</td>
         <td>{this.props.dataset.build.time}</td>
+        {this.props.dataset.paper ? <td><a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a></td>
+          : null
+        }
       </tr>
     );
   }
@@ -63,6 +67,10 @@ export class DatasetsTable extends React.Component {
         </div>
       );
     }
+    // Do any of the datasets have a "paper" field
+    const showCitation = _.reduce(this.props.availableDatasets,
+                                  (hasPaperInfo, dataset) => hasPaperInfo || dataset.paper !== undefined,
+                                  false) //base case
     return (
       <div>
         <div style={{fontSize: "26px"}}>
@@ -76,6 +84,7 @@ export class DatasetsTable extends React.Component {
               <th>Subjects</th>
               <th>Clonal Families</th>
               <th>Build time</th>
+              {showCitation ? <th>From paper</th> : null}
             </tr>
             {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} dispatch={this.props.dispatch}/> )}
           </tbody>

@@ -305,7 +305,19 @@ dataset_spec = {
         "clones": {
             "description": "Information about each of the clonal families",
             "type": "array",
-            "items": clone_spec}}}
+            "items": clone_spec},
+        "paper": {
+            "description": "Information about a paper corresponding to this dataset",
+            "type": "object",
+            "required": ["url", "authorstring"],
+            "title": "Paper info",
+            "properties": {
+            "url": {
+                "description": "Link to online version of the paper.",
+                "type": "string"},
+            "authorstring": {
+                "description": "String to be displayed citing authors, e.g. \"Doe, et. al.\".",
+                "type": "string"}}}}}
 
 def is_nullable_string(checker, instance):
     return (
