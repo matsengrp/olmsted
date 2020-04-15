@@ -309,7 +309,7 @@ dataset_spec = {
         "paper": {
             "description": "Information about a paper corresponding to this dataset",
             "type": "object",
-            "required": ["url", "authorstring"],
+            "required": ["authorstring"],
             "title": "Paper info",
             "properties": {
             "url": {

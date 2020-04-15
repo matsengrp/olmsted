@@ -50,7 +50,7 @@ class DatasetRow extends React.Component {
         <td>{this.props.dataset.subjects_count}</td>
         <td>{this.props.dataset.clone_count}</td>
         <td>{this.props.dataset.build.time}</td>
-        {this.props.dataset.paper ? <td><a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a></td>
+        {this.props.dataset.paper ? <td>{this.props.dataset.paper.url ? <a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a> : this.props.dataset.paper.authorstring}</td>
           : null
         }
       </tr>
