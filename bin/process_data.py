@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
+from collections import OrderedDict
 import argparse
 import jsonschema
 import json
@@ -13,9 +14,7 @@ import functools as fun
 import sys
 import os
 import yaml
-
-sys.path = [os.path.join(os.getcwd(), "cottonmouth")] + sys.path
-import cottonmouth.html as hiccup
+import ntpl
 
 SCHEMA_VERSION = "2.0.0"
 
@@ -121,6 +120,7 @@ build_spec = {
 
 
 timepoint_multiplicity_spec = {
+    "title": "Timepoint multiplicity",
     "description": "Multiplicity at a specific time.",
     "type": "object",
     "properties": {
@@ -581,18 +581,21 @@ def write_out(data, dirname, filename, args):
 
 def hiccup_rep(schema, depth=1, property=None):
     depth = min(depth, 2)
-    style = merge(
-        {"padding-left": 10, "margin-left": 25, "margin-top": 10},
-        {"border-left-style": "solid", "border-color": "grey", "margin-top": 40}
-        if depth == 1 or schema["type"] == "object"
-        else {},
-    )
-
+    if depth == 1 or schema["type"] == "object":
+        style = "padding-left: 10;"+\
+                "margin-left: 25;"+\
+                "margin-top: 40;"+\
+                "border-left-style: solid;"+\
+                "border-color: grey;"
+    else:
+        style = "padding-left: 10;"+\
+                "margin-left: 25;"+\
+                "margin-top: 10;"
     return [
         "div",
         {"style": style},
         ["h" + str(depth), schema.get("title")] if schema.get("title") else "",
-        ["p", ["b", "Description: "], schema.get("description")]
+        ["p", ["b", "Description: "], ["span", schema.get("description")]]
         if schema.get("description")
         else "",
         ["p", ["b", "Required: "], ["code", str(schema.get("required"))]]
@@ -605,10 +608,10 @@ def hiccup_rep(schema, depth=1, property=None):
         + [
             [
                 "div",
-                {"style": {"margin-left": "10px"}},
+                {"style": "margin-left: 10px;"},
                 ["h3", ["code", k]],
                 # Assume val is either a title, as produced in hiccup_rep2, or an actual schema
-                ["b", {"style": {"padding-left": 15, "font-size": 18}}, "{", val, "}"]
+                ["b", {"style": "padding-left: 15; font-size: 18;"}, "{%s}"%val]
                 if isinstance(val, str)
                 else hiccup_rep(val, depth=depth + 1),
             ]
@@ -622,15 +625,27 @@ def hiccup_rep(schema, depth=1, property=None):
             # As above, assume and display a title if string, otherwise recurse
             [
                 "b",
-                {"style": {"padding-left": 15, "font-size": 18}},
-                "{",
-                schema["items"],
-                "}",
+                {"style": "padding-left: 15; font-size: 18;"},
+                "{%s}"%schema["items"],
             ]
             if isinstance(schema.get("items"), str)
             else hiccup_rep(schema.get("items"), depth=depth + 1),
         ]
         if schema.get("items")
+        else "",
+        [
+            "div",
+            ["h" + str(depth + 1), "Object with values of type:"],
+            # As above, assume and display a title if string, otherwise recurse
+            [
+                "b",
+                {"style": "padding-left: 15; font-size: 18;"},
+                "{%s}"%schema["additionalProperties"],
+            ]
+            if isinstance(schema.get("additionalProperties"), str)
+            else hiccup_rep(schema.get("additionalProperties"), depth=depth + 1),
+        ]
+        if schema.get("additionalProperties")
         else "",
     ]
 
@@ -643,6 +658,11 @@ def hiccup_rep2(schema):
         if items and items.get("title"):
             schema["items"] = items["title"]
             items_schemas = flatten_schema_by_title(items)
+        #object
+        additionalProperties = schema.get("additionalProperties")
+        if additionalProperties and additionalProperties.get("title"):
+            schema["additionalProperties"] = additionalProperties["title"]
+            items_schemas = flatten_schema_by_title(additionalProperties)
         for key, subschema in schema.get("properties", {}).items():
             # handle case of being a single reference, with a title
             title = subschema.get("title")
@@ -654,8 +674,12 @@ def hiccup_rep2(schema):
             if items and items.get("title"):
                 properties_schemas += flatten_schema_by_title(items)
                 subschema["items"] = items["title"]
-        return [schema] + items_schemas + properties_schemas
-
+            #object
+            additionalProperties = subschema.get("additionalProperties")
+            if additionalProperties and additionalProperties.get("title"):
+                properties_schemas += flatten_schema_by_title(additionalProperties)
+                subschema["additionalProperties"] = additionalProperties["title"]
+        return OrderedDict([(schema["title"], schema) for schema in [schema] + items_schemas + properties_schemas]).values()
     return ["div", map(hiccup_rep, flatten_schema_by_title(schema))]
 
 
@@ -733,13 +757,12 @@ def main():
     if args.display_schema_html:
         with open(args.display_schema_html, "w") as fh:
             fh.write(
-                hiccup.render(
+                ntpl.render(
                     [
                         "html",
                         [
                             "body",
                             hiccup_rep2(dataset_spec),
-                            # hiccup_rep(dataset_spec)
                         ],
                     ]
                 )
