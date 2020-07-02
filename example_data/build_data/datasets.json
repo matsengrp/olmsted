@@ -4,7 +4,7 @@
         "subjects_count": 1, 
         "clone_count": 8, 
         "timepoints_count": 1, 
-        "schema_version": "1.0.0", 
+        "schema_version": "2.0.0", 
         "seeds": [
             {
                 "ident": "3e9d5e49-cf09-3455-840e-6f881c5106f1", 

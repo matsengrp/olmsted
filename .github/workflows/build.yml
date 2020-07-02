@@ -19,8 +19,10 @@ jobs:
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Build the Docker image
       run: docker build . -t quay.io/matsengrp/olmsted:$TAG
+    - name: Run example data processing in the Docker image
+      run: cd example_data && docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted:$TAG bin/process_data.py -i /data/full_schema_dataset.json -o /data/build_data -n inferred_naive -S schema.html
     - name: Run example in the Docker image
-      run: docker run --rm quay.io/matsengrp/olmsted:$TAG &
+      run: docker run --rm -p 8080:3999 quay.io/matsengrp/olmsted:$TAG & sleep 20 && curl -I localhost:8080
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
     - name: publish to Registry

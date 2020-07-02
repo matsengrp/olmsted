@@ -11,6 +11,7 @@ RUN npm ci
 COPY . .
 
 RUN conda install --quiet --yes --file requirements.txt --channel conda-forge && conda clean --all -f -y
+RUN pip install ntpl
 
 EXPOSE 3999
 CMD ["npm", "start", "localData"]
