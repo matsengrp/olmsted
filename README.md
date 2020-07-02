@@ -4,67 +4,16 @@
 
 *After landscape architect [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted)*
 
+Olmsted is an open-source tool for visualizing and exploring B cell lineages. You can visit a live demo application at <http://olmstedviz.org>, and use the [guide below](https://github.com/matsengrp/olmsted#guide) to direct your time there.
 
-## Introduction
+## Abstract
 
-Olmsted is an open-source tool for visualizing and exploring B cell lineages.
-
-B cells code for and generate _antibodies_, proteins which stick to some exposed structure (_antigen_), typically on a foreign object such as a virus or bacterium.
-Recently, it has become possible to deep sequence B-cell receptor genes (millions of sequences per sample in some cases), giving us an in depth snapshot of the adaptive immune system at a point in time.
-B cells evolve in a process called _affinity maturation_ from randomly generated starting sequences, which means that we can represent the data as a collection of phylogenetic trees.
-These trees are commonly called _lineages_.
-
-Olmsted combines powerful interactive data visualizations as part of an explorer flow in which repertoires can be explored in depth, unlocking a bird's eye view of this data.
-
-You can visit a live demo application at <http://olmstedviz.org>, and use the guide below to direct your time there.
-
-
-## Guide
-
-When you first hit the application at it's root address, you'll be presented with a page where you can select data for exploration.
-
-![splash](docs/splash.png)
-
-Once selected, hitting "Explore" takes you to a page displaying selected datasets using the following visualizations:
-
-
-### Clonal family scatterplot
-
-The top level component in the explorer view is a scatterplot of all the clonal families in your selected datasets.
-The axes, color and symbol mappings are all customizable.
-
-![scatterplot](docs/scatterplot-viz.png)
-
-It's also possible to facet the visualization by a variable, which splits it up into separate panes, one for each value corresponding to the selected variable.
-For example, we might want to facet by subject to get a better sense of how trends compare between subjects
-
-![facet](docs/facet.png)
-
-
-### Clonal family table
-
-In the main clonal family scatterplot, you can click and drag to select a set of points in the plot.
-When you do, the selection acts as a filter for the clonal families table.
-
-This table shows additional details about the selected clonal families, including a visual encoding of the gene rearrangement responsible for the clonal family's naive B-cell.
-You can also click on a column header of the table to sort by that column.
-
-![tree align view](docs/clonal-families-table2.png)
-
-
-### Tree and alignment view
-
-Clicking on a row of the table presents further details about the clonal family, including a phylogenetic tree of select sequences from the family, and a visualization of the mutation patterns in the selected sequences.
-As with other visualizations in the application, the details of color and node size can be controlled.
-
-![tree align view](docs/tree-align-view.png)
-
-
-### Lineage view
-
-Clicking on a tip in the phylogenetic tree displays additional details about the series of mutations leading up to the sequence in question.
-
-![lineage view](docs/lineage-view.png)
+In the human immune system, affinity maturation of B cell receptor sequences coding for immunoglobulins (i.e. antibodies) begins with a diverse pool of randomly generated naive sequences and leads to a collection of evolutionary histories.
+It is now common to apply high-throughput DNA sequencing to the B cell repertoire and then reconstruct these evolutionary histories using specialized algorithms.
+However, researchers often lack the tools to explore these reconstructions in the detail necessary to, for example, choose sequences for further functional, structural, or biochemical studies.
+We aim to address this need with Olmsted: a browser-based application for visually exploring B cell repertoires and clonal family tree data.
+Olmsted allows the user to scan across collections of clonal families at a high level using summary statistics, and then hone in on individual families to visualize phylogenies and mutations.
+This will enable lab-based researchers to more quickly and intuitively identify lineages of interest among vast B cell sequencing datasets, and move forward with in-depth analyses and testing of individual antibodies.
 
 ## Installation
 
@@ -77,6 +26,7 @@ The necessary python depencies for processing input data are installed in the Do
 You may also install them directly on your machine by running the `conda install` command from the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile).
 
 ### Input format
+
 Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
@@ -151,6 +101,71 @@ If you're content deploying with AWS S3, there is a deploy script at `bin/deploy
 For deploy script usage run `./bin/deploy.py -h`.
 To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
 
+## Guide
+
+Upon launching Olmsted and navigating in a browser to the appropriate address (or using the example at http://olmstedviz.org), you will find the home page with a table of the available datasets:
+
+![splash](docs/splash.png)
+
+Click on a row to load the dataset into the browser's memory.
+Click *Explore!* to visually explore loaded datasets.
+
+### Clonal Families Section (AKA "scatterplot")
+
+The *Clonal Families* section represents each clonal family as a point in a scatterplot:
+
+![scatterplot](docs/scatterplot-viz.png)
+
+Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
+By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
+However, you may configure both axes as well as the color and shape of the points to map to a range of fields, including sequence sampling time (see below).
+
+For comparison of subsets, you may *facet* the plot into separated panels according to data values for a range of fields:
+
+![facet](docs/facet.png)
+
+Interact with the plot by clicking and dragging across a subset of points or clicking individual points to filter the resulting clonal families in the *Selected clonal families* table below.
+
+### Selected Clonal Families Section (AKA "table")
+Below the scatterplot, the full collection or selected subset of clonal families appears in a table including a visualization of the recombination event resulting in the naive antibody sequence and a subset of clonal family metadata:
+
+![tree align view](docs/clonal-families-table2.png)
+
+Use the table to select a clonal family for further visualization.
+The table automatically selects the top clonal family according to the sorting column.
+
+### Clonal Family Details Section (AKA "tree" and "alignment")
+For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal family details* section:
+
+![tree align view](docs/tree-align-view.png)
+
+
+Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
+Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all). 
+Alongside the tree is an alignment of the sequences at the tree's tips.
+Colors indicate amino acid mutations at each position that differs from the sequence at the root of the tree (typically the family's inferred naive antibody sequence).
+Scroll while hovering over the tree to zoom in and out.
+Click and drag the zoomed view to pan in a traditional map-style interface.
+The alignment view on the right zooms in the vertical dimension according to the zoom status of the tree.
+The tree's leaves use pie charts to show the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, colored according to sampling timepoint.
+Use the interface below the tree to configure:
+
+- Maximum width of the tree window with respect to the alignment window
+- Field mapped to the size of tree leaves (pie charts)
+- Maximum size of the tree leaves
+- Tree tip labels
+- Fields mapped to branch width and color
+
+
+In order to get more details about a particular lineage in the tree, click on a leaf's label (or circle if the labels are hidden) - the *Ancestral Sequences* section will appear below the tree.
+
+### Ancestral Sequences Section (AKA "lineage")
+
+The *Ancestral Sequences* section displays an alignment of the selected sequence with its ancestral lineage starting from the naive sequence:
+
+![lineage view](docs/lineage-view.png)
+
+Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
 
 ## Versioning
 
