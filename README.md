@@ -31,7 +31,7 @@ Olmsted input data is through a [JSON schema](https://json-schema.org/) that ext
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
 ### Validation
-Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
+Input data is processed using the script `bin/process_data.py` to ensure required fields required by the schema are valid.
 The script takes any number of JSON files, each one containing one complete dataset.
 It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
 
@@ -53,7 +53,7 @@ Run ` ./bin/process_data.py --help` for more on how to run that Python script to
 
 1. Install [Docker](https://www.docker.com/get-started)
 2. Choose a port number available to you locally, e.g. 8080
-3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.0.0-10-gab82117` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
+3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.1.1-11-gec852b7` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
 4. Run:
 ```
 docker run -p 8080:3999 quay.io/matsengrp/olmsted
