@@ -105,7 +105,7 @@ To see what you need to do on the S3 side to acitvate website hosting for a buck
 
 Upon launching Olmsted and navigating in a browser to the appropriate address (or using the example at http://olmstedviz.org), you will find the home page with a table of the available datasets:
 
-![splash](docs/splash.png)
+![splash](docs/datasets-section.png)
 
 Click on a row to load the dataset into the browser's memory.
 Click *Explore!* to visually explore loaded datasets.
@@ -114,7 +114,7 @@ Click *Explore!* to visually explore loaded datasets.
 
 The *Clonal Families* section represents each clonal family as a point in a scatterplot:
 
-![scatterplot](docs/scatterplot-viz.png)
+![scatterplot](docs/clonal-families-section.png)
 
 Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
 By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
@@ -122,14 +122,14 @@ However, you may configure both axes as well as the color and shape of the point
 
 For comparison of subsets, you may *facet* the plot into separated panels according to data values for a range of fields:
 
-![facet](docs/facet.png)
+![facet](docs/facet2.png)
 
 Interact with the plot by clicking and dragging across a subset of points or clicking individual points to filter the resulting clonal families in the *Selected clonal families* table below.
 
 ### Selected Clonal Families Section (AKA "table")
 Below the scatterplot, the full collection or selected subset of clonal families appears in a table including a visualization of the recombination event resulting in the naive antibody sequence and a subset of clonal family metadata:
 
-![tree align view](docs/clonal-families-table2.png)
+![tree align view](docs/selected-clonal-families-section2.png)
 
 Use the table to select a clonal family for further visualization.
 The table automatically selects the top clonal family according to the sorting column.
@@ -137,7 +137,7 @@ The table automatically selects the top clonal family according to the sorting c
 ### Clonal Family Details Section (AKA "tree" and "alignment")
 For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal family details* section:
 
-![tree align view](docs/tree-align-view.png)
+![tree align view](docs/clonal-family-details-section.png)
 
 
 Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
@@ -163,7 +163,7 @@ In order to get more details about a particular lineage in the tree, click on a 
 
 The *Ancestral Sequences* section displays an alignment of the selected sequence with its ancestral lineage starting from the naive sequence:
 
-![lineage view](docs/lineage-view.png)
+![lineage view](docs/ancestral-sequences-section.png)
 
 Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
 
