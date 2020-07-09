@@ -122,14 +122,14 @@ However, you may configure both axes as well as the color and shape of the point
 
 For comparison of subsets, you may *facet* the plot into separated panels according to data values for a range of fields:
 
-![facet](docs/facet2.png)
+![facet](docs/facet.png)
 
 Interact with the plot by clicking and dragging across a subset of points or clicking individual points to filter the resulting clonal families in the *Selected clonal families* table below.
 
 ### Selected Clonal Families Section (AKA "table")
 Below the scatterplot, the full collection or selected subset of clonal families appears in a table including a visualization of the recombination event resulting in the naive antibody sequence and a subset of clonal family metadata:
 
-![tree align view](docs/selected-clonal-families-section2.png)
+![table](docs/selected-clonal-families-section.png)
 
 Use the table to select a clonal family for further visualization.
 The table automatically selects the top clonal family according to the sorting column.
