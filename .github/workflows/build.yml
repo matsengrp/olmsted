@@ -26,7 +26,7 @@ jobs:
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
     - name: publish to Registry
-      run: docker push quay.io/matsengrp/olmsted:$TAG
+      run: docker push quay.io/matsengrp/olmsted:$TAG && docker tag quay.io/matsengrp/olmsted:$TAG quay.io/matsengrp/olmsted:latest && docker push quay.io/matsengrp/olmsted:latest
     - name: Slack Notification
       uses: homoluctus/slatify@master
       if: failure()
