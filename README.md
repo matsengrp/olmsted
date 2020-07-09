@@ -31,7 +31,7 @@ Olmsted input data is through a [JSON schema](https://json-schema.org/) that ext
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
 
 ### Validation
-Input data is processed using the script `bin/process_data.py` to ensure required fields using the schema.
+Input data is processed using the script `bin/process_data.py` to ensure required fields required by the schema are valid.
 The script takes any number of JSON files, each one containing one complete dataset.
 It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
 
@@ -53,7 +53,7 @@ Run ` ./bin/process_data.py --help` for more on how to run that Python script to
 
 1. Install [Docker](https://www.docker.com/get-started)
 2. Choose a port number available to you locally, e.g. 8080
-3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.0.0-10-gab82117` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
+3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.1.1-11-gec852b7` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
 4. Run:
 ```
 docker run -p 8080:3999 quay.io/matsengrp/olmsted
@@ -105,7 +105,7 @@ To see what you need to do on the S3 side to acitvate website hosting for a buck
 
 Upon launching Olmsted and navigating in a browser to the appropriate address (or using the example at http://olmstedviz.org), you will find the home page with a table of the available datasets:
 
-![splash](docs/splash.png)
+![splash](docs/datasets-section.png)
 
 Click on a row to load the dataset into the browser's memory.
 Click *Explore!* to visually explore loaded datasets.
@@ -114,7 +114,7 @@ Click *Explore!* to visually explore loaded datasets.
 
 The *Clonal Families* section represents each clonal family as a point in a scatterplot:
 
-![scatterplot](docs/scatterplot-viz.png)
+![scatterplot](docs/clonal-families-section.png)
 
 Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
 By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
@@ -129,7 +129,7 @@ Interact with the plot by clicking and dragging across a subset of points or cli
 ### Selected Clonal Families Section (AKA "table")
 Below the scatterplot, the full collection or selected subset of clonal families appears in a table including a visualization of the recombination event resulting in the naive antibody sequence and a subset of clonal family metadata:
 
-![tree align view](docs/clonal-families-table2.png)
+![table](docs/selected-clonal-families-section.png)
 
 Use the table to select a clonal family for further visualization.
 The table automatically selects the top clonal family according to the sorting column.
@@ -137,7 +137,7 @@ The table automatically selects the top clonal family according to the sorting c
 ### Clonal Family Details Section (AKA "tree" and "alignment")
 For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal family details* section:
 
-![tree align view](docs/tree-align-view.png)
+![tree align view](docs/clonal-family-details-section.png)
 
 
 Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
@@ -163,7 +163,7 @@ In order to get more details about a particular lineage in the tree, click on a 
 
 The *Ancestral Sequences* section displays an alignment of the selected sequence with its ancestral lineage starting from the naive sequence:
 
-![lineage view](docs/lineage-view.png)
+![lineage view](docs/ancestral-sequences-section.png)
 
 Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
 
