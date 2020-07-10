@@ -137,7 +137,8 @@ class App extends React.Component {
                 helpText={<div>The Clonal Families section represents each clonal family as a point in
                  a scatterplot. Choose an immunoglobulin locus to restrict the clonal
                  families in the scatterplot to that locus - the default is immunoglobulin gamma,
-                 or igh (where h stands for heavy chain). By default, the scatterplot maps the number
+                 or igh (where h stands for heavy chain). In order to visualize all clonal families from all
+                 loci in the dataset at once, choose "ALL" in the locus selector. By default, the scatterplot maps the number
                  of unique members in a clonal family, unique_seqs_count, to the x-axis, and the average
                  mutation frequency among members of that clonal family, mean_mut_freq, to the y-axis. 
                  However, you may configure both axes as well as the color and shape of the points to map 
@@ -167,9 +168,11 @@ class App extends React.Component {
                 titleText={"Selected clonal families"}
                 helpText={`Below the scatterplot, the full collection or selected subset of clonal families
                  appears in a table including a visualization of the recombination event resulting in the naive
-                 antibody sequence and a subset of clonal family metadata. Use the table to select a clonal
-                 family for further visualization. The table automatically selects the top clonal family according
-                 to the sorting column.`}/>
+                 antibody sequence and a subset of clonal family metadata. Each row in the table represents one clonal
+                 family. The table automatically selects the top clonal family according to the sorting column. Click on
+                 the checkbox in the "Select" column in the table to select a clonal family for further visualization.
+                 Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family
+                 (as specified in the input JSON) is visualized below the table in the Clonal family details section.`}/>
               <div style={tableStyle}>
                 <ClonalFamiliesTable/>
               </div>

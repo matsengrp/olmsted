@@ -40,7 +40,13 @@ class TreeHeader extends React.Component {
           dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the 
           multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, 
           colored according to sampling timepoint. See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for 
-          more detailed field descriptions.
+          more detailed field descriptions. 
+          <br/>
+          <br/>
+          Note that often in example data the number of sequences in a clonal family has been
+          downsampled to build a tree (see downsampled_count, downsampling_strategy in <a href="http://www.olmstedviz.org/schema.html">the schema</a>),
+          which explains why a clonal family might be listed in the table as having a few thousand unique sequences, but upon selecting 
+          the clonal family, the corresponding tree visualization only contains 10s or 100s of sequences. 
           <br/>
           <br/>
           Use the interface below the tree to configure:
