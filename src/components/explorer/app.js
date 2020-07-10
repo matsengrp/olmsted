@@ -135,20 +135,19 @@ class App extends React.Component {
               <CollapseHelpTitle 
                 titleText={"Clonal Families"}
                 helpText={<div>The Clonal Families section represents each clonal family as a point in
-                 a scatterplot: scatterplot Choose an immunoglobulin locus to restrict the clonal
+                 a scatterplot. Choose an immunoglobulin locus to restrict the clonal
                  families in the scatterplot to that locus - the default is immunoglobulin gamma,
                  or igh (where h stands for heavy chain). By default, the scatterplot maps the number
                  of unique members in a clonal family, unique_seqs_count, to the x-axis, and the average
                  mutation frequency among members of that clonal family, mean_mut_freq, to the y-axis. 
                  However, you may configure both axes as well as the color and shape of the points to map 
-                 to a range of fields, including sequence sampling time (see below).
+                 to a range of fields, including sequence sampling time (sample.timepoint_id).
                  See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
                  <br/>
                  <br/>
-                 For comparison of subsets, 
-                 you may facet the plot into separated panels according to data values for a range of fields. 
-                 Interact with the plot by clicking and dragging across a subset of points or clicking individual 
-                 points to filter the resulting clonal families in the Selected clonal families table below.
+                 For comparison of subsets, you may facet the plot into separated panels according to data values
+                 for a range of fields. Interact with the plot by clicking and dragging across a subset of points
+                 or clicking individual points to filter the resulting clonal families in the Selected clonal families table below.
                  </div>}/>
               <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
               <select value={this.props.locus}

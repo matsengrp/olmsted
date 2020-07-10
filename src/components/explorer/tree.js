@@ -27,7 +27,7 @@ class TreeHeader extends React.Component {
         <CollapseHelpTitle 
           titleText={`Clonal family details for ${this.props.selectedFamily.sample_id} ${this.props.selectedFamily.clone_id}`}
           helpText={<div>For a selected clonal family, its phylogenetic tree is visualized below the table in the 
-          Clonal family details section: tree align view Select among any alternate phylogenies using the 
+          Clonal family details section. Select among any alternate phylogenies using the 
           Ancestral reconstruction method menu. Note that these ancestral reconstruction methods are according 
           to those specified in the input data according to the phylogenetic inference tool used to produce them - 
           Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
@@ -39,21 +39,21 @@ class TreeHeader extends React.Component {
           view to pan in a traditional map-style interface. The alignment view on the right zooms in the vertical 
           dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the 
           multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, 
-          colored according to sampling timepoint. 
+          colored according to sampling timepoint. See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for 
+          more detailed field descriptions.
           <br/>
           <br/>
           Use the interface below the tree to configure:
           <br/>
           <ul>
-            <li>Maximum width of the tree window with respect to the alignment window</li>
-            <li>Field mapped to the size of tree leaves (pie charts)</li>
-            <li>Maximum size of the tree leaves</li>
-            <li>Tree tip labels</li>
-            <li>Fields mapped to branch width and color</li>
+            <li>Maximum width of the tree window with respect to the alignment window (Tree width ratio)</li>
+            <li>Field mapped to the size of pie charts at the tree' leaves (leaf_size_by)</li>
+            <li>Maximum size of pie charts at the tree' leaves (max_leaf_size)</li>
+            <li>Tree tip labels toggle on and off (show_labels)</li>
+            <li>Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme, min_color_value)</li>
           </ul>
-          <br/>
           In order to get more details about a particular lineage in the tree, click on a leaf's
-          label (or circle if the labels are hidden) - the Ancestral Sequences section will appear below the tree.</div>}
+          label (or on the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.</div>}
           />
         <div>
           <label>Ancestral reconstruction method: </label>
