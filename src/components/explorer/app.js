@@ -8,6 +8,7 @@ import * as explorerActions from "../../actions/explorer";
 import {TreeViz} from "../explorer/tree";
 import {ClonalFamiliesViz} from "../explorer/scatterplot";
 import {Lineage} from "../explorer/lineage";
+import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 
 // STYLES
 const PADDING_FRACTION = 0.03
@@ -130,7 +131,25 @@ class App extends React.Component {
               <LoadingTable datasets={this.props.availableDatasets}/>
             </div>
             <div style={sectionStyle}>
-              <h2>Clonal Families</h2>
+              <h2></h2>
+              <CollapseHelpTitle 
+                titleText={"Clonal Families"}
+                helpText={<div>The Clonal Families section represents each clonal family as a point in
+                 a scatterplot: scatterplot Choose an immunoglobulin locus to restrict the clonal
+                 families in the scatterplot to that locus - the default is immunoglobulin gamma,
+                 or igh (where h stands for heavy chain). By default, the scatterplot maps the number
+                 of unique members in a clonal family, unique_seqs_count, to the x-axis, and the average
+                 mutation frequency among members of that clonal family, mean_mut_freq, to the y-axis. 
+                 However, you may configure both axes as well as the color and shape of the points to map 
+                 to a range of fields, including sequence sampling time (see below).
+                 See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
+                 <br/>
+                 <br/>
+                 For comparison of subsets, 
+                 you may facet the plot into separated panels according to data values for a range of fields. 
+                 Interact with the plot by clicking and dragging across a subset of points or clicking individual 
+                 points to filter the resulting clonal families in the Selected clonal families table below.
+                 </div>}/>
               <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
               <select value={this.props.locus}
                   onChange={(event) => {
@@ -140,18 +159,18 @@ class App extends React.Component {
                   {['igh','igk','igl', 'ALL'].map( (locus) =>
                     <option key={locus} value={locus}>{locus}</option>)}
               </select>
-              <p>Each point below represent a clonal family.
-                Click and drag to select a set of clonal families for deeper investigation.
-                Color, shape and x & y axes can be controlled at the bottom of the plot.
-              </p>
               <SelectedFamiliesSummary/>
               <ClonalFamiliesViz/>
             </div>
 
             <div style={{paddingBottom: 40, ...sectionStyle}}>
-              <h2>Selected clonal families:</h2>
-              <p>Below are the clonal families selected in the scatterplot above.
-                Click on a column in the table to update the ordering of rows in the table.</p>
+              <CollapseHelpTitle 
+                titleText={"Selected clonal families"}
+                helpText={`Below the scatterplot, the full collection or selected subset of clonal families
+                 appears in a table including a visualization of the recombination event resulting in the naive
+                 antibody sequence and a subset of clonal family metadata. Use the table to select a clonal
+                 family for further visualization. The table automatically selects the top clonal family according
+                 to the sorting column.`}/>
               <div style={tableStyle}>
                 <ClonalFamiliesTable/>
               </div>

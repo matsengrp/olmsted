@@ -8,6 +8,7 @@ import * as _ from "lodash";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadfasta";
 import {getNaiveVizData} from "./naive";
+import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 
 // Lineage focus viz
 // =================
@@ -33,7 +34,11 @@ class Lineage extends React.Component {
       let naiveData = getNaiveVizData(this.props.selectedFamily)
       let cdr3Bounds = [{"x": Math.floor(naiveData.source[0].start/3)-0.5}, {"x": Math.floor(naiveData.source[0].end/3)+0.5}]
       return <div>
-        <h2>Ancestral sequences for {this.props.selectedSeq.sequence_id} lineage</h2>
+        <CollapseHelpTitle 
+          titleText={`Ancestral sequences for ${this.props.selectedSeq.sequence_id} lineage`}
+          helpText={`The Ancestral Sequences section displays an alignment of the selected sequence
+          with its ancestral lineage starting from the naive sequence. Mutations from the naive sequence
+          are shown as in the Clonal Family Details section.`}/>
         <h3>Amino acid sequence:</h3>
         <p>{this.props.selectedSeq.sequence_alignment_aa}</p>
         <Copy value={this.props.selectedSeq.sequence_alignment ? this.props.selectedSeq.sequence_alignment: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
