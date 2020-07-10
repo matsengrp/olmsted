@@ -10,7 +10,7 @@ import * as _ from "lodash";
 import DownloadFasta from "./downloadfasta";
 import DownloadText from "../util/downloadtext";
 import {IncompleteDataWarning} from "../util/incomplete";
-import * as vega from 'vega';
+import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 
 // Tree header component
 // =================================
@@ -24,13 +24,44 @@ class TreeHeader extends React.Component {
   render(){
     return (
       <div>
-        <h2>Clonal family details for {this.props.selectedFamily.sample_id} {this.props.selectedFamily.clone_id}</h2>
+        <CollapseHelpTitle 
+          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id} ${this.props.selectedFamily.clone_id}`}
+          helpText={<div>For a selected clonal family, its phylogenetic tree is visualized below the table in the 
+          Clonal family details section. Select among any alternate phylogenies using the 
+          Ancestral reconstruction method menu. Note that these ancestral reconstruction methods are according 
+          to those specified in the input data according to the phylogenetic inference tool used to produce them - 
+          Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
+          <br/>
+          <br/>
+          Alongside the tree is an alignment of the sequences at the tree's tips. Colors indicate amino acid mutations at each 
+          position that differs from the sequence at the root of the tree (typically the family's inferred naive 
+          antibody sequence). Scroll while hovering over the tree to zoom in and out. Click and drag the zoomed 
+          view to pan in a traditional map-style interface. The alignment view on the right zooms in the vertical 
+          dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the 
+          multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, 
+          colored according to sampling timepoint. See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for 
+          more detailed field descriptions. 
+          <br/>
+          <br/>
+          Note that often in example data the number of sequences in a clonal family has been
+          downsampled to build a tree (see downsampled_count, downsampling_strategy in <a href="http://www.olmstedviz.org/schema.html">the schema</a>),
+          which explains why a clonal family might be listed in the table as having a few thousand unique sequences, but upon selecting 
+          the clonal family, the corresponding tree visualization only contains 10s or 100s of sequences. 
+          <br/>
+          <br/>
+          Use the interface below the tree to configure:
+          <br/>
+          <ul>
+            <li>Maximum width of the tree window with respect to the alignment window (Tree width ratio)</li>
+            <li>Field mapped to the size of pie charts at the tree' leaves (leaf_size_by)</li>
+            <li>Maximum size of pie charts at the tree' leaves (max_leaf_size)</li>
+            <li>Tree tip labels toggle on and off (show_labels)</li>
+            <li>Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme, min_color_value)</li>
+          </ul>
+          In order to get more details about a particular lineage in the tree, click on a leaf's
+          label (or on the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.</div>}
+          />
         <div>
-          <p>
-            Below on the left is a phylogenetic tree representing the evolutionary history of the sequences in the selected clonal family.
-            On the right is a visual representation of the AA sequence alignment, where colored boxes indicate mutations from naive.
-            These sequences are ordered so as to align with the corresponding tree tips.
-          </p>
           <label>Ancestral reconstruction method: </label>
           <select value={this.props.tree.ident}
             onChange={(event) => this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}>
