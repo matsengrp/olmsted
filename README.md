@@ -117,6 +117,7 @@ The *Clonal Families* section represents each clonal family as a point in a scat
 ![scatterplot](docs/clonal-families-section.png)
 
 Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
+In order to visualize all clonal families from all loci in the dataset at once, choose "ALL" in the locus selector.
 By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
 However, you may configure both axes as well as the color and shape of the points to map to a range of fields, including sequence sampling time (see below).
 
@@ -131,8 +132,10 @@ Below the scatterplot, the full collection or selected subset of clonal families
 
 ![table](docs/selected-clonal-families-section.png)
 
-Use the table to select a clonal family for further visualization.
+Each row in the table represents one clonal family.
 The table automatically selects the top clonal family according to the sorting column.
+Click on the checkbox in the "Select" column in the table to select a clonal family for further visualization.
+Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family (as specified in the input JSON) is visualized below the table in the Clonal family details section.
 
 ### Clonal Family Details Section (AKA "tree" and "alignment")
 For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal family details* section:
@@ -147,7 +150,10 @@ Colors indicate amino acid mutations at each position that differs from the sequ
 Scroll while hovering over the tree to zoom in and out.
 Click and drag the zoomed view to pan in a traditional map-style interface.
 The alignment view on the right zooms in the vertical dimension according to the zoom status of the tree.
-The tree's leaves use pie charts to show the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, colored according to sampling timepoint.
+The tree's leaves use pie charts to show the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence, colored according to sampling timepoint. See [the schema](http://www.olmstedviz.org/schema.html) for more detailed field descriptions.
+
+Note that often in example data the number of sequences in a clonal family has been downsampled to build a tree (see downsampled_count, downsampling_strategy in [the schema](http://www.olmstedviz.org/schema.html)), which explains why a clonal family might be listed in the table as having a few thousand unique sequences, but upon selecting the clonal family, the corresponding tree visualization only contains 10s or 100s of sequences.
+
 Use the interface below the tree to configure:
 
 - Maximum width of the tree window with respect to the alignment window
