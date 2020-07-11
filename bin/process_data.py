@@ -96,7 +96,7 @@ def id_spec(desc=None):
 def multiplicity_spec(desc=None):
     # QUESTION not sure if we actually want nullable here...
     return dict(
-        description=(desc or "Number of times sequence was observed in the sample."),
+        description=(desc or "Number of times sequence was observed in the sample. The presence of a given sequence in a clonal family may represent many identical such sequences in the original sample."),
         type=["integer", "null"],
         minimum=0,
     )
@@ -136,7 +136,7 @@ timepoint_multiplicity_spec = {
 
 sample_spec = {
     "title": "Sample",
-    "description": "A sample is generally a collection of sequences.",
+    "description": "A sample is a collection of sequences.",
     "type": "object",
     "required": ["locus"],
     "properties": {
@@ -209,9 +209,9 @@ node_spec = {
             "type": "array",
             "items": timepoint_multiplicity_spec,
         },
-        "lbi": {"description": "Local branching index.", "type": ["number", "null"]},
+        "lbi": {"description": "Local branching index (see https://arxiv.org/abs/2004.11868).", "type": ["number", "null"]},
         "lbr": {
-            "description": "Local branching rate (derivative of lbi).",
+            "description": "Local branching rate (derivative of lbi; see https://arxiv.org/abs/2004.11868).",
             "type": ["number", "null"],
         },
         "affinity": {
@@ -232,11 +232,11 @@ tree_spec = {
         "tree_id": id_spec("AIRR: Identifier for the tree."),
         "clone_id": id_spec("AIRR: Identifier for the clone."),
         "downsampling_strategy": {
-            "description": "If applicable, the downsampling method",
+            "description": "If applicable, the downsampling method applied to the set of clonal sequences before passing them to a phylogenetic inference tool.",
             "type": "string",
         },
         "downsampled_count": {
-            "description": "If applicable, the maximum number of sequences kept in the downsampling process",
+            "description": "If applicable, the maximum number of sequences kept in the downsampling process.",
             "minumum": 3,
             "type": "integer",
         },
@@ -293,7 +293,7 @@ clone_spec = {
             "type": "string",
         },
         "has_seed": {
-            "description": "Does this clone have a seed sequence in it?",
+            "description": "Does this clone have a seed sequence (see Seed schema) in it?",
             "type": "boolean",
         },
         # Rearrangement data
