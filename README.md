@@ -15,6 +15,24 @@ We aim to address this need with Olmsted: a browser-based application for visual
 Olmsted allows the user to scan across collections of clonal families at a high level using summary statistics, and then hone in on individual families to visualize phylogenies and mutations.
 This will enable lab-based researchers to more quickly and intuitively identify lineages of interest among vast B cell sequencing datasets, and move forward with in-depth analyses and testing of individual antibodies.
 
+## Quickstart
+
+This is a quick set of commands to run that illustrates how Olmsted works with example data. It assumes you have Docker and Git installed.
+
+1. Clone the repo and change to the directory that contains a valid input dataset:
+```
+git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
+```
+2. Process the dataset:
+```
+../bin/process-data.sh full_schema_dataset.json
+```
+3. Start the Olmsted server:
+```
+ ../../bin/olmsted-server.sh latest
+```
+4. Navigate in a browser window to localhost:3999 and use the [guide](https://github.com/matsengrp/olmsted#guide) or click on the help icons (question marks) to guide you though interacting with the visualization of the example dataset.
+
 ## Installation
 
 Olmsted's dependencies are described in the Dockerfile. We recommend that you run Olmsted inside a Docker container, since this will make installation much easier (if you're new to Docker, read [this](http://erick.matsen.org/2018/04/19/docker.html)). However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile) that's on a line starting with RUN (treat WORKDIR as cd).
