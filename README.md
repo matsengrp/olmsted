@@ -29,7 +29,7 @@ git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
 ```
 3. Start the Olmsted server:
 ```
- ../../bin/olmsted-server.sh latest
+cd build_data && ../../bin/olmsted-server.sh latest
 ```
 4. Navigate in a browser window to localhost:3999 and use the [guide](https://github.com/matsengrp/olmsted#guide) or click on the help icons (question marks) to guide you though interacting with the visualization of the example dataset.
 
@@ -57,7 +57,7 @@ Here is an example of how to parse input JSON files using `bin/process_data.py` 
 
 1. Change to the directory where you have your input JSON file(s) (this example uses the data from this repository):
 ```
-git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
+cd olmsted/example_data
 ```
 
 2. Run `bin/process_data.py` in Docker using `-v` to mount the current directory to `/data` in the container: 
@@ -65,7 +65,10 @@ git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
 docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py -i /data/full_schema_dataset.json -o /data/build_data -n inferred_naive
 ```
 
-Run ` ./bin/process_data.py --help` for more on how to run that Python script to parse your data according to the schema.
+for more on how to run that Python script to parse your data according to the schema, run:
+```
+ docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py --help 
+```
 
 ## Deployment with Docker
 
@@ -88,9 +91,9 @@ The command that starts the Olmsted local server is `npm start localData`, follo
 To run on your own data instead of the example data, you need to point Docker to your data.
 To access files on your machine from within the Docker container, or to persist output beyond the container, you must [use volumes by specifying -v](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container). 
 
-For example, if you wanted to use the example data in this repo, that would look like this:
+If the repository has already been cloned, and you're using docker, you can use this command on an example dataset found in the repo.
 ```
-git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data/build_data
+cd olmsted/example_data/build_data
 docker run -p 8080:3999 -v $(pwd):/data quay.io/matsengrp/olmsted npm start localData /data
 ```
 

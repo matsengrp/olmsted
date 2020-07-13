@@ -424,7 +424,7 @@ CustomValidator = jsonschema.validators.extend(
 olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 airr_clone_schema = None
 with open("airr-standards/specs/airr-schema.yaml") as stream:
-    airr_clone_schema_dict = yaml.load(stream).get("Clone")
+    airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
     airr_clone_schema = CustomValidator(airr_clone_schema_dict)
 
 
