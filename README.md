@@ -67,7 +67,7 @@ docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py -i
 
 For more on how to run that Python script to parse your data according to the schema, run:
 ```
- docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py --help 
+ docker run --rm quay.io/matsengrp/olmsted bin/process_data.py --help 
 ```
 
 ## Deployment with Docker
