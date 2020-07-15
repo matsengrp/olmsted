@@ -27,7 +27,7 @@ git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
 ```
 ../bin/process-data.sh full_schema_dataset.json
 ```
-3. Start the Olmsted server:
+3. Start the Olmsted server (this can be stopped at any point with ctrl-C):
 ```
 cd build_data && ../../bin/olmsted-server.sh latest
 ```
@@ -55,9 +55,9 @@ It breaks this apart into files summarizing individual records in the dataset (e
 
 Here is an example of how to parse input JSON files using `bin/process_data.py` in Docker:
 
-1. Change to the directory where you have your input JSON file(s) (this example uses the data from this repository):
+1. Change to the directory where you have your input JSON file(s) (this example uses the data from this repository - omit the `git clone` if you have already cloned the repo and are in the olmsted directory):
 ```
-cd olmsted/example_data
+git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
 ```
 
 2. Run `bin/process_data.py` in Docker using `-v` to mount the current directory to `/data` in the container: 
@@ -65,7 +65,7 @@ cd olmsted/example_data
 docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py -i /data/full_schema_dataset.json -o /data/build_data -n inferred_naive
 ```
 
-for more on how to run that Python script to parse your data according to the schema, run:
+For more on how to run that Python script to parse your data according to the schema, run:
 ```
  docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py --help 
 ```
@@ -75,7 +75,7 @@ for more on how to run that Python script to parse your data according to the sc
 1. Install [Docker](https://www.docker.com/get-started)
 2. Choose a port number available to you locally, e.g. 8080
 3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.1.1-11-gec852b7` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
-4. Run:
+4. Start the server (this can be stopped at any time with ctrl-C):
 ```
 docker run -p 8080:3999 quay.io/matsengrp/olmsted
 ```
@@ -115,7 +115,7 @@ You can test the local static build by running the following:
 cd deploy
 python -m SimpleHTTPServer 4000
 ```
-
+Use ctrl-C to stop the server.
 Once you've verified that your static build works, you simply have to deploy the contents to a static file server or CDN.
 
 If you're content deploying with AWS S3, there is a deploy script at `bin/deploy.py` which you can use to push your static deployment up to an S3 bucket.
