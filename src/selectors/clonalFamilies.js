@@ -16,6 +16,15 @@ const getDatasets = (state) => state.datasets.availableDatasets
 
 const getLocusFilter = (state) => state.clonalFamilies.locus
 
+export const countLoadedClonalFamilies = (datasets) => {
+  let clones = 0;
+  if(datasets.length > 0){
+    clones += _.filter(datasets, (dataset) => dataset.loading && dataset.loading == "DONE")
+               .reduce((count, dataset) => count + dataset.clone_count, 0);
+  }
+  return clones;
+}
+
 const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
   var availableClonalFamilies = []
   if(datasets.length > 0){ 

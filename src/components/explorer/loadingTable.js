@@ -1,10 +1,10 @@
 import React from "react";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
-import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
+import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { connect } from "react-redux";
 
 @connect((state) => ({
-    availableClonalFamiliesCount: getAvailableClonalFamilies(state).length,
+    loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
 }))
 export default class LoadingTable extends React.Component {
     render(){
@@ -28,7 +28,7 @@ export default class LoadingTable extends React.Component {
                 </tbody>
 
             </table>
-            <p>Loaded clonal families {this.props.availableClonalFamiliesCount}</p>
+            <p>Loaded clonal families {this.props.loadedClonalFamilies}</p>
         </div>
     }
 }
