@@ -7,7 +7,7 @@ class CollapseHelpTitle extends React.Component {
   render(){
     return (
     <Collapsible trigger={<div><h2>{this.props.titleText} <FiHelpCircle style={{cursor:"pointer"}}/></h2></div>}>
-        <p>{this.props.helpText}</p>
+        {this.props.helpText}
     </Collapsible>
     )
   }

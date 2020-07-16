@@ -59,7 +59,10 @@ class TreeHeader extends React.Component {
             <li>Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme, min_color_value)</li>
           </ul>
           In order to get more details about a particular lineage in the tree, click on a leaf's
-          label (or on the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.</div>}
+          label (or on the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
+          <br/>
+          <br/>
+          </div>}
           />
         <div>
           <label>Ancestral reconstruction method: </label>
