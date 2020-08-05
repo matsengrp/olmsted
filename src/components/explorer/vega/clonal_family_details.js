@@ -437,6 +437,10 @@ const concatTreeWithAlignmentSpec = () => {
           "bind": {"input": "select", "options": ["multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]}
         },
         {
+          "name": "leaf_size_by_legend_label",
+          "update": "\"Timepoint color key (from \"+leaf_size_by+\"):\"",
+        },
+        {
           // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
           "name": "leaf_data_map",
           "update": "{\"scaled_affinity\": \"scaled_affinity\", \"affinity\": \"affinity\", \"cluster_multiplicity\": \"cluster_timepoint_multiplicities\", \"multiplicity\": \"timepoint_multiplicities\"}"
@@ -614,7 +618,22 @@ const concatTreeWithAlignmentSpec = () => {
               "zindex": 1
             }
 
-          ]
+          ],
+          // pie chart legend
+          "legends": [
+            {
+              "orient": "bottom",
+              "direction": "horizontal",
+              "fill": "timepoint_multiplicities",
+              "title": {"signal": "leaf_size_by_legend_label"},//"Leaf color key:",
+              "titleLimit": "2000",
+              "encode": {
+                "symbols": {
+                  "update": {"shape": {"value": "circle"}, "opacity": {"value": 0.9}}
+                }
+              }
+            }
+          ],
         },
         // Amino acid position axis
         {
@@ -895,7 +914,7 @@ const concatTreeWithAlignmentSpec = () => {
               "from": {"data": "leaf_pies"},
               "encode": {
                 "update": {
-                  "fill": {"scale": "simple_color", "field": "timepoint_multiplicity_key"},
+                  "fill": {"scale": "timepoint_multiplicities", "field": "timepoint_multiplicity_key"},
                   "fillOpacity": {"value": "0.5"},
                   "x": {
                     "field": "x"
@@ -1341,6 +1360,12 @@ const concatTreeWithAlignmentSpec = () => {
             "#7fbf7b",
             "#1b7837"
           ]
+        },
+        {
+          "name": "timepoint_multiplicities",
+          "type": "ordinal",
+          "domain": {"data": "leaf_pies", "field": "timepoint_multiplicity_key"},
+          "range": {"scheme": "category20"}
         },
         {
           "name": "simple_color",
