@@ -68,7 +68,7 @@
     "node-fetch": "^1.7.3",
     "node-gyp": "^5.0.0",
     "outer-product": "0.0.4",
-    "papaparse": "^4.6.2",
+    "papaparse": "^5.2.0",
     "prop-types": "^15.6.2",
     "query-string": "^4.3.4",
     "react": "^16.7.0",
