@@ -6,7 +6,17 @@
 
 Olmsted is an open-source tool for visualizing and exploring B cell lineages. You can visit a live demo application at <http://olmstedviz.org>, and use the [guide below](https://github.com/matsengrp/olmsted#guide) to direct your time there.
 
-## Abstract
+  - [Overview](#overview)
+  - [Quickstart](#quickstart)
+  - [Preparing input data](#preparing-input-data)
+  - [Deployment with Docker](#Deployment-with-Docker)
+  - [Deploying without Docker](#Deploying-without-Docker)
+  - [Static Build](#Static Build)
+  - [Using the visualization](#using-the-visualization)
+  - [Versioning](#Versioning)
+  - [Miscellany](#Miscellany)
+
+## Overview
 
 In the human immune system, affinity maturation of B cell receptor sequences coding for immunoglobulins (i.e. antibodies) begins with a diverse pool of randomly generated naive sequences and leads to a collection of evolutionary histories.
 It is now common to apply high-throughput DNA sequencing to the B cell repertoire and then reconstruct these evolutionary histories using specialized algorithms.
@@ -17,25 +27,31 @@ This will enable lab-based researchers to more quickly and intuitively identify 
 
 ## Quickstart
 
-This is a quick set of commands to run that illustrates how Olmsted works with example data. It assumes you have Docker and Git installed.
+The best way to run Olmsted is inside a Docker container.
+If you're new to Docker, [this](http://erick.matsen.org/2018/04/19/docker.html) is a great place to start.
+You'll first need to clone the repo (since at the moment some files in the repo are required outside of Docker, i.e. in addition to the copy of the repo that's in the container):
 
-1. Clone the repo and change to the directory that contains a valid input dataset:
 ```
-git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
+git clone https://github.com/matsengrp/olmsted.git
+git submodule update --init
 ```
-2. Process the dataset:
+Then cd to the example directory (or another directory that contains one or more valid AIRR-format input datasets), and run `bin/convert-airr-data.sh`.
+This script contains a Docker command to convert the AIRR-format dataset into an Olmsted-style summary:
 ```
-../bin/process-data.sh full_schema_dataset.json
+cd olmsted/example_data/
+sudo ../bin/convert-airr-data.sh full_schema_dataset.json  # you may not need the sudo
 ```
-3. Start the Olmsted server (this can be stopped at any point with ctrl-C):
+Next cd to the resulting output directory and run `bin/olmsted-server.sh`, which contains another Docker command that starts the Olmsted server:
 ```
-cd build_data && ../../bin/olmsted-server.sh latest
+cd build_data/
+sudo ../../bin/olmsted-server.sh latest  # you may not need the sudo
 ```
-4. Navigate in a browser window to localhost:3999 and use the [guide](https://github.com/matsengrp/olmsted#guide) or click on the help icons (question marks) to guide you though interacting with the visualization of the example dataset.
+Then point a web browser to `localhost:3999`, which should show the Olmsted logo and a list of available data sets.
+**Note** that you must add a dataset (by clicking `+`) before clicking the "Explore!" button, otherwise it will serve an empty display without warning what's wrong.
+For explanations of how to navigate the visualization, you can either use the [guide below](#using-the-visualization), or click on the question mark help icons.
 
-## Installation
-
-Olmsted's dependencies are described in the Dockerfile. We recommend that you run Olmsted inside a Docker container, since this will make installation much easier (if you're new to Docker, read [this](http://erick.matsen.org/2018/04/19/docker.html)). However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile) that's on a line starting with RUN (treat WORKDIR as cd).
+### Installation without Docker
+If you'd prefer to install the dependencies by hand, first clone the repository and then run each command in the [Dockerfile](Dockerfile) that's on a line starting with RUN (treat WORKDIR as cd).
 
 ## Preparing input data
 
@@ -45,8 +61,11 @@ You may also install them directly on your machine by running the `conda install
 
 ### Input format
 
-Olmsted input data is through a [JSON schema](https://json-schema.org/) that extends the [AIRR schema](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
-For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io)
+Olmsted takes input files in the [AIRR JSON format](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
+A list of tools that output this format can be found [here](https://docs.airr-community.org/en/stable/resources/rearrangement_support.html).
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
+
+TODO what happens if it's not clustered? Maybe put partis example here?
 
 ### Validation
 Input data is processed using the script `bin/process_data.py` to ensure required fields required by the schema are valid.
@@ -97,7 +116,7 @@ cd olmsted/example_data/build_data
 docker run -p 8080:3999 -v $(pwd):/data quay.io/matsengrp/olmsted npm start localData /data
 ```
 
-## Deploying without using Docker
+## Deploying without Docker
 
 Run `npm start localData /local/data/path 8080` (after installing the necessary dependencies specified in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile)) and navigate to `localhost:8080` in your browser to see the application.
 
@@ -122,14 +141,14 @@ If you're content deploying with AWS S3, there is a deploy script at `bin/deploy
 For deploy script usage run `./bin/deploy.py -h`.
 To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
 
-## Guide
+## Using the visualization
 
 Upon launching Olmsted and navigating in a browser to the appropriate address (or using the example at http://olmstedviz.org), you will find the home page with a table of the available datasets:
 
 ![splash](docs/datasets-section.png)
 
 Click on a row to load the dataset into the browser's memory.
-Click *Explore!* to visually explore loaded datasets.
+Click *Explore!* to visually explore loaded datasets (if nothing is displayed on the resulting page, press back and make sure you selected a data set).
 
 ### Clonal Families Section (AKA "scatterplot")
 
@@ -194,22 +213,18 @@ The *Ancestral Sequences* section displays an alignment of the selected sequence
 
 Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
 
-## Versioning
-
+## Miscellany
+### Versioning
 We use git tags to tag [releases of Olmsted](https://github.com/matsengrp/olmsted/releases) using the [semver](https://semver.org/) versioning strategy.
 
 Tag messages, e.g. `Olmsted version 2.0.1 ; uses schema version 2.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/master/bin/process_data.py#L18) with which a given version of Olmsted is compatible.
 
 The tagged release's major version of Olmsted should always match that of its compatible schema version; should we need to make breaking changes to the schema, we will bump the major versions of both Olmsted and the input schema.
 
-
-## Implementation notes
-
+### Implementation notes
 This application relies on React.js and Redux for basic framework, and Vega and Vega-Lite for the interactive data visualizations.
 
-
-## License and copyright
-
+### License and copyright
 Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen.
 Forked from [Auspice](https://github.com/nextstrain/auspice), copyright 2014-2018 Trevor Bedford and Richard Neher.
 
