@@ -9,11 +9,11 @@ Olmsted is an open-source tool for visualizing and exploring B cell lineages. Yo
   - [Overview](#overview)
   - [Quickstart](#quickstart)
   - [Preparing input data](#preparing-input-data)
-  - [Deployment with Docker](#Deployment-with-Docker)
-  - [Deploying without Docker](#Deploying-without-Docker)
-  - [Static Build](#Static Build)
+  - Deployment
+    - [with Docker](#Deployment-with-Docker)
+    - [without Docker](#Deploying-without-Docker)
+  - [Static Build](#Static-Build)
   - [Using the visualization](#using-the-visualization)
-  - [Versioning](#Versioning)
   - [Miscellany](#Miscellany)
 
 ## Overview
