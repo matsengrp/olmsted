@@ -25,8 +25,12 @@ def compare_json_files(file1, file2):
     return norm1 == norm2
 
 def main():
+    # Change to project root if running from tests directory
+    if os.path.basename(os.getcwd()) == 'tests':
+        os.chdir('..')
+    
     old_dir = 'example_data/build_data'
-    new_dir = 'test_output_py3'
+    new_dir = 'tests/output_local'
     
     # Get all files
     old_files = sorted(os.listdir(old_dir))
