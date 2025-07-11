@@ -1,0 +1,23 @@
+FROM continuumio/miniconda3:23.5.2-0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    pkg-config \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev
+
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Install Python packages with pip
+RUN pip install -r requirements_py3.txt
+
+EXPOSE 3999
+CMD ["npm", "start", "localData"]

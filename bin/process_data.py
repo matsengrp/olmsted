@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import division
 from collections import OrderedDict
 import argparse
 import jsonschema
@@ -10,11 +9,12 @@ import uuid
 import traceback
 import warnings
 import ete3
-import functools as fun
+import functools
 import sys
 import os
 import yaml
 import ntpl
+from functools import reduce
 
 SCHEMA_VERSION = "2.0.0"
 
@@ -56,7 +56,7 @@ neginf = float("-inf")
 
 def clean_record(d):
     if isinstance(d, list):
-        return map(clean_record, d)
+        return list(map(clean_record, d))
     elif isinstance(d, dict):
         return {strip_ns(k): clean_record(v) for k, v in d.items()}
     # can't have infinity in json
@@ -494,7 +494,7 @@ def process_tree_nodes(args, tree, nodes, reroot=False):
             datum["distance"] = 0.0
         return datum
 
-    return map(process_node, tree.traverse("postorder"))
+    return list(map(process_node, tree.traverse("postorder")))
 
 
 def process_tree(args, clone_id, tree):
@@ -510,9 +510,9 @@ def process_tree(args, clone_id, tree):
 def validate_airr_clone_and_trees(args, clone):
     clone["repertoire_id"] = None
     # prepare tree(s)
-    clone["trees"] = map(
-        fun.partial(process_tree, args, clone["clone_id"]), clone.get("trees", [])
-    )
+    clone["trees"] = list(map(
+        functools.partial(process_tree, args, clone["clone_id"]), clone.get("trees", [])
+    ))
     validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
 
 
@@ -530,10 +530,10 @@ def process_clone(args, dataset, clone):
     _dataset = dataset.copy()
     del _dataset["clones"]
     clone["dataset"] = _dataset
-    clone["sample"] = filter(
+    clone["sample"] = list(filter(
         lambda sample: sample["sample_id"] == clone["sample_id"],
         clone["dataset"]["samples"],
-    )[0]
+    ))[0]
     del clone["dataset"]["samples"]
     return ensure_ident(clone)
 
@@ -544,7 +544,7 @@ def process_dataset(args, dataset, clones_dict, trees):
     dataset["timepoints_count"] = len(
         set(sample["timepoint_id"] for sample in dataset["samples"])
     )
-    clones = map(fun.partial(process_clone, args, dataset), dataset["clones"])
+    clones = list(map(functools.partial(process_clone, args, dataset), dataset["clones"]))
     trees += reduce(lambda agg_trees, cf: agg_trees + cf["trees"], clones, [])
     for cf in clones:
         cf["trees"] = [
@@ -679,8 +679,8 @@ def hiccup_rep2(schema):
             if additionalProperties and additionalProperties.get("title"):
                 properties_schemas += flatten_schema_by_title(additionalProperties)
                 subschema["additionalProperties"] = additionalProperties["title"]
-        return OrderedDict([(schema["title"], schema) for schema in [schema] + items_schemas + properties_schemas]).values()
-    return ["div", map(hiccup_rep, flatten_schema_by_title(schema))]
+        return list(OrderedDict([(schema["title"], schema) for schema in [schema] + items_schemas + properties_schemas]).values())
+    return ["div", list(map(hiccup_rep, flatten_schema_by_title(schema)))]
 
 
 def get_args():
@@ -727,10 +727,10 @@ def main():
             with open(infile, "r") as fh:
                 dataset = json.load(fh)
                 if args.remove_invalid_clones:
-                    dataset["clones"] = filter(
+                    dataset["clones"] = list(filter(
                         jsonschema.Draft4Validator(clone_spec).is_valid,
                         dataset["clones"],
-                    )
+                    ))
                 validate(
                     dataset,
                     olmsted_dataset_schema,
