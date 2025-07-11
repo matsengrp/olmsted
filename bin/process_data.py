@@ -485,7 +485,11 @@ def process_tree_nodes(args, tree, nodes, reroot=False):
         if node.up:
             datum["parent"] = node.up.name
             datum["length"] = node.get_distance(node.up)
-            datum["distance"] = node.get_distance(args.naive_name)
+            # Only calculate distance to naive if rooting is enabled and naive exists
+            if reroot and args.naive_name and tree.search_nodes(name=args.naive_name):
+                datum["distance"] = node.get_distance(args.naive_name)
+            else:
+                datum["distance"] = node.get_distance(tree)  # distance to root
         else:
             # node is root
             datum["type"] = "root"
