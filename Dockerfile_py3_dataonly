@@ -1,0 +1,23 @@
+# Dockerfile for Python 3 data processing only (no frontend)
+FROM python:3.9-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src/app
+
+# Copy Python requirements
+COPY requirements_py3.txt ./
+
+# Install Python packages
+RUN pip install --no-cache-dir -r requirements_py3.txt
+
+# Copy the application code
+COPY bin/ ./bin/
+COPY airr-standards/ ./airr-standards/
+COPY example_data/ ./example_data/
+
+# Default command to process data
+CMD ["python", "bin/process_data.py", "-h"]
