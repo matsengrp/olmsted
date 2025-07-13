@@ -7,8 +7,8 @@ This directory contains test scripts to verify the Python 3 migration.
 ### test_py3_containers.sh
 Comprehensive test that:
 - Runs local Python 3 script
-- Runs Python 3 full container (with frontend)
-- Runs Python 3 data-only container
+- Runs Python 2.7 full container
+- Runs Python 3 full container
 - Compares all outputs to ensure they're identical
 - Compares with reference output in `example_data/build_data/`
 
@@ -16,11 +16,6 @@ Comprehensive test that:
 Python script that compares JSON outputs after normalizing field order.
 
 ## Running Tests
-
-From the project root directory:
-```bash
-bash tests/test_py3_containers.sh
-```
 
 Or from within the tests directory:
 ```bash

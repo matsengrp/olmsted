@@ -1,0 +1,21 @@
+FROM continuumio/miniconda3:4.7.12
+
+# Update sources to use archive for old Debian release
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
+    apt-get update --allow-releaseinfo-change && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl
+
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && apt-get install -y nodejs
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN conda install --quiet --yes --file requirements_py2.txt --channel conda-forge && conda clean --all -f -y
+RUN pip install ntpl
+
+EXPOSE 3999
+CMD ["npm", "start", "localData"]
