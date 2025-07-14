@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🧪 Olmsted Python 2 to Python 3 Migration Test"
+echo "🧪 Olmsted Docker Image Test"
 echo "=================================================="
 
 # Show usage if no arguments provided
