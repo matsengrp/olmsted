@@ -1,4 +1,8 @@
-FROM continuumio/miniconda3:23.5.2-0
+FROM condaforge/miniforge3:23.3.1-1
+
+# Set timezone to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
