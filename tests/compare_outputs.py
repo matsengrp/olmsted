@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import argparse
 
 def normalize_json(obj):
     """Recursively sort dictionaries by key to enable comparison"""
@@ -24,43 +25,58 @@ def compare_json_files(file1, file2):
     
     return norm1 == norm2
 
+def compare_dirs(dir1, dir2, name1="Dir1", name2="Dir2"):
+    """Compare all JSON files in two directories"""
+    files1 = set(f for f in os.listdir(dir1) if f.endswith('.json'))
+    files2 = set(f for f in os.listdir(dir2) if f.endswith('.json'))
+
+    if files1 != files2:
+        print(f'❌ Different files found:')
+        print(f'   {name1} has {len(files1)} files')
+        print(f'   {name2} has {len(files2)} files')
+        if files1 - files2:
+            print(f'   Only in {name1}: {files1 - files2}')
+        if files2 - files1:
+            print(f'   Only in {name2}: {files2 - files1}')
+        return False
+
+    print(f'✅ Both versions produced {len(files1)} files')
+    print()
+
+    all_match = True
+    for fname in sorted(files1):
+        with open(os.path.join(dir1, fname)) as f1, open(os.path.join(dir2, fname)) as f2:
+            data1, data2 = json.load(f1), json.load(f2)
+            if normalize_json(data1) == normalize_json(data2):
+                print(f'  ✅ {fname}: MATCH')
+            else:
+                print(f'  ❌ {fname}: MISMATCH')
+                all_match = False
+    return all_match
+
 def main():
+    parser = argparse.ArgumentParser(description='Compare JSON outputs from two directories')
+    parser.add_argument('dir1', help='First directory to compare')
+    parser.add_argument('dir2', help='Second directory to compare')
+    parser.add_argument('--name1', default='Dir1', help='Name for first directory in output')
+    parser.add_argument('--name2', default='Dir2', help='Name for second directory in output')
+    
+    args = parser.parse_args()
+    
     # Change to project root if running from tests directory
     if os.path.basename(os.getcwd()) == 'tests':
         os.chdir('..')
     
-    old_dir = 'example_data/build_data'
-    new_dir = 'tests/output_local'
-    
-    # Get all files
-    old_files = sorted(os.listdir(old_dir))
-    new_files = sorted(os.listdir(new_dir))
-    
-    print(f"Files in old output: {len(old_files)}")
-    print(f"Files in new output: {len(new_files)}")
-    print()
-    
-    all_match = True
-    
-    for fname in old_files:
-        if fname.endswith('.json'):
-            if fname in new_files:
-                match = compare_json_files(
-                    os.path.join(old_dir, fname),
-                    os.path.join(new_dir, fname)
-                )
-                status = "MATCH" if match else "MISMATCH"
-                print(f"{fname}: {status}")
-                if not match:
-                    all_match = False
-            else:
-                print(f"{fname}: NOT FOUND in new output")
-                all_match = False
+    print(f'Comparing {args.name1} vs {args.name2}:')
+    match = compare_dirs(args.dir1, args.dir2, args.name1, args.name2)
     
     print()
-    print(f"All files match: {all_match}")
-    
-    return 0 if all_match else 1
+    if match:
+        print('🎉 SUCCESS: All outputs match!')
+        return 0
+    else:
+        print('❌ FAILURE: Outputs differ')
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())

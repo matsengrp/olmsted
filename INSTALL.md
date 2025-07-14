@@ -63,13 +63,13 @@ docker pull quay.io/matsengrp/olmsted:latest
 **Option B: Build from Source**
 ```bash
 # For full application with frontend
-docker build -f Dockerfile.python3 -t olmsted:python3 .
+docker build -f Dockerfile -t olmsted:latest .
 ```
 
 #### Step 3: Process Your Data
 ```bash
 # Using the Docker container
-docker run --rm -v $(pwd):/data olmsted:python3 \
+docker run --rm -v $(pwd):/data olmsted:latest \
   python bin/process_data.py -i /data/example_data/full_schema_dataset.json \
   -o /data/example_data/build_data -n inferred_naive
 ```
@@ -77,7 +77,7 @@ docker run --rm -v $(pwd):/data olmsted:python3 \
 #### Step 4: Run the Server
 ```bash
 # From the build_data directory
-docker run -p 3999:3999 -v $(pwd):/data olmsted:python3 \
+docker run -p 3999:3999 -v $(pwd):/data olmsted:latest \
   npm start localData /data
 ```
 
