@@ -8,8 +8,6 @@ if [ $# -eq 0 ]; then
     echo "Usage: $0 <docker-image-1> [docker-image-2] ..."
     echo ""
     echo "Examples:"
-    echo "  $0 olmsted:python2"
-    echo "  $0 olmsted:python3"
     echo "  $0 olmsted:python2 olmsted:python3"
     echo ""
     exit 1
