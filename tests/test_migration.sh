@@ -54,23 +54,52 @@ echo "Python 2.7 output: $(ls tests/output_py2/*.json 2>/dev/null | wc -l) files
 echo "Python 3 output: $(ls tests/output_py3/*.json 2>/dev/null | wc -l) files"
 
 echo ""
-echo "🔍 Comparing outputs..."
+echo "🔍 Comparing outputs against golden reference..."
 
-if [ $PY2_SUCCESS -eq 1 ] && [ $PY3_SUCCESS -eq 1 ]; then
-    python3 tests/compare_outputs.py tests/output_py2 tests/output_py3 --name1 "Python 2.7" --name2 "Python 3"
-    
-    if [ $? -eq 0 ]; then
-        echo ""
-        echo "✅ Migration verified - the data processing is fully compatible"
-    else
-        echo ""
-        echo "⚠️  Migration needs review"
-    fi
-else
-    echo "❌ Cannot compare - one or both containers failed"
+# Compare Python 2.7 output against golden reference
+if [ $PY2_SUCCESS -eq 1 ]; then
+    echo "📊 Python 2.7 vs Golden Reference:"
+    python3 tests/compare_outputs.py example_data/build_data tests/output_py2 --name1 "Golden Reference" --name2 "Python 2.7"
+    PY2_MATCH=$?
     echo ""
-    if [ $PY2_SUCCESS -eq 0 ]; then
-        echo "Debug Python 2.7 container with:"
-        echo "sudo docker run --rm -v \$(pwd)/example_data:/data olmsted:python2 python bin/process_data.py -i /data/full_schema_dataset.json -o /output -v"
+else
+    echo "⚠️  Skipping Python 2.7 comparison - container failed"
+    PY2_MATCH=1
+fi
+
+# Compare Python 3 output against golden reference
+if [ $PY3_SUCCESS -eq 1 ]; then
+    echo "📊 Python 3 vs Golden Reference:"
+    python3 tests/compare_outputs.py example_data/build_data tests/output_py3 --name1 "Golden Reference" --name2 "Python 3"
+    PY3_MATCH=$?
+    echo ""
+else
+    echo "⚠️  Skipping Python 3 comparison - container failed"
+    PY3_MATCH=1
+fi
+
+# Final results
+echo "🎯 Migration Test Results:"
+if [ $PY2_SUCCESS -eq 1 ] && [ $PY2_MATCH -eq 0 ]; then
+    echo "  ✅ Python 2.7: Container runs and output matches golden reference"
+else
+    echo "  ❌ Python 2.7: Failed"
+fi
+
+if [ $PY3_SUCCESS -eq 1 ] && [ $PY3_MATCH -eq 0 ]; then
+    echo "  ✅ Python 3: Container runs and output matches golden reference"
+else
+    echo "  ❌ Python 3: Failed"
+fi
+
+echo ""
+if [ $PY3_SUCCESS -eq 1 ] && [ $PY3_MATCH -eq 0 ]; then
+    echo "🎉 SUCCESS: Python 3 migration is verified!"
+    echo "✅ Python 3 produces identical output to the golden reference"
+else
+    echo "❌ FAILURE: Python 3 migration needs review"
+    if [ $PY3_SUCCESS -eq 0 ]; then
+        echo "Debug Python 3 container with:"
+        echo "sudo docker run --rm -v \$(pwd)/example_data:/data olmsted:python3 python bin/process_data.py -i /data/full_schema_dataset.json -o /output -v"
     fi
 fi

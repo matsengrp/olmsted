@@ -1,41 +1,65 @@
-# Olmsted Python 3 Migration Tests
+# Olmsted Testing Infrastructure
 
-This directory contains test scripts to verify the Python 3 migration.
+This directory contains testing tools and scripts for validating the Olmsted data processing pipeline, particularly for the Python 2 to Python 3 migration.
 
-## Test Scripts
+## Files Overview
 
-### test_py3_containers.sh
-Comprehensive test that:
-- Runs local Python 3 script
-- Runs Python 2.7 full container
-- Runs Python 3 full container
-- Compares all outputs to ensure they're identical
-- Compares with reference output in `example_data/build_data/`
+### Scripts
+- **`test_migration.sh`** - Main migration test script that validates Python 2 and Python 3 containers against golden reference data
+- **`compare_outputs.py`** - Python utility for comparing JSON outputs between directories
 
-### compare_outputs.py
-Python script that compares JSON outputs after normalizing field order.
+### Test Data
+- **`output_py2/`** - Python 2.7 test outputs (generated during testing)
+- **`output_py3/`** - Python 3.10 test outputs (generated during testing)
+- **Golden Reference**: `../example_data/build_data/` - Known good outputs used as comparison baseline
 
 ## Running Tests
 
-Or from within the tests directory:
+### Migration Validation Test
+Tests both Python 2 and Python 3 containers against the golden reference:
+
 ```bash
-cd tests
-bash test_py3_containers.sh
+# From project root
+./tests/test_migration.sh
 ```
 
-## Test Output Structure
+**What it does:**
+1. Runs Python 2.7 container on example data
+2. Runs Python 3.10 container on example data
+3. Compares both outputs against golden reference in `example_data/build_data/`
+4. Reports success/failure for migration validation
 
-All test outputs are stored in subdirectories:
-- `tests/output_local/` - Local Python 3 script output
-- `tests/output_py3_full/` - Full container output
-- `tests/output_py3_data/` - Data-only container output
+### Manual Output Comparison
+Compare any two directories containing JSON outputs:
 
-## Expected Results
+```bash
+# Compare specific directories
+python3 tests/compare_outputs.py <dir1> <dir2> --name1 "Description1" --name2 "Description2"
 
-All three methods should produce identical outputs:
-- 11 JSON files total
-- 1 datasets.json
-- 1 clones file
-- 9 tree files
+# Example: Compare Python 3 output against golden reference
+python3 tests/compare_outputs.py example_data/build_data tests/output_py3 --name1 "Golden" --name2 "Python 3"
+```
 
-The content should match the reference data in `example_data/build_data/` (field ordering may differ).
+## Test Requirements
+
+### Docker Images
+- `olmsted:python2` - Python 2.7 container
+- `olmsted:python3` - Python 3.10 container
+
+Build with:
+```bash
+docker build -f Dockerfile.python2 -t olmsted:python2 .
+docker build -f Dockerfile.python3 -t olmsted:python3 .
+```
+
+## Test Data Expectations
+
+### Input
+- **File**: `example_data/full_schema_dataset.json`
+- **Format**: AIRR-compliant JSON dataset
+
+### Expected Outputs
+Both Python versions should produce **11 JSON files**:
+- `datasets.json`
+- `clones.test-input-2020.01.30.json`
+- 9 tree files: `tree.<uuid>.json`
