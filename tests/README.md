@@ -9,8 +9,6 @@ This directory contains testing tools and scripts for validating the Olmsted dat
 - **`compare_outputs.py`** - Python utility for comparing JSON outputs between directories
 
 ### Test Data
-- **`output_py2/`** - Python 2.7 test outputs (generated during testing)
-- **`output_py3/`** - Python 3.10 test outputs (generated during testing)
 - **Golden Reference**: `../example_data/build_data/` - Known good outputs used as comparison baseline
 
 ## Running Tests
@@ -29,17 +27,6 @@ Tests both Python 2 and Python 3 containers against the golden reference:
 3. Compares both outputs against golden reference in `example_data/build_data/`
 4. Reports success/failure for migration validation
 
-### Manual Output Comparison
-Compare any two directories containing JSON outputs:
-
-```bash
-# Compare specific directories
-python3 tests/compare_outputs.py <dir1> <dir2> --name1 "Description1" --name2 "Description2"
-
-# Example: Compare Python 3 output against golden reference
-python3 tests/compare_outputs.py example_data/build_data tests/output_py3 --name1 "Golden" --name2 "Python 3"
-```
-
 ## Test Requirements
 
 ### Docker Images
@@ -49,7 +36,7 @@ python3 tests/compare_outputs.py example_data/build_data tests/output_py3 --name
 Build with:
 ```bash
 docker build -f Dockerfile.python2 -t olmsted:python2 .
-docker build -f Dockerfile.python3 -t olmsted:python3 .
+docker build -f Dockerfile -t olmsted:python3 .
 ```
 
 ## Test Data Expectations
