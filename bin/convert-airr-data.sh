@@ -14,7 +14,15 @@ if [ $# -eq 0 ]; then
 fi
 
 INPUT_FILE="$1"
-DOCKER_IMAGE="${2:-quay.io/matsengrp/olmsted}"
+DOCKER_TAG_OR_IMAGE="${2:-quay.io/matsengrp/olmsted}"
+
+# If the argument contains ':', treat it as a full image name
+# Otherwise, assume it's a tag for quay.io/matsengrp/olmsted
+if [[ "$DOCKER_TAG_OR_IMAGE" == *":"* ]]; then
+    DOCKER_IMAGE="$DOCKER_TAG_OR_IMAGE"
+else
+    DOCKER_IMAGE="quay.io/matsengrp/olmsted:$DOCKER_TAG_OR_IMAGE"
+fi
 
 echo "Processing $input_file with Docker image: $docker_image"
 
