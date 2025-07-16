@@ -1,0 +1,83 @@
+npm warn audit fix semver@5.7.1 node_modules/fsevents/node_modules/semver
+npm warn audit fix semver@5.7.1 is a bundled dependency of
+npm warn audit fix semver@5.7.1 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix semver@5.7.1 It cannot be fixed automatically.
+npm warn audit fix semver@5.7.1 Check for updates to the fsevents package.
+npm warn audit fix minimatch@3.0.4 node_modules/fsevents/node_modules/minimatch
+npm warn audit fix minimatch@3.0.4 is a bundled dependency of
+npm warn audit fix minimatch@3.0.4 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix minimatch@3.0.4 It cannot be fixed automatically.
+npm warn audit fix minimatch@3.0.4 Check for updates to the fsevents package.
+npm warn audit fix tar@4.4.13 node_modules/fsevents/node_modules/tar
+npm warn audit fix tar@4.4.13 is a bundled dependency of
+npm warn audit fix tar@4.4.13 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix tar@4.4.13 It cannot be fixed automatically.
+npm warn audit fix tar@4.4.13 Check for updates to the fsevents package.
+npm warn audit fix minimist@0.0.8 node_modules/fsevents/node_modules/minimist
+npm warn audit fix minimist@0.0.8 is a bundled dependency of
+npm warn audit fix minimist@0.0.8 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix minimist@0.0.8 It cannot be fixed automatically.
+npm warn audit fix minimist@0.0.8 Check for updates to the fsevents package.
+npm warn audit fix minimist@1.2.0 node_modules/fsevents/node_modules/rc/node_modules/minimist
+npm warn audit fix minimist@1.2.0 is a bundled dependency of
+npm warn audit fix minimist@1.2.0 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix minimist@1.2.0 It cannot be fixed automatically.
+npm warn audit fix minimist@1.2.0 Check for updates to the fsevents package.
+npm warn audit fix debug@3.2.6 node_modules/fsevents/node_modules/debug
+npm warn audit fix debug@3.2.6 is a bundled dependency of
+npm warn audit fix debug@3.2.6 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix debug@3.2.6 It cannot be fixed automatically.
+npm warn audit fix debug@3.2.6 Check for updates to the fsevents package.
+npm warn audit fix brace-expansion@1.1.11 node_modules/fsevents/node_modules/brace-expansion
+npm warn audit fix brace-expansion@1.1.11 is a bundled dependency of
+npm warn audit fix brace-expansion@1.1.11 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix brace-expansion@1.1.11 It cannot be fixed automatically.
+npm warn audit fix brace-expansion@1.1.11 Check for updates to the fsevents package.
+npm warn audit fix ini@1.3.5 node_modules/fsevents/node_modules/ini
+npm warn audit fix ini@1.3.5 is a bundled dependency of
+npm warn audit fix ini@1.3.5 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix ini@1.3.5 It cannot be fixed automatically.
+npm warn audit fix ini@1.3.5 Check for updates to the fsevents package.
+npm warn audit fix node-pre-gyp@0.14.0 node_modules/fsevents/node_modules/node-pre-gyp
+npm warn audit fix node-pre-gyp@0.14.0 is a bundled dependency of
+npm warn audit fix node-pre-gyp@0.14.0 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix node-pre-gyp@0.14.0 It cannot be fixed automatically.
+npm warn audit fix node-pre-gyp@0.14.0 Check for updates to the fsevents package.
+npm warn audit fix mkdirp@0.5.1 node_modules/fsevents/node_modules/mkdirp
+npm warn audit fix mkdirp@0.5.1 is a bundled dependency of
+npm warn audit fix mkdirp@0.5.1 fsevents@1.2.11 at node_modules/fsevents
+npm warn audit fix mkdirp@0.5.1 It cannot be fixed automatically.
+npm warn audit fix mkdirp@0.5.1 Check for updates to the fsevents package.
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: react-addons-css-transition-group@15.6.2
+npm error Found: react@16.7.0
+npm error node_modules/react
+npm error   react@"16.7.0" from the root project
+npm error   peer react@">=0.14.0" from commonmark-react-renderer@4.3.4
+npm error   node_modules/commonmark-react-renderer
+npm error     commonmark-react-renderer@"^4.3.4" from react-markdown@2.5.1
+npm error     node_modules/react-markdown
+npm error       react-markdown@"^2.5.0" from the root project
+npm error   15 more (react-collapsible, react-copy-to-clipboard, react-dom, ...)
+npm error
+npm error Could not resolve dependency:
+npm error peer react@"^15.4.2" from react-addons-css-transition-group@15.6.2
+npm error node_modules/react-addons-css-transition-group
+npm error   react-addons-css-transition-group@"^15.6.2" from the root project
+npm error
+npm error Conflicting peer dependency: react@15.7.0
+npm error node_modules/react
+npm error   peer react@"^15.4.2" from react-addons-css-transition-group@15.6.2
+npm error   node_modules/react-addons-css-transition-group
+npm error     react-addons-css-transition-group@"^15.6.2" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /root/.npm/_logs/2025-07-16T20_58_15_171Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-16T20_58_15_171Z-debug-0.log

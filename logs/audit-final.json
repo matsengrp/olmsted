@@ -1,0 +1,2807 @@
+npm warn config production Use `--omit=dev` instead.
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@babel/runtime": {
+      "name": "@babel/runtime",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104000,
+          "name": "@babel/runtime",
+          "dependency": "@babel/runtime",
+          "title": "Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups",
+          "url": "https://github.com/advisories/GHSA-968p-4wvh-cqc8",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 6.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.26.10"
+        }
+      ],
+      "effects": [],
+      "range": "<7.26.10",
+      "nodes": [
+        "node_modules/@babel/runtime"
+      ],
+      "fixAvailable": true
+    },
+    "acorn": {
+      "name": "acorn",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1085601,
+          "name": "acorn",
+          "dependency": "acorn",
+          "title": "Regular Expression Denial of Service in Acorn",
+          "url": "https://github.com/advisories/GHSA-6chw-6frg-f759",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=6.0.0 <6.4.1"
+        }
+      ],
+      "effects": [],
+      "range": "6.0.0 - 6.4.0",
+      "nodes": [
+        "node_modules/webpack/node_modules/acorn"
+      ],
+      "fixAvailable": true
+    },
+    "ajv": {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1097685,
+          "name": "ajv",
+          "dependency": "ajv",
+          "title": "Prototype Pollution in Ajv",
+          "url": "https://github.com/advisories/GHSA-v88g-cgmw-v5xw",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.6,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<6.12.3"
+        }
+      ],
+      "effects": [],
+      "range": "<6.12.3",
+      "nodes": [
+        "node_modules/ajv"
+      ],
+      "fixAvailable": true
+    },
+    "ansi-regex": {
+      "name": "ansi-regex",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1094090,
+          "name": "ansi-regex",
+          "dependency": "ansi-regex",
+          "title": "Inefficient Regular Expression Complexity in chalk/ansi-regex",
+          "url": "https://github.com/advisories/GHSA-93q8-gq69-wqmw",
+          "severity": "high",
+          "cwe": [
+            "CWE-697",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=3.0.0 <3.0.1"
+        }
+      ],
+      "effects": [],
+      "range": "3.0.0",
+      "nodes": [
+        "node_modules/cliui/node_modules/ansi-regex",
+        "node_modules/vega-lite/node_modules/ansi-regex",
+        "node_modules/yargs/node_modules/ansi-regex"
+      ],
+      "fixAvailable": true
+    },
+    "anymatch": {
+      "name": "anymatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "chokidar"
+      ],
+      "range": "1.2.0 - 2.0.0",
+      "nodes": [
+        "node_modules/anymatch"
+      ],
+      "fixAvailable": true
+    },
+    "bcrypt": {
+      "name": "bcrypt",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1090082,
+          "name": "bcrypt",
+          "dependency": "bcrypt",
+          "title": "Integer Overflow or Wraparound and Use of a Broken or Risky Cryptographic Algorithm in bcrypt",
+          "url": "https://github.com/advisories/GHSA-5wg4-74h6-q47v",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-190",
+            "CWE-327"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": "<5.0.0"
+        }
+      ],
+      "effects": [],
+      "range": "<5.0.0",
+      "nodes": [
+        "node_modules/bcrypt"
+      ],
+      "fixAvailable": true
+    },
+    "body-parser": {
+      "name": "body-parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1099520,
+          "name": "body-parser",
+          "dependency": "body-parser",
+          "title": "body-parser vulnerable to denial of service when url encoding is enabled",
+          "url": "https://github.com/advisories/GHSA-qwcr-r2fm-qrc7",
+          "severity": "high",
+          "cwe": [
+            "CWE-405"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.20.3"
+        },
+        "qs"
+      ],
+      "effects": [
+        "express"
+      ],
+      "range": "<=1.20.2",
+      "nodes": [
+        "node_modules/express/node_modules/body-parser"
+      ],
+      "fixAvailable": true
+    },
+    "brace-expansion": {
+      "name": "brace-expansion",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1105443,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion Regular Expression Denial of Service vulnerability",
+          "url": "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 3.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=1.0.0 <=1.1.11"
+        }
+      ],
+      "effects": [],
+      "range": "1.0.0 - 1.1.11",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/brace-expansion",
+        "node_modules/brace-expansion",
+        "node_modules/fsevents/node_modules/brace-expansion"
+      ],
+      "fixAvailable": true
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1098094,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "Uncontrolled resource consumption in braces",
+          "url": "https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1050"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "<3.0.3",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "webpack",
+        "version": "5.100.2",
+        "isSemVerMajor": true
+      }
+    },
+    "browserify-sign": {
+      "name": "browserify-sign",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102445,
+          "name": "browserify-sign",
+          "dependency": "browserify-sign",
+          "title": "browserify-sign upper bound check issue in `dsaVerify` leads to a signature forgery attack",
+          "url": "https://github.com/advisories/GHSA-x9w5-v3q2-3rhw",
+          "severity": "high",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": ">=2.6.0 <=4.2.1"
+        }
+      ],
+      "effects": [],
+      "range": "2.6.0 - 4.2.1",
+      "nodes": [
+        "node_modules/browserify-sign"
+      ],
+      "fixAvailable": true
+    },
+    "cacheable-request": {
+      "name": "cacheable-request",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "http-cache-semantics"
+      ],
+      "effects": [
+        "got"
+      ],
+      "range": "0.1.0 - 2.1.4",
+      "nodes": [
+        "node_modules/cacheable-request"
+      ],
+      "fixAvailable": true
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "anymatch",
+        "braces"
+      ],
+      "effects": [
+        "watchpack"
+      ],
+      "range": "1.3.0 - 2.1.8",
+      "nodes": [
+        "node_modules/chokidar"
+      ],
+      "fixAvailable": true
+    },
+    "chownr": {
+      "name": "chownr",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1091617,
+          "name": "chownr",
+          "dependency": "chownr",
+          "title": "Time-of-check Time-of-use (TOCTOU) Race Condition in chownr",
+          "url": "https://github.com/advisories/GHSA-c6rq-rjc2-86v2",
+          "severity": "low",
+          "cwe": [
+            "CWE-367"
+          ],
+          "cvss": {
+            "score": 2.5,
+            "vectorString": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<1.1.0"
+        }
+      ],
+      "effects": [],
+      "range": "<1.1.0",
+      "nodes": [
+        "node_modules/chownr"
+      ],
+      "fixAvailable": true
+    },
+    "color": {
+      "name": "color",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "color-string"
+      ],
+      "effects": [],
+      "range": "<=0.11.4",
+      "nodes": [
+        "node_modules/color"
+      ],
+      "fixAvailable": {
+        "name": "color",
+        "version": "5.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "color-string": {
+      "name": "color-string",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1089718,
+          "name": "color-string",
+          "dependency": "color-string",
+          "title": "Regular Expression Denial of Service (ReDOS)",
+          "url": "https://github.com/advisories/GHSA-257v-vj4p-3w2h",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<1.5.5"
+        }
+      ],
+      "effects": [
+        "color"
+      ],
+      "range": "<1.5.5",
+      "nodes": [
+        "node_modules/color-string"
+      ],
+      "fixAvailable": {
+        "name": "color",
+        "version": "5.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "cookie": {
+      "name": "cookie",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1103907,
+          "name": "cookie",
+          "dependency": "cookie",
+          "title": "cookie accepts cookie name, path, and domain with out of bounds characters",
+          "url": "https://github.com/advisories/GHSA-pxg6-pf52-xh8x",
+          "severity": "low",
+          "cwe": [
+            "CWE-74"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<0.7.0"
+        }
+      ],
+      "effects": [
+        "express"
+      ],
+      "range": "<0.7.0",
+      "nodes": [
+        "node_modules/cookie"
+      ],
+      "fixAvailable": true
+    },
+    "create-react-class": {
+      "name": "create-react-class",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "fbjs"
+      ],
+      "effects": [],
+      "range": "15.5.0 - 15.6.3",
+      "nodes": [
+        "node_modules/create-react-class"
+      ],
+      "fixAvailable": true
+    },
+    "cross-spawn": {
+      "name": "cross-spawn",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104663,
+          "name": "cross-spawn",
+          "dependency": "cross-spawn",
+          "title": "Regular Expression Denial of Service (ReDoS) in cross-spawn",
+          "url": "https://github.com/advisories/GHSA-3xgq-45jj-v275",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<6.0.6"
+        }
+      ],
+      "effects": [
+        "execa"
+      ],
+      "range": "<6.0.6",
+      "nodes": [
+        "node_modules/cross-spawn",
+        "node_modules/yargs/node_modules/cross-spawn"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-brush": {
+      "name": "d3-brush",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "d3-interpolate",
+        "d3-transition"
+      ],
+      "effects": [],
+      "range": "0.1.0 - 2.1.0",
+      "nodes": [
+        "node_modules/d3-brush"
+      ],
+      "fixAvailable": {
+        "name": "d3-brush",
+        "version": "3.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-color": {
+      "name": "d3-color",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1088594,
+          "name": "d3-color",
+          "dependency": "d3-color",
+          "title": "d3-color vulnerable to ReDoS",
+          "url": "https://github.com/advisories/GHSA-36jr-mh4h-2g58",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<3.1.0"
+        }
+      ],
+      "effects": [
+        "d3-interpolate",
+        "d3-scale",
+        "d3-scale-chromatic",
+        "d3-transition",
+        "vega-parser"
+      ],
+      "range": "<3.1.0",
+      "nodes": [
+        "node_modules/d3-color"
+      ],
+      "fixAvailable": {
+        "name": "d3-color",
+        "version": "3.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-interpolate": {
+      "name": "d3-interpolate",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "d3-color"
+      ],
+      "effects": [
+        "d3-scale",
+        "d3-scale-chromatic",
+        "d3-transition",
+        "vega-encode",
+        "vega-scale"
+      ],
+      "range": "0.1.3 - 2.0.1",
+      "nodes": [
+        "node_modules/d3-interpolate"
+      ],
+      "fixAvailable": {
+        "name": "d3-interpolate",
+        "version": "3.0.1",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-scale": {
+      "name": "d3-scale",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "d3-color",
+        "d3-interpolate"
+      ],
+      "effects": [
+        "vega-scale"
+      ],
+      "range": "0.1.3 - 3.3.0",
+      "nodes": [
+        "node_modules/d3-scale",
+        "node_modules/vega-scale/node_modules/d3-scale"
+      ],
+      "fixAvailable": {
+        "name": "d3-scale",
+        "version": "4.0.2",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-scale-chromatic": {
+      "name": "d3-scale-chromatic",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "d3-color",
+        "d3-interpolate"
+      ],
+      "effects": [
+        "vega-scale"
+      ],
+      "range": "0.1.0 - 2.0.0",
+      "nodes": [
+        "node_modules/d3-scale-chromatic"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-transition": {
+      "name": "d3-transition",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "d3-color",
+        "d3-interpolate"
+      ],
+      "effects": [
+        "d3-brush",
+        "d3-zoom"
+      ],
+      "range": "0.0.7 - 2.0.0",
+      "nodes": [
+        "node_modules/d3-transition"
+      ],
+      "fixAvailable": {
+        "name": "d3-zoom",
+        "version": "3.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "d3-zoom": {
+      "name": "d3-zoom",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "d3-interpolate",
+        "d3-transition"
+      ],
+      "effects": [],
+      "range": "0.0.2 - 2.0.0",
+      "nodes": [
+        "node_modules/d3-zoom"
+      ],
+      "fixAvailable": {
+        "name": "d3-zoom",
+        "version": "3.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "debug": {
+      "name": "debug",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1096792,
+          "name": "debug",
+          "dependency": "debug",
+          "title": "Regular Expression Denial of Service in debug",
+          "url": "https://github.com/advisories/GHSA-gxpj-cx7g-858c",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=4.0.0 <4.3.1"
+        },
+        {
+          "source": 1096793,
+          "name": "debug",
+          "dependency": "debug",
+          "title": "Regular Expression Denial of Service in debug",
+          "url": "https://github.com/advisories/GHSA-gxpj-cx7g-858c",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=3.2.0 <3.2.7"
+        }
+      ],
+      "effects": [],
+      "range": "3.2.0 - 3.2.6 || 4.0.0 - 4.3.0",
+      "nodes": [
+        "node_modules/builder-util-runtime/node_modules/debug",
+        "node_modules/builder-util/node_modules/debug",
+        "node_modules/fsevents/node_modules/debug"
+      ],
+      "fixAvailable": true
+    },
+    "decode-uri-component": {
+      "name": "decode-uri-component",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1094087,
+          "name": "decode-uri-component",
+          "dependency": "decode-uri-component",
+          "title": "decode-uri-component vulnerable to Denial of Service (DoS)",
+          "url": "https://github.com/advisories/GHSA-w573-4hg7-7wgq",
+          "severity": "high",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.2.1"
+        }
+      ],
+      "effects": [],
+      "range": "<0.2.1",
+      "nodes": [
+        "node_modules/decode-uri-component"
+      ],
+      "fixAvailable": true
+    },
+    "diff": {
+      "name": "diff",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102333,
+          "name": "diff",
+          "dependency": "diff",
+          "title": "Regular Expression Denial of Service (ReDoS)",
+          "url": "https://github.com/advisories/GHSA-h6ch-v84p-w6p9",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<3.5.0"
+        }
+      ],
+      "effects": [
+        "mocha"
+      ],
+      "range": "<3.5.0",
+      "nodes": [
+        "node_modules/parse-domain/node_modules/mocha/node_modules/diff"
+      ],
+      "fixAvailable": true
+    },
+    "elliptic": {
+      "name": "elliptic",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1093391,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic Uses a Broken or Risky Cryptographic Algorithm",
+          "url": "https://github.com/advisories/GHSA-r9p9-mrjm-926w",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-327"
+          ],
+          "cvss": {
+            "score": 6.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N"
+          },
+          "range": "<6.5.4"
+        },
+        {
+          "source": 1098593,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic's EDDSA missing signature length check",
+          "url": "https://github.com/advisories/GHSA-f7q4-pwc6-w24p",
+          "severity": "low",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=4.0.0 <=6.5.6"
+        },
+        {
+          "source": 1098594,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic's ECDSA missing check for whether leading bit of r and s is zero",
+          "url": "https://github.com/advisories/GHSA-977x-g7h5-7qgw",
+          "severity": "low",
+          "cwe": [
+            "CWE-130"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=2.0.0 <=6.5.6"
+        },
+        {
+          "source": 1098595,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic allows BER-encoded signatures",
+          "url": "https://github.com/advisories/GHSA-49q7-c7j4-3p7m",
+          "severity": "low",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=5.2.1 <=6.5.6"
+        },
+        {
+          "source": 1100086,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Signature Malleabillity in elliptic",
+          "url": "https://github.com/advisories/GHSA-vh7m-p724-62c2",
+          "severity": "high",
+          "cwe": [
+            "CWE-190"
+          ],
+          "cvss": {
+            "score": 7.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:L"
+          },
+          "range": "<6.5.3"
+        },
+        {
+          "source": 1101424,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic's verify function omits uniqueness validation",
+          "url": "https://github.com/advisories/GHSA-434g-2637-qmqr",
+          "severity": "low",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<6.5.6"
+        },
+        {
+          "source": 1102901,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Elliptic's private key extraction in ECDSA upon signing a malformed input (e.g. a string)",
+          "url": "https://github.com/advisories/GHSA-vjh7-7g9h-fjfh",
+          "severity": "critical",
+          "cwe": [
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=6.6.0"
+        },
+        {
+          "source": 1105750,
+          "name": "elliptic",
+          "dependency": "elliptic",
+          "title": "Valid ECDSA signatures erroneously rejected in Elliptic",
+          "url": "https://github.com/advisories/GHSA-fc9h-whq2-v747",
+          "severity": "low",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 4.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": "<6.6.0"
+        }
+      ],
+      "effects": [],
+      "range": "<=6.6.0",
+      "nodes": [
+        "node_modules/elliptic"
+      ],
+      "fixAvailable": true
+    },
+    "execa": {
+      "name": "execa",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "cross-spawn"
+      ],
+      "effects": [
+        "os-locale"
+      ],
+      "range": "0.5.0 - 0.9.0",
+      "nodes": [
+        "node_modules/execa"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "express": {
+      "name": "express",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1096820,
+          "name": "express",
+          "dependency": "express",
+          "title": "Express.js Open Redirect in malformed URLs",
+          "url": "https://github.com/advisories/GHSA-rv95-896h-c2vc",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-601",
+            "CWE-1286"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<4.19.2"
+        },
+        {
+          "source": 1100530,
+          "name": "express",
+          "dependency": "express",
+          "title": "express vulnerable to XSS via response.redirect()",
+          "url": "https://github.com/advisories/GHSA-qw6h-vgh9-j6wx",
+          "severity": "low",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:L"
+          },
+          "range": "<4.20.0"
+        },
+        "body-parser",
+        "cookie",
+        "path-to-regexp",
+        "qs",
+        "send",
+        "serve-static"
+      ],
+      "effects": [],
+      "range": "<=4.21.0 || 5.0.0-alpha.1 - 5.0.0",
+      "nodes": [
+        "node_modules/express"
+      ],
+      "fixAvailable": true
+    },
+    "fbjs": {
+      "name": "fbjs",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "isomorphic-fetch"
+      ],
+      "effects": [
+        "create-react-class"
+      ],
+      "range": "0.7.0 - 1.0.0",
+      "nodes": [
+        "node_modules/fbjs"
+      ],
+      "fixAvailable": true
+    },
+    "get-func-name": {
+      "name": "get-func-name",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1094574,
+          "name": "get-func-name",
+          "dependency": "get-func-name",
+          "title": "Chaijs/get-func-name vulnerable to ReDoS",
+          "url": "https://github.com/advisories/GHSA-4q6p-r6v2-jvc5",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<2.0.1"
+        }
+      ],
+      "effects": [],
+      "range": "<2.0.1",
+      "nodes": [
+        "node_modules/get-func-name"
+      ],
+      "fixAvailable": true
+    },
+    "got": {
+      "name": "got",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1088948,
+          "name": "got",
+          "dependency": "got",
+          "title": "Got allows a redirect to a UNIX socket",
+          "url": "https://github.com/advisories/GHSA-pfrx-2q88-qq97",
+          "severity": "moderate",
+          "cwe": [],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<11.8.5"
+        },
+        "cacheable-request"
+      ],
+      "effects": [
+        "parse-domain"
+      ],
+      "range": "<=11.8.3",
+      "nodes": [
+        "node_modules/got"
+      ],
+      "fixAvailable": true
+    },
+    "http-cache-semantics": {
+      "name": "http-cache-semantics",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102456,
+          "name": "http-cache-semantics",
+          "dependency": "http-cache-semantics",
+          "title": "http-cache-semantics vulnerable to Regular Expression Denial of Service",
+          "url": "https://github.com/advisories/GHSA-rc47-6667-2j5j",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.1.1"
+        }
+      ],
+      "effects": [
+        "cacheable-request"
+      ],
+      "range": "<4.1.1",
+      "nodes": [
+        "node_modules/http-cache-semantics"
+      ],
+      "fixAvailable": true
+    },
+    "ini": {
+      "name": "ini",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1093224,
+          "name": "ini",
+          "dependency": "ini",
+          "title": "ini before 1.3.6 vulnerable to Prototype Pollution via ini.parse",
+          "url": "https://github.com/advisories/GHSA-qqgx-2p2h-9c37",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<1.3.6"
+        }
+      ],
+      "effects": [],
+      "range": "<1.3.6",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/ini",
+        "node_modules/fsevents/node_modules/ini",
+        "node_modules/ini"
+      ],
+      "fixAvailable": true
+    },
+    "isomorphic-fetch": {
+      "name": "isomorphic-fetch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "node-fetch"
+      ],
+      "effects": [
+        "fbjs"
+      ],
+      "range": "2.0.0 - 2.2.1",
+      "nodes": [
+        "node_modules/isomorphic-fetch"
+      ],
+      "fixAvailable": true
+    },
+    "json5": {
+      "name": "json5",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1096543,
+          "name": "json5",
+          "dependency": "json5",
+          "title": "Prototype Pollution in JSON5 via Parse Method",
+          "url": "https://github.com/advisories/GHSA-9c47-m6qq-7p4h",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:L/A:H"
+          },
+          "range": "<1.0.2"
+        }
+      ],
+      "effects": [
+        "loader-utils"
+      ],
+      "range": "<1.0.2",
+      "nodes": [
+        "node_modules/json5"
+      ],
+      "fixAvailable": true
+    },
+    "kind-of": {
+      "name": "kind-of",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1095056,
+          "name": "kind-of",
+          "dependency": "kind-of",
+          "title": "Validation Bypass in kind-of",
+          "url": "https://github.com/advisories/GHSA-6c8f-qphg-qjgp",
+          "severity": "high",
+          "cwe": [
+            "CWE-668"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": ">=6.0.0 <6.0.3"
+        }
+      ],
+      "effects": [],
+      "range": "6.0.0 - 6.0.2",
+      "nodes": [
+        "node_modules/kind-of"
+      ],
+      "fixAvailable": true
+    },
+    "loader-utils": {
+      "name": "loader-utils",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1094088,
+          "name": "loader-utils",
+          "dependency": "loader-utils",
+          "title": "Prototype pollution in webpack loader-utils",
+          "url": "https://github.com/advisories/GHSA-76p3-8jx3-jpfq",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 9.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<1.4.1"
+        },
+        {
+          "source": 1095055,
+          "name": "loader-utils",
+          "dependency": "loader-utils",
+          "title": "loader-utils is vulnerable to Regular Expression Denial of Service (ReDoS) via url variable",
+          "url": "https://github.com/advisories/GHSA-3rfm-jhwj-7488",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.4.2"
+        },
+        {
+          "source": 1097143,
+          "name": "loader-utils",
+          "dependency": "loader-utils",
+          "title": "loader-utils is vulnerable to Regular Expression Denial of Service (ReDoS)",
+          "url": "https://github.com/advisories/GHSA-hhq3-ff78-jv3g",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.4.2"
+        },
+        "json5"
+      ],
+      "effects": [],
+      "range": "<=1.4.1",
+      "nodes": [
+        "node_modules/loader-utils"
+      ],
+      "fixAvailable": true
+    },
+    "lodash": {
+      "name": "lodash",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1094500,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Regular Expression Denial of Service (ReDoS) in lodash",
+          "url": "https://github.com/advisories/GHSA-29mw-wpgm-hmr9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<4.17.21"
+        },
+        {
+          "source": 1096305,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Prototype Pollution in lodash",
+          "url": "https://github.com/advisories/GHSA-p6mc-m468-83gw",
+          "severity": "high",
+          "cwe": [
+            "CWE-770",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:H"
+          },
+          "range": ">=3.7.0 <4.17.19"
+        },
+        {
+          "source": 1096996,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Command Injection in lodash",
+          "url": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+          "severity": "high",
+          "cwe": [
+            "CWE-77",
+            "CWE-94"
+          ],
+          "cvss": {
+            "score": 7.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<4.17.21"
+        }
+      ],
+      "effects": [],
+      "range": "<=4.17.20",
+      "nodes": [
+        "node_modules/lodash"
+      ],
+      "fixAvailable": true
+    },
+    "lodash-es": {
+      "name": "lodash-es",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1085577,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Regular Expression Denial of Service (ReDoS) in lodash",
+          "url": "https://github.com/advisories/GHSA-x5rq-j2xg-h7qm",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<4.17.11"
+        },
+        {
+          "source": 1094496,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Regular Expression Denial of Service (ReDoS) in lodash",
+          "url": "https://github.com/advisories/GHSA-29mw-wpgm-hmr9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<4.17.21"
+        },
+        {
+          "source": 1096304,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Prototype Pollution in lodash",
+          "url": "https://github.com/advisories/GHSA-p6mc-m468-83gw",
+          "severity": "high",
+          "cwe": [
+            "CWE-770",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:H"
+          },
+          "range": ">=3.7.0 <4.17.20"
+        },
+        {
+          "source": 1096995,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Command Injection in lodash",
+          "url": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+          "severity": "high",
+          "cwe": [
+            "CWE-77",
+            "CWE-94"
+          ],
+          "cvss": {
+            "score": 7.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<4.17.21"
+        },
+        {
+          "source": 1097139,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Prototype Pollution in lodash",
+          "url": "https://github.com/advisories/GHSA-jf85-cpcp-j695",
+          "severity": "critical",
+          "cwe": [
+            "CWE-20",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 9.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H"
+          },
+          "range": "<4.17.14"
+        }
+      ],
+      "effects": [],
+      "range": "<=4.17.20",
+      "nodes": [
+        "node_modules/lodash-es"
+      ],
+      "fixAvailable": true
+    },
+    "mem": {
+      "name": "mem",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1085685,
+          "name": "mem",
+          "dependency": "mem",
+          "title": "Denial of Service in mem",
+          "url": "https://github.com/advisories/GHSA-4xcv-9jjx-gfj3",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 5.1,
+            "vectorString": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<4.0.0"
+        }
+      ],
+      "effects": [
+        "os-locale"
+      ],
+      "range": "<4.0.0",
+      "nodes": [
+        "node_modules/mem"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1098681,
+          "name": "micromatch",
+          "dependency": "micromatch",
+          "title": "Regular Expression Denial of Service (ReDoS) in micromatch",
+          "url": "https://github.com/advisories/GHSA-952p-6rrq-rcjv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<4.0.8"
+        },
+        "braces"
+      ],
+      "effects": [
+        "anymatch",
+        "webpack"
+      ],
+      "range": "<=4.0.7",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "webpack",
+        "version": "5.100.2",
+        "isSemVerMajor": true
+      }
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1096485,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch ReDoS vulnerability",
+          "url": "https://github.com/advisories/GHSA-f8q6-p94x-37v3",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.0.5"
+        }
+      ],
+      "effects": [],
+      "range": "<3.0.5",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/minimatch",
+        "node_modules/fsevents/node_modules/minimatch",
+        "node_modules/minimatch"
+      ],
+      "fixAvailable": true
+    },
+    "minimist": {
+      "name": "minimist",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1096465,
+          "name": "minimist",
+          "dependency": "minimist",
+          "title": "Prototype Pollution in minimist",
+          "url": "https://github.com/advisories/GHSA-vh95-rmgr-6w4m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.6,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": ">=1.0.0 <1.2.3"
+        },
+        {
+          "source": 1096466,
+          "name": "minimist",
+          "dependency": "minimist",
+          "title": "Prototype Pollution in minimist",
+          "url": "https://github.com/advisories/GHSA-vh95-rmgr-6w4m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.6,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<0.2.1"
+        },
+        {
+          "source": 1097677,
+          "name": "minimist",
+          "dependency": "minimist",
+          "title": "Prototype Pollution in minimist",
+          "url": "https://github.com/advisories/GHSA-xvch-5gv4-984h",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 9.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<0.2.4"
+        },
+        {
+          "source": 1097678,
+          "name": "minimist",
+          "dependency": "minimist",
+          "title": "Prototype Pollution in minimist",
+          "url": "https://github.com/advisories/GHSA-xvch-5gv4-984h",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 9.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": ">=1.0.0 <1.2.6"
+        }
+      ],
+      "effects": [
+        "mkdirp"
+      ],
+      "range": "<=0.2.3 || 1.0.0 - 1.2.5",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/minimist",
+        "node_modules/bcrypt/node_modules/rc/node_modules/minimist",
+        "node_modules/fsevents/node_modules/minimist",
+        "node_modules/fsevents/node_modules/rc/node_modules/minimist",
+        "node_modules/minimist",
+        "node_modules/rc/node_modules/minimist"
+      ],
+      "fixAvailable": true
+    },
+    "mkdirp": {
+      "name": "mkdirp",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "minimist"
+      ],
+      "effects": [
+        "mocha"
+      ],
+      "range": "0.4.1 - 0.5.1",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/mkdirp",
+        "node_modules/fsevents/node_modules/mkdirp",
+        "node_modules/mkdirp"
+      ],
+      "fixAvailable": true
+    },
+    "mocha": {
+      "name": "mocha",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "diff",
+        "mkdirp"
+      ],
+      "effects": [
+        "parse-domain"
+      ],
+      "range": "0.14.0 - 6.2.2 || 7.0.0-esm1 - 7.1.0",
+      "nodes": [
+        "node_modules/parse-domain/node_modules/mocha"
+      ],
+      "fixAvailable": true
+    },
+    "node-fetch": {
+      "name": "node-fetch",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1095073,
+          "name": "node-fetch",
+          "dependency": "node-fetch",
+          "title": "node-fetch forwards secure headers to untrusted sites",
+          "url": "https://github.com/advisories/GHSA-r683-j2x4-v87g",
+          "severity": "high",
+          "cwe": [
+            "CWE-173",
+            "CWE-200",
+            "CWE-601"
+          ],
+          "cvss": {
+            "score": 8.8,
+            "vectorString": "CVSS:3.0/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<2.6.7"
+        },
+        {
+          "source": 1098225,
+          "name": "node-fetch",
+          "dependency": "node-fetch",
+          "title": "The `size` option isn't honored after following a redirect in node-fetch",
+          "url": "https://github.com/advisories/GHSA-w7rc-rwvf-8q5r",
+          "severity": "low",
+          "cwe": [
+            "CWE-20",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 2.6,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=2.0.0 <2.6.1"
+        }
+      ],
+      "effects": [
+        "isomorphic-fetch"
+      ],
+      "range": "<=2.6.6",
+      "nodes": [
+        "node_modules/node-fetch",
+        "node_modules/vega-loader/node_modules/node-fetch"
+      ],
+      "fixAvailable": true
+    },
+    "os-locale": {
+      "name": "os-locale",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "execa",
+        "mem"
+      ],
+      "effects": [
+        "yargs"
+      ],
+      "range": "2.0.0 - 3.0.0",
+      "nodes": [
+        "node_modules/os-locale"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "papaparse": {
+      "name": "papaparse",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1105465,
+          "name": "papaparse",
+          "dependency": "papaparse",
+          "title": "Regular Expression Denial of Service in papaparse",
+          "url": "https://github.com/advisories/GHSA-qvjc-g5vr-mfgr",
+          "severity": "high",
+          "cwe": [
+            "CWE-185"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<5.2.0"
+        }
+      ],
+      "effects": [],
+      "range": "<5.2.0",
+      "nodes": [
+        "node_modules/papaparse"
+      ],
+      "fixAvailable": {
+        "name": "papaparse",
+        "version": "5.5.3",
+        "isSemVerMajor": true
+      }
+    },
+    "parse-domain": {
+      "name": "parse-domain",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "got",
+        "mocha"
+      ],
+      "effects": [],
+      "range": "2.1.0 - 2.3.4",
+      "nodes": [
+        "node_modules/parse-domain"
+      ],
+      "fixAvailable": true
+    },
+    "path-to-regexp": {
+      "name": "path-to-regexp",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1101850,
+          "name": "path-to-regexp",
+          "dependency": "path-to-regexp",
+          "title": "path-to-regexp outputs backtracking regular expressions",
+          "url": "https://github.com/advisories/GHSA-9wv6-86v2-598j",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.1.10"
+        },
+        {
+          "source": 1105199,
+          "name": "path-to-regexp",
+          "dependency": "path-to-regexp",
+          "title": "path-to-regexp contains a ReDoS",
+          "url": "https://github.com/advisories/GHSA-rhx6-c78j-4q9w",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.1.12"
+        }
+      ],
+      "effects": [
+        "express"
+      ],
+      "range": "<=0.1.11",
+      "nodes": [
+        "node_modules/path-to-regexp"
+      ],
+      "fixAvailable": true
+    },
+    "pathval": {
+      "name": "pathval",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1089875,
+          "name": "pathval",
+          "dependency": "pathval",
+          "title": "Prototype pollution in pathval",
+          "url": "https://github.com/advisories/GHSA-g6ww-v8xp-vmwg",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<1.1.1"
+        }
+      ],
+      "effects": [],
+      "range": "<1.1.1",
+      "nodes": [
+        "node_modules/pathval"
+      ],
+      "fixAvailable": true
+    },
+    "pbkdf2": {
+      "name": "pbkdf2",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1105691,
+          "name": "pbkdf2",
+          "dependency": "pbkdf2",
+          "title": "pbkdf2 silently disregards Uint8Array input, returning static keys",
+          "url": "https://github.com/advisories/GHSA-v62p-rq8g-8h59",
+          "severity": "critical",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.1.2"
+        },
+        {
+          "source": 1105692,
+          "name": "pbkdf2",
+          "dependency": "pbkdf2",
+          "title": "pbkdf2 returns predictable uninitialized/zero-filled memory for non-normalized or unimplemented algos",
+          "url": "https://github.com/advisories/GHSA-h7cp-r72f-jxh6",
+          "severity": "critical",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=3.0.10 <=3.1.2"
+        }
+      ],
+      "effects": [],
+      "range": "<=3.1.2",
+      "nodes": [
+        "node_modules/pbkdf2"
+      ],
+      "fixAvailable": true
+    },
+    "qs": {
+      "name": "qs",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104118,
+          "name": "qs",
+          "dependency": "qs",
+          "title": "qs vulnerable to Prototype Pollution",
+          "url": "https://github.com/advisories/GHSA-hrpp-h998-j3pp",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=6.5.0 <6.5.3"
+        }
+      ],
+      "effects": [
+        "body-parser",
+        "express"
+      ],
+      "range": "6.5.0 - 6.5.2",
+      "nodes": [
+        "node_modules/express/node_modules/qs"
+      ],
+      "fixAvailable": true
+    },
+    "semver": {
+      "name": "semver",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1101089,
+          "name": "semver",
+          "dependency": "semver",
+          "title": "semver vulnerable to Regular Expression Denial of Service",
+          "url": "https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<5.7.2"
+        }
+      ],
+      "effects": [],
+      "range": "<5.7.2",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/semver",
+        "node_modules/fsevents/node_modules/semver",
+        "node_modules/semver"
+      ],
+      "fixAvailable": true
+    },
+    "send": {
+      "name": "send",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1100526,
+          "name": "send",
+          "dependency": "send",
+          "title": "send vulnerable to template injection that can lead to XSS",
+          "url": "https://github.com/advisories/GHSA-m6fv-jmcg-4jfg",
+          "severity": "low",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:L"
+          },
+          "range": "<0.19.0"
+        }
+      ],
+      "effects": [
+        "express",
+        "serve-static"
+      ],
+      "range": "<0.19.0",
+      "nodes": [
+        "node_modules/send"
+      ],
+      "fixAvailable": true
+    },
+    "serialize-javascript": {
+      "name": "serialize-javascript",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1087544,
+          "name": "serialize-javascript",
+          "dependency": "serialize-javascript",
+          "title": "Cross-Site Scripting in serialize-javascript",
+          "url": "https://github.com/advisories/GHSA-h9rv-jmmf-4pgx",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 4.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": "<2.1.1"
+        },
+        {
+          "source": 1095131,
+          "name": "serialize-javascript",
+          "dependency": "serialize-javascript",
+          "title": "Insecure serialization leading to RCE in serialize-javascript",
+          "url": "https://github.com/advisories/GHSA-hxcc-f52p-wc94",
+          "severity": "high",
+          "cwe": [
+            "CWE-502"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<3.1.0"
+        }
+      ],
+      "effects": [
+        "terser-webpack-plugin"
+      ],
+      "range": "<=3.0.0",
+      "nodes": [
+        "node_modules/serialize-javascript"
+      ],
+      "fixAvailable": true
+    },
+    "serve-static": {
+      "name": "serve-static",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1100528,
+          "name": "serve-static",
+          "dependency": "serve-static",
+          "title": "serve-static vulnerable to template injection that can lead to XSS",
+          "url": "https://github.com/advisories/GHSA-cm22-4g7w-348p",
+          "severity": "low",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:L/A:L"
+          },
+          "range": "<1.16.0"
+        },
+        "send"
+      ],
+      "effects": [],
+      "range": "<=1.16.0",
+      "nodes": [
+        "node_modules/serve-static"
+      ],
+      "fixAvailable": true
+    },
+    "ssri": {
+      "name": "ssri",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1094077,
+          "name": "ssri",
+          "dependency": "ssri",
+          "title": "Regular Expression Denial of Service (ReDoS)",
+          "url": "https://github.com/advisories/GHSA-vx3p-948g-6vhq",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=5.2.2 <6.0.2"
+        }
+      ],
+      "effects": [],
+      "range": "5.2.2 - 6.0.1",
+      "nodes": [
+        "node_modules/terser-webpack-plugin/node_modules/ssri"
+      ],
+      "fixAvailable": true
+    },
+    "tar": {
+      "name": "tar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1089684,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite due to insufficient absolute path sanitization",
+          "url": "https://github.com/advisories/GHSA-3jfq-g458-7qm9",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": ">=4.0.0 <4.4.14"
+        },
+        {
+          "source": 1095117,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite on Windows via insufficient relative path sanitization",
+          "url": "https://github.com/advisories/GHSA-5955-9wpr-37jh",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": "<4.4.18"
+        },
+        {
+          "source": 1096309,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning",
+          "url": "https://github.com/advisories/GHSA-r628-mhmh-qjhw",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-23",
+            "CWE-59"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": ">=4.0.0 <4.4.15"
+        },
+        {
+          "source": 1096376,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning using symbolic links",
+          "url": "https://github.com/advisories/GHSA-9r2w-394v-53qc",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-59"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": ">=3.0.0 <4.4.16"
+        },
+        {
+          "source": 1096411,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning using symbolic links",
+          "url": "https://github.com/advisories/GHSA-qq89-hq3f-393p",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-59"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": ">=3.0.0 <4.4.18"
+        },
+        {
+          "source": 1097493,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Denial of service while parsing a tar file due to lack of folders count validation",
+          "url": "https://github.com/advisories/GHSA-f5x3-32g6-xq36",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+          },
+          "range": "<6.2.1"
+        }
+      ],
+      "effects": [],
+      "range": "<=6.2.0",
+      "nodes": [
+        "node_modules/bcrypt/node_modules/tar",
+        "node_modules/fsevents/node_modules/tar",
+        "node_modules/tar"
+      ],
+      "fixAvailable": true
+    },
+    "terser": {
+      "name": "terser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1091691,
+          "name": "terser",
+          "dependency": "terser",
+          "title": "Terser insecure use of regular expressions leads to ReDoS",
+          "url": "https://github.com/advisories/GHSA-4wf5-vphf-c2xc",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.8.1"
+        }
+      ],
+      "effects": [
+        "terser-webpack-plugin"
+      ],
+      "range": "<4.8.1",
+      "nodes": [
+        "node_modules/terser"
+      ],
+      "fixAvailable": true
+    },
+    "terser-webpack-plugin": {
+      "name": "terser-webpack-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "serialize-javascript",
+        "terser"
+      ],
+      "effects": [],
+      "range": "<=1.4.1",
+      "nodes": [
+        "node_modules/terser-webpack-plugin"
+      ],
+      "fixAvailable": true
+    },
+    "ua-parser-js": {
+      "name": "ua-parser-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1089491,
+          "name": "ua-parser-js",
+          "dependency": "ua-parser-js",
+          "title": "Regular Expression Denial of Service in ua-parser-js",
+          "url": "https://github.com/advisories/GHSA-662x-fhqg-9p8v",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.7.22"
+        },
+        {
+          "source": 1089914,
+          "name": "ua-parser-js",
+          "dependency": "ua-parser-js",
+          "title": "ua-parser-js Regular Expression Denial of Service vulnerability",
+          "url": "https://github.com/advisories/GHSA-394c-5j6w-4xmx",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.7.23"
+        },
+        {
+          "source": 1089977,
+          "name": "ua-parser-js",
+          "dependency": "ua-parser-js",
+          "title": "Regular Expression Denial of Service (ReDoS) in ua-parser-js",
+          "url": "https://github.com/advisories/GHSA-78cj-fxph-m83p",
+          "severity": "high",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=0.7.14 <0.7.24"
+        },
+        {
+          "source": 1092303,
+          "name": "ua-parser-js",
+          "dependency": "ua-parser-js",
+          "title": "ReDoS Vulnerability in ua-parser-js version",
+          "url": "https://github.com/advisories/GHSA-fhg7-m89q-25r3",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.7.33"
+        }
+      ],
+      "effects": [],
+      "range": "<=0.7.32",
+      "nodes": [
+        "node_modules/ua-parser-js"
+      ],
+      "fixAvailable": true
+    },
+    "vega": {
+      "name": "vega",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1090051,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "XSS in Vega",
+          "url": "https://github.com/advisories/GHSA-r2qc-w64x-6j54",
+          "severity": "low",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 8.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": "<5.17.3"
+        },
+        {
+          "source": 1091254,
+          "name": "vega",
+          "dependency": "vega",
+          "title": " Vega vulnerable to arbitrary code execution when clicking href links",
+          "url": "https://github.com/advisories/GHSA-cp47-r258-q626",
+          "severity": "moderate",
+          "cwe": [],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<4.5.1"
+        },
+        {
+          "source": 1091316,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "Vega Expression Language `scale` expression function Cross Site Scripting",
+          "url": "https://github.com/advisories/GHSA-4vq7-882g-wcg4",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<5.23.0"
+        },
+        {
+          "source": 1091331,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "Vega has Cross-site Scripting vulnerability in `lassoAppend` function",
+          "url": "https://github.com/advisories/GHSA-w5m3-xh75-mp55",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<5.23.0"
+        },
+        {
+          "source": 1102263,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "Vega allows Cross-site Scripting via the vlSelectionTuples function",
+          "url": "https://github.com/advisories/GHSA-mp7w-mhcv-673j",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<5.26.0"
+        },
+        {
+          "source": 1103604,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "Vega vulnerable to Cross-site Scripting via RegExp.prototype[@@replace]",
+          "url": "https://github.com/advisories/GHSA-963h-3v39-3pqf",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79",
+            "CWE-87"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<5.32.0"
+        },
+        {
+          "source": 1103894,
+          "name": "vega",
+          "dependency": "vega",
+          "title": "Vega Cross-Site Scripting (XSS) via event filter when not using CSP mode expressionInterpeter",
+          "url": "https://github.com/advisories/GHSA-rcw3-wmx7-cphr",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<5.31.0"
+        },
+        "vega-lib",
+        "vega-parser",
+        "yargs"
+      ],
+      "effects": [],
+      "range": "<=5.31.0",
+      "nodes": [
+        "node_modules/vega"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "vega-encode": {
+      "name": "vega-encode",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "d3-interpolate",
+        "vega-scale"
+      ],
+      "effects": [],
+      "range": "<=4.8.3",
+      "nodes": [
+        "node_modules/vega-encode"
+      ],
+      "fixAvailable": true
+    },
+    "vega-lib": {
+      "name": "vega-lib",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "vega-encode",
+        "vega-parser",
+        "vega-scale",
+        "vega-view",
+        "vega-wordcloud"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/vega-lib"
+      ],
+      "fixAvailable": true
+    },
+    "vega-lite": {
+      "name": "vega-lite",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "yargs"
+      ],
+      "effects": [],
+      "range": "2.0.0-alpha.0 - 3.0.0-rc9",
+      "nodes": [
+        "node_modules/vega-lite"
+      ],
+      "fixAvailable": {
+        "name": "vega-lite",
+        "version": "6.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "vega-parser": {
+      "name": "vega-parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "d3-color",
+        "vega-scale"
+      ],
+      "effects": [
+        "vega",
+        "vega-lib",
+        "vega-view"
+      ],
+      "range": "<=5.14.0",
+      "nodes": [
+        "node_modules/vega-parser"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "vega-scale": {
+      "name": "vega-scale",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "d3-interpolate",
+        "d3-scale",
+        "d3-scale-chromatic"
+      ],
+      "effects": [
+        "vega-encode",
+        "vega-parser",
+        "vega-wordcloud"
+      ],
+      "range": "<=7.1.1",
+      "nodes": [
+        "node_modules/vega-scale"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "vega-util": {
+      "name": "vega-util",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1089035,
+          "name": "vega-util",
+          "dependency": "vega-util",
+          "title": "Improperly Controlled Modification of Dynamically-Determined Object Attributes in vega-util",
+          "url": "https://github.com/advisories/GHSA-6hwh-rqwf-cxxr",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 4.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<1.13.1"
+        }
+      ],
+      "effects": [],
+      "range": "<1.13.1",
+      "nodes": [
+        "node_modules/vega-util"
+      ],
+      "fixAvailable": true
+    },
+    "vega-view": {
+      "name": "vega-view",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "vega-parser"
+      ],
+      "effects": [],
+      "range": "<=3.4.1",
+      "nodes": [
+        "node_modules/vega-view"
+      ],
+      "fixAvailable": true
+    },
+    "vega-wordcloud": {
+      "name": "vega-wordcloud",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "vega-scale"
+      ],
+      "effects": [],
+      "range": "<=4.0.5",
+      "nodes": [
+        "node_modules/vega-wordcloud"
+      ],
+      "fixAvailable": true
+    },
+    "watchpack": {
+      "name": "watchpack",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "chokidar"
+      ],
+      "effects": [],
+      "range": "0.2.2 || 1.5.0 - 1.6.1",
+      "nodes": [
+        "node_modules/watchpack"
+      ],
+      "fixAvailable": true
+    },
+    "webpack": {
+      "name": "webpack",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [],
+      "range": "4.0.0-alpha.0 - 5.0.0-rc.6",
+      "nodes": [
+        "node_modules/webpack"
+      ],
+      "fixAvailable": {
+        "name": "webpack",
+        "version": "5.100.2",
+        "isSemVerMajor": true
+      }
+    },
+    "webpack-dev-middleware": {
+      "name": "webpack-dev-middleware",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1096729,
+          "name": "webpack-dev-middleware",
+          "dependency": "webpack-dev-middleware",
+          "title": "Path traversal in webpack-dev-middleware",
+          "url": "https://github.com/advisories/GHSA-wr3j-pwj9-hqq6",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 7.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:N/A:N"
+          },
+          "range": "<=5.3.3"
+        }
+      ],
+      "effects": [],
+      "range": "<=5.3.3",
+      "nodes": [
+        "node_modules/webpack-dev-middleware"
+      ],
+      "fixAvailable": {
+        "name": "webpack-dev-middleware",
+        "version": "7.4.2",
+        "isSemVerMajor": true
+      }
+    },
+    "y18n": {
+      "name": "y18n",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1095086,
+          "name": "y18n",
+          "dependency": "y18n",
+          "title": "Prototype Pollution in y18n",
+          "url": "https://github.com/advisories/GHSA-c4w7-xm78-47vh",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "=4.0.0"
+        },
+        {
+          "source": 1095087,
+          "name": "y18n",
+          "dependency": "y18n",
+          "title": "Prototype Pollution in y18n",
+          "url": "https://github.com/advisories/GHSA-c4w7-xm78-47vh",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<3.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "=4.0.0 || <3.2.2",
+      "nodes": [
+        "node_modules/vega-lite/node_modules/y18n",
+        "node_modules/y18n"
+      ],
+      "fixAvailable": true
+    },
+    "yargs": {
+      "name": "yargs",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "os-locale",
+        "yargs-parser"
+      ],
+      "effects": [
+        "vega",
+        "vega-lite"
+      ],
+      "range": "8.0.0-candidate.0 - 12.0.5",
+      "nodes": [
+        "node_modules/vega-lite/node_modules/yargs",
+        "node_modules/yargs"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    },
+    "yargs-parser": {
+      "name": "yargs-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1088811,
+          "name": "yargs-parser",
+          "dependency": "yargs-parser",
+          "title": "yargs-parser Vulnerable to Prototype Pollution",
+          "url": "https://github.com/advisories/GHSA-p9pc-299p-vxgp",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": ">=6.0.0 <13.1.2"
+        }
+      ],
+      "effects": [
+        "yargs"
+      ],
+      "range": "6.0.0 - 13.1.1",
+      "nodes": [
+        "node_modules/vega-lite/node_modules/yargs-parser",
+        "node_modules/yargs/node_modules/yargs-parser"
+      ],
+      "fixAvailable": {
+        "name": "vega",
+        "version": "6.1.2",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 6,
+      "moderate": 12,
+      "high": 55,
+      "critical": 7,
+      "total": 80
+    },
+    "dependencies": {
+      "prod": 803,
+      "dev": 873,
+      "optional": 354,
+      "peer": 276,
+      "peerOptional": 0,
+      "total": 1749
+    }
+  }
+}

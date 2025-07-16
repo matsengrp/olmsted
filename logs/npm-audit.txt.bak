@@ -1,0 +1,1034 @@
+# npm audit report
+
+@babel/runtime  <7.26.10
+Severity: moderate
+Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups - https://github.com/advisories/GHSA-968p-4wvh-cqc8
+fix available via `npm audit fix`
+node_modules/@babel/runtime
+
+acorn  6.0.0 - 6.4.0
+Severity: high
+Regular Expression Denial of Service in Acorn - https://github.com/advisories/GHSA-6chw-6frg-f759
+fix available via `npm audit fix`
+node_modules/acorn
+node_modules/webpack/node_modules/acorn
+
+ajv  <6.12.3
+Severity: moderate
+Prototype Pollution in Ajv - https://github.com/advisories/GHSA-v88g-cgmw-v5xw
+fix available via `npm audit fix`
+node_modules/ajv
+node_modules/eslint/node_modules/ajv
+node_modules/har-validator/node_modules/ajv
+node_modules/read-config-file/node_modules/ajv
+node_modules/table/node_modules/ajv
+  har-validator  3.3.0 - 5.1.0
+  Depends on vulnerable versions of ajv
+  node_modules/har-validator
+
+ansi-html  <0.0.8
+Severity: high
+Uncontrolled Resource Consumption in ansi-html - https://github.com/advisories/GHSA-whgm-jr23-g3j9
+fix available via `npm audit fix --force`
+Will install webpack-dev-server@5.2.2, which is a breaking change
+node_modules/ansi-html
+  webpack-dev-server  <=5.2.0
+  Depends on vulnerable versions of ansi-html
+  Depends on vulnerable versions of chokidar
+  Depends on vulnerable versions of http-proxy-middleware
+  Depends on vulnerable versions of ip
+  Depends on vulnerable versions of sockjs
+  Depends on vulnerable versions of webpack-dev-middleware
+  Depends on vulnerable versions of yargs
+  node_modules/webpack-dev-server
+  webpack-hot-middleware  2.9.0 - 2.25.0
+  Depends on vulnerable versions of ansi-html
+  node_modules/webpack-hot-middleware
+
+ansi-regex  3.0.0 || 4.0.0 - 4.1.0
+Severity: high
+Inefficient Regular Expression Complexity in chalk/ansi-regex - https://github.com/advisories/GHSA-93q8-gq69-wqmw
+Inefficient Regular Expression Complexity in chalk/ansi-regex - https://github.com/advisories/GHSA-93q8-gq69-wqmw
+fix available via `npm audit fix`
+node_modules/@webpack-contrib/schema-utils/node_modules/ansi-regex
+node_modules/ansi-align/node_modules/ansi-regex
+node_modules/boxen/node_modules/ansi-regex
+node_modules/cliui/node_modules/ansi-regex
+node_modules/electron-builder/node_modules/ansi-regex
+node_modules/eslint/node_modules/ansi-regex
+node_modules/inquirer/node_modules/ansi-regex
+node_modules/inquirer/node_modules/strip-ansi/node_modules/ansi-regex
+node_modules/mocha/node_modules/ansi-regex
+node_modules/ora/node_modules/ansi-regex
+node_modules/table/node_modules/ansi-regex
+node_modules/vega-lite/node_modules/ansi-regex
+node_modules/webpack-command/node_modules/ansi-regex
+node_modules/webpack-dev-server/node_modules/ansi-regex
+node_modules/widest-line/node_modules/ansi-regex
+node_modules/yargs/node_modules/ansi-regex
+
+app-builder-lib  <=24.13.1
+Severity: critical
+electron-builder's NSIS installer - execute arbitrary code on the target machine (Windows only) - https://github.com/advisories/GHSA-r4pf-3v7r-hh55
+Depends on vulnerable versions of ejs
+fix available via `npm audit fix --force`
+Will install electron-builder@26.0.12, which is a breaking change
+node_modules/app-builder-lib
+  dmg-builder  5.0.0 - 24.13.1
+  Depends on vulnerable versions of app-builder-lib
+  node_modules/dmg-builder
+    electron-builder  5.6.1 - 24.13.1
+    Depends on vulnerable versions of app-builder-lib
+    Depends on vulnerable versions of dmg-builder
+    Depends on vulnerable versions of update-notifier
+    node_modules/electron-builder
+
+babel-traverse  *
+Severity: critical
+Babel vulnerable to arbitrary code execution when compiling specifically crafted malicious code - https://github.com/advisories/GHSA-67hx-6x53-jw92
+No fix available
+node_modules/babel-traverse
+  babel-core  5.8.20 - 7.0.0-beta.3
+  Depends on vulnerable versions of babel-helpers
+  Depends on vulnerable versions of babel-register
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  Depends on vulnerable versions of json5
+  node_modules/babel-core
+    babel-cli  *
+    Depends on vulnerable versions of babel-core
+    Depends on vulnerable versions of babel-register
+    Depends on vulnerable versions of chokidar
+    node_modules/babel-cli
+    babel-register  *
+    Depends on vulnerable versions of babel-core
+    node_modules/babel-register
+  babel-helper-bindify-decorators  *
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-bindify-decorators
+  babel-helper-call-delegate  *
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-call-delegate
+  babel-helper-explode-assignable-expression  *
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-explode-assignable-expression
+    babel-helper-builder-binary-assignment-operator-visitor  *
+    Depends on vulnerable versions of babel-helper-explode-assignable-expression
+    node_modules/babel-helper-builder-binary-assignment-operator-visitor
+      babel-plugin-transform-exponentiation-operator  *
+      Depends on vulnerable versions of babel-helper-builder-binary-assignment-operator-visitor
+      node_modules/babel-plugin-transform-exponentiation-operator
+  babel-helper-explode-class  *
+  Depends on vulnerable versions of babel-helper-bindify-decorators
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-explode-class
+    babel-plugin-transform-decorators  *
+    Depends on vulnerable versions of babel-helper-explode-class
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-decorators
+      babel-preset-stage-2  <=7.0.0-alpha.19
+      Depends on vulnerable versions of babel-plugin-transform-class-properties
+      Depends on vulnerable versions of babel-plugin-transform-decorators
+      Depends on vulnerable versions of babel-preset-stage-3
+      node_modules/babel-preset-stage-2
+        babel-preset-stage-1  <=7.0.0-alpha.19
+        Depends on vulnerable versions of babel-plugin-transform-class-constructor-call
+        Depends on vulnerable versions of babel-preset-stage-2
+        node_modules/babel-preset-stage-1
+          babel-preset-stage-0  <=6.24.1
+          Depends on vulnerable versions of babel-preset-stage-1
+          node_modules/babel-preset-stage-0
+  babel-helper-function-name  *
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-function-name
+    babel-helper-define-map  *
+    Depends on vulnerable versions of babel-helper-function-name
+    node_modules/babel-helper-define-map
+    babel-helper-remap-async-to-generator  *
+    Depends on vulnerable versions of babel-helper-function-name
+    Depends on vulnerable versions of babel-template
+    Depends on vulnerable versions of babel-traverse
+    node_modules/babel-helper-remap-async-to-generator
+      babel-plugin-transform-async-generator-functions  *
+      Depends on vulnerable versions of babel-helper-remap-async-to-generator
+      node_modules/babel-plugin-transform-async-generator-functions
+        babel-preset-stage-3  *
+        Depends on vulnerable versions of babel-plugin-transform-async-generator-functions
+        Depends on vulnerable versions of babel-plugin-transform-async-to-generator
+        Depends on vulnerable versions of babel-plugin-transform-exponentiation-operator
+        node_modules/babel-preset-stage-3
+      babel-plugin-transform-async-to-generator  *
+      Depends on vulnerable versions of babel-helper-remap-async-to-generator
+      node_modules/babel-plugin-transform-async-to-generator
+    babel-plugin-transform-class-properties  >=6.11.5
+    Depends on vulnerable versions of babel-helper-function-name
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-class-properties
+    babel-plugin-transform-es2015-function-name  *
+    Depends on vulnerable versions of babel-helper-function-name
+    node_modules/babel-plugin-transform-es2015-function-name
+  babel-helper-replace-supers  *
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-helper-replace-supers
+    babel-plugin-transform-es2015-object-super  *
+    Depends on vulnerable versions of babel-helper-replace-supers
+    node_modules/babel-plugin-transform-es2015-object-super
+  babel-plugin-transform-es2015-block-scoping  *
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-plugin-transform-es2015-block-scoping
+    babel-preset-es2015  *
+    Depends on vulnerable versions of babel-plugin-transform-es2015-block-scoping
+    Depends on vulnerable versions of babel-plugin-transform-es2015-classes
+    Depends on vulnerable versions of babel-plugin-transform-es2015-computed-properties
+    Depends on vulnerable versions of babel-plugin-transform-es2015-function-name
+    Depends on vulnerable versions of babel-plugin-transform-es2015-modules-amd
+    Depends on vulnerable versions of babel-plugin-transform-es2015-modules-commonjs
+    Depends on vulnerable versions of babel-plugin-transform-es2015-modules-systemjs
+    Depends on vulnerable versions of babel-plugin-transform-es2015-modules-umd
+    Depends on vulnerable versions of babel-plugin-transform-es2015-object-super
+    Depends on vulnerable versions of babel-plugin-transform-es2015-parameters
+    node_modules/babel-preset-es2015
+  babel-plugin-transform-es2015-classes  *
+  Depends on vulnerable versions of babel-helper-define-map
+  Depends on vulnerable versions of babel-helper-function-name
+  Depends on vulnerable versions of babel-helper-replace-supers
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-plugin-transform-es2015-classes
+  babel-plugin-transform-es2015-parameters  *
+  Depends on vulnerable versions of babel-helper-call-delegate
+  Depends on vulnerable versions of babel-template
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-plugin-transform-es2015-parameters
+  babel-template  *
+  Depends on vulnerable versions of babel-traverse
+  node_modules/babel-template
+    babel-helpers  *
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-helpers
+    babel-plugin-transform-class-constructor-call  *
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-class-constructor-call
+    babel-plugin-transform-decorators-legacy  *
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-decorators-legacy
+    babel-plugin-transform-es2015-computed-properties  *
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-es2015-computed-properties
+    babel-plugin-transform-es2015-modules-amd  *
+    Depends on vulnerable versions of babel-plugin-transform-es2015-modules-commonjs
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-es2015-modules-amd
+      babel-plugin-transform-es2015-modules-umd  *
+      Depends on vulnerable versions of babel-plugin-transform-es2015-modules-amd
+      Depends on vulnerable versions of babel-template
+      node_modules/babel-plugin-transform-es2015-modules-umd
+    babel-plugin-transform-es2015-modules-commonjs  <=7.0.0-beta.0
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-es2015-modules-commonjs
+    babel-plugin-transform-es2015-modules-systemjs  *
+    Depends on vulnerable versions of babel-template
+    node_modules/babel-plugin-transform-es2015-modules-systemjs
+
+bcrypt  <5.0.0
+Severity: moderate
+Integer Overflow or Wraparound and Use of a Broken or Risky Cryptographic Algorithm in bcrypt - https://github.com/advisories/GHSA-5wg4-74h6-q47v
+fix available via `npm audit fix`
+node_modules/bcrypt
+
+body-parser  <=1.20.2
+Severity: high
+body-parser vulnerable to denial of service when url encoding is enabled - https://github.com/advisories/GHSA-qwcr-r2fm-qrc7
+Depends on vulnerable versions of qs
+fix available via `npm audit fix`
+node_modules/express/node_modules/body-parser
+  express  <=4.21.0 || 5.0.0-alpha.1 - 5.0.0
+  Depends on vulnerable versions of body-parser
+  Depends on vulnerable versions of cookie
+  Depends on vulnerable versions of path-to-regexp
+  Depends on vulnerable versions of qs
+  Depends on vulnerable versions of send
+  Depends on vulnerable versions of serve-static
+  node_modules/express
+
+brace-expansion  1.0.0 - 1.1.11
+brace-expansion Regular Expression Denial of Service vulnerability - https://github.com/advisories/GHSA-v6h2-p8h4-qcjw
+fix available via `npm audit fix`
+node_modules/bcrypt/node_modules/brace-expansion
+node_modules/brace-expansion
+node_modules/fsevents/node_modules/brace-expansion
+
+braces  <=3.0.2
+Severity: high
+Regular Expression Denial of Service in braces - https://github.com/advisories/GHSA-g95f-p29q-9xw4
+Regular Expression Denial of Service (ReDoS) in braces - https://github.com/advisories/GHSA-cwfw-4gq5-mrqx
+Uncontrolled resource consumption in braces - https://github.com/advisories/GHSA-grv7-fg5c-xmjg
+No fix available
+node_modules/babel-cli/node_modules/braces
+node_modules/braces
+  chokidar  1.3.0 - 2.1.8
+  Depends on vulnerable versions of anymatch
+  Depends on vulnerable versions of braces
+  node_modules/babel-cli/node_modules/chokidar
+  node_modules/chokidar
+    watchpack  0.2.2 || 1.5.0 - 1.6.1
+    Depends on vulnerable versions of chokidar
+    node_modules/watchpack
+  micromatch  <=4.0.7
+  Depends on vulnerable versions of braces
+  Depends on vulnerable versions of braces
+  node_modules/babel-cli/node_modules/micromatch
+  node_modules/micromatch
+    anymatch  1.2.0 - 2.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/anymatch
+    node_modules/babel-cli/node_modules/anymatch
+    findup-sync  0.4.0 - 3.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/findup-sync
+      webpack-cli  <=0.0.8-development || 1.3.4 - 3.3.12
+      Depends on vulnerable versions of findup-sync
+      Depends on vulnerable versions of yargs
+      node_modules/webpack-cli
+    http-proxy-middleware  <=2.0.7-beta.1
+    Depends on vulnerable versions of micromatch
+    node_modules/http-proxy-middleware
+    webpack  4.0.0-alpha.0 - 5.0.0-rc.6
+    Depends on vulnerable versions of micromatch
+    node_modules/webpack
+
+browserify-sign  2.6.0 - 4.2.1
+Severity: high
+browserify-sign upper bound check issue in `dsaVerify` leads to a signature forgery attack - https://github.com/advisories/GHSA-x9w5-v3q2-3rhw
+fix available via `npm audit fix`
+node_modules/browserify-sign
+
+chownr  <1.1.0
+Time-of-check Time-of-use (TOCTOU) Race Condition in chownr - https://github.com/advisories/GHSA-c6rq-rjc2-86v2
+fix available via `npm audit fix`
+node_modules/chownr
+
+color-string  <1.5.5
+Severity: moderate
+Regular Expression Denial of Service (ReDOS) - https://github.com/advisories/GHSA-257v-vj4p-3w2h
+fix available via `npm audit fix --force`
+Will install color@5.0.0, which is a breaking change
+node_modules/color-string
+  color  <=0.11.4
+  Depends on vulnerable versions of color-string
+  node_modules/color
+
+cookie  <0.7.0
+cookie accepts cookie name, path, and domain with out of bounds characters - https://github.com/advisories/GHSA-pxg6-pf52-xh8x
+fix available via `npm audit fix`
+node_modules/cookie
+
+cookiejar  <2.1.4
+Severity: moderate
+cookiejar Regular Expression Denial of Service via Cookie.parse function - https://github.com/advisories/GHSA-h452-7996-h45h
+fix available via `npm audit fix`
+node_modules/cookiejar
+
+cross-spawn  <6.0.6
+Severity: high
+Regular Expression Denial of Service (ReDoS) in cross-spawn - https://github.com/advisories/GHSA-3xgq-45jj-v275
+fix available via `npm audit fix --force`
+Will install vega@6.1.2, which is a breaking change
+node_modules/cross-spawn
+node_modules/default-gateway/node_modules/cross-spawn
+node_modules/electron-builder/node_modules/cross-spawn
+node_modules/eslint/node_modules/cross-spawn
+node_modules/mocha/node_modules/cross-spawn
+node_modules/webpack-cli/node_modules/cross-spawn
+node_modules/webpack-dev-server/node_modules/cross-spawn
+node_modules/yargs/node_modules/cross-spawn
+  execa  0.5.0 - 0.9.0
+  Depends on vulnerable versions of cross-spawn
+  node_modules/execa
+    os-locale  2.0.0 - 3.0.0
+    Depends on vulnerable versions of execa
+    Depends on vulnerable versions of mem
+    node_modules/os-locale
+      yargs  8.0.0-candidate.0 - 12.0.5
+      Depends on vulnerable versions of os-locale
+      Depends on vulnerable versions of yargs-parser
+      node_modules/vega-lite/node_modules/yargs
+      node_modules/webpack-dev-server/node_modules/yargs
+      node_modules/yargs
+        vega  <=5.31.0
+        Depends on vulnerable versions of vega-lib
+        Depends on vulnerable versions of vega-parser
+        Depends on vulnerable versions of yargs
+        node_modules/vega
+        vega-lite  2.0.0-alpha.0 - 3.0.0-rc9
+        Depends on vulnerable versions of yargs
+        node_modules/vega-lite
+        yargs-unparser  <=1.6.3
+        Depends on vulnerable versions of flat
+        Depends on vulnerable versions of yargs
+        node_modules/yargs-unparser
+          mocha  0.14.0 - 9.2.1
+          Depends on vulnerable versions of debug
+          Depends on vulnerable versions of diff
+          Depends on vulnerable versions of minimatch
+          Depends on vulnerable versions of mkdirp
+          Depends on vulnerable versions of yargs-parser
+          Depends on vulnerable versions of yargs-unparser
+          node_modules/mocha
+          node_modules/parse-domain/node_modules/mocha
+            parse-domain  2.1.0 - 2.3.4
+            Depends on vulnerable versions of got
+            Depends on vulnerable versions of mocha
+            node_modules/parse-domain
+    term-size  1.0.0 - 1.2.0
+    Depends on vulnerable versions of execa
+    node_modules/term-size
+      boxen  1.2.0 - 3.2.0
+      Depends on vulnerable versions of term-size
+      node_modules/boxen
+      node_modules/electron-builder/node_modules/boxen
+        update-notifier  0.2.0 - 5.1.0
+        Depends on vulnerable versions of boxen
+        Depends on vulnerable versions of latest-version
+        node_modules/electron-builder/node_modules/update-notifier
+        node_modules/update-notifier
+          webpack-command  >=0.1.0
+          Depends on vulnerable versions of meow
+          Depends on vulnerable versions of update-notifier
+          node_modules/webpack-command
+
+d3-color  <3.1.0
+Severity: high
+d3-color vulnerable to ReDoS - https://github.com/advisories/GHSA-36jr-mh4h-2g58
+fix available via `npm audit fix --force`
+Will install d3-color@3.1.0, which is a breaking change
+node_modules/d3-color
+  d3-interpolate  0.1.3 - 2.0.1
+  Depends on vulnerable versions of d3-color
+  node_modules/d3-interpolate
+    d3-brush  0.1.0 - 2.1.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-brush
+    d3-scale  0.1.3 - 3.3.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-scale
+    node_modules/vega-scale/node_modules/d3-scale
+      vega-scale  <=7.1.1
+      Depends on vulnerable versions of d3-interpolate
+      Depends on vulnerable versions of d3-scale
+      Depends on vulnerable versions of d3-scale-chromatic
+      node_modules/vega-scale
+        vega-encode  <=4.8.3
+        Depends on vulnerable versions of d3-interpolate
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-encode
+        vega-lib  *
+        Depends on vulnerable versions of vega-encode
+        Depends on vulnerable versions of vega-parser
+        Depends on vulnerable versions of vega-scale
+        Depends on vulnerable versions of vega-view
+        Depends on vulnerable versions of vega-wordcloud
+        node_modules/vega-lib
+        vega-parser  <=5.0.0
+        Depends on vulnerable versions of d3-color
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-parser
+          vega-view  <=3.4.1
+          Depends on vulnerable versions of vega-parser
+          node_modules/vega-view
+        vega-wordcloud  3.0.0 - 4.0.0
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-wordcloud
+    d3-scale-chromatic  0.1.0 - 2.0.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-scale-chromatic
+    d3-transition  0.0.7 - 2.0.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-transition
+    d3-zoom  0.0.2 - 2.0.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-zoom
+
+debug  3.2.0 - 3.2.6 || 4.0.0 - 4.3.0
+Regular Expression Denial of Service in debug - https://github.com/advisories/GHSA-gxpj-cx7g-858c
+Regular Expression Denial of Service in debug - https://github.com/advisories/GHSA-gxpj-cx7g-858c
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/app-builder-lib/node_modules/debug
+node_modules/builder-util-runtime/node_modules/debug
+node_modules/builder-util/node_modules/debug
+node_modules/eslint/node_modules/debug
+node_modules/fsevents/node_modules/debug
+node_modules/mocha/node_modules/debug
+node_modules/webpack-dev-server/node_modules/sockjs-client/node_modules/debug
+node_modules/webpack-dev-server/node_modules/spdy-transport/node_modules/debug
+node_modules/webpack-dev-server/node_modules/spdy/node_modules/debug
+
+decode-uri-component  <0.2.1
+Severity: high
+decode-uri-component vulnerable to Denial of Service (DoS) - https://github.com/advisories/GHSA-w573-4hg7-7wgq
+fix available via `npm audit fix`
+node_modules/decode-uri-component
+
+diff  <3.5.0
+Severity: high
+Regular Expression Denial of Service (ReDoS) - https://github.com/advisories/GHSA-h6ch-v84p-w6p9
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/parse-domain/node_modules/mocha/node_modules/diff
+
+dns-packet  <=5.2.4
+Severity: high
+Potential memory exposure in dns-packet - https://github.com/advisories/GHSA-3wcq-x3mq-6r9p
+Depends on vulnerable versions of ip
+fix available via `npm audit fix`
+node_modules/dns-packet
+
+dot-prop  <4.2.1
+Severity: high
+dot-prop Prototype Pollution vulnerability - https://github.com/advisories/GHSA-ff7x-qrg7-qggm
+fix available via `npm audit fix`
+node_modules/dot-prop
+
+ejs  <=3.1.9
+Severity: critical
+ejs template injection vulnerability - https://github.com/advisories/GHSA-phwq-j96m-2c2q
+ejs lacks certain pollution protection - https://github.com/advisories/GHSA-ghr5-ch3p-vcr6
+fix available via `npm audit fix --force`
+Will install electron-builder@26.0.12, which is a breaking change
+node_modules/ejs
+
+electron  <=28.3.1
+Severity: high
+Context isolation bypass via leaked cross-context objects in Electron - https://github.com/advisories/GHSA-m93v-9qjc-3g79
+Context isolation bypass via contextBridge in Electron - https://github.com/advisories/GHSA-h9jc-284h-533g
+Arbitrary file read via window-open IPC in Electron - https://github.com/advisories/GHSA-f9mq-jph6-9mhm
+Context isolation bypass via Promise in Electron - https://github.com/advisories/GHSA-6vrv-94jv-crrg
+AutoUpdater module fails to validate certain nested components of the bundle - https://github.com/advisories/GHSA-77xc-hjv8-ww97
+Compromised child renderer processes could obtain IPC access without nodeIntegrationInSubFrames being enabled - https://github.com/advisories/GHSA-mq8j-3h7h-p8g7
+Exfiltration of hashed SMB credentials on Windows via file:// redirect - https://github.com/advisories/GHSA-p2jh-44qj-pf2v
+Electron's sandboxed renderers can obtain thumbnails of arbitrary files through the nativeImage API - https://github.com/advisories/GHSA-mpjm-v997-c4h4
+Renderers can obtain access to random bluetooth device without permission in Electron - https://github.com/advisories/GHSA-3p22-ghq8-v749
+Electron vulnerable to out-of-package code execution when launched with arbitrary cwd - https://github.com/advisories/GHSA-7x97-j373-85x5
+Electron context isolation bypass via nested unserializable return value - https://github.com/advisories/GHSA-p7v2-p9m8-qqg7
+Electron affected by libvpx's heap buffer overflow in vp8 encoding - https://github.com/advisories/GHSA-qqvq-6xgj-jw8g
+ASAR Integrity bypass via filetype confusion in electron - https://github.com/advisories/GHSA-7m48-wc93-9g85
+IPC messages delivered to the wrong frame in Electron - https://github.com/advisories/GHSA-hvf8-h2qh-37m9
+Electron vulnerable to Heap Buffer Overflow in NativeImage - https://github.com/advisories/GHSA-6r2x-8pq8-9489
+Depends on vulnerable versions of electron-download
+fix available via `npm audit fix --force`
+Will install electron@37.2.2, which is a breaking change
+node_modules/electron
+
+elliptic  <=6.6.0
+Severity: critical
+Elliptic Uses a Broken or Risky Cryptographic Algorithm - https://github.com/advisories/GHSA-r9p9-mrjm-926w
+Elliptic's EDDSA missing signature length check - https://github.com/advisories/GHSA-f7q4-pwc6-w24p
+Elliptic's ECDSA missing check for whether leading bit of r and s is zero - https://github.com/advisories/GHSA-977x-g7h5-7qgw
+Elliptic allows BER-encoded signatures - https://github.com/advisories/GHSA-49q7-c7j4-3p7m
+Signature Malleabillity in elliptic - https://github.com/advisories/GHSA-vh7m-p724-62c2
+Elliptic's verify function omits uniqueness validation - https://github.com/advisories/GHSA-434g-2637-qmqr
+Elliptic's private key extraction in ECDSA upon signing a malformed input (e.g. a string) - https://github.com/advisories/GHSA-vjh7-7g9h-fjfh
+Valid ECDSA signatures erroneously rejected in Elliptic - https://github.com/advisories/GHSA-fc9h-whq2-v747
+fix available via `npm audit fix`
+node_modules/elliptic
+
+es5-ext  0.10.1 - 0.10.62
+es5-ext vulnerable to Regular Expression Denial of Service in `function#copy` and `function#toStringTokens` - https://github.com/advisories/GHSA-4gmj-3p3h-gm8h
+fix available via `npm audit fix`
+node_modules/es5-ext
+
+eventsource  <1.1.1
+Severity: critical
+Exposure of Sensitive Information in eventsource - https://github.com/advisories/GHSA-6h5x-7c5m-7cr7
+fix available via `npm audit fix`
+node_modules/webpack-dev-server/node_modules/eventsource
+
+
+flat  <5.0.1
+Severity: critical
+flat vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-2j2x-2gpw-g8fm
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/flat
+
+follow-redirects  <=1.15.5
+Severity: high
+Exposure of Sensitive Information to an Unauthorized Actor in follow-redirects - https://github.com/advisories/GHSA-pw2r-vq6v-hr8c
+Follow Redirects improperly handles URLs in the url.parse() function - https://github.com/advisories/GHSA-jchw-25xp-jwwc
+follow-redirects' Proxy-Authorization header kept across hosts - https://github.com/advisories/GHSA-cxjh-pqwp-8mfp
+Exposure of sensitive information in follow-redirects - https://github.com/advisories/GHSA-74fj-2j2h-c42q
+fix available via `npm audit fix`
+node_modules/follow-redirects
+
+get-func-name  <2.0.1
+Severity: high
+Chaijs/get-func-name vulnerable to ReDoS - https://github.com/advisories/GHSA-4q6p-r6v2-jvc5
+fix available via `npm audit fix`
+node_modules/get-func-name
+
+got  <=11.8.3
+Severity: high
+Got allows a redirect to a UNIX socket - https://github.com/advisories/GHSA-pfrx-2q88-qq97
+Depends on vulnerable versions of cacheable-request
+fix available via `npm audit fix --force`
+Will install electron-builder@26.0.12, which is a breaking change
+node_modules/electron-builder/node_modules/got
+node_modules/got
+node_modules/package-json/node_modules/got
+  package-json  <=6.5.0
+  Depends on vulnerable versions of got
+  node_modules/electron-builder/node_modules/package-json
+  node_modules/package-json
+    latest-version  0.2.0 - 5.1.0
+    Depends on vulnerable versions of package-json
+    node_modules/electron-builder/node_modules/latest-version
+    node_modules/latest-version
+
+hosted-git-info  <2.8.9
+Severity: moderate
+Regular Expression Denial of Service in hosted-git-info - https://github.com/advisories/GHSA-43f8-2h32-f4cj
+fix available via `npm audit fix`
+node_modules/hosted-git-info
+
+http-cache-semantics  <4.1.1
+Severity: high
+http-cache-semantics vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-rc47-6667-2j5j
+fix available via `npm audit fix --force`
+Will install electron-builder@26.0.12, which is a breaking change
+node_modules/electron-builder/node_modules/http-cache-semantics
+node_modules/http-cache-semantics
+  cacheable-request  0.1.0 - 2.1.4
+  Depends on vulnerable versions of http-cache-semantics
+  node_modules/cacheable-request
+
+http-proxy  <1.18.1
+Severity: high
+Denial of Service in http-proxy - https://github.com/advisories/GHSA-6x33-pw7p-hmpq
+fix available via `npm audit fix`
+node_modules/http-proxy
+
+
+ini  <1.3.6
+Severity: high
+ini before 1.3.6 vulnerable to Prototype Pollution via ini.parse - https://github.com/advisories/GHSA-qqgx-2p2h-9c37
+fix available via `npm audit fix`
+node_modules/bcrypt/node_modules/ini
+node_modules/fsevents/node_modules/ini
+node_modules/ini
+
+ip  *
+Severity: high
+NPM IP package incorrectly identifies some private IP addresses as public - https://github.com/advisories/GHSA-78xj-cgh5-2h22
+ip SSRF improper categorization in isPublic - https://github.com/advisories/GHSA-2p57-rm9w-gvfp
+fix available via `npm audit fix --force`
+Will install webpack-dev-server@5.2.2, which is a breaking change
+node_modules/ip
+
+json-schema  <0.4.0
+Severity: critical
+json-schema is vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-896r-f27r-55mw
+fix available via `npm audit fix`
+node_modules/json-schema
+  jsprim  0.3.0 - 1.4.1 || 2.0.0 - 2.0.1
+  Depends on vulnerable versions of json-schema
+  node_modules/jsprim
+
+json5  <1.0.2 || >=2.0.0 <2.2.2
+Severity: high
+Prototype Pollution in JSON5 via Parse Method - https://github.com/advisories/GHSA-9c47-m6qq-7p4h
+Prototype Pollution in JSON5 via Parse Method - https://github.com/advisories/GHSA-9c47-m6qq-7p4h
+No fix available
+node_modules/css-loader/node_modules/json5
+node_modules/json5
+node_modules/read-config-file/node_modules/json5
+  loader-utils  <=1.4.1
+  Depends on vulnerable versions of json5
+  node_modules/css-loader/node_modules/loader-utils
+  node_modules/loader-utils
+
+kind-of  6.0.0 - 6.0.2
+Severity: high
+Validation Bypass in kind-of - https://github.com/advisories/GHSA-6c8f-qphg-qjgp
+fix available via `npm audit fix`
+node_modules/kind-of
+
+
+lodash  <=4.17.20
+Severity: high
+Regular Expression Denial of Service (ReDoS) in lodash - https://github.com/advisories/GHSA-29mw-wpgm-hmr9
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-p6mc-m468-83gw
+Command Injection in lodash - https://github.com/advisories/GHSA-35jh-r3h4-6jhm
+fix available via `npm audit fix`
+node_modules/babel-core/node_modules/lodash
+node_modules/babel-generator/node_modules/lodash
+node_modules/babel-register/node_modules/lodash
+node_modules/babel-template/node_modules/lodash
+node_modules/babel-traverse/node_modules/lodash
+node_modules/babel-types/node_modules/lodash
+node_modules/eslint-plugin-import/node_modules/lodash
+node_modules/http-proxy-middleware/node_modules/lodash
+node_modules/lodash
+
+lodash-es  <=4.17.20
+Severity: critical
+Regular Expression Denial of Service (ReDoS) in lodash - https://github.com/advisories/GHSA-x5rq-j2xg-h7qm
+Regular Expression Denial of Service (ReDoS) in lodash - https://github.com/advisories/GHSA-29mw-wpgm-hmr9
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-p6mc-m468-83gw
+Command Injection in lodash - https://github.com/advisories/GHSA-35jh-r3h4-6jhm
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-jf85-cpcp-j695
+fix available via `npm audit fix`
+node_modules/lodash-es
+
+mem  <4.0.0
+Severity: moderate
+Denial of Service in mem - https://github.com/advisories/GHSA-4xcv-9jjx-gfj3
+fix available via `npm audit fix --force`
+Will install vega@6.1.2, which is a breaking change
+node_modules/mem
+
+
+minimatch  <3.0.5
+Severity: high
+minimatch ReDoS vulnerability - https://github.com/advisories/GHSA-f8q6-p94x-37v3
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/bcrypt/node_modules/minimatch
+node_modules/fsevents/node_modules/minimatch
+node_modules/minimatch
+
+minimist  <=0.2.3 || 1.0.0 - 1.2.5
+Severity: critical
+Prototype Pollution in minimist - https://github.com/advisories/GHSA-vh95-rmgr-6w4m
+Prototype Pollution in minimist - https://github.com/advisories/GHSA-vh95-rmgr-6w4m
+Prototype Pollution in minimist - https://github.com/advisories/GHSA-xvch-5gv4-984h
+Prototype Pollution in minimist - https://github.com/advisories/GHSA-xvch-5gv4-984h
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/@webpack-contrib/config-loader/node_modules/minimist
+node_modules/bcrypt/node_modules/minimist
+node_modules/bcrypt/node_modules/rc/node_modules/minimist
+node_modules/css-loader/node_modules/minimist
+node_modules/electron-download/node_modules/minimist
+node_modules/electron-osx-sign/node_modules/minimist
+node_modules/fsevents/node_modules/minimist
+node_modules/fsevents/node_modules/rc/node_modules/minimist
+node_modules/meow/node_modules/minimist
+node_modules/minimist
+node_modules/nugget/node_modules/minimist
+node_modules/prettyjson/node_modules/minimist
+node_modules/rc/node_modules/minimist
+node_modules/read-config-file/node_modules/minimist
+  mkdirp  0.4.1 - 0.5.1
+  Depends on vulnerable versions of minimist
+  node_modules/bcrypt/node_modules/mkdirp
+  node_modules/fsevents/node_modules/mkdirp
+  node_modules/mkdirp
+    extract-zip  <=1.6.7
+    Depends on vulnerable versions of mkdirp
+    node_modules/extract-zip
+
+node-fetch  <=2.6.6
+Severity: high
+node-fetch forwards secure headers to untrusted sites - https://github.com/advisories/GHSA-r683-j2x4-v87g
+The `size` option isn't honored after following a redirect in node-fetch - https://github.com/advisories/GHSA-w7rc-rwvf-8q5r
+fix available via `npm audit fix --force`
+Will install node-fetch@3.3.2, which is a breaking change
+node_modules/node-fetch
+node_modules/vega-loader/node_modules/node-fetch
+  isomorphic-fetch  2.0.0 - 2.2.1
+  Depends on vulnerable versions of node-fetch
+  node_modules/isomorphic-fetch
+    fbjs  0.7.0 - 1.0.0
+    Depends on vulnerable versions of isomorphic-fetch
+    node_modules/fbjs
+      create-react-class  15.5.0 - 15.6.3
+      Depends on vulnerable versions of fbjs
+      node_modules/create-react-class
+      react-tap-event-plugin  >=2.0.0
+      Depends on vulnerable versions of fbjs
+      node_modules/react-tap-event-plugin
+
+node-forge  <=1.2.1
+Severity: high
+Prototype Pollution in node-forge debug API. - https://github.com/advisories/GHSA-5rrq-pxf6-6jx5
+Prototype Pollution in node-forge util.setPath API - https://github.com/advisories/GHSA-wxgw-qj99-44c2
+URL parsing in node-forge could lead to undesired behavior. - https://github.com/advisories/GHSA-gf8q-jrpm-jvxq
+Improper Verification of Cryptographic Signature in `node-forge` - https://github.com/advisories/GHSA-2r2c-g63r-vccr
+Open Redirect in node-forge - https://github.com/advisories/GHSA-8fr3-hfg3-gpgp
+Prototype Pollution in node-forge - https://github.com/advisories/GHSA-92xj-mqp7-vmcj
+Improper Verification of Cryptographic Signature in node-forge - https://github.com/advisories/GHSA-x4jg-mjrx-434g
+Improper Verification of Cryptographic Signature in node-forge - https://github.com/advisories/GHSA-cfm4-qjh2-4765
+fix available via `npm audit fix`
+node_modules/node-forge
+  selfsigned  1.1.1 - 1.10.7
+  Depends on vulnerable versions of node-forge
+  node_modules/selfsigned
+
+normalize-url  4.3.0 - 4.5.0
+Severity: high
+ReDoS in normalize-url - https://github.com/advisories/GHSA-px4h-xg32-q955
+fix available via `npm audit fix`
+node_modules/electron-builder/node_modules/normalize-url
+
+papaparse  <5.2.0
+Severity: high
+Regular Expression Denial of Service in papaparse - https://github.com/advisories/GHSA-qvjc-g5vr-mfgr
+fix available via `npm audit fix --force`
+Will install papaparse@5.5.3, which is a breaking change
+node_modules/papaparse
+
+path-parse  <1.0.7
+Severity: moderate
+Regular Expression Denial of Service in path-parse - https://github.com/advisories/GHSA-hj48-42vr-x3v9
+fix available via `npm audit fix`
+node_modules/path-parse
+
+path-to-regexp  <=0.1.11
+Severity: high
+path-to-regexp outputs backtracking regular expressions - https://github.com/advisories/GHSA-9wv6-86v2-598j
+path-to-regexp contains a ReDoS - https://github.com/advisories/GHSA-rhx6-c78j-4q9w
+fix available via `npm audit fix`
+node_modules/path-to-regexp
+
+pathval  <1.1.1
+Severity: high
+Prototype pollution in pathval - https://github.com/advisories/GHSA-g6ww-v8xp-vmwg
+fix available via `npm audit fix`
+node_modules/pathval
+
+pbkdf2  <=3.1.2
+Severity: critical
+pbkdf2 silently disregards Uint8Array input, returning static keys - https://github.com/advisories/GHSA-v62p-rq8g-8h59
+pbkdf2 returns predictable uninitialized/zero-filled memory for non-normalized or unimplemented algos - https://github.com/advisories/GHSA-h7cp-r72f-jxh6
+fix available via `npm audit fix`
+node_modules/pbkdf2
+
+plist  <=3.0.4
+Severity: critical
+Prototype pollution in Plist before 3.0.5 can cause denial of service - https://github.com/advisories/GHSA-4cpg-3vgw-4877
+Depends on vulnerable versions of xmldom
+fix available via `npm audit fix`
+node_modules/plist
+
+postcss  <=8.4.30
+Severity: moderate
+Regular Expression Denial of Service in postcss - https://github.com/advisories/GHSA-hwj9-h5mp-3pm3
+Regular Expression Denial of Service in postcss - https://github.com/advisories/GHSA-566m-qj78-rww5
+PostCSS line return parsing error - https://github.com/advisories/GHSA-7fh5-64p2-3v2j
+fix available via `npm audit fix`
+node_modules/postcss
+
+qs  6.5.0 - 6.5.2 || 6.7.0 - 6.7.2
+Severity: high
+qs vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-hrpp-h998-j3pp
+qs vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-hrpp-h998-j3pp
+fix available via `npm audit fix`
+node_modules/express/node_modules/qs
+node_modules/qs
+node_modules/request/node_modules/qs
+
+request  *
+Severity: moderate
+Server-Side Request Forgery in Request - https://github.com/advisories/GHSA-p8p7-x288-28g6
+Depends on vulnerable versions of tough-cookie
+fix available via `npm audit fix --force`
+Will install electron@37.2.2, which is a breaking change
+node_modules/request
+  node-gyp  <=7.1.2
+  Depends on vulnerable versions of request
+  Depends on vulnerable versions of semver
+  node_modules/node-gyp
+  nugget  *
+  Depends on vulnerable versions of request
+  node_modules/nugget
+    electron-download  *
+    Depends on vulnerable versions of nugget
+    node_modules/electron-download
+
+semver  <5.7.2 || >=6.0.0 <6.3.1
+Severity: high
+semver vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
+semver vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
+fix available via `npm audit fix`
+node_modules/app-builder-lib/node_modules/normalize-package-data/node_modules/semver
+node_modules/app-builder-lib/node_modules/semver
+node_modules/bcrypt/node_modules/semver
+node_modules/electron-builder/node_modules/cross-spawn/node_modules/semver
+node_modules/electron-builder/node_modules/semver
+node_modules/eslint/node_modules/semver
+node_modules/fsevents/node_modules/semver
+node_modules/node-environment-flags/node_modules/semver
+node_modules/node-gyp/node_modules/semver
+node_modules/semver
+node_modules/webpack-dev-server/node_modules/semver
+
+send  <0.19.0
+send vulnerable to template injection that can lead to XSS - https://github.com/advisories/GHSA-m6fv-jmcg-4jfg
+fix available via `npm audit fix`
+node_modules/send
+  serve-static  <=1.16.0
+  Depends on vulnerable versions of send
+  node_modules/serve-static
+
+serialize-javascript  <=3.0.0
+Severity: high
+Cross-Site Scripting in serialize-javascript - https://github.com/advisories/GHSA-h9rv-jmmf-4pgx
+Insecure serialization leading to RCE in serialize-javascript - https://github.com/advisories/GHSA-hxcc-f52p-wc94
+fix available via `npm audit fix --force`
+Will install compression-webpack-plugin@11.1.0, which is a breaking change
+node_modules/serialize-javascript
+  compression-webpack-plugin  1.1.0 - 3.0.0
+  Depends on vulnerable versions of serialize-javascript
+  node_modules/compression-webpack-plugin
+  terser-webpack-plugin  <=1.4.1
+  Depends on vulnerable versions of serialize-javascript
+  Depends on vulnerable versions of terser
+  node_modules/terser-webpack-plugin
+
+
+sockjs  <0.3.20
+Severity: moderate
+Improper Input Validation in SocksJS-Node - https://github.com/advisories/GHSA-c9g6-9335-x697
+fix available via `npm audit fix --force`
+Will install webpack-dev-server@5.2.2, which is a breaking change
+node_modules/sockjs
+
+ssri  5.2.2 - 6.0.1
+Severity: high
+Regular Expression Denial of Service (ReDoS) - https://github.com/advisories/GHSA-vx3p-948g-6vhq
+fix available via `npm audit fix`
+node_modules/ssri
+node_modules/terser-webpack-plugin/node_modules/ssri
+  cacache  10.0.4 - 11.0.0
+  Depends on vulnerable versions of ssri
+  node_modules/cacache
+
+tar  <=6.2.0
+Severity: high
+Arbitrary File Creation/Overwrite due to insufficient absolute path sanitization - https://github.com/advisories/GHSA-3jfq-g458-7qm9
+Arbitrary File Creation/Overwrite on Windows via insufficient relative path sanitization - https://github.com/advisories/GHSA-5955-9wpr-37jh
+Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning - https://github.com/advisories/GHSA-r628-mhmh-qjhw
+Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning using symbolic links - https://github.com/advisories/GHSA-9r2w-394v-53qc
+Arbitrary File Creation/Overwrite via insufficient symlink protection due to directory cache poisoning using symbolic links - https://github.com/advisories/GHSA-qq89-hq3f-393p
+Denial of service while parsing a tar file due to lack of folders count validation - https://github.com/advisories/GHSA-f5x3-32g6-xq36
+fix available via `npm audit fix`
+node_modules/bcrypt/node_modules/tar
+node_modules/fsevents/node_modules/tar
+node_modules/node-gyp/node_modules/tar
+node_modules/tar
+
+terser  <4.8.1
+Severity: high
+Terser insecure use of regular expressions leads to ReDoS - https://github.com/advisories/GHSA-4wf5-vphf-c2xc
+fix available via `npm audit fix`
+node_modules/terser
+
+tough-cookie  <4.1.3
+Severity: moderate
+tough-cookie Prototype Pollution vulnerability - https://github.com/advisories/GHSA-72xf-g2v4-qvf3
+fix available via `npm audit fix --force`
+Will install electron@37.2.2, which is a breaking change
+node_modules/tough-cookie
+
+trim-newlines  <3.0.1
+Severity: high
+Uncontrolled Resource Consumption in trim-newlines - https://github.com/advisories/GHSA-7p7h-4mm5-852v
+fix available via `npm audit fix --force`
+Will install webpack-command@0.1.1, which is a breaking change
+node_modules/trim-newlines
+node_modules/webpack-command/node_modules/trim-newlines
+  meow  3.4.0 - 5.0.0
+  Depends on vulnerable versions of trim-newlines
+  Depends on vulnerable versions of yargs-parser
+  node_modules/meow
+  node_modules/webpack-command/node_modules/meow
+
+ua-parser-js  <=0.7.32
+Severity: high
+Regular Expression Denial of Service in ua-parser-js - https://github.com/advisories/GHSA-662x-fhqg-9p8v
+ua-parser-js Regular Expression Denial of Service vulnerability - https://github.com/advisories/GHSA-394c-5j6w-4xmx
+Regular Expression Denial of Service (ReDoS) in ua-parser-js - https://github.com/advisories/GHSA-78cj-fxph-m83p
+ReDoS Vulnerability in ua-parser-js version - https://github.com/advisories/GHSA-fhg7-m89q-25r3
+fix available via `npm audit fix`
+node_modules/ua-parser-js
+
+url-parse  <=1.5.8
+Severity: critical
+Improper Validation and Sanitization in url-parse - https://github.com/advisories/GHSA-46c4-8wrp-j99v
+Authorization bypass in url-parse - https://github.com/advisories/GHSA-rqff-837h-mm52
+Open redirect in url-parse - https://github.com/advisories/GHSA-hh27-ffr2-f2jc
+Path traversal in url-parse - https://github.com/advisories/GHSA-9m6j-fcg5-2442
+url-parse incorrectly parses hostname / protocol due to unstripped leading control characters. - https://github.com/advisories/GHSA-jf5r-8hm2-f872
+url-parse Incorrectly parses URLs that include an '@' - https://github.com/advisories/GHSA-8v38-pw62-9cw2
+Authorization Bypass Through User-Controlled Key in url-parse - https://github.com/advisories/GHSA-hgjh-723h-mx2j
+fix available via `npm audit fix`
+node_modules/url-parse
+
+
+vega-util  <1.13.1
+Severity: moderate
+Improperly Controlled Modification of Dynamically-Determined Object Attributes in vega-util - https://github.com/advisories/GHSA-6hwh-rqwf-cxxr
+fix available via `npm audit fix`
+node_modules/vega-util
+
+webpack-dev-middleware  <=5.3.3
+Severity: high
+Path traversal in webpack-dev-middleware - https://github.com/advisories/GHSA-wr3j-pwj9-hqq6
+fix available via `npm audit fix --force`
+Will install webpack-dev-middleware@7.4.2, which is a breaking change
+node_modules/webpack-dev-middleware
+node_modules/webpack-dev-server/node_modules/webpack-dev-middleware
+
+
+websocket-extensions  <0.1.4
+Severity: high
+Regular Expression Denial of Service in websocket-extensions (NPM package) - https://github.com/advisories/GHSA-g78m-2chm-r7qv
+fix available via `npm audit fix`
+node_modules/websocket-extensions
+
+xmldom  *
+Severity: critical
+Misinterpretation of malicious XML input - https://github.com/advisories/GHSA-h6q6-9hqw-rwfv
+xmldom allows multiple root nodes in a DOM - https://github.com/advisories/GHSA-crh6-fp67-6883
+Misinterpretation of malicious XML input - https://github.com/advisories/GHSA-5fg8-2547-mr8q
+fix available via `npm audit fix`
+node_modules/xmldom
+
+y18n  =4.0.0 || <3.2.2
+Severity: high
+Prototype Pollution in y18n - https://github.com/advisories/GHSA-c4w7-xm78-47vh
+Prototype Pollution in y18n - https://github.com/advisories/GHSA-c4w7-xm78-47vh
+fix available via `npm audit fix`
+node_modules/vega-lite/node_modules/y18n
+node_modules/y18n
+
+yargs-parser  6.0.0 - 13.1.1
+Severity: moderate
+yargs-parser Vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-p9pc-299p-vxgp
+fix available via `npm audit fix --force`
+Will install mocha@11.7.1, which is a breaking change
+node_modules/electron-builder/node_modules/yargs-parser
+node_modules/mocha/node_modules/yargs-parser
+node_modules/vega-lite/node_modules/yargs-parser
+node_modules/yargs-parser
+node_modules/yargs/node_modules/yargs-parser
+
+169 vulnerabilities (7 low, 28 moderate, 79 high, 55 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
