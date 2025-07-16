@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 12 (compatible with the project's package-lock.json)
-RUN curl -fsSL https://deb.nodesource.com/setup_12.x | bash - \
+# Install Node.js 18 LTS
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
   && apt-get install -y nodejs \
   && rm -rf /var/lib/apt/lists/*
 
@@ -27,14 +27,20 @@ WORKDIR /usr/src/app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install npm dependencies with legacy peer deps flag to handle old packages
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+# Remove package-lock.json to allow npm to resolve compatible versions
+RUN rm -f package-lock.json
+
+# Install npm dependencies with legacy peer deps flag (skip postinstall)
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy the rest of the application
 COPY . .
 
-# Install Python packages
+# Install Python packages first (needed by postinstall script)
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Run postinstall script after all dependencies are ready
+RUN npm run postinstall
 
 EXPOSE 3999
 CMD ["npm", "start", "localData"]
