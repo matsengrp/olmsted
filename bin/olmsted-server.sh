@@ -21,7 +21,7 @@ fi
 
 DOCKER_TAG_OR_IMAGE="$1"
 HOST_PORT="${2:-3999}"
-DOCKER_PORT="8080"
+DOCKER_PORT="3999"
 
 # If the argument contains ':', treat it as a full image name
 # Otherwise, assume it's a tag for quay.io/matsengrp/olmsted
