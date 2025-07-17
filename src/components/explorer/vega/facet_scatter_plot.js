@@ -1,7 +1,7 @@
 const facetClonalFamiliesVizSpec = () => {
   return(       
   {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
+  "$schema": "https://vega.github.io/schema/vega/v4.json",
   "autosize": {"type": "pad"},
   // DATA
   "data": [

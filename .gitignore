@@ -18,6 +18,6 @@ proddata
 
 ### development ###
 **/tmp*/
-**/_claude/
+**/_claude*/
 tests/_output*/
 
