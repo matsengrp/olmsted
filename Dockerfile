@@ -27,8 +27,8 @@ WORKDIR /usr/src/app
 # Copy package files first for better caching
 COPY package.json package-lock.json ./
 
-# Install npm dependencies using exact versions from package-lock.json
-RUN npm ci --legacy-peer-deps --ignore-scripts
+# Install npm dependencies (temporarily using npm install for breaking change tests)
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy the rest of the application
 COPY . .
