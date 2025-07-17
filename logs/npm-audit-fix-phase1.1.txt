@@ -109,7 +109,7 @@ npm warn While resolving: react-tap-event-plugin@3.0.3
 npm warn Found: react-dom@16.7.0
 npm warn node_modules/react-dom
 npm warn   react-dom@"16.7.0" from the root project
-npm warn   4 more (react-hot-loader, react-collapsible, ...)
+npm warn   4 more (react-hot-loader, react-collapsible, react-select, react-transition-group)
 npm warn
 npm warn Could not resolve dependency:
 npm warn peer react-dom@"^16.0.0-0 < 16.4.0" from react-tap-event-plugin@3.0.3
@@ -156,5 +156,5 @@ npm error to accept an incorrect (and potentially broken) dependency resolution.
 npm error
 npm error
 npm error For a full report see:
-npm error /root/.npm/_logs/2025-07-17T00_53_09_491Z-eresolve-report.txt
-npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-17T00_53_09_491Z-debug-0.log
+npm error /root/.npm/_logs/2025-07-17T01_13_31_594Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-17T01_13_31_594Z-debug-0.log
