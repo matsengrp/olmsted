@@ -114,7 +114,7 @@
     "css-loader": "^3.6.0",
     "diff": "^3.5.0",
     "electron": "^1.8.8",
-    "electron-builder": "^20.44.4",
+    "electron-builder": "^26.0.12",
     "es6-promise": "~1.0.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
