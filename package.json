@@ -125,7 +125,7 @@
     "eslint-plugin-react": "^7.37.5",
     "express": "^4.21.2",
     "json-loader": "^0.5.7",
-    "mocha": "^6.2.3",
+    "mocha": "^11.7.1",
     "prettyjson": "^1.2.1",
     "react-hot-loader": "^4.6.5",
     "redux-devtools": "^3.5.0",
