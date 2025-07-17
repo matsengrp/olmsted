@@ -41,11 +41,14 @@
    - Breaking: CommonJS → ESM migration handled gracefully
    - Vulnerabilities: 99 (reduced from 100)
 
-### 🔄 In Progress:
-6. **webpack**: `^4.47.0` → `^5.100.2`
-   - Fixes braces ReDoS
-   - Major breaking change
+### ✅ Successfully Applied (continued):
+6. **webpack**: `^4.47.0` → `^5.100.2` ✅
+   - Fixed braces ReDoS vulnerability
+   - Major breaking change handled successfully
+   - Vulnerabilities: 94 (reduced from 99)
+   - Warnings: vega-lib named export warning, DefinePlugin NODE_ENV conflict
 
+### 🔄 In Progress:
 7. **Babel 6 → 7/8**
    - Fixes babel-traverse critical vulnerability
    - Most complex migration
@@ -80,7 +83,8 @@ docker build -t olmsted:<test-name> .
 **After papaparse + d3-color:** 105 vulnerabilities  
 **After compression-webpack-plugin:** 100 vulnerabilities
 **After node-fetch:** 99 vulnerabilities
-**Total Reduction:** 20 vulnerabilities fixed (17% reduction)
+**After webpack 5:** 94 vulnerabilities
+**Total Reduction:** 25 vulnerabilities fixed (21% reduction)
 
 **Production impact:** Significant improvement
 - Before: 31 moderate, 39 high, 35 critical
