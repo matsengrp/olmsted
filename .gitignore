@@ -15,4 +15,9 @@ s3/
 node_modules/
 npm-debug.log
 proddata
-tests/_output*
+
+### development ###
+**/tmp*/
+**/_claude/
+tests/_output*/
+
