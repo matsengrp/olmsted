@@ -6,7 +6,7 @@ const WebpackShellPlugin = require('webpack-shell-plugin');
 
 module.exports = {
   entry: [
-    "babel-polyfill",
+    "@babel/polyfill",
     "./src/index"
   ],
   output: {

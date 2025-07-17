@@ -6,7 +6,7 @@ module.exports = {
   context: __dirname, 
   devtool: 'cheap-module-source-map',
   entry: [
-    "babel-polyfill",
+    "@babel/polyfill",
     'webpack-hot-middleware/client',
     './src/index'
   ],

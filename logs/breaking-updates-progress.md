@@ -20,10 +20,10 @@
    - Vulnerabilities: 105 (same as papaparse)
 
 ### ❌ Failed:
-3. **css-loader**: `^3.6.0` → `^7.1.2` ❌
-   - Error: `this.getOptions is not a function`
-   - Cause: css-loader 7.x requires webpack 5.x
-   - Reverted back to `^3.6.0`
+3. **css-loader**: `^3.6.0` → `^7.1.2` ❌ (retry with webpack 5)
+   - First attempt: `this.getOptions is not a function` (webpack 4 incompatibility)
+   - Second attempt: Broke page layout despite webpack 5 compatibility
+   - Reverted back to `^3.6.0` - functionality over vulnerability fixes
 
 ### ✅ Successfully Applied (continued):
 4. **compression-webpack-plugin**: `^1.1.12` → `^11.1.0` ✅
@@ -48,10 +48,12 @@
    - Vulnerabilities: 94 (reduced from 99)
    - Warnings: vega-lib named export warning, DefinePlugin NODE_ENV conflict
 
-### 🔄 In Progress:
-7. **Babel 6 → 7/8**
-   - Fixes babel-traverse critical vulnerability
-   - Most complex migration
+### ✅ Successfully Applied (continued):
+7. **Babel 6 → 7** ✅
+   - Fixed critical babel-traverse vulnerability
+   - Complete migration: packages, config, imports, webpack
+   - Server running with only minor warnings
+   - Most complex migration completed successfully
 
 ---
 
@@ -84,7 +86,8 @@ docker build -t olmsted:<test-name> .
 **After compression-webpack-plugin:** 100 vulnerabilities
 **After node-fetch:** 99 vulnerabilities
 **After webpack 5:** 94 vulnerabilities
-**Total Reduction:** 25 vulnerabilities fixed (21% reduction)
+**After Babel 7:** 55 vulnerabilities (28 moderate, 27 high, 0 critical)
+**Total Reduction:** 64 vulnerabilities fixed (54% reduction)
 
 **Production impact:** Significant improvement
 - Before: 31 moderate, 39 high, 35 critical
