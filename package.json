@@ -127,7 +127,7 @@
     "prettyjson": "^1.2.1",
     "react-hot-loader": "^4.6.5",
     "redux-devtools": "^3.5.0",
-    "rimraf": "^2.7.1",
+    "rimraf": "^5.0.7",
     "run-sequence": "~0.3.7",
     "style-loader": "^3.3.4",
     "webpack-cli": "^5.1.4",
