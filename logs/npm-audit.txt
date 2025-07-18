@@ -1,0 +1,81 @@
+# npm audit report
+
+d3-color  <3.1.0
+Severity: high
+d3-color vulnerable to ReDoS - https://github.com/advisories/GHSA-36jr-mh4h-2g58
+fix available via `npm audit fix --force`
+Will install d3-interpolate@3.0.1, which is a breaking change
+node_modules/d3-interpolate/node_modules/d3-color
+node_modules/d3-scale-chromatic/node_modules/d3-color
+node_modules/d3-scale/node_modules/d3-color
+node_modules/d3-transition/node_modules/d3-color
+node_modules/vega-parser/node_modules/d3-color
+  d3-interpolate  0.1.3 - 2.0.1
+  Depends on vulnerable versions of d3-color
+  node_modules/d3-interpolate
+    d3-brush  0.1.0 - 2.1.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-brush
+    d3-scale  0.1.3 - 3.3.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-scale
+    node_modules/vega-scale/node_modules/d3-scale
+      vega-scale  <=7.1.1
+      Depends on vulnerable versions of d3-interpolate
+      Depends on vulnerable versions of d3-scale
+      Depends on vulnerable versions of d3-scale-chromatic
+      node_modules/vega-scale
+        vega-encode  <=4.8.3
+        Depends on vulnerable versions of d3-interpolate
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-encode
+        vega-parser  <=5.14.0
+        Depends on vulnerable versions of d3-color
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-parser
+          vega  <=5.31.0
+          Depends on vulnerable versions of vega-lib
+          Depends on vulnerable versions of vega-parser
+          node_modules/vega
+            vega-lite  0.8.0 - 0.9.0 || 2.7.0
+            Depends on vulnerable versions of vega
+            node_modules/vega-lite
+          vega-lib  *
+          Depends on vulnerable versions of vega-encode
+          Depends on vulnerable versions of vega-parser
+          Depends on vulnerable versions of vega-scale
+          Depends on vulnerable versions of vega-view
+          Depends on vulnerable versions of vega-wordcloud
+          node_modules/vega-lib
+            react-vega  4.0.0 - 4.0.2
+            Depends on vulnerable versions of vega-lib
+            node_modules/react-vega
+          vega-view  <=3.4.1
+          Depends on vulnerable versions of vega-parser
+          node_modules/vega-view
+        vega-wordcloud  <=4.0.5
+        Depends on vulnerable versions of vega-scale
+        node_modules/vega-wordcloud
+    d3-scale-chromatic  0.1.0 - 2.0.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-scale-chromatic
+    d3-transition  0.0.7 - 2.0.0
+    Depends on vulnerable versions of d3-color
+    Depends on vulnerable versions of d3-interpolate
+    node_modules/d3-transition
+    d3-zoom  0.0.2 - 2.0.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-zoom
+
+
+16 vulnerabilities (1 moderate, 15 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
