@@ -13,14 +13,15 @@ if [ $# -eq 0 ]; then
     echo ""
     echo "Examples:"
     echo "  $0 latest"
-    echo "  $0 python3 8080"
+    echo "  $0 python3 3999"
     echo "  $0 olmsted:python3"
     echo "  $0 quay.io/matsengrp/olmsted:latest"
     exit 1
 fi
 
 DOCKER_TAG_OR_IMAGE="$1"
-PORT="${2:-3999}"
+HOST_PORT="${2:-3999}"
+DOCKER_PORT="3999"
 
 # If the argument contains ':', treat it as a full image name
 # Otherwise, assume it's a tag for quay.io/matsengrp/olmsted
@@ -31,6 +32,8 @@ else
 fi
 
 echo "Starting Olmsted server with Docker image: $DOCKER_IMAGE"
-echo "Using port: $PORT"
+echo "Using port: $HOST_PORT"
 
-docker run -p ${PORT}:3999 -v $PWD:/data "${DOCKER_IMAGE}" npm start localData /data
+set -x
+docker run -p ${HOST_PORT}:${DOCKER_PORT} -v $PWD:/data "${DOCKER_IMAGE}" npm start localData /data
+

@@ -59,7 +59,7 @@ if (devServer) {
   const compiler = webpack(webpackConfig);
 
   app.use(require("webpack-dev-middleware")(compiler, {
-    logLevel: 'warn', publicPath: webpackConfig.output.publicPath
+    publicPath: webpackConfig.output.publicPath
   }));
 
   app.use(require("webpack-hot-middleware")(compiler, {

@@ -25,12 +25,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 WORKDIR /usr/src/app
 
 # Copy package files first for better caching
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-# Remove package-lock.json to allow npm to resolve compatible versions
-RUN rm -f package-lock.json
-
-# Install npm dependencies with legacy peer deps flag (skip postinstall)
+# Install npm dependencies (temporarily using npm install for breaking change tests)
 RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy the rest of the application
