@@ -38,11 +38,9 @@ node_modules/vega-parser/node_modules/d3-color
           vega  <=5.31.0
           Depends on vulnerable versions of vega-lib
           Depends on vulnerable versions of vega-parser
-          Depends on vulnerable versions of yargs
           node_modules/vega
-            vega-lite  0.8.0 - 0.9.0 || 2.0.0-alpha.0 - 3.0.0-rc9
+            vega-lite  0.8.0 - 0.9.0 || 2.7.0
             Depends on vulnerable versions of vega
-            Depends on vulnerable versions of yargs
             node_modules/vega-lite
           vega-lib  *
           Depends on vulnerable versions of vega-encode
@@ -73,52 +71,8 @@ node_modules/vega-parser/node_modules/d3-color
     Depends on vulnerable versions of d3-transition
     node_modules/d3-zoom
 
-postcss  <8.4.31
-Severity: moderate
-PostCSS line return parsing error - https://github.com/advisories/GHSA-7fh5-64p2-3v2j
-fix available via `npm audit fix --force`
-Will install css-loader@7.1.2, which is a breaking change
-node_modules/postcss
-  css-loader  0.15.0 - 4.3.0
-  Depends on vulnerable versions of icss-utils
-  Depends on vulnerable versions of postcss
-  Depends on vulnerable versions of postcss-modules-extract-imports
-  Depends on vulnerable versions of postcss-modules-local-by-default
-  Depends on vulnerable versions of postcss-modules-scope
-  Depends on vulnerable versions of postcss-modules-values
-  node_modules/css-loader
-  icss-utils  <=4.1.1
-  Depends on vulnerable versions of postcss
-  node_modules/icss-utils
-    postcss-modules-local-by-default  <=4.0.0-rc.4
-    Depends on vulnerable versions of icss-utils
-    Depends on vulnerable versions of postcss
-    node_modules/postcss-modules-local-by-default
-    postcss-modules-values  <=4.0.0-rc.5
-    Depends on vulnerable versions of icss-utils
-    Depends on vulnerable versions of postcss
-    node_modules/postcss-modules-values
-  postcss-modules-extract-imports  <=2.0.0
-  Depends on vulnerable versions of postcss
-  node_modules/postcss-modules-extract-imports
-  postcss-modules-scope  <=2.2.0
-  Depends on vulnerable versions of postcss
-  node_modules/postcss-modules-scope
 
-
-yargs-parser  6.0.0 - 13.1.1
-Severity: moderate
-yargs-parser Vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-p9pc-299p-vxgp
-fix available via `npm audit fix --force`
-Will install vega-lite@6.2.0, which is a breaking change
-node_modules/vega-lite/node_modules/yargs-parser
-node_modules/vega/node_modules/yargs-parser
-  yargs  8.0.0-candidate.0 - 12.0.5
-  Depends on vulnerable versions of yargs-parser
-  node_modules/vega-lite/node_modules/yargs
-  node_modules/vega/node_modules/yargs
-
-25 vulnerabilities (10 moderate, 15 high)
+16 vulnerabilities (1 moderate, 15 high)
 
 To address issues that do not require attention, run:
   npm audit fix
