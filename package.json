@@ -134,6 +134,9 @@
     "webpack-hot-middleware": "^2.26.1",
     "webpack-shell-plugin": "^0.5.0"
   },
+  "overrides": {
+    "canvas-prebuilt": "npm:@empty/module@1.0.0"
+  },
   "build": {
     "appId": "olmsted",
     "directories": {

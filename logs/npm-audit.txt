@@ -4,7 +4,7 @@ d3-color  <3.1.0
 Severity: high
 d3-color vulnerable to ReDoS - https://github.com/advisories/GHSA-36jr-mh4h-2g58
 fix available via `npm audit fix --force`
-Will install d3-scale@4.0.2, which is a breaking change
+Will install d3-interpolate@3.0.1, which is a breaking change
 node_modules/d3-interpolate/node_modules/d3-color
 node_modules/d3-scale-chromatic/node_modules/d3-color
 node_modules/d3-scale/node_modules/d3-color
@@ -13,6 +13,10 @@ node_modules/vega-parser/node_modules/d3-color
   d3-interpolate  0.1.3 - 2.0.1
   Depends on vulnerable versions of d3-color
   node_modules/d3-interpolate
+    d3-brush  0.1.0 - 2.1.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-brush
     d3-scale  0.1.3 - 3.3.0
     Depends on vulnerable versions of d3-color
     Depends on vulnerable versions of d3-interpolate
@@ -27,22 +31,11 @@ node_modules/vega-parser/node_modules/d3-color
         Depends on vulnerable versions of d3-interpolate
         Depends on vulnerable versions of vega-scale
         node_modules/vega-encode
-        vega-lib  *
-        Depends on vulnerable versions of vega-encode
-        Depends on vulnerable versions of vega-parser
-        Depends on vulnerable versions of vega-scale
-        Depends on vulnerable versions of vega-view
-        Depends on vulnerable versions of vega-wordcloud
-        node_modules/vega-lib
-          react-vega  4.0.0 - 4.0.2
-          Depends on vulnerable versions of vega-lib
-          node_modules/react-vega
-        vega-parser  <=5.0.0
+        vega-parser  <=5.14.0
         Depends on vulnerable versions of d3-color
         Depends on vulnerable versions of vega-scale
         node_modules/vega-parser
           vega  <=5.31.0
-          Depends on vulnerable versions of canvas-prebuilt
           Depends on vulnerable versions of vega-lib
           Depends on vulnerable versions of vega-parser
           Depends on vulnerable versions of yargs
@@ -51,10 +44,20 @@ node_modules/vega-parser/node_modules/d3-color
             Depends on vulnerable versions of vega
             Depends on vulnerable versions of yargs
             node_modules/vega-lite
+          vega-lib  *
+          Depends on vulnerable versions of vega-encode
+          Depends on vulnerable versions of vega-parser
+          Depends on vulnerable versions of vega-scale
+          Depends on vulnerable versions of vega-view
+          Depends on vulnerable versions of vega-wordcloud
+          node_modules/vega-lib
+            react-vega  4.0.0 - 4.0.2
+            Depends on vulnerable versions of vega-lib
+            node_modules/react-vega
           vega-view  <=3.4.1
           Depends on vulnerable versions of vega-parser
           node_modules/vega-view
-        vega-wordcloud  3.0.0 - 4.0.0
+        vega-wordcloud  <=4.0.5
         Depends on vulnerable versions of vega-scale
         node_modules/vega-wordcloud
     d3-scale-chromatic  0.1.0 - 2.0.0
@@ -65,14 +68,10 @@ node_modules/vega-parser/node_modules/d3-color
     Depends on vulnerable versions of d3-color
     Depends on vulnerable versions of d3-interpolate
     node_modules/d3-transition
-      d3-brush  0.1.0 - 2.1.0
-      Depends on vulnerable versions of d3-interpolate
-      Depends on vulnerable versions of d3-transition
-      node_modules/d3-brush
-      d3-zoom  0.0.2 - 2.0.0
-      Depends on vulnerable versions of d3-interpolate
-      Depends on vulnerable versions of d3-transition
-      node_modules/d3-zoom
+    d3-zoom  0.0.2 - 2.0.0
+    Depends on vulnerable versions of d3-interpolate
+    Depends on vulnerable versions of d3-transition
+    node_modules/d3-zoom
 
 postcss  <8.4.31
 Severity: moderate
@@ -106,25 +105,12 @@ node_modules/postcss
   Depends on vulnerable versions of postcss
   node_modules/postcss-modules-scope
 
-tar  <6.2.1
-Severity: moderate
-Denial of service while parsing a tar file due to lack of folders count validation - https://github.com/advisories/GHSA-f5x3-32g6-xq36
-fix available via `npm audit fix --force`
-Will install vega@6.1.2, which is a breaking change
-node_modules/node-pre-gyp/node_modules/tar
-  node-pre-gyp  *
-  Depends on vulnerable versions of tar
-  node_modules/node-pre-gyp
-    canvas-prebuilt  *
-    Depends on vulnerable versions of node-pre-gyp
-    node_modules/canvas-prebuilt
-
 
 yargs-parser  6.0.0 - 13.1.1
 Severity: moderate
 yargs-parser Vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-p9pc-299p-vxgp
 fix available via `npm audit fix --force`
-Will install vega@6.1.2, which is a breaking change
+Will install vega-lite@6.2.0, which is a breaking change
 node_modules/vega-lite/node_modules/yargs-parser
 node_modules/vega/node_modules/yargs-parser
   yargs  8.0.0-candidate.0 - 12.0.5
@@ -132,7 +118,7 @@ node_modules/vega/node_modules/yargs-parser
   node_modules/vega-lite/node_modules/yargs
   node_modules/vega/node_modules/yargs
 
-28 vulnerabilities (13 moderate, 15 high)
+25 vulnerabilities (10 moderate, 15 high)
 
 To address issues that do not require attention, run:
   npm audit fix
