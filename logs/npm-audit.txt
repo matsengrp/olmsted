@@ -1,39 +1,5 @@
 # npm audit report
 
-color-string  <1.5.5
-Severity: moderate
-Regular Expression Denial of Service (ReDOS) - https://github.com/advisories/GHSA-257v-vj4p-3w2h
-fix available via `npm audit fix --force`
-Will install color@5.0.0, which is a breaking change
-node_modules/color-string
-  color  <=0.11.4
-  Depends on vulnerable versions of color-string
-  node_modules/color
-
-cross-spawn  <6.0.6
-Severity: high
-Regular Expression Denial of Service (ReDoS) in cross-spawn - https://github.com/advisories/GHSA-3xgq-45jj-v275
-fix available via `npm audit fix --force`
-Will install webpack-command@0.1.1, which is a breaking change
-node_modules/execa/node_modules/cross-spawn
-  execa  0.5.0 - 0.9.0
-  Depends on vulnerable versions of cross-spawn
-  node_modules/execa
-    term-size  1.0.0 - 1.2.0
-    Depends on vulnerable versions of execa
-    node_modules/term-size
-      boxen  1.2.0 - 3.2.0
-      Depends on vulnerable versions of term-size
-      node_modules/boxen
-        update-notifier  0.2.0 - 5.1.0
-        Depends on vulnerable versions of boxen
-        Depends on vulnerable versions of latest-version
-        node_modules/update-notifier
-          webpack-command  >=0.1.0
-          Depends on vulnerable versions of meow
-          Depends on vulnerable versions of update-notifier
-          node_modules/webpack-command
-
 d3-color  <3.1.0
 Severity: high
 d3-color vulnerable to ReDoS - https://github.com/advisories/GHSA-36jr-mh4h-2g58
@@ -47,10 +13,6 @@ node_modules/vega-parser/node_modules/d3-color
   d3-interpolate  0.1.3 - 2.0.1
   Depends on vulnerable versions of d3-color
   node_modules/d3-interpolate
-    d3-brush  0.1.0 - 2.1.0
-    Depends on vulnerable versions of d3-interpolate
-    Depends on vulnerable versions of d3-transition
-    node_modules/d3-brush
     d3-scale  0.1.3 - 3.3.0
     Depends on vulnerable versions of d3-color
     Depends on vulnerable versions of d3-interpolate
@@ -65,7 +27,17 @@ node_modules/vega-parser/node_modules/d3-color
         Depends on vulnerable versions of d3-interpolate
         Depends on vulnerable versions of vega-scale
         node_modules/vega-encode
-        vega-parser  <=5.14.0
+        vega-lib  *
+        Depends on vulnerable versions of vega-encode
+        Depends on vulnerable versions of vega-parser
+        Depends on vulnerable versions of vega-scale
+        Depends on vulnerable versions of vega-view
+        Depends on vulnerable versions of vega-wordcloud
+        node_modules/vega-lib
+          react-vega  4.0.0 - 4.0.2
+          Depends on vulnerable versions of vega-lib
+          node_modules/react-vega
+        vega-parser  <=5.0.0
         Depends on vulnerable versions of d3-color
         Depends on vulnerable versions of vega-scale
         node_modules/vega-parser
@@ -79,20 +51,10 @@ node_modules/vega-parser/node_modules/d3-color
             Depends on vulnerable versions of vega
             Depends on vulnerable versions of yargs
             node_modules/vega-lite
-          vega-lib  *
-          Depends on vulnerable versions of vega-encode
-          Depends on vulnerable versions of vega-parser
-          Depends on vulnerable versions of vega-scale
-          Depends on vulnerable versions of vega-view
-          Depends on vulnerable versions of vega-wordcloud
-          node_modules/vega-lib
-            react-vega  4.0.0 - 4.0.2
-            Depends on vulnerable versions of vega-lib
-            node_modules/react-vega
           vega-view  <=3.4.1
           Depends on vulnerable versions of vega-parser
           node_modules/vega-view
-        vega-wordcloud  <=4.0.5
+        vega-wordcloud  3.0.0 - 4.0.0
         Depends on vulnerable versions of vega-scale
         node_modules/vega-wordcloud
     d3-scale-chromatic  0.1.0 - 2.0.0
@@ -103,42 +65,14 @@ node_modules/vega-parser/node_modules/d3-color
     Depends on vulnerable versions of d3-color
     Depends on vulnerable versions of d3-interpolate
     node_modules/d3-transition
-    d3-zoom  0.0.2 - 2.0.0
-    Depends on vulnerable versions of d3-interpolate
-    Depends on vulnerable versions of d3-transition
-    node_modules/d3-zoom
-
-electron  <=28.3.1
-Severity: high
-Depends on vulnerable versions of @electron/get
-AutoUpdater module fails to validate certain nested components of the bundle - https://github.com/advisories/GHSA-77xc-hjv8-ww97
-Compromised child renderer processes could obtain IPC access without nodeIntegrationInSubFrames being enabled - https://github.com/advisories/GHSA-mq8j-3h7h-p8g7
-Exfiltration of hashed SMB credentials on Windows via file:// redirect - https://github.com/advisories/GHSA-p2jh-44qj-pf2v
-Electron vulnerable to out-of-package code execution when launched with arbitrary cwd - https://github.com/advisories/GHSA-7x97-j373-85x5
-Electron context isolation bypass via nested unserializable return value - https://github.com/advisories/GHSA-p7v2-p9m8-qqg7
-Electron affected by libvpx's heap buffer overflow in vp8 encoding - https://github.com/advisories/GHSA-qqvq-6xgj-jw8g
-ASAR Integrity bypass via filetype confusion in electron - https://github.com/advisories/GHSA-7m48-wc93-9g85
-Electron vulnerable to Heap Buffer Overflow in NativeImage - https://github.com/advisories/GHSA-6r2x-8pq8-9489
-fix available via `npm audit fix --force`
-Will install electron@37.2.3, which is a breaking change
-node_modules/electron
-
-got  <11.8.5
-Severity: moderate
-Got allows a redirect to a UNIX socket - https://github.com/advisories/GHSA-pfrx-2q88-qq97
-fix available via `npm audit fix --force`
-Will install electron@37.2.3, which is a breaking change
-node_modules/@electron/get/node_modules/got
-node_modules/package-json/node_modules/got
-  @electron/get  <=1.14.1
-  Depends on vulnerable versions of got
-  node_modules/@electron/get
-  package-json  <=6.5.0
-  Depends on vulnerable versions of got
-  node_modules/package-json
-    latest-version  0.2.0 - 5.1.0
-    Depends on vulnerable versions of package-json
-    node_modules/latest-version
+      d3-brush  0.1.0 - 2.1.0
+      Depends on vulnerable versions of d3-interpolate
+      Depends on vulnerable versions of d3-transition
+      node_modules/d3-brush
+      d3-zoom  0.0.2 - 2.0.0
+      Depends on vulnerable versions of d3-interpolate
+      Depends on vulnerable versions of d3-transition
+      node_modules/d3-zoom
 
 postcss  <8.4.31
 Severity: moderate
@@ -185,24 +119,12 @@ node_modules/node-pre-gyp/node_modules/tar
     Depends on vulnerable versions of node-pre-gyp
     node_modules/canvas-prebuilt
 
-trim-newlines  <3.0.1
-Severity: high
-Uncontrolled Resource Consumption in trim-newlines - https://github.com/advisories/GHSA-7p7h-4mm5-852v
-fix available via `npm audit fix --force`
-Will install webpack-command@0.1.1, which is a breaking change
-node_modules/trim-newlines
-  meow  3.4.0 - 5.0.0
-  Depends on vulnerable versions of trim-newlines
-  Depends on vulnerable versions of yargs-parser
-  node_modules/meow
-
 
 yargs-parser  6.0.0 - 13.1.1
 Severity: moderate
 yargs-parser Vulnerable to Prototype Pollution - https://github.com/advisories/GHSA-p9pc-299p-vxgp
 fix available via `npm audit fix --force`
-Will install webpack-command@0.1.1, which is a breaking change
-node_modules/meow/node_modules/yargs-parser
+Will install vega@6.1.2, which is a breaking change
 node_modules/vega-lite/node_modules/yargs-parser
 node_modules/vega/node_modules/yargs-parser
   yargs  8.0.0-candidate.0 - 12.0.5
@@ -210,7 +132,7 @@ node_modules/vega/node_modules/yargs-parser
   node_modules/vega-lite/node_modules/yargs
   node_modules/vega/node_modules/yargs
 
-43 vulnerabilities (20 moderate, 23 high)
+28 vulnerabilities (13 moderate, 15 high)
 
 To address issues that do not require attention, run:
   npm audit fix
