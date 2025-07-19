@@ -2,7 +2,7 @@ import queryString from "query-string";
 import * as types from "./types";
 import { charonAPIAddress } from "../util/globals";
 import { getDatapath, goTo404, chooseDisplayComponentFromPathname } from "./navigation";
-import { createStateFromQueryOrJSONs, createTreeTooState } from "./recomputeReduxState";
+import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
 import { timerStart, timerEnd } from "../util/perf";
 import { browserBackForward } from "../actions/navigation";
@@ -230,18 +230,20 @@ export const changeS3Bucket = () => {
   };
 };
 
-export const loadTreeToo = (name, path) => (dispatch, getState) => {
-  const { datasets } = getState();
-  const apiCall = `${charonAPIAddress}request=json&path=${path}_tree.json&s3=${datasets.s3bucket}`;
-  fetch(apiCall)
-    .then((res) => res.json())
-    .then((res) => {
-      const newState = createTreeTooState(
-        {treeTooJSON: res, oldState: getState(), segment: name}
-      );
-      dispatch({ type: types.TREE_TOO_DATA, treeToo: newState.treeToo, controls: newState.controls, segment: name});
-    })
-    .catch((err) => {
-      console.error("Error while loading second tree", err);
-    });
-};
+// Dead code - commented out to fix webpack warnings
+// This function references undefined exports: createTreeTooState and TREE_TOO_DATA
+// export const loadTreeToo = (name, path) => (dispatch, getState) => {
+//   const { datasets } = getState();
+//   const apiCall = `${charonAPIAddress}request=json&path=${path}_tree.json&s3=${datasets.s3bucket}`;
+//   fetch(apiCall)
+//     .then((res) => res.json())
+//     .then((res) => {
+//       const newState = createTreeTooState(
+//         {treeTooJSON: res, oldState: getState(), segment: name}
+//       );
+//       dispatch({ type: types.TREE_TOO_DATA, treeToo: newState.treeToo, controls: newState.controls, segment: name});
+//     })
+//     .catch((err) => {
+//       console.error("Error while loading second tree", err);
+//     });
+// };
