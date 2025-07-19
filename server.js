@@ -3,7 +3,7 @@ const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
-var exec = require('exec');
+const { execFile } = require('child_process');
 
 /* documentation in the static site! */
 
@@ -22,19 +22,23 @@ const app = express();
 app.set('port', process.env.PORT || port);
 
 // gzip all files matching *.clones.json in the data dir
-exec(['find', global.LOCAL_DATA_PATH, '-name', 'clones.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, out, code) {
-  if (err instanceof Error)
-    throw err;
-  process.stderr.write(err);
-  process.stdout.write(out);
+execFile('find', [global.LOCAL_DATA_PATH, '-name', 'clones.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, stdout, stderr) {
+  if (err) {
+    console.error('Error gzipping clone files:', err);
+    return;
+  }
+  if (stderr) process.stderr.write(stderr);
+  if (stdout) process.stdout.write(stdout);
 });
 
 // gzip data/datasets.json
-exec(['gzip', '-k9f', path.join(global.LOCAL_DATA_PATH,'datasets.json')], function(err, out, code) {
-  if (err instanceof Error)
-    throw err;
-  process.stderr.write(err);
-  process.stdout.write(out);
+execFile('gzip', ['-k9f', path.join(global.LOCAL_DATA_PATH,'datasets.json')], function(err, stdout, stderr) {
+  if (err) {
+    console.error('Error gzipping datasets.json:', err);
+    return;
+  }
+  if (stderr) process.stderr.write(stderr);
+  if (stdout) process.stdout.write(stdout);
 });
 
 
