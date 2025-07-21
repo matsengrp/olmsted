@@ -17,11 +17,7 @@ module.exports = {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.DefinePlugin({
-      "process.env": {
-        NODE_ENV: JSON.stringify("dev")
-      }
-    }),
+    // NODE_ENV is automatically set by webpack 5 based on mode
     new webpack.NoEmitOnErrorsPlugin()
   ],
   module: {
