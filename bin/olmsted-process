@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+
+"""
+Unified CLI entry point for Olmsted data processing.
+
+Supports multiple input formats:
+- AIRR JSON format
+- PCP CSV format with optional Newick trees
+"""
+
+import argparse
+import os
+import sys
+import subprocess
+
+
+def main():
+    """Main entry point for olmsted-process CLI."""
+    parser = argparse.ArgumentParser(
+        description="Process immunological sequence data for Olmsted visualization",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Process AIRR JSON format
+  olmsted-process airr input.json output_dir/
+
+  # Process PCP CSV format with Newick trees
+  olmsted-process pcp input.csv.gz trees.csv output_dir/
+  
+  # Process PCP CSV format without separate tree file
+  olmsted-process pcp input.csv.gz - output_dir/
+        """
+    )
+    
+    subparsers = parser.add_subparsers(
+        dest="format",
+        help="Input data format",
+        required=True
+    )
+    
+    # AIRR JSON subcommand
+    airr_parser = subparsers.add_parser(
+        "airr",
+        help="Process AIRR JSON format data"
+    )
+    airr_parser.add_argument(
+        "input",
+        help="Input AIRR JSON file"
+    )
+    airr_parser.add_argument(
+        "output",
+        help="Output directory"
+    )
+    airr_parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output"
+    )
+    airr_parser.add_argument(
+        "--remove-invalid-clones",
+        action="store_true",
+        help="Remove invalid clones from dataset"
+    )
+    
+    # PCP CSV subcommand
+    pcp_parser = subparsers.add_parser(
+        "pcp",
+        help="Process Parent-Child Pair CSV format data"
+    )
+    pcp_parser.add_argument(
+        "input",
+        help="Input PCP CSV file (can be gzipped)"
+    )
+    pcp_parser.add_argument(
+        "trees",
+        help="CSV file containing Newick trees (use '-' to skip)"
+    )
+    pcp_parser.add_argument(
+        "output",
+        help="Output directory"
+    )
+    pcp_parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output"
+    )
+    
+    args = parser.parse_args()
+    
+    # Get the directory containing this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    if args.format == "airr":
+        # Call the existing AIRR processor
+        cmd = [
+            sys.executable,
+            os.path.join(script_dir, "process_data.py"),
+            "-i", args.input,
+            "-o", args.output
+        ]
+        if args.verbose:
+            cmd.append("-v")
+        if args.remove_invalid_clones:
+            cmd.append("--remove-invalid-clones")
+        
+        result = subprocess.run(cmd)
+        sys.exit(result.returncode)
+        
+    elif args.format == "pcp":
+        # Call the PCP processor
+        cmd = [
+            sys.executable,
+            os.path.join(script_dir, "process_pcp_data.py"),
+            "-i", args.input,
+            "-o", args.output
+        ]
+        if args.trees != "-":
+            cmd.extend(["-t", args.trees])
+        if args.verbose:
+            cmd.append("-v")
+        
+        result = subprocess.run(cmd)
+        sys.exit(result.returncode)
+
+
+if __name__ == "__main__":
+    main()
