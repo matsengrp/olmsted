@@ -1,0 +1,36 @@
+PCP Trees Data Structure
+========================
+Based on: example_trees.csv
+
+PCP Trees CSV Format
+Row Structure (one row per tree):
+├── family_name: string (family/clone identifier matching PCP main data)
+└── newick_tree: string (newick format phylogenetic tree)
+
+Key Characteristics:
+- Simple two-column format linking families to their tree representations
+- family_name serves as foreign key to group related PCP parent-child pairs
+- newick_tree provides complete tree topology with branch lengths
+- Trees correspond to the reconstructed phylogeny from PCP parent-child relationships
+
+Tree Format:
+- Standard newick format: ((leaf1:0.008,leaf2:0.012)intermediate1:0.015)root:0.0;
+- Node names match parent_name/child_name identifiers from PCP main data
+- Branch lengths match branch_length values from PCP parent-child pairs
+- Root node typically has length 0.0
+
+Data Relationships:
+- family_name links to 'family' field in PCP main data
+- Node names in newick_tree correspond to parent_name/child_name in PCP pairs
+- Branch lengths in tree should match branch_length values in PCP data
+- Tree topology represents the complete phylogenetic structure
+
+Usage:
+- Provides pre-computed tree representation for visualization
+- Alternative to reconstructing tree from parent-child pairs
+- Enables direct tree processing and analysis
+- Can be validated against PCP parent-child relationships
+
+Examples:
+family1 → ((leaf1:0.008,leaf2:0.012)intermediate1:0.015,(leaf3:0.010,leaf4:0.005)intermediate2:0.020)naive:0.0;
+family2 → ((tip1:0.013,tip2:0.018)node1:0.025,(tip3:0.009,tip4:0.011)node2:0.022)root:0.0;

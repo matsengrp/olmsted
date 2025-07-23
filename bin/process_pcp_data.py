@@ -22,13 +22,15 @@ import json
 import os
 import sys
 import uuid
+import datetime
+import jsonschema
+import yaml
 from collections import defaultdict, OrderedDict
 from functools import reduce
 import ete3
 
-# Import shared utilities from process_data.py
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from process_data import (
+# Import shared utilities from process_data_utils
+from process_utils import (
     SCHEMA_VERSION,
     clean_record,
     dict_subset,
@@ -36,6 +38,10 @@ from process_data import (
     merge,
     strip_ns,
     write_out,
+    load_schema,
+    get_schema_path,
+    validate_airr_main,
+    validate_airr_tree,
     dataset_spec,
     clone_spec,
     tree_spec,
@@ -43,40 +49,94 @@ from process_data import (
 )
 
 
+# Validation functions now imported from process_data_utils
+
+def validate_pcp_main(data, schema_path=None):
+    """
+    Validate PCP main data against JSON schema.
+
+    Args:
+        data: The data to validate (list of PCP records)
+        schema_path: Optional path to schema file.
+
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    try:
+        schema = load_schema(schema_path)
+        jsonschema.validate(instance=data, schema=schema)
+        return True, None
+    except jsonschema.ValidationError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, f"Schema loading error: {str(e)}"
+
+
+def validate_pcp_trees(data, schema_path=None):
+    """
+    Validate PCP trees data against JSON schema.
+
+    Args:
+        data: The trees data to validate (list of tree records)
+        schema_path: Optional path to schema file.
+
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    try:
+        schema = load_schema(schema_path)
+        jsonschema.validate(instance=data, schema=schema)
+        return True, None
+    except jsonschema.ValidationError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, f"Schema loading error: {str(e)}"
+
+
 def parse_pcp_csv(csv_path):
     """
     Parse PCP CSV file and return a dict of families.
-    
+
     Expected CSV format:
     sample_id,parent_name,child_name,edge_length,sample_count
-    
+
     Returns:
         dict: {family_id: {nodes: {node_id: node_data}, edges: [(parent, child, length)]}}
     """
     families = defaultdict(lambda: {"nodes": {}, "edges": []})
-    
+
     # Determine if file is gzipped
     if csv_path.endswith('.gz'):
         file_handle = gzip.open(csv_path, 'rt')
     else:
         file_handle = open(csv_path, 'r')
-    
+
     with file_handle:
         reader = csv.DictReader(file_handle)
-        
-        # Validate required columns
-        required_cols = {'sample_id', 'parent_name', 'child_name', 'edge_length', 'sample_count'}
+
+        # Validate required columns (flexible format support)
+        required_cols = {'sample_id', 'parent_name', 'child_name'}
         if not required_cols.issubset(reader.fieldnames):
             missing = required_cols - set(reader.fieldnames)
             raise ValueError(f"Missing required columns: {missing}")
-        
+
         for row in reader:
             sample_id = row['sample_id']
             parent = row['parent_name']
             child = row['child_name']
-            edge_length = float(row['edge_length'])
-            sample_count = int(row['sample_count'])
-            
+
+            # Handle different edge length column names
+            edge_length = 0.0
+            if 'branch_length' in row:
+                edge_length = float(row['branch_length'])
+            elif 'edge_length' in row:
+                edge_length = float(row['edge_length'])
+
+            # Handle sample count (default to 1 if not present)
+            sample_count = 1
+            if 'sample_count' in row:
+                sample_count = int(row['sample_count'])
+
             # Add nodes if not already present
             if parent not in families[sample_id]["nodes"]:
                 families[sample_id]["nodes"][parent] = {
@@ -84,7 +144,7 @@ def parse_pcp_csv(csv_path):
                     "multiplicity": 0,
                     "timepoint_multiplicities": []
                 }
-            
+
             if child not in families[sample_id]["nodes"]:
                 families[sample_id]["nodes"][child] = {
                     "sequence_id": child,
@@ -94,122 +154,124 @@ def parse_pcp_csv(csv_path):
             else:
                 # Update multiplicity if node appears multiple times
                 families[sample_id]["nodes"][child]["multiplicity"] += sample_count
-            
+
             # Add edge
             families[sample_id]["edges"].append((parent, child, edge_length))
-    
+
     return dict(families)
 
 
 def parse_newick_csv(csv_path):
     """
     Parse CSV file containing Newick trees.
-    
+
     Expected CSV format:
     family_name,newick_tree
-    
+
     Returns:
         dict: {family_name: newick_string}
     """
     newick_trees = {}
-    
+
     # Determine if file is gzipped
     if csv_path.endswith('.gz'):
         file_handle = gzip.open(csv_path, 'rt')
     else:
         file_handle = open(csv_path, 'r')
-    
+
     with file_handle:
         reader = csv.DictReader(file_handle)
-        
+
         # Validate required columns
         required_cols = {'family_name', 'newick_tree'}
         if not required_cols.issubset(reader.fieldnames):
             missing = required_cols - set(reader.fieldnames)
             raise ValueError(f"Missing required columns: {missing}")
-        
+
         for row in reader:
             family_name = row['family_name']
             newick_tree = row['newick_tree']
             newick_trees[family_name] = newick_tree
-    
+
     return newick_trees
 
 
 def build_newick_from_edges(nodes, edges):
     """
     Build a Newick string from parent-child edges.
-    
+
     Args:
         nodes: dict of {node_id: node_data}
         edges: list of (parent, child, edge_length) tuples
-    
+
     Returns:
         str: Newick format tree string
     """
     # Build adjacency list
     children = defaultdict(list)
     edge_lengths = {}
-    
+
     for parent, child, length in edges:
         children[parent].append(child)
         edge_lengths[(parent, child)] = length
-    
+
     # Find root (node with no parent)
     all_children = {child for _, child, _ in edges}
     all_parents = {parent for parent, _, _ in edges}
     roots = all_parents - all_children
-    
+
     if len(roots) != 1:
         raise ValueError(f"Expected exactly one root, found {len(roots)}: {roots}")
-    
+
     root = roots.pop()
-    
-    def build_subtree(node):
+
+    def build_subtree(node, parent_node=None):
         """Recursively build Newick subtree."""
         if node not in children:
             # Leaf node
-            return f"{node}:{edge_lengths.get((parent, node), 0.0)}"
-        
+            edge_key = (parent_node, node) if parent_node else (node, node)
+            edge_len = edge_lengths.get(edge_key, 0.0)
+            return f"{node}:{edge_len}"
+
         # Internal node
         subtrees = []
         for child in children[node]:
-            parent = node  # Capture parent for edge length lookup
-            subtrees.append(build_subtree(child))
-        
-        return f"({','.join(subtrees)}){node}:{edge_lengths.get((parent, node), 0.0)}"
-    
+            subtrees.append(build_subtree(child, node))
+
+        edge_key = (parent_node, node) if parent_node else (node, node)
+        edge_len = edge_lengths.get(edge_key, 0.0)
+        return f"({','.join(subtrees)}){node}:{edge_len}"
+
     # Build the tree starting from root
     # Root doesn't have a parent edge, so handle specially
     if root not in children:
         return f"{root}:0.0;"
-    
+
     subtrees = []
     for child in children[root]:
-        parent = root
-        subtrees.append(build_subtree(child))
-    
+        subtrees.append(build_subtree(child, root))
+
     return f"({','.join(subtrees)}){root}:0.0;"
 
 
 def process_pcp_to_olmsted(pcp_families, newick_trees=None):
     """
     Convert PCP format data to Olmsted format.
-    
+
     Args:
         pcp_families: dict from parse_pcp_csv
         newick_trees: dict from parse_newick_csv (optional)
-    
+
     Returns:
         tuple: (datasets, clones_dict, trees)
     """
     dataset_id = f"pcp-{uuid.uuid4()}"
     dataset_ident = str(uuid.uuid4())
-    
+
     datasets = []
     clones_dict = {dataset_id: []}
     trees = []
-    
+
     # Create dataset
     dataset = {
         "ident": dataset_ident,
@@ -232,12 +294,12 @@ def process_pcp_to_olmsted(pcp_families, newick_trees=None):
         "subjects_count": 1,
         "timepoints_count": 1
     }
-    
+
     # Process each family
     for family_idx, (family_id, family_data) in enumerate(pcp_families.items()):
         clone_ident = str(uuid.uuid4())
         tree_ident = str(uuid.uuid4())
-        
+
         # Create sample if not already present
         sample_exists = any(s["sample_id"] == family_id for s in dataset["samples"])
         if not sample_exists:
@@ -247,13 +309,13 @@ def process_pcp_to_olmsted(pcp_families, newick_trees=None):
                 "locus": "igh",  # Default locus
                 "timepoint_id": "merged"
             })
-        
+
         # Build or use provided Newick tree
         if newick_trees and family_id in newick_trees:
             newick = newick_trees[family_id]
         else:
             newick = build_newick_from_edges(family_data["nodes"], family_data["edges"])
-        
+
         # Process nodes - add required fields
         processed_nodes = {}
         for node_id, node_data in family_data["nodes"].items():
@@ -268,7 +330,7 @@ def process_pcp_to_olmsted(pcp_families, newick_trees=None):
                 "affinity": None
             }
             processed_nodes[node_id] = processed_node
-        
+
         # Create clone
         clone = {
             "clone_id": f"family-{family_idx}",
@@ -290,7 +352,7 @@ def process_pcp_to_olmsted(pcp_families, newick_trees=None):
             "trees": [{"ident": tree_ident}]
         }
         clones_dict[dataset_id].append(clone)
-        
+
         # Create tree
         tree = {
             "ident": tree_ident,
@@ -300,9 +362,53 @@ def process_pcp_to_olmsted(pcp_families, newick_trees=None):
             "nodes": processed_nodes
         }
         trees.append(tree)
-    
+
     datasets.append(dataset)
     return datasets, clones_dict, trees
+
+
+def validate_airr_output(datasets, clones_dict, trees, args):
+    """
+    Validate AIRR output data against schemas.
+
+    Args:
+        datasets: AIRR datasets
+        clones_dict: AIRR clones dictionary
+        trees: AIRR trees
+        args: Command line arguments
+
+    Returns:
+        bool: True if validation passes, False otherwise
+    """
+    validation_passed = True
+
+    try:
+        # Validate datasets
+        airr_main_schema_path = get_schema_path('airr_main_schema.yaml', args)
+        if os.path.exists(airr_main_schema_path):
+            is_valid, error = validate_airr_main(datasets, airr_main_schema_path)
+            if not is_valid:
+                print(f"AIRR main validation failed: {error}")
+                validation_passed = False
+            else:
+                print("✓ AIRR main data validation passed")
+
+        # Validate trees
+        airr_trees_schema_path = get_schema_path('airr_trees_schema.yaml', args)
+        if os.path.exists(airr_trees_schema_path):
+            for tree in trees:
+                is_valid, error = validate_airr_tree(tree, airr_trees_schema_path)
+                if not is_valid:
+                    print(f"AIRR tree validation failed for {tree.get('ident', 'unknown')}: {error}")
+                    validation_passed = False
+            if validation_passed:
+                print(f"✓ AIRR trees validation passed ({len(trees)} trees)")
+
+    except Exception as e:
+        print(f"Validation error: {str(e)}")
+        validation_passed = False
+
+    return validation_passed
 
 
 def get_args():
@@ -329,55 +435,78 @@ def get_args():
         action="store_true",
         help="Verbose output"
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate output data against JSON schemas before writing"
+    )
+    parser.add_argument(
+        "--strict-validation",
+        action="store_true",
+        help="Exit with error if validation fails (requires --validate)"
+    )
+    parser.add_argument(
+        "--schema-dir",
+        help="Path to directory containing JSON schema files (defaults to ../data_schema)"
+    )
+    # Removed --output-format option - now only outputs AIRR format
     return parser.parse_args()
 
 
 def main():
     """Main entry point."""
     args = get_args()
-    
+
     try:
         # Parse PCP CSV
         print(f"Processing PCP CSV: {args.input_pcp}")
         pcp_families = parse_pcp_csv(args.input_pcp)
         print(f"Found {len(pcp_families)} families")
-        
+
         # Parse Newick trees if provided
         newick_trees = None
         if args.input_trees:
             print(f"Processing Newick trees: {args.input_trees}")
             newick_trees = parse_newick_csv(args.input_trees)
             print(f"Found {len(newick_trees)} trees")
-        
+
         # Convert to Olmsted format
         print("Converting to Olmsted format...")
         datasets, clones_dict, trees = process_pcp_to_olmsted(pcp_families, newick_trees)
-        
+
         # Create output directory if needed
         os.makedirs(args.output_dir, exist_ok=True)
-        
-        # Write output files
-        print(f"Writing output to {args.output_dir}")
+
+        # Only AIRR format output - no need to prepare other formats
+
+        # Validate AIRR data if requested
+        if args.validate:
+            if not validate_airr_output(datasets, clones_dict, trees, args):
+                if args.strict_validation:
+                    print("\nExiting due to validation errors (--strict-validation enabled)")
+                    sys.exit(1)
+
+        # Write AIRR format output
+        print(f"Writing AIRR format output to {args.output_dir}")
+
         write_out(datasets, args.output_dir, "datasets.json", args)
-        
         for dataset_id, clones in clones_dict.items():
             write_out(
-                clones, 
-                args.output_dir + "/", 
-                f"clones.{dataset_id}.json", 
+                clones,
+                args.output_dir + "/",
+                f"clones.{dataset_id}.json",
                 args
             )
-        
         for tree in trees:
             write_out(
-                tree, 
-                args.output_dir + "/", 
-                f"tree.{tree['ident']}.json", 
+                tree,
+                args.output_dir + "/",
+                f"tree.{tree['ident']}.json",
                 args
             )
-        
+
         print("Processing complete!")
-        
+
     except Exception as e:
         print(f"Error: {e}")
         if args.verbose:

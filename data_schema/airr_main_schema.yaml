@@ -1,0 +1,382 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://olmsted.io/schemas/airr-main.json
+title: AIRR Main Data Schema
+description: JSON schema for AIRR dataset format used by Olmsted
+type: object
+required:
+- ident
+- clones
+properties:
+  ident:
+    type: string
+    description: Unique identifier for the dataset
+  build:
+    type: object
+    properties:
+      commit:
+        type: string
+        description: Git commit hash
+      id:
+        type: string
+        description: Build identifier
+      time:
+        type: string
+        format: date-time
+        description: Build timestamp
+    required:
+    - commit
+    - id
+    - time
+  subjects:
+    type: array
+    items:
+      type: object
+      properties:
+        subject_id:
+          type: string
+          description: Subject identifier
+        ident:
+          type: string
+          description: Unique identifier
+      required:
+      - subject_id
+      - ident
+  samples:
+    type: array
+    items:
+      type: object
+      properties:
+        locus:
+          type: string
+          enum:
+          - igh
+          - igk
+          - igl
+          - tra
+          - trb
+          - trg
+          - trd
+          description: Immunoglobulin/TCR locus
+        ident:
+          type: string
+          description: Unique identifier
+        timepoint_id:
+          type: string
+          description: Timepoint identifier
+        sample_id:
+          type: string
+          description: Sample identifier
+        partitions:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: integer
+                description: Partition step number
+              ident:
+                type: string
+                description: Unique identifier
+              logprob:
+                type: number
+                description: Log probability of partition
+              id:
+                type: string
+                description: Partition identifier
+              partition-file:
+                type: array
+                items:
+                  type: string
+                description: Partition file paths
+            required:
+            - step
+            - ident
+            - logprob
+            - id
+      required:
+      - locus
+      - ident
+      - sample_id
+      - partitions
+  seeds:
+    type: array
+    items:
+      type: object
+      properties:
+        ident:
+          type: string
+          description: Unique identifier
+        seed_id:
+          type: string
+          description: Seed identifier
+      required:
+      - ident
+      - seed_id
+  clones:
+    type: array
+    items:
+      type: object
+      properties:
+        clone_id:
+          type: string
+          description: Clone identifier
+        sample_id:
+          type: string
+          description: Sample identifier
+        dataset_id:
+          type: string
+          description: Dataset identifier
+        subject_id:
+          type: string
+          description: Subject identifier
+        seed_id:
+          type:
+          - string
+          - 'null'
+          description: Seed identifier
+        type:
+          type: string
+          description: Clone type
+        size:
+          type: integer
+          minimum: 1
+          description: Clone size
+        rearrangement_count:
+          type: integer
+          minimum: 0
+          description: Number of rearrangements
+        unique_seqs_count:
+          type: integer
+          minimum: 0
+          description: Number of unique sequences
+        total_read_count:
+          type: integer
+          minimum: 0
+          description: Total read count
+        v_call:
+          type: string
+          description: V gene call
+        d_call:
+          type: string
+          description: D gene call
+        j_call:
+          type: string
+          description: J gene call
+        v_alignment_start:
+          type: integer
+          minimum: 1
+          description: V alignment start position
+        v_alignment_end:
+          type: integer
+          minimum: 1
+          description: V alignment end position
+        d_alignment_start:
+          type: integer
+          minimum: 1
+          description: D alignment start position
+        d_alignment_end:
+          type: integer
+          minimum: 1
+          description: D alignment end position
+        j_alignment_start:
+          type: integer
+          minimum: 1
+          description: J alignment start position
+        j_alignment_end:
+          type: integer
+          minimum: 1
+          description: J alignment end position
+        junction_length:
+          type: integer
+          minimum: 0
+          description: Junction length in nucleotides
+        junction_start:
+          type: integer
+          minimum: 1
+          description: Junction start position
+        germline_alignment:
+          type: string
+          pattern: ^[ACGTN-]*$
+          description: Germline alignment sequence
+        germline_alignment_length:
+          type: integer
+          minimum: 0
+          description: Germline alignment length
+        mean_mut_freq:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Mean mutation frequency
+        path_length:
+          type: number
+          minimum: 0
+          description: Path length
+        has_seed:
+          type: boolean
+          description: Whether clone has seed
+        tree_count:
+          type: integer
+          minimum: 0
+          description: Number of trees
+        v_per_gene_support:
+          type: array
+          items:
+            type: object
+            properties:
+              ident:
+                type: string
+                description: Unique identifier
+              gene:
+                type: string
+                description: Gene name
+              prob:
+                type: number
+                minimum: 0
+                maximum: 1
+                description: Support probability
+            required:
+            - ident
+            - gene
+            - prob
+        j_per_gene_support:
+          type: array
+          items:
+            type: object
+            properties:
+              ident:
+                type: string
+                description: Unique identifier
+              gene:
+                type: string
+                description: Gene name
+              prob:
+                type: number
+                minimum: 0
+                maximum: 1
+                description: Support probability
+            required:
+            - ident
+            - gene
+            - prob
+        trees:
+          type: array
+          items:
+            $ref: '#/definitions/tree'
+      required:
+      - clone_id
+      - sample_id
+definitions:
+  tree:
+    type: object
+    properties:
+      ident:
+        type: string
+        description: Tree unique identifier
+      tree_id:
+        type: string
+        description: Tree identifier
+      newick:
+        type: string
+        description: Newick format tree string
+      downsampling_strategy:
+        type: string
+        description: Downsampling strategy used
+      nodes:
+        type: object
+        patternProperties:
+          ^.*$:
+            $ref: '#/definitions/node'
+    required:
+    - ident
+    - newick
+    - nodes
+  node:
+    type: object
+    properties:
+      sequence_id:
+        type: string
+        description: Sequence identifier
+      parent:
+        type:
+        - string
+        - 'null'
+        description: Parent node identifier
+      type:
+        type: string
+        enum:
+        - leaf
+        - internal
+        description: Node type
+      distance:
+        type: number
+        minimum: 0
+        description: Distance from root
+      length:
+        type: number
+        minimum: 0
+        description: Branch length
+      multiplicity:
+        type: integer
+        minimum: 0
+        description: Node multiplicity
+      cluster_multiplicity:
+        type: integer
+        minimum: 0
+        description: Cluster multiplicity
+      sequence_alignment:
+        type: string
+        pattern: ^[ACGTN-]*$
+        description: Sequence alignment
+      sequence_alignment_aa:
+        type: string
+        pattern: ^[ACDEFGHIKLMNPQRSTVWY*-]*$
+        description: Amino acid sequence alignment
+      timepoint_id:
+        type: string
+        description: Timepoint identifier
+      lbi:
+        type: number
+        description: Local branching index
+      lbr:
+        type: number
+        description: Local branching ratio
+      affinity:
+        type:
+        - number
+        - 'null'
+        description: Binding affinity
+      timepoint_multiplicities:
+        type: array
+        items:
+          type: object
+          properties:
+            timepoint_id:
+              type: string
+              description: Timepoint identifier
+            multiplicity:
+              type: integer
+              minimum: 0
+              description: Multiplicity at timepoint
+          required:
+          - timepoint_id
+          - multiplicity
+      cluster_timepoint_multiplicities:
+        type: array
+        items:
+          type: object
+          properties:
+            timepoint_id:
+              type: string
+              description: Timepoint identifier
+            multiplicity:
+              type: integer
+              minimum: 0
+              description: Cluster multiplicity at timepoint
+          required:
+          - timepoint_id
+          - multiplicity
+    required:
+    - sequence_id
+    - type
+    - distance
+    - length

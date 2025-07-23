@@ -1,3 +1,0 @@
-family_name,newick_tree
-family1,((leaf1:0.008,leaf2:0.012)intermediate1:0.015,(leaf3:0.010,leaf4:0.005)intermediate2:0.020)naive:0.0;
-family2,((tip1:0.013,tip2:0.018)node1:0.025,(tip3:0.009,tip4:0.011)node2:0.022)root:0.0;

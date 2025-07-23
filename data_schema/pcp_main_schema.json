@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://olmsted.io/schemas/pcp-main.json",
+  "title": "PCP Main Data Schema",
+  "description": "JSON schema for Parent-Child Pair (PCP) data format",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["sample_id", "family", "parent_name", "child_name", "branch_length"],
+    "properties": {
+      "sample_id": {
+        "type": "string",
+        "description": "Sample identifier"
+      },
+      "family": {
+        "type": ["string", "integer"],
+        "description": "Family/clone identifier grouping related sequences"
+      },
+      "parent_name": {
+        "type": "string",
+        "description": "Parent node identifier in phylogenetic tree"
+      },
+      "parent_heavy": {
+        "type": "string",
+        "pattern": "^[ACGTN-]*$",
+        "description": "Parent heavy chain nucleotide sequence"
+      },
+      "child_name": {
+        "type": "string",
+        "description": "Child node identifier in phylogenetic tree"
+      },
+      "child_heavy": {
+        "type": "string",
+        "pattern": "^[ACGTN-]*$",
+        "description": "Child heavy chain nucleotide sequence"
+      },
+      "branch_length": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Edge length between parent and child nodes"
+      },
+      "depth": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Depth of child node in tree (distance from root in steps)"
+      },
+      "distance": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Cumulative distance from root to child node"
+      },
+      "v_gene_heavy": {
+        "type": "string",
+        "pattern": "^IGH?V[0-9]+-[0-9]+\\*[0-9]+$",
+        "description": "V gene assignment for heavy chain",
+        "examples": ["IGHV3-48*01", "IGHV1-18*01"]
+      },
+      "j_gene_heavy": {
+        "type": "string",
+        "pattern": "^IGH?J[0-9]+\\*[0-9]+$",
+        "description": "J gene assignment for heavy chain",
+        "examples": ["IGHJ4*02", "IGHJ3*02"]
+      },
+      "cdr1_codon_start_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR1 region start position (1-based)"
+      },
+      "cdr1_codon_end_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR1 region end position (1-based)"
+      },
+      "cdr2_codon_start_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR2 region start position (1-based)"
+      },
+      "cdr2_codon_end_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR2 region end position (1-based)"
+      },
+      "cdr3_codon_start_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR3 region start position (1-based)"
+      },
+      "cdr3_codon_end_heavy": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "CDR3 region end position (1-based)"
+      },
+      "parent_is_naive": {
+        "type": "boolean",
+        "description": "Whether parent node represents naive/germline sequence"
+      },
+      "child_is_leaf": {
+        "type": "boolean",
+        "description": "Whether child node is a terminal/leaf node"
+      },
+      "edge_length": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Alternative name for branch_length (simplified format)"
+      },
+      "sample_count": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Abundance/multiplicity of child node (simplified format)"
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "required": ["cdr1_codon_start_heavy"]
+        },
+        "then": {
+          "required": ["cdr1_codon_end_heavy"],
+          "properties": {
+            "cdr1_codon_end_heavy": {
+              "minimum": {
+                "$data": "1/cdr1_codon_start_heavy"
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "required": ["cdr2_codon_start_heavy"]
+        },
+        "then": {
+          "required": ["cdr2_codon_end_heavy"],
+          "properties": {
+            "cdr2_codon_end_heavy": {
+              "minimum": {
+                "$data": "1/cdr2_codon_start_heavy"
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "required": ["cdr3_codon_start_heavy"]
+        },
+        "then": {
+          "required": ["cdr3_codon_end_heavy"],
+          "properties": {
+            "cdr3_codon_end_heavy": {
+              "minimum": {
+                "$data": "1/cdr3_codon_start_heavy"
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "parent_is_naive": {
+              "const": true
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "depth": {
+              "const": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  "minItems": 1,
+  "examples": [
+    {
+      "sample_id": "sample-igg-1008",
+      "family": "3249",
+      "parent_name": "naive",
+      "parent_heavy": "GAGGTGCAGCTGGTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTCAGTAGCTATAGCATGAACTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTTTCATACATTAGTAGTAGTAGTAGTACCATATACTACGCAGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAATGCCAAGAACTCACTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCTGTGTATTACTGTGCGAGAGATAAGCCCCCCTATGATTACGTTTGGGGGAGTTATCGTCCCGCCGGCTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA",
+      "child_name": "Node1",
+      "child_heavy": "GAGGTGCAGCTGGTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTCAGTAGCTATAGCATGAACTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTTTCATACATTAGTAGTAGTAGTAGTACCATATACTACGCAGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAATGCCAAGAACTCACTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCTGTGTATTACTGTGCGAGAGATAAGCCCCCCTATGATTACGTTTGGGGGAGTTATCGTCCCGCCGGCTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA",
+      "branch_length": 7.78e-08,
+      "depth": 1,
+      "distance": 7.78e-08,
+      "v_gene_heavy": "IGHV3-48*01",
+      "j_gene_heavy": "IGHJ4*02",
+      "cdr1_codon_start_heavy": 75,
+      "cdr1_codon_end_heavy": 96,
+      "cdr2_codon_start_heavy": 150,
+      "cdr2_codon_end_heavy": 171,
+      "cdr3_codon_start_heavy": 288,
+      "cdr3_codon_end_heavy": 348,
+      "parent_is_naive": true,
+      "child_is_leaf": false
+    }
+  ]
+}

@@ -1,0 +1,490 @@
+{
+  "columns": [
+    {
+      "minWidth": 40,
+      "download": false,
+      "formatter": "rowSelection",
+      "titleFormatter": "rowSelection",
+      "resizable": true,
+      "headerSort": false,
+      "width": 51
+    },
+    {
+      "field": "build_commit",
+      "title": "build_commit",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 327
+    },
+    {
+      "field": "build_id",
+      "title": "build_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 202
+    },
+    {
+      "field": "build_time",
+      "title": "build_time",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 142
+    },
+    {
+      "field": "clone_id",
+      "title": "clone_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 110
+    },
+    {
+      "field": "d_alignment_end",
+      "title": "d_alignment_end",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 169
+    },
+    {
+      "field": "d_alignment_start",
+      "title": "d_alignment_start",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 175
+    },
+    {
+      "field": "d_call",
+      "title": "d_call",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 98
+    },
+    {
+      "field": "d_gene_support_count",
+      "title": "d_gene_support_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 206
+    },
+    {
+      "field": "dataset_id",
+      "title": "dataset_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 150
+    },
+    {
+      "field": "downsampled_count",
+      "title": "downsampled_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 193
+    },
+    {
+      "field": "downsampling_strategy",
+      "title": "downsampling_strategy",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 213
+    },
+    {
+      "field": "germline_alignment",
+      "title": "germline_alignment",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 3269
+    },
+    {
+      "field": "germline_alignment_length",
+      "title": "germline_alignment_length",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 237
+    },
+    {
+      "field": "has_seed",
+      "title": "has_seed",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 117
+    },
+    {
+      "field": "j_alignment_end",
+      "title": "j_alignment_end",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 164
+    },
+    {
+      "field": "j_alignment_start",
+      "title": "j_alignment_start",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 170
+    },
+    {
+      "field": "j_call",
+      "title": "j_call",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 88
+    },
+    {
+      "field": "j_gene_support_count",
+      "title": "j_gene_support_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 201
+    },
+    {
+      "field": "junction_length",
+      "title": "junction_length",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 158
+    },
+    {
+      "field": "junction_start",
+      "title": "junction_start",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 146
+    },
+    {
+      "field": "mean_mut_freq",
+      "title": "mean_mut_freq",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 166
+    },
+    {
+      "field": "newick",
+      "title": "newick",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 10949
+    },
+    {
+      "field": "node_aa_sequence",
+      "title": "node_aa_sequence",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 181
+    },
+    {
+      "field": "node_affinity",
+      "title": "node_affinity",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 141
+    },
+    {
+      "field": "node_cluster_timepoint_multiplicities",
+      "title": "node_cluster_timepoint_multiplicities",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 335
+    },
+    {
+      "field": "node_distance",
+      "title": "node_distance",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 174
+    },
+    {
+      "field": "node_id",
+      "title": "node_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 167
+    },
+    {
+      "field": "node_lbi",
+      "title": "node_lbi",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 182
+    },
+    {
+      "field": "node_lbr",
+      "title": "node_lbr",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 166
+    },
+    {
+      "field": "node_naive",
+      "title": "node_naive",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 131
+    },
+    {
+      "field": "node_sequence",
+      "title": "node_sequence",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 159
+    },
+    {
+      "field": "node_sequence_id",
+      "title": "node_sequence_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 177
+    },
+    {
+      "field": "partition_id",
+      "title": "partition_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 131
+    },
+    {
+      "field": "partition_step",
+      "title": "partition_step",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 147
+    },
+    {
+      "field": "path_length",
+      "title": "path_length",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 135
+    },
+    {
+      "field": "rearrangement_count",
+      "title": "rearrangement_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 200
+    },
+    {
+      "field": "sample_id",
+      "title": "sample_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 122
+    },
+    {
+      "field": "seed_id",
+      "title": "seed_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 106
+    },
+    {
+      "field": "size",
+      "title": "size",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 81
+    },
+    {
+      "field": "sorted_index",
+      "title": "sorted_index",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 141
+    },
+    {
+      "field": "subject_id",
+      "title": "subject_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 122
+    },
+    {
+      "field": "total_read_count",
+      "title": "total_read_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 166
+    },
+    {
+      "field": "total_tree_nodes",
+      "title": "total_tree_nodes",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 165
+    },
+    {
+      "field": "tree_count",
+      "title": "tree_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 126
+    },
+    {
+      "field": "tree_id",
+      "title": "tree_id",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 134
+    },
+    {
+      "field": "tree_ident",
+      "title": "tree_ident",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 271
+    },
+    {
+      "field": "tree_idx",
+      "title": "tree_idx",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 108
+    },
+    {
+      "field": "type",
+      "title": "type",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 85
+    },
+    {
+      "field": "unique_seqs_count",
+      "title": "unique_seqs_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 182
+    },
+    {
+      "field": "v_alignment_end",
+      "title": "v_alignment_end",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 168
+    },
+    {
+      "field": "v_alignment_start",
+      "title": "v_alignment_start",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 173
+    },
+    {
+      "field": "v_call",
+      "title": "v_call",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "string",
+      "headerSort": true,
+      "width": 96
+    },
+    {
+      "field": "v_gene_support_count",
+      "title": "v_gene_support_count",
+      "minWidth": 40,
+      "resizable": true,
+      "sorter": "number",
+      "headerSort": true,
+      "width": 204
+    }
+  ]
+}

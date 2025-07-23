@@ -1,0 +1,54 @@
+AIRR Trees Data Structure
+=========================
+Based on: full_schema_dataset.json (trees section)
+
+Tree Object
+├── ident: string (tree unique identifier)
+├── tree_id: string (tree identifier, e.g., "min_adcl-raxml_ng")
+├── newick: string (newick format tree representation)
+├── downsampling_strategy: string (e.g., "min_adcl")
+└── nodes: object (map of node_id -> node_data)
+    └── [node_id]: object (key is sequence_id or internal node name)
+        ├── sequence_id: string (sequence identifier)
+        ├── parent: string|null (parent node ID, null for root)
+        ├── type: string (node type)
+        │   ├── "leaf" (terminal node with sequence)
+        │   └── "internal" (internal node)
+        ├── distance: number (cumulative distance from root)
+        ├── length: number (branch length to parent)
+        ├── multiplicity: integer (sequence multiplicity/abundance)
+        ├── cluster_multiplicity: integer (cluster-level multiplicity)
+        ├── sequence_alignment: string (nucleotide sequence)
+        ├── sequence_alignment_aa: string (amino acid sequence)
+        ├── timepoint_id: string (timepoint identifier)
+        ├── lbi: number (local branching index - phylogenetic metric)
+        ├── lbr: number (local branching ratio - phylogenetic metric)
+        ├── affinity: number|null (binding affinity measurement)
+        ├── timepoint_multiplicities: array (temporal abundance data)
+        │   └── [timepoint]: object
+        │       ├── timepoint_id: string
+        │       └── multiplicity: integer
+        └── cluster_timepoint_multiplicities: array (cluster temporal data)
+            └── [timepoint]: object
+                ├── timepoint_id: string
+                └── multiplicity: integer
+
+Node Types:
+- Leaf nodes: represent actual sequences with sequence_id
+- Internal nodes: represent inferred ancestral sequences (e.g., "Node1", "Node2")
+- Root node: typically "inferred_naive" with distance 0
+
+Branch Length Interpretation:
+- length: distance from parent to this node
+- distance: cumulative distance from root to this node
+- distance = parent.distance + length
+
+Phylogenetic Metrics:
+- lbi (Local Branching Index): measures local tree imbalance
+- lbr (Local Branching Ratio): ratio of branching patterns
+- Used for identifying sites under selection pressure
+
+Temporal Data:
+- timepoint_multiplicities: abundance at each time point
+- cluster_timepoint_multiplicities: cluster-level temporal data
+- Enables tracking clonal evolution over time

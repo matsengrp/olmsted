@@ -16,6 +16,9 @@ node_modules/
 npm-debug.log
 proddata
 
+### python ###
+**/__pycache__/
+
 ### development ###
 **/tmp*/
 **/_claude*/
