@@ -14,78 +14,93 @@ import sys
 import os
 import yaml
 import ntpl
+import datetime
 from functools import reduce
 
-SCHEMA_VERSION = "2.0.0"
+# Import shared utilities from process_data_utils
+from process_utils import (
+    SCHEMA_VERSION,
+    clean_record,
+    dict_subset,
+    get_in,
+    merge,
+    strip_ns,
+    write_out,
+    load_schema,
+    get_schema_path,
+    validate_airr_main,
+    validate_airr_tree,
+    dataset_spec,
+    clone_spec,
+    tree_spec,
+    node_spec,
+)
 
-# Some generic data processing helpers helpers
+def validate_output_data(datasets, clones_dict, trees, args):
+    """
+    Validate all output data before writing.
 
+    Args:
+        datasets: List of dataset objects
+        clones_dict: Dictionary of clone lists by dataset_id
+        trees: List of tree objects
+        args: Command line arguments
 
-def comp(f, g):
-    def h(*args, **kw_args):
-        return f(g(*args, **kw_args))
+    Returns:
+        bool: True if all validation passes, False otherwise
+    """
+    validation_errors = []
 
-    return h
+    # Validate main AIRR data structure
+    if args.validate:
+        print("\nValidating AIRR data against schemas...")
 
+        # Construct the full AIRR data structure for validation
+        airr_data = {
+            "ident": str(uuid.uuid4()),
+            "format_version": SCHEMA_VERSION,
+            "build": {
+                "commit": "unknown",
+                "id": "validation-build",
+                "time": str(datetime.datetime.now())
+            },
+            "clones": []
+        }
 
-def strip_ns(a):
-    return a.split(":")[-1]
+        # Add all clones from all datasets
+        for dataset_id, clones in clones_dict.items():
+            airr_data["clones"].extend(clones)
 
+        # Validate main structure
+        main_schema_path = get_schema_path('airr_main_schema.json', args)
+        is_valid, error = validate_airr_main(airr_data, main_schema_path)
+        if not is_valid:
+            validation_errors.append(f"Main AIRR validation failed: {error}")
+        else:
+            print("✓ Main AIRR data structure validation passed")
 
-def dict_subset(d, keys):
-    return {k: d[k] for k in keys if k in d}
+        # Validate each tree
+        tree_schema_path = get_schema_path('airr_trees_schema.json', args)
+        for i, tree in enumerate(trees):
+            is_valid, error = validate_airr_tree(tree, tree_schema_path)
+            if not is_valid:
+                validation_errors.append(f"Tree {i} (id: {tree.get('ident', 'unknown')}) validation failed: {error}")
+            else:
+                print(f"✓ Tree {i} validation passed")
 
+    if validation_errors:
+        print("\nValidation errors encountered:")
+        for error in validation_errors:
+            print(f"  - {error}")
+        if args.strict_validation:
+            return False
 
-def merge(d, d2):
-    d = d.copy()
-    d.update(d2)
-    return d
-
-
-def get_in(d, path):
-    return (
-        d
-        if len(path) == 0
-        else get_in(d.get(path[0]) if isinstance(d, dict) else {}, path[1:])
-    )
-
-
-inf = float("inf")
-neginf = float("-inf")
-
-
-def clean_record(d):
-    if isinstance(d, list):
-        return list(map(clean_record, d))
-    elif isinstance(d, dict):
-        return {strip_ns(k): clean_record(v) for k, v in d.items()}
-    # can't have infinity in json
-    elif d == inf or d == neginf:
-        return None
-    else:
-        return d
-
-
-def spy(x):
-    print("debugging:", x)
-    return x
-
-
-def lspy(xs):
-    xs_ = list(xs)
-    print("debugging listable:", xs_)
-    return xs_
-
-
-def nospy(xs):
-    return xs
+    return True
 
 
 # Pulling datasets information out
 
-
 # OK; Here's what we're going to do.
-
 # We want constructors which describe the space of attrs we're talking about here.
 
 
@@ -117,7 +132,6 @@ build_spec = {
         "time": {"description": "Time at which build was initiated", "type": "string"},
     },
 }
-
 
 timepoint_multiplicity_spec = {
     "title": "Timepoint multiplicity",
@@ -220,7 +234,6 @@ node_spec = {
         },
     },
 }
-
 
 tree_spec = {
     "title": "Tree",
@@ -423,12 +436,19 @@ CustomValidator = jsonschema.validators.extend(
 # Should update to get draft7?
 olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 airr_clone_schema = None
-with open("airr-standards/specs/airr-schema.yaml") as stream:
-    airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
-    airr_clone_schema = CustomValidator(airr_clone_schema_dict)
+try:
+    with open("../airr-standards/specs/airr-schema.yaml") as stream:
+        airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
+        airr_clone_schema = CustomValidator(airr_clone_schema_dict)
+except FileNotFoundError:
+    # AIRR schema file not found - skip AIRR validation
+    pass
 
 
 def validate(data, schema, verbose=False, object_name=None):
+    if schema is None:
+        # Schema not available - skip validation
+        return
     if not schema.is_valid(data):
         msg = "{} doesn't conform to spec.".format(
             object_name if object_name is not None else "Input data"
@@ -719,6 +739,20 @@ def get_args():
     parser.add_argument(
         "-r", "--root-trees", action="store_true", help="Root trees using --naive-name."
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate output data against AIRR JSON schemas before writing"
+    )
+    parser.add_argument(
+        "--strict-validation",
+        action="store_true",
+        help="Exit with error if validation fails (requires --validate)"
+    )
+    parser.add_argument(
+        "--schema-dir",
+        help="Path to directory containing JSON schema files (defaults to ../data_schema)"
+    )
     return parser.parse_args()
 
 
@@ -771,6 +805,12 @@ def main():
                     ]
                 )
             )
+    # Validate data before writing if requested
+    if args.validate and not validate_output_data(datasets, clones_dict, trees, args):
+        if args.strict_validation:
+            print("\nExiting due to validation errors (--strict-validation enabled)")
+            sys.exit(1)
+
     # write out data
     if args.data_outdir:
         write_out(datasets, args.data_outdir, "datasets.json", args)

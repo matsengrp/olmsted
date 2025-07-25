@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🧪 Olmsted Docker Image Test"
+echo "🧪 Olmsted Docker Image Test - AIRR Data Processing"
 echo "=================================================="
 
 # Show usage if no arguments provided
@@ -38,23 +38,23 @@ echo ""
 echo "🧹 Cleaning up existing test directories..."
 for img in "${SELECTED_IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
-    rm -rf "tests/_output_${output_name}"
+    rm -rf "tests/_output_airr_${output_name}"
 done
 
 # Test each selected image
 for img in "${SELECTED_IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
-    output_dir="tests/_output_${output_name}"
+    output_dir="tests/_output_airr_${output_name}"
     IMAGE_OUTPUT_DIR["$img"]="$output_dir"
 
     mkdir -p "$output_dir"
 
-    echo "🐍 Testing container: $img..."
+    echo "🐍 Testing AIRR data processing in container: $img..."
     sudo docker run --rm \
         -v $(pwd)/example_data:/data \
         -v $(pwd)/$output_dir:/output \
         "$img" \
-        python bin/process_data.py -i /data/full_schema_dataset.json -o /output \
+        python bin/process_airr_data.py -i /data/airr/full_schema_dataset.json -o /output \
         -v
 
     if [ $? -eq 0 ]; then
@@ -86,7 +86,7 @@ for img in "${SELECTED_IMAGES[@]}"; do
     if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ]; then
         output_dir="${IMAGE_OUTPUT_DIR[$img]}"
         echo "📊 $img vs Golden Reference:"
-        python3 tests/compare_outputs.py example_data/build_data "$output_dir" --name1 "Golden Reference" --name2 "$img"
+        python3 tests/compare_outputs.py example_data/airr/golden_airr_data "$output_dir" --name1 "Golden Reference" --name2 "$img"
         IMAGE_MATCH["$img"]=$?
         echo ""
     else
@@ -106,7 +106,7 @@ for img in "${SELECTED_IMAGES[@]}"; do
         echo "  ❌ $img: Failed"
         all_success=0
         if [ "${IMAGE_SUCCESS[$img]}" -eq 0 ]; then
-            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_data.py -i /data/full_schema_dataset.json -o /output -v"
+            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_airr_data.py -i /data/airr/full_schema_dataset.json -o /output -v"
         fi
     fi
 done
