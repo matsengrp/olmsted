@@ -53,8 +53,8 @@ echo "🧬 Testing PCP Data Processing"
 echo "=========================================="
 echo ""
 
-echo "Running: python bin/process_pcp_data.py -i example_data/pcp/ford-flairr-seq-prod-UnmutInv_igh_pcp_2024-07-26.csv.gz -o tests/_output_local_pcp -v"
-python bin/process_pcp_data.py -i example_data/pcp/ford-flairr-seq-prod-UnmutInv_igh_pcp_2024-07-26.csv.gz -o tests/_output_local_pcp -v
+echo "Running: python bin/process_pcp_data.py -i example_data/pcp/test_pcp_small.csv -o tests/_output_local_pcp -v"
+python bin/process_pcp_data.py -i example_data/pcp/test_pcp_small.csv -o tests/_output_local_pcp -v
 
 if [ $? -eq 0 ]; then
     echo ""
