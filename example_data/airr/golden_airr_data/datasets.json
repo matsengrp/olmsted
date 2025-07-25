@@ -1,0 +1,56 @@
+[
+    {
+        "ident": "c927cd38-6e0d-37c2-a5da-4f04131a12a5", 
+        "subjects_count": 1, 
+        "clone_count": 8, 
+        "timepoints_count": 1, 
+        "schema_version": "2.0.0", 
+        "seeds": [
+            {
+                "ident": "3e9d5e49-cf09-3455-840e-6f881c5106f1", 
+                "seed_id": "-1118600317502690934"
+            }
+        ], 
+        "build": {
+            "commit": "6018ed10c406d072adeb279ca72f3d7628a1425b\n", 
+            "id": "cft-build-2020-01-30-12:04:55", 
+            "time": "2020-01-30 12:04:55"
+        }, 
+        "samples": [
+            {
+                "sample_id": "simulation-test", 
+                "partitions": [
+                    {
+                        "step": 3, 
+                        "ident": "62b9eda3-d5b0-3777-9f1d-824870a9616a", 
+                        "logprob": -1703.0503363498533, 
+                        "id": "seed-part-3", 
+                        "partition-file": [
+                            "tests/seed-partition.yaml"
+                        ]
+                    }, 
+                    {
+                        "step": 5, 
+                        "ident": "af91ad40-cfb3-3a45-bfb9-67e35fb5564f", 
+                        "logprob": -52983.23623605333, 
+                        "id": "unseeded-part-5", 
+                        "partition-file": [
+                            "tests/partition.yaml"
+                        ]
+                    }
+                ], 
+                "ident": "ac36a464-c15c-3e80-9b44-fdb8db76cf3c", 
+                "timepoint_id": "100dayspostinfection", 
+                "locus": "igh"
+            }
+        ], 
+        "dataset_id": "test-input-2020.01.30", 
+        "type": "cft.dataset", 
+        "subjects": [
+            {
+                "subject_id": "None", 
+                "ident": "80f29d53-1398-39e7-b7bc-c1904be99775"
+            }
+        ]
+    }
+]

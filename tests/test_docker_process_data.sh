@@ -1,14 +1,17 @@
 #!/bin/bash
 
-echo "🧪 Olmsted Docker Image Test"
-echo "=================================================="
+echo "🧪 Olmsted Docker Image Test Suite - Data Processing"
+echo "===================================================="
 
 # Show usage if no arguments provided
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <docker-image-1> [docker-image-2] ..."
     echo ""
+    echo "This script runs both AIRR and PCP data processing tests."
+    echo ""
     echo "Examples:"
-    echo "  $0 olmsted:python2 olmsted:python3"
+    echo "  $0 olmsted:python3"
+    echo "  $0 olmsted:python3 olmsted:node18"
     echo ""
     exit 1
 fi
@@ -17,124 +20,105 @@ fi
 if [[ $(basename "$PWD") == "tests" ]]; then
     cd ..
 fi
+
 echo "PWD: $PWD"
-
-# Initialize arrays to store selected images and their results
-declare -a SELECTED_IMAGES
-declare -A IMAGE_SUCCESS
-declare -A IMAGE_OUTPUT_DIR
-
-# Get Docker images from command line arguments
-SELECTED_IMAGES=("$@")
-
 echo ""
-echo "📋 Selected images:"
-for img in "${SELECTED_IMAGES[@]}"; do
+
+# Store images to test
+IMAGES=("$@")
+
+echo "📋 Testing images:"
+for img in "${IMAGES[@]}"; do
     echo "  - $img"
 done
 echo ""
 
-# Clean up any existing test directories
-echo "🧹 Cleaning up existing test directories..."
-for img in "${SELECTED_IMAGES[@]}"; do
-    output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
-    rm -rf "tests/_output_${output_name}"
-done
+# Initialize overall results
+declare -A AIRR_SUCCESS
+declare -A PCP_SUCCESS
+overall_success=1
 
-# Test each selected image
-for img in "${SELECTED_IMAGES[@]}"; do
+echo "=========================================="
+echo "🔬 Running AIRR Data Processing Tests"
+echo "=========================================="
+echo ""
+
+# Run AIRR tests
+./tests/test_docker_process_data.sh "${IMAGES[@]}"
+airr_exit_code=$?
+
+# Parse AIRR results by checking if output directories contain expected files
+for img in "${IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
     output_dir="tests/_output_${output_name}"
-    IMAGE_OUTPUT_DIR["$img"]="$output_dir"
-
-    mkdir -p "$output_dir"
-
-    echo "🐍 Testing container: $img..."
-    sudo docker run --rm \
-        -v $(pwd)/example_data:/data \
-        -v $(pwd)/$output_dir:/output \
-        "$img" \
-        python bin/process_data.py -i /data/full_schema_dataset.json -o /output \
-        -v
-
-    if [ $? -eq 0 ]; then
-        echo "✅ $img completed successfully"
-        IMAGE_SUCCESS["$img"]=1
+    
+    if [ -d "$output_dir" ] && [ -f "$output_dir/datasets.json" ] && ls "$output_dir"/clones.*.json >/dev/null 2>&1 && ls "$output_dir"/tree.*.json >/dev/null 2>&1; then
+        AIRR_SUCCESS["$img"]=1
+        echo "📝 AIRR test result for $img: ✅ PASSED"
     else
-        echo "❌ $img failed"
-        IMAGE_SUCCESS["$img"]=0
+        AIRR_SUCCESS["$img"]=0
+        echo "📝 AIRR test result for $img: ❌ FAILED"
+        overall_success=0
     fi
+done
+
+echo ""
+echo "=========================================="
+echo "🧬 Running PCP Data Processing Tests"
+echo "=========================================="
+echo ""
+
+# Run PCP tests
+./tests/test_docker_process_pcp.sh "${IMAGES[@]}"
+pcp_exit_code=$?
+
+# Parse PCP results by checking if output directories contain expected files
+for img in "${IMAGES[@]}"; do
+    output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
+    output_dir="tests/_output_pcp_${output_name}"
+    
+    if [ -d "$output_dir" ] && [ -f "$output_dir/datasets.json" ] && ls "$output_dir"/clones.*.json >/dev/null 2>&1 && ls "$output_dir"/tree.*.json >/dev/null 2>&1; then
+        PCP_SUCCESS["$img"]=1
+        echo "📝 PCP test result for $img: ✅ PASSED"
+    else
+        PCP_SUCCESS["$img"]=0
+        echo "📝 PCP test result for $img: ❌ FAILED"
+        overall_success=0
+    fi
+done
+
+echo ""
+echo "=========================================="
+echo "📊 FINAL TEST SUITE RESULTS"
+echo "=========================================="
+echo ""
+
+# Print detailed results
+for img in "${IMAGES[@]}"; do
+    airr_status="❌ FAILED"
+    pcp_status="❌ FAILED"
+    
+    if [ "${AIRR_SUCCESS[$img]}" -eq 1 ]; then
+        airr_status="✅ PASSED"
+    fi
+    
+    if [ "${PCP_SUCCESS[$img]}" -eq 1 ]; then
+        pcp_status="✅ PASSED"
+    fi
+    
+    echo "🐳 $img:"
+    echo "  📁 AIRR Processing: $airr_status"
+    echo "  🧬 PCP Processing:  $pcp_status"
     echo ""
 done
 
-echo ""
-echo "📊 File counts:"
-for img in "${SELECTED_IMAGES[@]}"; do
-    output_dir="${IMAGE_OUTPUT_DIR[$img]}"
-    file_count=$(ls "$output_dir"/*.json 2>/dev/null | wc -l)
-    echo "$img output: $file_count files"
-done
-
-echo ""
-echo "🔍 Comparing outputs against golden reference..."
-
-# Store comparison results
-declare -A IMAGE_MATCH
-
-# Compare each selected image's output against golden reference
-for img in "${SELECTED_IMAGES[@]}"; do
-    if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ]; then
-        output_dir="${IMAGE_OUTPUT_DIR[$img]}"
-        echo "📊 $img vs Golden Reference:"
-        python3 tests/compare_outputs.py example_data/build_data "$output_dir" --name1 "Golden Reference" --name2 "$img"
-        IMAGE_MATCH["$img"]=$?
-        echo ""
-    else
-        echo "⚠️  Skipping $img comparison - container failed"
-        IMAGE_MATCH["$img"]=1
-    fi
-done
-
-# Final results
-echo "🎯 Migration Test Results:"
-echo ""
-all_success=1
-for img in "${SELECTED_IMAGES[@]}"; do
-    if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ] && [ "${IMAGE_MATCH[$img]}" -eq 0 ]; then
-        echo "  ✅ $img: Container runs and output matches golden reference"
-    else
-        echo "  ❌ $img: Failed"
-        all_success=0
-        if [ "${IMAGE_SUCCESS[$img]}" -eq 0 ]; then
-            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_data.py -i /data/full_schema_dataset.json -o /output -v"
-        fi
-    fi
-done
-
-echo ""
-# Check if any Python 3 image was tested and succeeded
-py3_tested=0
-py3_success=0
-for img in "${SELECTED_IMAGES[@]}"; do
-    if [[ "$img" == *"python3"* ]]; then
-        py3_tested=1
-        if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ] && [ "${IMAGE_MATCH[$img]}" -eq 0 ]; then
-            py3_success=1
-        fi
-    fi
-done
-
-if [ $py3_tested -eq 1 ]; then
-    if [ $py3_success -eq 1 ]; then
-        echo "🎉 SUCCESS: At least one Python 3 container is verified!"
-        echo "✅ Python 3 produces identical output to the golden reference"
-    else
-        echo "❌ FAILURE: Python 3 migration needs review"
-    fi
+# Overall summary
+if [ $overall_success -eq 1 ]; then
+    echo "🎉 SUCCESS: All data processing tests passed!"
+    echo "✅ Both AIRR and PCP data processing work correctly"
+    exit 0
 else
-    if [ $all_success -eq 1 ]; then
-        echo "✅ All selected containers passed tests"
-    else
-        echo "❌ Some containers failed tests"
-    fi
+    echo "❌ FAILURE: Some data processing tests failed"
+    echo "💡 Check individual test outputs above for details"
+    exit 1
 fi

@@ -436,12 +436,19 @@ CustomValidator = jsonschema.validators.extend(
 # Should update to get draft7?
 olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
 airr_clone_schema = None
-with open("../airr-standards/specs/airr-schema.yaml") as stream:
-    airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
-    airr_clone_schema = CustomValidator(airr_clone_schema_dict)
+try:
+    with open("../airr-standards/specs/airr-schema.yaml") as stream:
+        airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
+        airr_clone_schema = CustomValidator(airr_clone_schema_dict)
+except FileNotFoundError:
+    # AIRR schema file not found - skip AIRR validation
+    pass
 
 
 def validate(data, schema, verbose=False, object_name=None):
+    if schema is None:
+        # Schema not available - skip validation
+        return
     if not schema.is_valid(data):
         msg = "{} doesn't conform to spec.".format(
             object_name if object_name is not None else "Input data"

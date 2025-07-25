@@ -28,6 +28,6 @@ fi
 
 echo "Processing $INPUT_FILE with Docker image: $DOCKER_IMAGE"
 
-docker run --rm -v $PWD:/data "$DOCKER_IMAGE" bin/process_data.py -i /data/"$INPUT_FILE" -o /data/"$OUTPUT_DIR" -n inferred_naive
+docker run --rm -v $PWD:/data "$DOCKER_IMAGE" bin/process_airr_data.py -i /data/"$INPUT_FILE" -o /data/"$OUTPUT_DIR" -n inferred_naive
 
 echo "Processing completed and saved to: $OUTPUT_DIR"

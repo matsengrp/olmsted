@@ -1,0 +1,1473 @@
+{
+    "ident": "f0f085a7-57d8-3040-a06b-51be738da83f", 
+    "newick": "((((((-6627604402317260016:0.016589,(-187003705512072704:0.002698,((26377082348778100:0.002696,-4350251712756494027:0.008129)Node1:1e-06,7626006792530708871:0.008141)Node2:0.002703)Node3:0.002663)Node4:0.008195,2312264561614954449:0.022019)Node5:1e-06,((493242391521577480:0.008135,2406749528678053056:1e-06)Node6:0.002699,(8829422514572240605:0.005416,2319079375520182051:0.005434)Node7:1e-06)Node8:0.011029)Node9:0.002696,(((1062120721985227288:0.008103,4514641505331476647:0.021946)Node10:1e-06,(-132532509149563662:0.0027,-4769941127027725084:0.010932)Node11:1e-06)Node12:1e-06,(((-7926030229265682103:0.002689,9152910101801731638:1e-06)Node13:1e-06,-5863152965754328013:0.005405)Node14:0.002674,(-4952443115250943538:0.002704,-7731762421698893175:1e-06)Node15:0.005436)Node16:0.008157)Node17:0.00539)Node18:1e-06,(((((-1548877079951512513:0.008171,(1067843752926594943:0.008229,3179629405473899410:0.005455)Node20:0.002722)Node21:1e-06,(-3360605775565175613:0.002701,6213243558523113945:1e-06)Node22:0.008147)Node23:1e-06,1036096622723027138:0.013624)Node24:0.022176,(4215614446412413222:0.008208,(-5324343798244698864:0.008236,8781456677059436457:0.002669)Node25:0.010971)Node26:0.00819)Node27:1e-06,(-5365296515752746991:0.016472,(7199300599651047120:0.022538,(6692967529999246025:0.016695,(6773092637507361282:0.013623,-200065273564059272:1e-06)Node31:0.002813)Node32:0.0143)Node30:0.002132)Node29:1e-06)Node28:1e-06)Node19:1e-06)inferred_naive:0;", 
+    "clone_id": "clust-1", 
+    "downsampling_strategy": "min_adcl", 
+    "tree_id": "min_adcl-raxml_ng", 
+    "nodes": [
+        {
+            "distance": 0.027483000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 2, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node4", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 2, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 2, 
+            "sequence_alignment": "GAGGTGCTGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGTTGTTAGTGATAATGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCATGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 2, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-6627604402317260016", 
+            "sequence_alignment_aa": "EVLLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSWVRQAPGKGLEWVSVVSDNGGSTYYADSVKGRFTISRDNSKNTLYLQMNSMRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.00033995596821415676, 
+            "length": 0.016589, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016255, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node3", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGAGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-187003705512072704", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVKSRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.10877871164781183, 
+            "length": 0.002698, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.018957000000000005, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node1", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAGGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGGGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "26377082348778100", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVRGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.1284315841004604, 
+            "length": 0.002696, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.024390000000000005, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node1", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCGGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAGGGGCCGGTTCAGCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTCCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-4350251712756494027", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSGYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVRGRFSISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.012685223360534067, 
+            "length": 0.008129, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016261, 
+            "lbr": 0.040405840321841135, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node2", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAGGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node1", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVRGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.4868336975077954, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.024401000000000003, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node2", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGAGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTATGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAGGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGGCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "7626006792530708871", 
+            "sequence_alignment_aa": "EVQLLDSEGGLVQPGGSLRLSYAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVRGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHWHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.01262508011851465, 
+            "length": 0.008141, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.01626, 
+            "lbr": 0.0725575517079742, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node3", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAGGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node2", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVRGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.4868799602038805, 
+            "length": 0.002703, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.013556999999999998, 
+            "lbr": 0.08745061418850293, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node4", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGCGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node3", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSCVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.42935578709211236, 
+            "length": 0.002663, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.010893999999999997, 
+            "lbr": 0.15130479983417344, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node5", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATACCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTCGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node4", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPGGSLRLSCAASGFTFSSYTMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.42430225374505826, 
+            "length": 0.008195, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.024718000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node5", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTATTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGCGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTGGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGCTCACCTTCTCCAGAGACAATTCCAAGAACACGCTGTATCTTCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACCACTGGGGCCAGGGTAGCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "2312264561614954449", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGRSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAIGGSGGSTYYADSVKGRLTFSRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDHWGQGSLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.00010089949925929109, 
+            "length": 0.022019, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.0026990000000000004, 
+            "lbr": 0.2155000043275415, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node9", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node5", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.8400368047746478, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.024561000000000003, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node6", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAAACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAGCACACTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTGCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "493242391521577480", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYANSVKGRFTISRDNSKSTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGALVTVSS", 
+            "affinity": null, 
+            "lbi": 0.003957142296597419, 
+            "length": 0.008135, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016427000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node6", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACACTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "2406749528678053056", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.2614632385795306, 
+            "length": 1e-06, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016426000000000003, 
+            "lbr": 0.030357182379996173, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node8", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACACTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node6", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.26163405671710654, 
+            "length": 0.002699, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.019144000000000005, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node7", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTAGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCATATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "8829422514572240605", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPRGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSIYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.036464155750194294, 
+            "length": 0.005416, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.019162000000000002, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node7", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTGGTGGTAGTGTTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "2319079375520182051", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAIGGSVGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.036187072293939346, 
+            "length": 0.005434, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.013727999999999999, 
+            "lbr": 0.039892585315842215, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node8", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node7", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.46480695142177636, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.013727, 
+            "lbr": 0.08074140998446855, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node9", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTCCTTTGATTACTGGGGCCAGGGTCCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node8", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHSFDYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.4648244685679727, 
+            "length": 0.011029, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.0026980000000000003, 
+            "lbr": 0.3471594445397127, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node18", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGTACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node9", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.8401671704796886, 
+            "length": 0.002696, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.013496999999999999, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node10", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTCAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCGAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTGCTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "1062120721985227288", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQARGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDCWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.02851548819142549, 
+            "length": 0.008103, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.027340000000000003, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node10", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGCGGAGGCTTGGTACAGCCTGGGCGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGTTATTAGTGGTAGTGATGGTAGCACATACTACGCAGACTCCGTCAAAGGCCGGTTCACCATCTCCAGAGACAATTCTAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCTTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "4514641505331476647", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGRSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSVISGSDGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.00011128719421265835, 
+            "length": 0.021946, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.005394, 
+            "lbr": 0.08869175225460392, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node12", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node10", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.88806739481975, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.008093999999999999, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node11", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGTCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-132532509149563662", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKVRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.2644387817738874, 
+            "length": 0.0027, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016326, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node11", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGCCTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCCTATATTACTGTGCGATGAGCAGTGGCTGTCCGCATTGTCACTACTTTGACTATTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-4769941127027725084", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYAASVKGRFTISRDNSKNTLYLQMNSLRAEDTALYYCAMSSGCPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.009140848480427757, 
+            "length": 0.010932, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.005394, 
+            "lbr": 0.04185270907745697, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node12", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node11", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.8880259623298765, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.005393, 
+            "lbr": 0.13848497416767572, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node17", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node12", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.8882292055361167, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.018913000000000003, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node13", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGGAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAGCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-7926030229265682103", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCGASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGALVTVSS", 
+            "affinity": null, 
+            "lbi": 0.07180391516611322, 
+            "length": 0.002689, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016225, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node13", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAGCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "9152910101801731638", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGALVTVSS", 
+            "affinity": null, 
+            "lbi": 0.3194077865392364, 
+            "length": 1e-06, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016224000000000002, 
+            "lbr": 0.010331125246841918, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node14", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAGCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node13", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGALVTVSS", 
+            "affinity": null, 
+            "lbi": 0.3196017871321769, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.021628, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node14", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTGCAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAGCCCTGGTCTCCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-5863152965754328013", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGALVSVSS", 
+            "affinity": null, 
+            "lbi": 0.019934521978207723, 
+            "length": 0.005405, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.016223, 
+            "lbr": 0.031173614557176, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node16", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAGCCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node14", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGALVTVSS", 
+            "affinity": null, 
+            "lbi": 0.31970853992372245, 
+            "length": 0.002674, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.021689, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node15", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTTTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAACACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTCTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-4952443115250943538", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGNTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.008650990701067602, 
+            "length": 0.002704, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.018986, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node15", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAACACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTCTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-7731762421698893175", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGNTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.13482341127943684, 
+            "length": 1e-06, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.018985000000000002, 
+            "lbr": 0.010976047399729728, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node16", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAACACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTCTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node15", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGNTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.13494356335355467, 
+            "length": 0.005436, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.013548999999999999, 
+            "lbr": 0.06933484471718317, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node17", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGCGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTACGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAGATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node16", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.3830614986959048, 
+            "length": 0.008157, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.005392, 
+            "lbr": 0.24035654148366892, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node18", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACTTTTAGCAGCTATGCCATGAGCTGGGTGCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node17", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.888172916039619, 
+            "length": 0.00539, 
+            "type": "node"
+        }, 
+        {
+            "distance": 2e-06, 
+            "lbr": 0.7349772292716272, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node19", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node18", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.2561671359130713, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.030352000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 2, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node21", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 2, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 2, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTGCAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATTTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCTCCGTGTCCTCAG", 
+            "cluster_multiplicity": 2, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-1548877079951512513", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVSVSS", 
+            "affinity": null, 
+            "lbi": 0.02059999686367973, 
+            "length": 0.008171, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.033132, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node20", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCCTGAGCTTGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATTTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGGCCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "1067843752926594943", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYALSLVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.01156660858957793, 
+            "length": 0.008229, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.030358000000000003, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node20", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTTGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTTCTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCTTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "3179629405473899410", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSLVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHFFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.036495662896494016, 
+            "length": 0.005455, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.024903000000000005, 
+            "lbr": 0.05777482639483135, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node21", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTTGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node20", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSLVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.4703829831202182, 
+            "length": 0.002722, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.022181000000000003, 
+            "lbr": 0.09994421260790567, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node23", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node21", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.7004073628523672, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.033028, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node22", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTCGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTAGATTCACCTTTAGCAGCTATGCCATGAGGTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCGCCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-3360605775565175613", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLRGSLRLSCAASRFTFSSYAMRWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFAISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.007029355776680934, 
+            "length": 0.002701, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.030328, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node22", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTCGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGGTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCGCCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "6213243558523113945", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLRGSLRLSCAASGFTFSSYAMRWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFAISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.129950253532072, 
+            "length": 1e-06, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.030327000000000003, 
+            "lbr": 0.012679364102552862, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node23", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTCGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGGTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCGCCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node22", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLRGSLRLSCAASGFTFSSYAMRWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFAISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.1300684559531872, 
+            "length": 0.008147, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.022180000000000005, 
+            "lbr": 0.15029795036981733, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node24", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node23", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.7004560379206568, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.035803, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node24", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGATGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTCTAGCAGCTATGCCATGAGCTGGGTCCCCCAGGCTCCGGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGACCAGTGTCTGGCCGCATCGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "1036096622723027138", 
+            "sequence_alignment_aa": "EMQLLESGGGLVQLGGSLRLSCAASGFTSSSYAMSWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMTSVWPHRHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.0023016894102613475, 
+            "length": 0.013624, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.022179000000000004, 
+            "lbr": 0.21850373933632772, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node27", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGTTGTTGGAGTCTGGGGGAGGCTTGGTACAGCTTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCCCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCAATGAGCAGTGTCTGGCCGCATTGTCACTACTTTGTCTACTGGGGCCAGGGACCCCTGGTCACCGTGTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node24", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQLGGSLRLSCAASGFTFSSYAMSWVPQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSVWPHCHYFVYWGQGPLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.7003740742757626, 
+            "length": 0.022176, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.016401000000000002, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node26", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGTGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGGTGGGTCCGCCAGGCTCCAGAGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTATTGGTGGTAGCACATACTACGCAGACTCCCTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAATACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "4215614446412413222", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMRWVRQAPEKGLEWVSAISGIGGSTYYADSLKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.007794324889077075, 
+            "length": 0.008208, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.027400000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node25", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGAGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTATTGGTGGTAGCCCATACTACGCAGACTCCCTGAAGGGCCGGTTCACCATCTCCAGACACAATTCCAAGAACGCGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACAGCCGTATATTATTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGATTACTGGGGCCAGGGAACCCTGGTCACCGTCTCGTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-5324343798244698864", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPEKGLEWVSAISGIGGSPYYADSLKGRFTISRHNSKNALYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.004121661410826527, 
+            "length": 0.008236, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.021833, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node25", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCGGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGAGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTATTGGTGGTAGCACATACTACGCAGACTCCCTGAAGGGCCGGTTCACCATCTCCAGACACAATTCCAAGAACGCGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGATTACTGGGGCCAGGGAACCCTGGTCACCGTCTCGTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "8781456677059436457", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPEKGLEWVSAISGIGGSTYYADSLKGRFTISRHNSKNALYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.055670040189143094, 
+            "length": 0.002669, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.019164, 
+            "lbr": 0.044691215650848506, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node26", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGAGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTATTGGTGGTAGCACATACTACGCAGACTCCCTGAAGGGCCGGTTCACCATCTCCAGACACAATTCCAAGAACGCGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGATTACTGGGGCCAGGGAACCCTGGTCACCGTCTCGTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node25", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPEKGLEWVSAISGIGGSTYYADSLKGRFTISRHNSKNALYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.27054720848178454, 
+            "length": 0.010971, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.008192999999999997, 
+            "lbr": 0.09692086858175333, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node27", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGAGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTATTGGTGGTAGCACATACTACGCAGACTCCCTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node26", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPEKGLEWVSAISGIGGSTYYADSLKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.3671570906547588, 
+            "length": 0.00819, 
+            "type": "node"
+        }, 
+        {
+            "distance": 3e-06, 
+            "lbr": 0.2943368030090717, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node28", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node27", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.256044859171388, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.016475000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node29", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTTCAGCCTCTGGATTCATCTTTACCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTTCGTGAAGGGCCGGTTCACCATCTCTAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGATCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-5365296515752746991", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCSASGFIFTSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADFVKGRFTISRDNSKNTLYLQMNSLRSEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.0015005490883345822, 
+            "length": 0.016472, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.024673, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node30", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCACCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAACGGGCTGGAGTGCGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAACGACCGGTTTACCATCTCCACAGACAATTCCAAGAACACGCTGTATCTGCAAATGAGCAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCGCTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "7199300599651047120", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAPSGFTFSSYAMSWVRQAPGNGLECVSAISGSGGSTYYADSVNDRFTISTDNSKNTLYLQMSSLRAEDTAVYYCAMSSGWPHCRYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 7.301885219174894e-05, 
+            "length": 0.022538, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.03313000000000001, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node32", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGACTCTGGGGGAGGCTTGGTACAGCCTGTGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCTTGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCAGATACTACGCAAACTCCGTGAAAGGCCCCTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAGTGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCCCTTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "6692967529999246025", 
+            "sequence_alignment_aa": "EVQLLDSGGGLVQPVGSLRLSCAASGFTFSSYALSWVRQAPGKGLEWVSAISGSGGSRYYANSVKGPFTISRDNSKNTLYLQVNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVPS", 
+            "affinity": null, 
+            "lbi": 0.00021053962666166655, 
+            "length": 0.016695, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.032871000000000004, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node31", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTACAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGTGGGGTCCCTGAGACTCTCCTGTACAGCCTCTGGATTCACCTTTAGCAGCTATGCCTTGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCAGATACTACGCAGACTCCGTAAACGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCATATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTGCATTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCCCTTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "6773092637507361282", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPVGSLRLSCTASGFTFSSYALSWVRQAPGKGLEWVSAISGSGGSRYYADSVNGRFTISRDNSKNTLYLQMNSLRAEDTAIYYCAMSSGWPHCHCIDYWGQGTLVTVPS", 
+            "affinity": null, 
+            "lbi": 0.00023380787521415006, 
+            "length": 0.013623, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.019249000000000002, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": "Node31", 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGTGGGGTCCCTGAGACTCTCCTGTACAGCCTCTGGATTCACCTTTAGCAGCTATGCCTTGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCAGATACTACGCAGACTCCGTGAACGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCCCTTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "-200065273564059272", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPVGSLRLSCTASGFTFSSYALSWVRQAPGKGLEWVSAISGSGGSRYYADSVNGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVPS", 
+            "affinity": null, 
+            "lbi": 0.21907434978432394, 
+            "length": 1e-06, 
+            "type": "leaf"
+        }, 
+        {
+            "distance": 0.019248, 
+            "lbr": 0.05123806124723238, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node32", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGTGGGGTCCCTGAGACTCTCCTGTACAGCCTCTGGATTCACCTTTAGCAGCTATGCCTTGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCAGATACTACGCAGACTCCGTGAACGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCCCTTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node31", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPVGSLRLSCTASGFTFSSYALSWVRQAPGKGLEWVSAISGSGGSRYYADSVNGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVPS", 
+            "affinity": null, 
+            "lbi": 0.21922820897481843, 
+            "length": 0.002813, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.016435000000000005, 
+            "lbr": 0.12308194984548175, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node30", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGTGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCTTGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCAGATACTACGCAGACTCCGTGAACGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCCCTTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node32", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPVGSLRLSCAASGFTFSSYALSWVRQAPGKGLEWVSAISGSGGSRYYADSVNGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVPS", 
+            "affinity": null, 
+            "lbi": 0.33267633759061643, 
+            "length": 0.0143, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.0021350000000000006, 
+            "lbr": 0.19151507544876034, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node29", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAACGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node30", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVNGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 0.7662828797957696, 
+            "length": 0.002132, 
+            "type": "node"
+        }, 
+        {
+            "distance": 3e-06, 
+            "lbr": 0.2472183478903099, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node28", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node29", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.256096372400834, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 2e-06, 
+            "lbr": 0.7409833975157673, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "Node19", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node28", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.2563437741331798, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 1e-06, 
+            "lbr": 5.632268593204123, 
+            "cluster_timepoint_multiplicities": [], 
+            "parent": "inferred_naive", 
+            "timepoint_multiplicities": [], 
+            "multiplicity": null, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": null, 
+            "timepoint_id": null, 
+            "sequence_id": "Node19", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.2563215899243436, 
+            "length": 1e-06, 
+            "type": "node"
+        }, 
+        {
+            "distance": 0.0, 
+            "lbr": 0.0, 
+            "cluster_timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "parent": null, 
+            "timepoint_multiplicities": [
+                {
+                    "multiplicity": 1, 
+                    "timepoint_id": "no-timepoint"
+                }
+            ], 
+            "multiplicity": 1, 
+            "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTCCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGCTATTAGTGGTAGTGGTGGTAGCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGATGAGCAGTGGCTGGCCGCATTGTCACTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCAG", 
+            "cluster_multiplicity": 1, 
+            "timepoint_id": "no-timepoint", 
+            "sequence_id": "inferred_naive", 
+            "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSAISGSGGSTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAMSSGWPHCHYFDYWGQGTLVTVSS", 
+            "affinity": null, 
+            "lbi": 1.2558853676921657, 
+            "length": 0.0, 
+            "type": "root"
+        }
+    ], 
+    "type": "cft.reconstruction", 
+    "downsampled_count": 100
+}
