@@ -1,16 +1,14 @@
 #!/bin/bash
 
-echo "🧪 Olmsted Docker Image Test - PCP Data Processing (FAST)"
+echo "🧪 Olmsted Docker Image Test - PCP Data Processing"
 echo "========================================================="
 
 # Show usage if no arguments provided
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <docker-image-1> [docker-image-2] ..."
     echo ""
-    echo "This fast test uses a small PCP dataset (100 rows) for quick testing."
-    echo ""
     echo "Examples:"
-    echo "  $0 olmsted:python3 olmsted:node18"
+    echo "  $0 olmsted:python3 olmsted:python3"
     echo ""
     exit 1
 fi
@@ -37,26 +35,26 @@ done
 echo ""
 
 # Clean up any existing test directories
-echo "🧹 Cleaning up existing PCP fast test directories..."
+echo "🧹 Cleaning up existing PCP test directories..."
 for img in "${SELECTED_IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
-    rm -rf "tests/_output_pcp_fast_${output_name}"
+    rm -rf "tests/_output_pcp_${output_name}"
 done
 
 # Test each selected image
 for img in "${SELECTED_IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
-    output_dir="tests/_output_pcp_fast_${output_name}"
+    output_dir="tests/_output_pcp_${output_name}"
     IMAGE_OUTPUT_DIR["$img"]="$output_dir"
 
     mkdir -p "$output_dir"
 
-    echo "🚀 Testing PCP data processing in container (FAST MODE): $img..."
+    echo "🚀 Testing PCP data processing in container: $img..."
     sudo docker run --rm \
         -v $(pwd)/example_data:/data \
         -v $(pwd)/$output_dir:/output \
         "$img" \
-        python bin/process_pcp_data.py -i /data/pcp/test_pcp_small.csv -o /output \
+        python bin/process_pcp_data.py -i /data/pcp/test_pcp_data.csv -o /output \
         -v
 
     if [ $? -eq 0 ]; then
@@ -88,35 +86,35 @@ for img in "${SELECTED_IMAGES[@]}"; do
     if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ]; then
         output_dir="${IMAGE_OUTPUT_DIR[$img]}"
         echo "📊 Validating $img output structure:"
-        
+
         # Check for required AIRR format files
         datasets_file="$output_dir/datasets.json"
         clones_files_count=$(ls "$output_dir"/clones.*.json 2>/dev/null | wc -l)
         tree_files_count=$(ls "$output_dir"/tree.*.json 2>/dev/null | wc -l)
-        
+
         valid=1
-        
+
         if [ ! -f "$datasets_file" ]; then
             echo "  ❌ Missing datasets.json"
             valid=0
         else
             echo "  ✅ datasets.json found"
         fi
-        
+
         if [ $clones_files_count -eq 0 ]; then
             echo "  ❌ No clones.*.json files found"
             valid=0
         else
             echo "  ✅ $clones_files_count clones.*.json files found"
         fi
-        
+
         if [ $tree_files_count -eq 0 ]; then
             echo "  ❌ No tree.*.json files found"
             valid=0
         else
             echo "  ✅ $tree_files_count tree.*.json files found"
         fi
-        
+
         # Basic JSON validation
         json_valid=1
         for json_file in "$output_dir"/*.json; do
@@ -128,11 +126,11 @@ for img in "${SELECTED_IMAGES[@]}"; do
                 fi
             fi
         done
-        
+
         if [ $json_valid -eq 1 ]; then
             echo "  ✅ All JSON files are valid"
         fi
-        
+
         IMAGE_VALID["$img"]=$valid
         echo ""
     else
@@ -142,7 +140,7 @@ for img in "${SELECTED_IMAGES[@]}"; do
 done
 
 # Final results
-echo "🎯 PCP Fast Test Results:"
+echo "🎯 PCP Test Results:"
 echo ""
 all_success=1
 for img in "${SELECTED_IMAGES[@]}"; do
@@ -152,16 +150,15 @@ for img in "${SELECTED_IMAGES[@]}"; do
         echo "  ❌ $img: Failed"
         all_success=0
         if [ "${IMAGE_SUCCESS[$img]}" -eq 0 ]; then
-            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_pcp_data.py -i /data/pcp/test_pcp_small.csv -o /output -v"
+            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_pcp_data.py -i /data/pcp/test_pcp_data.csv -o /output -v"
         fi
     fi
 done
 
 echo ""
 if [ $all_success -eq 1 ]; then
-    echo "🎉 SUCCESS: All PCP fast tests passed!"
+    echo "🎉 SUCCESS: All PCP tests passed!"
     echo "✅ PCP data successfully converts to AIRR format"
-    echo "⏱️  This was a FAST test using a small dataset (100 rows)"
 else
-    echo "❌ FAILURE: Some PCP fast tests failed"
+    echo "❌ FAILURE: Some PCP tests failed"
 fi
