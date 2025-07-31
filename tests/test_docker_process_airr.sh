@@ -3,28 +3,68 @@
 echo "🧪 Olmsted Docker Image Test - AIRR Data Processing"
 echo "=================================================="
 
-# Show usage if no arguments provided
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <docker-image-1> [docker-image-2] ..."
+# Initialize variables
+VERBOSE=false
+declare -a SELECTED_IMAGES
+declare -A IMAGE_SUCCESS
+declare -A IMAGE_OUTPUT_DIR
+
+# Show usage
+show_usage() {
+    echo "Usage: $0 [OPTIONS] <docker-image-1> [docker-image-2] ..."
+    echo ""
+    echo "Options:"
+    echo "  -v, --verbose    Enable verbose output"
+    echo "  -h, --help       Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 olmsted:python2 olmsted:python3"
+    echo "  $0 olmsted:python3"
+    echo "  $0 -v olmsted:python2 olmsted:python3"
+    echo "  $0 --verbose olmsted:latest"
     echo ""
+}
+
+# Show usage if no arguments provided
+if [ $# -eq 0 ]; then
+    show_usage
+    exit 1
+fi
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
+        *)
+            # Collect image names
+            SELECTED_IMAGES+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Check if we have images to test
+if [ ${#SELECTED_IMAGES[@]} -eq 0 ]; then
+    echo "Error: No Docker images specified"
+    show_usage
     exit 1
 fi
 
 # Change to project root (parent of script directory)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR/.."
-echo "PWD: $PWD"
-
-# Initialize arrays to store selected images and their results
-declare -a SELECTED_IMAGES
-declare -A IMAGE_SUCCESS
-declare -A IMAGE_OUTPUT_DIR
-
-# Get Docker images from command line arguments
-SELECTED_IMAGES=("$@")
+[ "$VERBOSE" = true ] && echo "Working directory: $PWD"
 
 echo ""
 echo "📋 Selected images:"
@@ -37,6 +77,7 @@ echo ""
 echo "🧹 Cleaning up existing test directories..."
 for img in "${SELECTED_IMAGES[@]}"; do
     output_name=$(echo "$img" | sed 's/:/_/g' | sed 's/olmsted_//')
+    [ "$VERBOSE" = true ] && echo "  Removing: tests/_output_airr_${output_name}"
     rm -rf "tests/_output_airr_${output_name}"
 done
 
@@ -49,12 +90,23 @@ for img in "${SELECTED_IMAGES[@]}"; do
     mkdir -p "$output_dir"
 
     echo "🐍 Testing AIRR data processing in container: $img..."
-    sudo docker run --rm \
+    
+    # Build docker command
+    docker_cmd="sudo docker run --rm \
         -v $(pwd)/example_data:/data \
         -v $(pwd)/$output_dir:/output \
-        "$img" \
+        $img \
         python bin/process_airr_data.py -i /data/airr/full_schema_dataset.json -o /output \
-        -v
+        --validate --seed 42"
+    
+    # Add verbosity to the python command if requested
+    if [ "$VERBOSE" = true ]; then
+        docker_cmd="$docker_cmd -v"
+        echo "  Docker command: $docker_cmd"
+    fi
+    
+    # Execute the command
+    eval "$docker_cmd"
 
     if [ $? -eq 0 ]; then
         echo "✅ $img completed successfully"
@@ -85,6 +137,7 @@ for img in "${SELECTED_IMAGES[@]}"; do
     if [ "${IMAGE_SUCCESS[$img]}" -eq 1 ]; then
         output_dir="${IMAGE_OUTPUT_DIR[$img]}"
         echo "📊 $img vs Golden Reference:"
+        [ "$VERBOSE" = true ] && echo "  Comparing: example_data/airr/golden_airr_data vs $output_dir"
         python3 tests/compare_outputs.py example_data/airr/golden_airr_data "$output_dir" --name1 "Golden Reference" --name2 "$img"
         IMAGE_MATCH["$img"]=$?
         echo ""
@@ -105,7 +158,7 @@ for img in "${SELECTED_IMAGES[@]}"; do
         echo "  ❌ $img: Failed"
         all_success=0
         if [ "${IMAGE_SUCCESS[$img]}" -eq 0 ]; then
-            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_airr_data.py -i /data/airr/full_schema_dataset.json -o /output -v"
+            echo "     Debug with: sudo docker run --rm -v \$(pwd)/example_data:/data $img python bin/process_airr_data.py -i /data/airr/full_schema_dataset.json -o /output --validate --seed 42 -v"
         fi
     fi
 done

@@ -1,0 +1,308 @@
+{
+    "clone_id": "family-3",
+    "ident": "8d94ddd8-3411-9628-ac6a-1999d4a60bfb",
+    "newick": "((((((((((((((1TCGAGTCTTGTCAACTCTTGGG:9.991e-07,1TTCACTAGGGTAGTCTCTTGGG:9.991e-07)Node13:9.991e-07,1TCACATGGGATGTAGTCTTGGG:9.991e-07)Node12:9.991e-07,1TTCAATGGTGTTGCTTCTTGGG:9.991e-07)Node11:9.991e-07,1TGTGATGGTCTATGGTCTTGGG:9.991e-07)Node10:9.991e-07,1TCCGGTTTGCTGCGATCTTGGG:9.991e-07)Node9:9.991e-07,1TGCAATTTCGTAGGGTCTTGGG:9.991e-07)Node8:9.991e-07,1TTCGTTGATGTATGCTCTTGGG:9.991e-07)Node7:9.991e-07,1TGTGTTGGAATCTATTCTTGGG:9.991e-07)Node6:9.991e-07,1TCGTTTGCTTTAGTGTCTTGGG:9.991e-07)Node5:9.991e-07,1TGGCCTACAGTCGGTTCTTGGG:9.991e-07)Node4:9.991e-07,(1TTGGTTTGGTTCGTGTCTTGGG:9.991e-07,1TTTATTGGGCTAGACTCTTGGG:9.991e-07)Node14:9.991e-07)Node3:9.991e-07,1TGGGATTACATAATGTCTTGGG:9.991e-07)Node2:9.991e-07,1TTCTGTGGAGTTTGATCTTGGG:9.991e-07)Node1:0.0572101688)naive:0.0;",
+    "nodes": {
+        "1TCACATGGGATGTAGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TCACATGGGATGTAGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TCCGGTTTGCTGCGATCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TCCGGTTTGCTGCGATCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TCGAGTCTTGTCAACTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TCGAGTCTTGTCAACTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TCGTTTGCTTTAGTGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TCGTTTGCTTTAGTGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TGCAATTTCGTAGGGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TGCAATTTCGTAGGGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TGGCCTACAGTCGGTTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TGGCCTACAGTCGGTTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TGGGATTACATAATGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TGGGATTACATAATGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TGTGATGGTCTATGGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TGTGATGGTCTATGGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TGTGTTGGAATCTATTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TGTGTTGGAATCTATTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTCAATGGTGTTGCTTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTCAATGGTGTTGCTTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTCACTAGGGTAGTCTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTCACTAGGGTAGTCTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTCGTTGATGTATGCTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTCGTTGATGTATGCTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTCTGTGGAGTTTGATCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTCTGTGGAGTTTGATCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTGGTTTGGTTCGTGTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTGGTTTGGTTCGTGTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "1TTTATTGGGCTAGACTCTTGGG": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "1TTTATTGGGCTAGACTCTTGGG",
+            "timepoint_multiplicities": []
+        },
+        "Node1": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node1",
+            "timepoint_multiplicities": []
+        },
+        "Node10": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node10",
+            "timepoint_multiplicities": []
+        },
+        "Node11": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node11",
+            "timepoint_multiplicities": []
+        },
+        "Node12": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node12",
+            "timepoint_multiplicities": []
+        },
+        "Node13": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node13",
+            "timepoint_multiplicities": []
+        },
+        "Node14": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node14",
+            "timepoint_multiplicities": []
+        },
+        "Node2": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node2",
+            "timepoint_multiplicities": []
+        },
+        "Node3": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node3",
+            "timepoint_multiplicities": []
+        },
+        "Node4": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node4",
+            "timepoint_multiplicities": []
+        },
+        "Node5": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node5",
+            "timepoint_multiplicities": []
+        },
+        "Node6": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node6",
+            "timepoint_multiplicities": []
+        },
+        "Node7": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node7",
+            "timepoint_multiplicities": []
+        },
+        "Node8": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node8",
+            "timepoint_multiplicities": []
+        },
+        "Node9": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 1,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "Node9",
+            "timepoint_multiplicities": []
+        },
+        "naive": {
+            "affinity": null,
+            "lbi": null,
+            "lbr": null,
+            "multiplicity": 0,
+            "sequence_alignment": "",
+            "sequence_alignment_aa": "",
+            "sequence_id": "naive",
+            "timepoint_multiplicities": []
+        }
+    },
+    "tree_id": "pcp-tree-3"
+}

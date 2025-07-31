@@ -30,6 +30,9 @@ from process_utils import (
     get_schema_path,
     validate_airr_main,
     validate_airr_tree,
+    validate_airr_clone,
+    validate_airr_node,
+    load_official_airr_schema,
     dataset_spec,
     clone_spec,
     tree_spec,
@@ -532,12 +535,23 @@ def process_tree(args, clone_id, tree):
 
 
 def validate_airr_clone_and_trees(args, clone):
-    clone["repertoire_id"] = None
+    # Set repertoire_id to sample_id or clone_id if not available (required by AIRR schema)
+    clone["repertoire_id"] = clone.get("sample_id") or clone.get("clone_id") or "unknown"
+    
     # prepare tree(s)
     clone["trees"] = list(map(
         functools.partial(process_tree, args, clone["clone_id"]), clone.get("trees", [])
     ))
-    validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
+    
+    # Use common validation function with official AIRR schema
+    is_valid, error = validate_airr_clone(clone)
+    if not is_valid:
+        if args.verbose:
+            print(f"Clone validation failed: {error}")
+        # Fall back to original validation if needed
+        validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
+    elif args.verbose:
+        print(f"Clone {clone.get('clone_id', 'unknown')} validated successfully against official AIRR schema")
 
 
 def process_clone(args, dataset, clone):

@@ -136,6 +136,127 @@ def load_schema(schema_path):
             return json.load(f)
 
 
+def load_official_airr_schema():
+    """
+    Load the official AIRR schema from airr-standards/specs/airr-schema.yaml.
+    
+    Returns:
+        dict: The full AIRR schema dictionary, or None if not found
+    """
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        schema_path = os.path.join(script_dir, '..', 'airr-standards', 'specs', 'airr-schema.yaml')
+        
+        with open(schema_path, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print("Warning: Official AIRR schema not found at airr-standards/specs/airr-schema.yaml")
+        return None
+    except Exception as e:
+        print(f"Warning: Failed to load official AIRR schema: {e}")
+        return None
+
+
+def validate_against_airr_schema(data, schema_object_name, schema=None):
+    """
+    Validate data against a specific object in the official AIRR schema.
+    
+    Args:
+        data: The data to validate
+        schema_object_name: Name of the schema object (e.g., 'Clone', 'Tree', 'Node')
+        schema: Optional pre-loaded schema dict. If None, loads from official source.
+    
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    try:
+        if schema is None:
+            schema = load_official_airr_schema()
+            
+        if schema is None:
+            return False, "Official AIRR schema not available"
+            
+        if schema_object_name not in schema:
+            return False, f"Schema object '{schema_object_name}' not found in AIRR schema"
+            
+        object_schema = schema[schema_object_name]
+        
+        # Create a standalone JSON schema for validation with proper null handling
+        properties = {}
+        for prop_name, prop_schema in object_schema.get("properties", {}).items():
+            # Handle nullable fields by allowing both the original type and null
+            if isinstance(prop_schema, dict) and "type" in prop_schema:
+                if prop_schema.get("Description", "").lower().find("null") != -1 or \
+                   prop_schema.get("description", "").lower().find("null") != -1:
+                    # Field explicitly mentions null in description, make it nullable
+                    new_prop = prop_schema.copy()
+                    if isinstance(new_prop["type"], str):
+                        new_prop["type"] = [new_prop["type"], "null"]
+                    properties[prop_name] = new_prop
+                else:
+                    properties[prop_name] = prop_schema
+            else:
+                properties[prop_name] = prop_schema
+        
+        validation_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": object_schema.get("type", "object"),
+            "required": object_schema.get("required", []),
+            "properties": properties,
+            "additionalProperties": object_schema.get("additionalProperties", True)
+        }
+        
+        jsonschema.validate(instance=data, schema=validation_schema)
+        return True, None
+        
+    except jsonschema.ValidationError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, f"Validation error: {str(e)}"
+
+
+def validate_airr_clone(clone_data, schema=None):
+    """
+    Validate clone data against official AIRR Clone schema.
+    
+    Args:
+        clone_data: The clone data to validate
+        schema: Optional pre-loaded schema dict
+        
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    return validate_against_airr_schema(clone_data, 'Clone', schema)
+
+
+def validate_airr_tree(tree_data, schema=None):
+    """
+    Validate tree data against official AIRR Tree schema.
+    
+    Args:
+        tree_data: The tree data to validate
+        schema: Optional pre-loaded schema dict
+        
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    return validate_against_airr_schema(tree_data, 'Tree', schema)
+
+
+def validate_airr_node(node_data, schema=None):
+    """
+    Validate node data against official AIRR Node schema.
+    
+    Args:
+        node_data: The node data to validate
+        schema: Optional pre-loaded schema dict
+        
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    return validate_against_airr_schema(node_data, 'Node', schema)
+
+
 def get_schema_path(schema_name, args):
     """Get the path to a schema file."""
     if hasattr(args, 'schema_dir') and args.schema_dir:

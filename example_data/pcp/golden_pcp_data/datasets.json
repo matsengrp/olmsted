@@ -1,0 +1,60 @@
+[
+    {
+        "build": {
+            "commit": "pcp-import",
+            "time": ""
+        },
+        "clone_count": 6,
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "ident": "9fd49829-96aa-d2c8-d415-44cdffcac37f",
+        "samples": [
+            {
+                "ident": "6fad0c6f-ef46-f158-7391-728cb379fcec",
+                "locus": "igh",
+                "sample_id": "sample-igg-1008",
+                "timepoint_id": "merged"
+            },
+            {
+                "ident": "bfdd83da-8e95-1048-1ec0-fc750e65bc19",
+                "locus": "igh",
+                "sample_id": "sample-igg-201c",
+                "timepoint_id": "merged"
+            },
+            {
+                "ident": "8ad370da-caa2-665c-2cdc-b78f8886901f",
+                "locus": "igh",
+                "sample_id": "sample-igg-0007",
+                "timepoint_id": "merged"
+            },
+            {
+                "ident": "d20f0d49-77e8-15c5-ebe4-2927bc6aeb1f",
+                "locus": "igh",
+                "sample_id": "sample-igg-705c",
+                "timepoint_id": "merged"
+            },
+            {
+                "ident": "12e70729-8abf-66ae-3611-fd397f3f50ce",
+                "locus": "igh",
+                "sample_id": "sample-igg-4002",
+                "timepoint_id": "merged"
+            },
+            {
+                "ident": "b3598fe2-630b-536f-74e7-274c35d14209",
+                "locus": "igh",
+                "sample_id": "sample-igg-5001",
+                "timepoint_id": "merged"
+            }
+        ],
+        "schema_version": "2.0.0",
+        "seeds": [],
+        "subjects": [
+            {
+                "ident": "6a5eb4e0-90d9-e591-ee20-6debc0f4b040",
+                "subject_id": "pcp-subject"
+            }
+        ],
+        "subjects_count": 1,
+        "timepoints_count": 1,
+        "type": "pcp.dataset"
+    }
+]
