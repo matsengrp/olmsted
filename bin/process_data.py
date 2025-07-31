@@ -1,736 +1,211 @@
 #!/usr/bin/env python
+"""
+Unified data processing script for Olmsted visualization.
 
-from collections import OrderedDict
+This script can process both AIRR JSON and PCP CSV formats, automatically
+detecting the input format or using user-specified format type.
+
+Supported formats:
+- AIRR JSON: Standard AIRR format with clones and trees
+- PCP CSV: Parent-Child Pair format with optional Newick trees
+
+Usage:
+    python process_data.py -i input_file.json -o output_dir           # Auto-detect format
+    python process_data.py -i input_file.csv -o output_dir -f pcp    # Force PCP format
+    python process_data.py -i input_file.json -o output_dir -f airr  # Force AIRR format
+"""
+
 import argparse
-import jsonschema
 import json
-import pprint
-import uuid
-import traceback
-import warnings
-import ete3
-import functools
-import sys
+import csv
+import gzip
 import os
-import yaml
-import ntpl
-from functools import reduce
+import sys
+import uuid
+import datetime
+import traceback
+from pathlib import Path
 
-SCHEMA_VERSION = "2.0.0"
-
-# Some generic data processing helpers helpers
-
-
-def comp(f, g):
-    def h(*args, **kw_args):
-        return f(g(*args, **kw_args))
-
-    return h
+# Import processing functions from existing scripts
+from process_airr_data import main as airr_main, get_args as airr_get_args
+from process_pcp_data import main as pcp_main, get_args as pcp_get_args, parse_pcp_csv, parse_newick_csv, process_pcp_to_olmsted
+from process_utils import SCHEMA_VERSION, write_out
 
 
-def strip_ns(a):
-    return a.split(":")[-1]
-
-
-def dict_subset(d, keys):
-    return {k: d[k] for k in keys if k in d}
-
-
-def merge(d, d2):
-    d = d.copy()
-    d.update(d2)
-    return d
-
-
-def get_in(d, path):
-    return (
-        d
-        if len(path) == 0
-        else get_in(d.get(path[0]) if isinstance(d, dict) else {}, path[1:])
-    )
-
-
-inf = float("inf")
-neginf = float("-inf")
-
-
-def clean_record(d):
-    if isinstance(d, list):
-        return list(map(clean_record, d))
-    elif isinstance(d, dict):
-        return {strip_ns(k): clean_record(v) for k, v in d.items()}
-    # can't have infinity in json
-    elif d == inf or d == neginf:
-        return None
-    else:
-        return d
-
-
-def spy(x):
-    print("debugging:", x)
-    return x
-
-
-def lspy(xs):
-    xs_ = list(xs)
-    print("debugging listable:", xs_)
-    return xs_
-
-
-def nospy(xs):
-    return xs
-
-
-# Pulling datasets information out
-
-
-# OK; Here's what we're going to do.
-
-# We want constructors which describe the space of attrs we're talking about here.
-
-
-def id_spec(desc=None):
-    return dict(description=(desc or "Identifier"), type="string")
-
-
-def multiplicity_spec(desc=None):
-    # QUESTION not sure if we actually want nullable here...
-    return dict(
-        description=(desc or "Number of times sequence was observed in the sample. The presence of a given sequence in a clonal family may represent many identical such sequences in the original sample."),
-        type=["integer", "null"],
-        minimum=0,
-    )
-
-
-ident_spec = {"description": "UUID specific to the given object", "type": "string"}
-
-build_spec = {
-    "description": "Information about how a dataset was built.",
-    "type": "object",
-    "required": ["commit"],
-    "title": "Build info",
-    "properties": {
-        "commit": {
-            "description": "Commit sha of whatever build system you used to process the data",
-            "type": "string",
-        },
-        "time": {"description": "Time at which build was initiated", "type": "string"},
-    },
-}
-
-
-timepoint_multiplicity_spec = {
-    "title": "Timepoint multiplicity",
-    "description": "Multiplicity at a specific time.",
-    "type": "object",
-    "properties": {
-        "timepoint_id": {
-            "description": "Id associated with the timepoint in question",
-            "type": "string",
-        },
-        "multiplicity": multiplicity_spec(
-            "Number of times sequence was observed at the given timepoint"
-        ),
-    },
-}
-
-sample_spec = {
-    "title": "Sample",
-    "description": "A sample is a collection of sequences.",
-    "type": "object",
-    "required": ["locus"],
-    "properties": {
-        "ident": ident_spec,
-        "sample_id": id_spec("Sample id"),
-        "timepoint_id": {
-            "description": 'Timepoint associated with this sample (may choose "merged" if data has'
-            + " been combined from multiple timepoints)",
-            "type": "string",
-        },
-        "locus": {"description": "B-cell Locus.", "type": "string"},
-    },
-}
-
-subject_spec = {
-    "title": "Subject",
-    "description": "Subject from which the clonal family was sampled.",
-    "type": "object",
-    "required": ["subject_id"],
-    "properties": {"ident": ident_spec, "subject_id": id_spec("Subject id")},
-}
-
-seed_spec = {
-    # TODO https://github.com/matsengrp/olmsted/commit/4992ac4af5be0ef1d12034de37666c6cf7258988#r32297022
-    "title": "Seed",
-    "description": "A sequence of interest among other clonal family members.",
-    # QUESTION not sure if we actually want nullable here...
-    "type": ["object", "null"],
-    "required": ["seed_id"],
-    "properties": {"ident": ident_spec, "seed_id": id_spec("Seed id")},
-}
-
-node_spec = {
-    "title": "Node",
-    "description": "Information about the phylogenetic tree nodes and the sequences they represent",
-    "type": "object",
-    "required": ["sequence_id", "sequence_alignment", "sequence_alignment_aa"],
-    "properties": {
-        "sequence_id": id_spec(
-            "AIRR: Identifier for this node that matches the id in the newick string and, where possible, the sequence_id in the source repertoire."
-        ),
-        "sequence_alignment": {
-            "description": "AIRR: Nucleotide sequence of the node, aligned to the germline_alignment for this clone, including any indel corrections or spacers.",
-            # add pattern matching for AGCT-* etc?
-            "type": "string",
-        },
-        "sequence_alignment_aa": {
-            "description": "Amino acid sequence of the node, aligned to the germline_alignment for this clone, including any indel corrections or spacers.",
-            # add pattern matching for AGCT-* etc?
-            "type": "string",
-        },
-        "timepoint_id": {
-            "description": "Timepoint associated with sequence, if any.",
-            # QUESTION not sure if we actually want nullable here...
-            "type": ["string", "null"],
-        },
-        "multiplicity": multiplicity_spec(),
-        "cluster_multiplicity": multiplicity_spec(
-            "If clonal family sequences were downsampled by clustering, the cummulative number of times"
-            + " sequences in cluster were observed."
-        ),
-        "timepoint_multiplicities": {
-            "description": "Sequence multiplicity, broken down by timepoint.",
-            "type": "array",
-            "items": timepoint_multiplicity_spec,
-        },
-        "cluster_timepoint_multiplicities": {
-            "description": "Sequence multiplicity, broken down by timepoint, including sequences falling in"
-            + " the same cluster if clustering-based downsampling was performed.",
-            "type": "array",
-            "items": timepoint_multiplicity_spec,
-        },
-        "lbi": {"description": "Local branching index (see https://arxiv.org/abs/2004.11868).", "type": ["number", "null"]},
-        "lbr": {
-            "description": "Local branching rate (derivative of lbi; see https://arxiv.org/abs/2004.11868).",
-            "type": ["number", "null"],
-        },
-        "affinity": {
-            "description": "Affinity of the antibody for some antigen. Typically inverse dissociation constant k_d in simulation, and inverse ic50 in data.",
-            "type": ["number", "null"],
-        },
-    },
-}
-
-
-tree_spec = {
-    "title": "Tree",
-    "description": "Phylogenetic tree and possibly ancestral state reconstruction of sequences in a clonal family.",
-    "type": "object",
-    "required": ["newick", "nodes"],
-    "properties": {
-        "ident": ident_spec,
-        "tree_id": id_spec("AIRR: Identifier for the tree."),
-        "clone_id": id_spec("AIRR: Identifier for the clone."),
-        "downsampling_strategy": {
-            "description": "If applicable, the downsampling method applied to the set of clonal sequences before passing them to a phylogenetic inference tool.",
-            "type": "string",
-        },
-        "downsampled_count": {
-            "description": "If applicable, the maximum number of sequences kept in the downsampling process.",
-            "minumum": 3,
-            "type": "integer",
-        },
-        "newick": {
-            "description": "AIRR: Newick string of the tree edges.",
-            "type": "string",
-        },
-        "nodes": {
-            "description": "AIRR: Dictionary of nodes in the tree, keyed by sequence_id string.",
-            "type": "object",
-            "additionalProperties": node_spec,
-        },
-    },
-}
-
-
-def natural_number(desc):
-    return dict(description=desc, minimum=0, type="integer")
-
-
-clone_spec = {
-    "title": "Clone",
-    "description": "Clonal family of sequences deriving from a particular reassortment event",
-    "type": "object",
-    "required": [
-        "unique_seqs_count",
-        "mean_mut_freq",
-        "v_alignment_start",
-        "v_alignment_end",
-        "j_alignment_start",
-        "j_alignment_end",
-    ],
-    "properties": {
-        "clone_id": id_spec("AIRR: Identifier for the clone."),
-        "ident": ident_spec,
-        "unique_seqs_count": {
-            "description": "Number of unique sequences in the clone",
-            "minimum": 1,
-            "type": "integer",
-        },
-        "total_read_count": {
-            "description": "Number of total reads represented by sequences in the clone.",
-            "minimum": 1,
-            "type": "integer",
-        },
-        # do we currently compute this pre downsampling or what? account for multiplicity?
-        "mean_mut_freq": {
-            "description": "Mean mutation frequency across sequences in the clone.",
-            "minimum": 0,
-            "type": "number",
-        },
-        "germline_alignment": {
-            "description": "AIRR: Assembled, aligned, full-length inferred ancestor of the clone spanning the same region as the sequence_alignment field of nodes (typically the V(D)J region) and including the same set of corrections and spacers (if any).",
-            "type": "string",
-        },
-        "has_seed": {
-            "description": "Does this clone have a seed sequence (see Seed schema) in it?",
-            "type": "boolean",
-        },
-        # Rearrangement data
-        "v_alignment_start": natural_number(
-            "AIRR: Start position in the V segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "v_alignment_end": natural_number(
-            "AIRR: End position in the V segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "v_call": {
-            "description": "AIRR: V gene with allele of the inferred ancestral of the clone. For example, IGHV4-59*01.",
-            "type": "string",
-        },
-        "d_alignment_start": natural_number(
-            "AIRR: Start position of the D segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "d_alignment_end": natural_number(
-            "AIRR: End position of the D segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "d_call": {
-            "description": "AIRR: D gene with allele of the inferred ancestor of the clone. For example, IGHD3-10*01.",
-            "type": "string",
-        },
-        "j_alignment_start": natural_number(
-            "AIRR: Start position of the J segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "j_alignment_end": natural_number(
-            "AIRR: End position of the J segment in both the sequence_alignment and germline_alignment fields (1-based closed interval)."
-        ),
-        "j_call": {
-            "description": "AIRR: J gene with allele of the inferred ancestor of the clone. For example, IGHJ4*02.",
-            "type": "string",
-        },
-        "junction_length": natural_number(
-            "AIRR: Number of nucleotides in the junction. (see AIRR 'junction': Nucleotide sequence for the junction region of the inferred ancestor of the clone, where the junction is defined as the CDR3 plus the two flanking conserved codons.)"
-        ),
-        "junction_start": natural_number(
-            "AIRR: Junction region start position in the alignment (1-based closed interval)."
-        ),
-        "sample_id": {
-            "description": "sample id associated with this clonal family.",
-            "type": "string",
-        },
-        "subject_id": {
-            "description": "Id of subject from which the clonal family was sampled.",
-            "type": "string",
-        },
-        "seed_id": {
-            "description": "Seed sequence id if any.",
-            "type": ["string", "null"],
-        },
-        "trees": {
-            "description": "Phylogenetic trees, and possibly ancestral sequence reconstructions.",
-            "type": "array",
-            "items": tree_spec,
-        },
-    },
-}
-
-dataset_spec = {
-    "$schema": "https://json-schema.org/draft-07/schema#",
-    "$id": "https://olmstedviz.org/input.schema.json",
-    "title": "Olmsted Dataset",
-    "description": "Olmsted dataset input file.",
-    "type": "object",
-    "required": ["dataset_id", "clones"],
-    "properties": {
-        "ident": ident_spec,
-        "dataset_id": {
-            "description": "Unique identifier for a collection of data",
-            "type": "string",
-        },
-        "build": build_spec,
-        "samples": {
-            "description": "Information about each of the samples",
-            "type": "array",
-            "items": sample_spec,
-        },
-        "subjects": {
-            "description": "Information about each of the subjects",
-            "type": "array",
-            "items": subject_spec,
-        },
-        "seeds": {
-            "description": "Information about each of the seed sequences",
-            "type": "array",
-            "items": seed_spec,
-        },
-        "clones": {
-            "description": "Information about each of the clonal families",
-            "type": "array",
-            "items": clone_spec,
-        },
-        "paper": {
-            "description": "Information about a paper corresponding to this dataset",
-            "type": "object",
-            "required": ["authorstring"],
-            "title": "Paper info",
-            "properties": {
-                "url": {
-                    "description": "Link to online version of the paper.",
-                    "type": "string",
-                },
-                "authorstring": {
-                    "description": 'String to be displayed citing authors, e.g. "Doe, et. al.".',
-                    "type": "string",
-                },
-            },
-        },
-    },
-}
-
-
-def is_nullable_string(checker, instance):
-    return jsonschema.Draft4Validator.TYPE_CHECKER.is_type(
-        instance, "string"
-    ) or jsonschema.Draft4Validator.TYPE_CHECKER.is_type(instance, "null")
-
-
-type_checker = jsonschema.Draft4Validator.TYPE_CHECKER.redefine(
-    "string", is_nullable_string
-)
-CustomValidator = jsonschema.validators.extend(
-    jsonschema.Draft4Validator, type_checker=type_checker
-)
-
-# Should update to get draft7?
-olmsted_dataset_schema = jsonschema.Draft4Validator(dataset_spec)
-airr_clone_schema = None
-with open("airr-standards/specs/airr-schema.yaml") as stream:
-    airr_clone_schema_dict = yaml.load(stream, Loader=yaml.FullLoader).get("Clone")
-    airr_clone_schema = CustomValidator(airr_clone_schema_dict)
-
-
-def validate(data, schema, verbose=False, object_name=None):
-    if not schema.is_valid(data):
-        msg = "{} doesn't conform to spec.".format(
-            object_name if object_name is not None else "Input data"
-        )
-        if verbose:
-            last_error_path = None
-            for error in schema.iter_errors(data):
-                error_path = list(error.path)
-                if last_error_path != error_path:
-                    print("  Error at " + str(error_path) + ":")
-                    last_error_path = error_path
-                print("    " + error.message)
-            msg += " See above for detailed errors."
+def detect_file_format(file_path):
+    """
+    Automatically detect the file format based on file extension and content.
+    
+    Args:
+        file_path: Path to the input file
+        
+    Returns:
+        str: Detected format ('airr', 'pcp', or 'unknown')
+    """
+    file_path = Path(file_path)
+    
+    # Check file extension first
+    if file_path.suffix.lower() in ['.json']:
+        return 'airr'
+    elif file_path.suffix.lower() in ['.csv']:
+        return 'pcp'
+    elif file_path.suffix.lower() in ['.gz']:
+        # Check the extension before .gz
+        if file_path.stem.endswith('.json'):
+            return 'airr'
+        elif file_path.stem.endswith('.csv'):
+            return 'pcp'
+    
+    # If extension doesn't help, try to peek at content
+    try:
+        # Determine if file is gzipped
+        if str(file_path).endswith('.gz'):
+            file_handle = gzip.open(file_path, 'rt')
         else:
-            msg += "Please rerun with `-v` for detailed errors"
-        raise Exception(msg)
+            file_handle = open(file_path, 'r')
+            
+        with file_handle:
+            # Read first few lines to detect format
+            first_lines = []
+            for i, line in enumerate(file_handle):
+                first_lines.append(line.strip())
+                if i >= 2:  # Read first 3 lines
+                    break
+            
+            # Check if it looks like JSON
+            first_content = ''.join(first_lines)
+            if first_content.startswith('{') or first_content.startswith('['):
+                try:
+                    # Try to parse as JSON
+                    json.loads(first_content)
+                    return 'airr'
+                except:
+                    pass
+            
+            # Check if it looks like CSV with PCP headers
+            if first_lines:
+                first_line = first_lines[0].lower()
+                pcp_indicators = ['sample_id', 'parent_name', 'child_name', 'family_name', 'newick']
+                if any(indicator in first_line for indicator in pcp_indicators):
+                    return 'pcp'
+                    
+    except Exception as e:
+        print(f"Warning: Could not detect format for {file_path}: {e}")
+    
+    return 'unknown'
 
 
-def ensure_ident(record):
-    "Want to let people choose their own uuids if they like, but not require them to"
-    return record if record.get("ident") else merge(record, {"ident": uuid.uuid4()})
+def validate_airr_file(file_path):
+    """
+    Validate that a file contains valid AIRR JSON data.
+    
+    Args:
+        file_path: Path to the AIRR JSON file
+        
+    Returns:
+        bool: True if valid AIRR format, False otherwise
+    """
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            
+        # Check for required AIRR fields
+        if isinstance(data, dict):
+            # Single dataset format
+            required_fields = ['dataset_id', 'clones']
+            return all(field in data for field in required_fields)
+        elif isinstance(data, list):
+            # Multiple datasets format
+            return all(
+                isinstance(item, dict) and 
+                all(field in item for field in ['dataset_id', 'clones'])
+                for item in data
+            )
+    except Exception:
+        return False
+    
+    return False
 
 
-# reroot the tree on node matching regex pattern.
-# Usually this is used to root on the naive germline sequence
-# NOTE duplicates fcn in plot_tree.py
-# TODO this is just one way to "reroot" trees; it's worth considering removing this function from the script so that we are not responsible for this job since it isn't trivial (e.g. if given an unrooted tree, ete3.Tree.set_outgroup will add an empty-string-named taxon)
-def reroot_tree(args, tree):
-    # find naive node
-    node = tree.search_nodes(name=args.naive_name)[0]
-    # if equal, then the root is already the naive, so done
-    if tree != node:
-        # In general this would be necessary, but we are actually assuming that naive has been set as an
-        # outgroup in dnaml, and if it hasn't, we want to raise an error, as below
-        tree.set_outgroup(node)
-        # This actually assumes the `not in` condition above, but we check as above for clarity
-        tree.remove_child(node)
-        node.add_child(tree)
-        tree.dist = node.dist
-
-        node.dist = 0
-        tree = node
-    return tree
-
-
-def process_tree_nodes(args, tree, nodes, reroot=False):
-    if reroot:
-        tree = reroot_tree(args, tree)
-
-    def process_node(node):
-        datum = nodes.get(node.name, {})
-        datum["type"] = "leaf" if node.is_leaf() else "node"
-        datum.update(nodes.get(node.name, {}))
-        if node.up:
-            datum["parent"] = node.up.name
-            datum["length"] = node.get_distance(node.up)
-            # Only calculate distance to naive if rooting is enabled and naive exists
-            if reroot and args.naive_name and tree.search_nodes(name=args.naive_name):
-                datum["distance"] = node.get_distance(args.naive_name)
-            else:
-                datum["distance"] = node.get_distance(tree)  # distance to root
+def validate_pcp_file(file_path):
+    """
+    Validate that a file contains valid PCP CSV data.
+    
+    Args:
+        file_path: Path to the PCP CSV file
+        
+    Returns:
+        bool: True if valid PCP format, False otherwise
+    """
+    try:
+        # Determine if file is gzipped
+        if file_path.endswith('.gz'):
+            file_handle = gzip.open(file_path, 'rt')
         else:
-            # node is root
-            datum["type"] = "root"
-            datum["parent"] = None
-            datum["length"] = 0.0
-            datum["distance"] = 0.0
-        return datum
+            file_handle = open(file_path, 'r')
+            
+        with file_handle:
+            reader = csv.DictReader(file_handle)
+            
+            # Check for required PCP columns
+            required_pcp_cols = {'sample_id', 'parent_name', 'child_name'}
+            required_newick_cols = {'family_name', 'newick_tree'}
+            
+            if required_pcp_cols.issubset(set(reader.fieldnames)):
+                return True
+            elif required_newick_cols.issubset(set(reader.fieldnames)):
+                return True
+                
+    except Exception:
+        return False
+    
+    return False
 
-    return list(map(process_node, tree.traverse("postorder")))
 
-
-def process_tree(args, clone_id, tree):
-    # add clone_id to satisfy AIRR schema
-    tree["clone_id"] = clone_id
-    ete_tree = ete3.PhyloTree(tree["newick"], format=1)
-    tree["nodes"] = process_tree_nodes(
-        args, ete_tree, tree["nodes"], reroot=args.root_trees
+def process_airr_format(args):
+    """
+    Process AIRR format files using the existing AIRR processor.
+    
+    Args:
+        args: Parsed command line arguments
+    """
+    print("Processing AIRR format...")
+    
+    # Convert unified args to AIRR-specific args
+    airr_args = argparse.Namespace()
+    
+    # Map common arguments
+    airr_args.inputs = args.inputs
+    airr_args.data_outdir = args.output_dir
+    airr_args.verbose = args.verbose
+    airr_args.validate = args.validate
+    airr_args.strict_validation = args.strict_validation
+    airr_args.schema_dir = getattr(args, 'schema_dir', None)
+    
+    # AIRR-specific arguments with defaults
+    airr_args.naive_name = getattr(args, 'naive_name', 'naive')
+    airr_args.remove_invalid_clones = getattr(args, 'remove_invalid_clones', False)
+    airr_args.display_schema_html = None
+    airr_args.display_schema = False
+    airr_args.write_schema_yaml = False
+    airr_args.root_trees = getattr(args, 'root_trees', False)
+    
+    # Process using AIRR logic (adapted from process_airr_data.py)
+    from process_airr_data import (
+        validate, olmsted_dataset_schema, process_dataset, 
+        validate_output_data, json_rep
     )
-    return ensure_ident(tree)
-
-
-def validate_airr_clone_and_trees(args, clone):
-    clone["repertoire_id"] = None
-    # prepare tree(s)
-    clone["trees"] = list(map(
-        functools.partial(process_tree, args, clone["clone_id"]), clone.get("trees", [])
-    ))
-    validate(clone, airr_clone_schema, verbose=args.verbose, object_name="Clone")
-
-
-def process_clone(args, dataset, clone):
-    validate_airr_clone_and_trees(args, clone)
-    # -=1 *_start positions since AIRR schema uses 1-based closed interval but we need python slice conventions (0-based, open interval) for source code (vega visualization). See bin/process_data.py
-    for start_pos_key in [
-        "v_alignment_start",
-        "d_alignment_start",
-        "j_alignment_start",
-        "junction_start",
-    ]:
-        clone[start_pos_key] -= 1
-    # need to cretae a copy of the dataset without clonal families that we can nest under clonal family for viz convenience
-    _dataset = dataset.copy()
-    del _dataset["clones"]
-    clone["dataset"] = _dataset
-    clone["sample"] = list(filter(
-        lambda sample: sample["sample_id"] == clone["sample_id"],
-        clone["dataset"]["samples"],
-    ))[0]
-    del clone["dataset"]["samples"]
-    return ensure_ident(clone)
-
-
-def process_dataset(args, dataset, clones_dict, trees):
-    dataset["clone_count"] = len(dataset["clones"])
-    dataset["subjects_count"] = len(set(cf["subject_id"] for cf in dataset["clones"]))
-    dataset["timepoints_count"] = len(
-        set(sample["timepoint_id"] for sample in dataset["samples"])
-    )
-    clones = list(map(functools.partial(process_clone, args, dataset), dataset["clones"]))
-    trees += reduce(lambda agg_trees, cf: agg_trees + cf["trees"], clones, [])
-    for cf in clones:
-        cf["trees"] = [
-            dict_subset(tree, set(tree.keys()) - {"nodes"}) for tree in cf["trees"]
-        ]
-    clones_dict[dataset["dataset_id"]] = clones
-    del dataset["clones"]
-    dataset["schema_version"] = SCHEMA_VERSION
-    return ensure_ident(dataset)
-
-
-def json_rep(x):
-    if isinstance(x, uuid.UUID):
-        return str(x)
-    else:
-        return list(x)
-
-
-def write_out(data, dirname, filename, args):
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    full_path = os.path.normpath(os.path.join(dirname, filename))
-    with open(full_path, "w") as fh:
-        print("writing " + full_path)
-        # Then assume json
-        json.dump(
-            data,
-            fh,
-            default=json_rep,
-            indent=4,
-            # allow_nan=False
-        )
-
-
-def hiccup_rep(schema, depth=1, property=None):
-    depth = min(depth, 2)
-    if depth == 1 or schema["type"] == "object":
-        style = "padding-left: 10;"+\
-                "margin-left: 25;"+\
-                "margin-top: 40;"+\
-                "border-left-style: solid;"+\
-                "border-color: grey;"
-    else:
-        style = "padding-left: 10;"+\
-                "margin-left: 25;"+\
-                "margin-top: 10;"
-    return [
-        "div",
-        {"style": style},
-        ["h" + str(depth), schema.get("title")] if schema.get("title") else "",
-        ["p", ["b", "Description: "], ["span", schema.get("description")]]
-        if schema.get("description")
-        else "",
-        ["p", ["b", "Required: "], ["code", str(schema.get("required"))]]
-        if schema.get("required")
-        else "",
-        ["p", ["b", "Type: "], ["code", str(schema.get("type"))]]
-        if schema.get("type")
-        else "",
-        ["div", ["h" + str(depth + 1), "Properties:"]]
-        + [
-            [
-                "div",
-                {"style": "margin-left: 10px;"},
-                ["h3", ["code", k]],
-                # Assume val is either a title, as produced in hiccup_rep2, or an actual schema
-                ["b", {"style": "padding-left: 15; font-size: 18;"}, "{%s}"%val]
-                if isinstance(val, str)
-                else hiccup_rep(val, depth=depth + 1),
-            ]
-            for k, val in schema.get("properties").items()
-        ]
-        if schema.get("properties")
-        else "",
-        [
-            "div",
-            ["h" + str(depth + 1), "Array Items:"],
-            # As above, assume and display a title if string, otherwise recurse
-            [
-                "b",
-                {"style": "padding-left: 15; font-size: 18;"},
-                "{%s}"%schema["items"],
-            ]
-            if isinstance(schema.get("items"), str)
-            else hiccup_rep(schema.get("items"), depth=depth + 1),
-        ]
-        if schema.get("items")
-        else "",
-        [
-            "div",
-            ["h" + str(depth + 1), "Object with values of type:"],
-            # As above, assume and display a title if string, otherwise recurse
-            [
-                "b",
-                {"style": "padding-left: 15; font-size: 18;"},
-                "{%s}"%schema["additionalProperties"],
-            ]
-            if isinstance(schema.get("additionalProperties"), str)
-            else hiccup_rep(schema.get("additionalProperties"), depth=depth + 1),
-        ]
-        if schema.get("additionalProperties")
-        else "",
-    ]
-
-
-def hiccup_rep2(schema):
-    def flatten_schema_by_title(schema):
-        items_schemas, properties_schemas = [], []
-        items = schema.get("items")
-        # if this is an array, check title
-        if items and items.get("title"):
-            schema["items"] = items["title"]
-            items_schemas = flatten_schema_by_title(items)
-        #object
-        additionalProperties = schema.get("additionalProperties")
-        if additionalProperties and additionalProperties.get("title"):
-            schema["additionalProperties"] = additionalProperties["title"]
-            items_schemas = flatten_schema_by_title(additionalProperties)
-        for key, subschema in schema.get("properties", {}).items():
-            # handle case of being a single reference, with a title
-            title = subschema.get("title")
-            if title:
-                properties_schemas += flatten_schema_by_title(subschema)
-                schema["properties"][key] = title
-            # handle array/items case
-            items = subschema.get("items")
-            if items and items.get("title"):
-                properties_schemas += flatten_schema_by_title(items)
-                subschema["items"] = items["title"]
-            #object
-            additionalProperties = subschema.get("additionalProperties")
-            if additionalProperties and additionalProperties.get("title"):
-                properties_schemas += flatten_schema_by_title(additionalProperties)
-                subschema["additionalProperties"] = additionalProperties["title"]
-        return list(OrderedDict([(schema["title"], schema) for schema in [schema] + items_schemas + properties_schemas]).values())
-    return ["div", list(map(hiccup_rep, flatten_schema_by_title(schema)))]
-
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--inputs", nargs="+")
-    parser.add_argument(
-        "-o",
-        "--data-outdir",
-        help="directory in which data will be saved; required for data output",
-    )
-    parser.add_argument("-n", "--naive-name", default="naive")
-    parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument(
-        "-c",
-        "--remove-invalid-clones",
-        action="store_true",
-        help="validate clones individually against the olmsted schema, removing the invalid ones and try to build the dataset using the remaining clones. Note that processing can still be crashed by clones which are invalid according to the AIRR clones and trees schema (see airr-standards/specs/airr-schema.yaml).",
-    )
-    parser.add_argument("-S", "--display-schema-html")
-    parser.add_argument(
-        "-s",
-        "--display-schema",
-        action="store_true",
-        help="print schema to stdout for display",
-    )
-    parser.add_argument(
-        "-y",
-        "--write-schema-yaml",
-        action="store_true",
-        help="write the schema to a yaml format file.",
-    )
-    parser.add_argument(
-        "-r", "--root-trees", action="store_true", help="Root trees using --naive-name."
-    )
-    return parser.parse_args()
-
-
-def main():
-    args = get_args()
+    
     datasets, clones_dict, trees = [], {}, []
-    for infile in args.inputs or []:
-        print("\nProcessing infile: {}".format(str(infile)))
+    
+    for infile in airr_args.inputs or []:
+        print(f"\nProcessing AIRR file: {infile}")
         try:
             with open(infile, "r") as fh:
                 dataset = json.load(fh)
-                if args.remove_invalid_clones:
+                if airr_args.remove_invalid_clones:
+                    from process_airr_data import clone_spec
+                    import jsonschema
                     dataset["clones"] = list(filter(
                         jsonschema.Draft4Validator(clone_spec).is_valid,
                         dataset["clones"],
@@ -738,50 +213,273 @@ def main():
                 validate(
                     dataset,
                     olmsted_dataset_schema,
-                    verbose=args.verbose,
+                    verbose=airr_args.verbose,
                     object_name="Dataset",
                 )
-                # Process the dataset, including validation of clones, trees against the AIRR schema
-                dataset = process_dataset(args, dataset, clones_dict, trees)
+                dataset = process_dataset(airr_args, dataset, clones_dict, trees)
                 datasets.append(dataset)
+                
         except Exception as e:
-            print("Unable to process infile: {}".format(infile))
-            if args.verbose:
+            print(f"Unable to process AIRR file: {infile}")
+            if airr_args.verbose:
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)
             else:
                 print("Please rerun with `-v` for detailed errors.")
             sys.exit(1)
-    # write out schema
-    if args.write_schema_yaml:
-        with open("schema.yaml", "w") as yamlf:
-            yaml.dump(dataset_spec, yamlf)
-    if args.display_schema:
-        pprint.pprint(dataset_spec)
-    if args.display_schema_html:
-        with open(args.display_schema_html, "w") as fh:
-            fh.write(
-                ntpl.render(
-                    [
-                        "html",
-                        [
-                            "body",
-                            hiccup_rep2(dataset_spec),
-                        ],
-                    ]
-                )
-            )
-    # write out data
-    if args.data_outdir:
-        write_out(datasets, args.data_outdir, "datasets.json", args)
+    
+    # Validate data before writing if requested
+    if airr_args.validate and not validate_output_data(datasets, clones_dict, trees, airr_args):
+        if airr_args.strict_validation:
+            print("\nExiting due to validation errors (--strict-validation enabled)")
+            sys.exit(1)
+
+    # Write output
+    if airr_args.data_outdir:
+        write_out(datasets, airr_args.data_outdir, "datasets.json", airr_args)
         for dataset_id, clones in clones_dict.items():
             write_out(
-                clones, args.data_outdir + "/", "clones." + dataset_id + ".json", args
+                clones, airr_args.data_outdir + "/", "clones." + dataset_id + ".json", airr_args
             )
         for tree in trees:
             write_out(
-                tree, args.data_outdir + "/", "tree." + tree["ident"] + ".json", args
+                tree, airr_args.data_outdir + "/", "tree." + tree["ident"] + ".json", airr_args
             )
+
+
+def process_pcp_format(args):
+    """
+    Process PCP format files using the existing PCP processor.
+    
+    Args:
+        args: Parsed command line arguments
+    """
+    print("Processing PCP format...")
+    
+    # Set up deterministic UUID generation if seed is provided
+    uuid_counter = 0
+    def get_uuid():
+        nonlocal uuid_counter
+        if hasattr(args, 'seed') and args.seed is not None:
+            uuid_counter += 1
+            from process_pcp_data import deterministic_uuid
+            return deterministic_uuid(args.seed, uuid_counter)
+        else:
+            return str(uuid.uuid4())
+
+    try:
+        # Assume first input is PCP CSV, second (if provided) is Newick trees
+        pcp_file = args.inputs[0]
+        trees_file = args.inputs[1] if len(args.inputs) > 1 else None
+        
+        print(f"Processing PCP CSV: {pcp_file}")
+        if hasattr(args, 'seed') and args.seed is not None:
+            print(f"Using deterministic UUIDs with seed: {args.seed}")
+            
+        pcp_families = parse_pcp_csv(pcp_file)
+        print(f"Found {len(pcp_families)} families")
+
+        # Parse Newick trees if provided
+        newick_trees = None
+        if trees_file:
+            print(f"Processing Newick trees: {trees_file}")
+            newick_trees = parse_newick_csv(trees_file)
+            print(f"Found {len(newick_trees)} trees")
+
+        # Convert to Olmsted format
+        print("Converting to Olmsted format...")
+        datasets, clones_dict, trees = process_pcp_to_olmsted(pcp_families, newick_trees, get_uuid)
+
+        # Create output directory if needed
+        os.makedirs(args.output_dir, exist_ok=True)
+
+        # Validate data if requested
+        if args.validate:
+            from process_pcp_data import validate_airr_output
+            pcp_args = argparse.Namespace()
+            pcp_args.verbose = args.verbose
+            if not validate_airr_output(datasets, clones_dict, trees, pcp_args):
+                if args.strict_validation:
+                    print("\nExiting due to validation errors (--strict-validation enabled)")
+                    sys.exit(1)
+
+        # Write output
+        print(f"Writing output to {args.output_dir}")
+        write_out(datasets, args.output_dir, "datasets.json", args)
+        for dataset_id, clones in clones_dict.items():
+            write_out(
+                clones,
+                args.output_dir,
+                f"clones.{dataset_id}.json",
+                args
+            )
+        for tree in trees:
+            write_out(
+                tree,
+                args.output_dir,
+                f"tree.{tree['ident']}.json",
+                args
+            )
+
+        print("Processing complete!")
+
+    except Exception as e:
+        print(f"Error processing PCP format: {e}")
+        if args.verbose:
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def get_args():
+    """Parse command line arguments for the unified processor."""
+    parser = argparse.ArgumentParser(
+        description="Unified data processor for Olmsted visualization (AIRR JSON and PCP CSV formats)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    # Auto-detect format and process
+    python process_data.py -i data.json -o output/
+    python process_data.py -i data.csv -o output/
+    
+    # Force specific format
+    python process_data.py -i data.json -o output/ -f airr
+    python process_data.py -i data.csv -o output/ -f pcp
+    
+    # PCP with separate trees file
+    python process_data.py -i data.csv trees.csv -o output/ -f pcp
+    
+    # With validation
+    python process_data.py -i data.json -o output/ --validate --strict-validation
+        """
+    )
+    
+    # Input/Output arguments
+    parser.add_argument(
+        "-i", "--inputs", 
+        nargs="+", 
+        required=True,
+        help="Input file(s). For AIRR: one or more JSON files. For PCP: CSV file and optional trees CSV file"
+    )
+    parser.add_argument(
+        "-o", "--output-dir",
+        required=True,
+        help="Output directory for processed JSON files"
+    )
+    
+    # Format specification
+    parser.add_argument(
+        "-f", "--format",
+        choices=["airr", "pcp", "auto"],
+        default="auto",
+        help="Input format (default: auto-detect)"
+    )
+    
+    # Common processing options
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output"
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate output data against schemas before writing"
+    )
+    parser.add_argument(
+        "--strict-validation",
+        action="store_true",
+        help="Exit with error if validation fails (requires --validate)"
+    )
+    parser.add_argument(
+        "--schema-dir",
+        help="Path to directory containing schema files (defaults to ../data_schema)"
+    )
+    
+    # AIRR-specific options
+    parser.add_argument(
+        "-n", "--naive-name",
+        default="naive",
+        help="Name of naive/root node for tree rooting (AIRR only)"
+    )
+    parser.add_argument(
+        "-r", "--root-trees",
+        action="store_true",
+        help="Root trees using naive node (AIRR only)"
+    )
+    parser.add_argument(
+        "-c", "--remove-invalid-clones",
+        action="store_true",
+        help="Remove invalid clones and continue processing (AIRR only)"
+    )
+    
+    # PCP-specific options
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Random seed for deterministic UUID generation (PCP only, useful for testing)"
+    )
+    
+    return parser.parse_args()
+
+
+def main():
+    """Main entry point for the unified processor."""
+    args = get_args()
+    
+    # Validate inputs
+    if not args.inputs:
+        print("Error: No input files specified")
+        sys.exit(1)
+    
+    # Check that input files exist
+    for input_file in args.inputs:
+        if not os.path.exists(input_file):
+            print(f"Error: Input file does not exist: {input_file}")
+            sys.exit(1)
+    
+    # Determine format
+    if args.format == "auto":
+        # Auto-detect using first input file
+        detected_format = detect_file_format(args.inputs[0])
+        if detected_format == "unknown":
+            print(f"Error: Could not auto-detect format for {args.inputs[0]}")
+            print("Please specify format with -f/--format option")
+            sys.exit(1)
+        format_to_use = detected_format
+        print(f"Auto-detected format: {format_to_use}")
+    else:
+        format_to_use = args.format
+        print(f"Using specified format: {format_to_use}")
+    
+    # Validate format matches file content
+    if format_to_use == "airr":
+        for input_file in args.inputs:
+            if not validate_airr_file(input_file):
+                print(f"Warning: {input_file} may not be valid AIRR format")
+    elif format_to_use == "pcp":
+        if not validate_pcp_file(args.inputs[0]):
+            print(f"Warning: {args.inputs[0]} may not be valid PCP format")
+    
+    # Process based on format
+    try:
+        if format_to_use == "airr":
+            process_airr_format(args)
+        elif format_to_use == "pcp":
+            process_pcp_format(args)
+        else:
+            print(f"Error: Unsupported format: {format_to_use}")
+            sys.exit(1)
+            
+        print(f"\n✓ Successfully processed {format_to_use.upper()} format data")
+        
+    except KeyboardInterrupt:
+        print("\nProcessing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error during processing: {e}")
+        if args.verbose:
+            traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

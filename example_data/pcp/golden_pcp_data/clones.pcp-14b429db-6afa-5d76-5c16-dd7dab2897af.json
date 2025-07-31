@@ -1,0 +1,140 @@
+[
+    {
+        "clone_id": "family-0",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "a0a3ed44-be90-ae54-a384-ca11486dd87b",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-1008",
+        "subject_id": "pcp-subject",
+        "total_read_count": 13,
+        "trees": [
+            {
+                "ident": "4c247208-9d1c-b8f1-5aa4-5bf50526b6fe"
+            }
+        ],
+        "unique_seqs_count": 14,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    },
+    {
+        "clone_id": "family-1",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "7a034993-32cb-586f-c23b-ac88bfe296f8",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-201c",
+        "subject_id": "pcp-subject",
+        "total_read_count": 17,
+        "trees": [
+            {
+                "ident": "522fac7a-4689-e49a-05d1-9353af02f885"
+            }
+        ],
+        "unique_seqs_count": 18,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    },
+    {
+        "clone_id": "family-2",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "03b48e72-5fe5-6184-fe38-a8c99e147a2a",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-0007",
+        "subject_id": "pcp-subject",
+        "total_read_count": 27,
+        "trees": [
+            {
+                "ident": "4b9ac338-8bbc-6669-41e6-face81dae39b"
+            }
+        ],
+        "unique_seqs_count": 28,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    },
+    {
+        "clone_id": "family-3",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "cc42c52c-6fb9-faa8-b57f-3933f1ac3d30",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-705c",
+        "subject_id": "pcp-subject",
+        "total_read_count": 29,
+        "trees": [
+            {
+                "ident": "8d94ddd8-3411-9628-ac6a-1999d4a60bfb"
+            }
+        ],
+        "unique_seqs_count": 30,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    },
+    {
+        "clone_id": "family-4",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "654906d9-16e2-5db5-4643-0490059032c0",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-4002",
+        "subject_id": "pcp-subject",
+        "total_read_count": 9,
+        "trees": [
+            {
+                "ident": "e1d3a8ff-b4f1-0ab0-8d02-82857d1389c0"
+            }
+        ],
+        "unique_seqs_count": 10,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    },
+    {
+        "clone_id": "family-5",
+        "dataset_id": "pcp-14b429db-6afa-5d76-5c16-dd7dab2897af",
+        "germline_alignment": "",
+        "has_seed": false,
+        "ident": "5d82ca72-029f-eb0a-694b-97f7c2233755",
+        "j_alignment_end": 0,
+        "j_alignment_start": 0,
+        "j_call": "",
+        "mean_mut_freq": 0.0,
+        "sample_id": "sample-igg-5001",
+        "subject_id": "pcp-subject",
+        "total_read_count": 4,
+        "trees": [
+            {
+                "ident": "143527ad-141d-ad82-5ee2-7683978b2905"
+            }
+        ],
+        "unique_seqs_count": 5,
+        "v_alignment_end": 0,
+        "v_alignment_start": 0,
+        "v_call": ""
+    }
+]

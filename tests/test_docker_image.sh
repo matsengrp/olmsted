@@ -13,10 +13,9 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-# Change to project root if running from tests directory
-if [[ $(basename "$PWD") == "tests" ]]; then
-    cd ..
-fi
+# Change to project root (parent of script directory)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR/.."
 echo "PWD: $PWD"
 
 # Initialize arrays to store selected images and their results

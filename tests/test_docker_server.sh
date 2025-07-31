@@ -70,10 +70,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Change to project root if running from tests directory
-if [[ $(basename "$PWD") == "tests" ]]; then
-    cd ..
-fi
+# Change to project root (parent of script directory)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR/.."
 
 echo "🔧 Configuration:"
 echo "  Docker Image: $DOCKER_IMAGE"
