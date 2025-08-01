@@ -461,9 +461,9 @@ def validate(data, schema, verbose=False, object_name=None):
             for error in schema.iter_errors(data):
                 error_path = list(error.path)
                 if last_error_path != error_path:
-                    print("  Error at " + str(error_path) + ":")
+                    print(f"  Error at {str(error_path)}:")
                     last_error_path = error_path
-                print("    " + error.message)
+                print(f"    {error.message}")
             msg += " See above for detailed errors."
         else:
             msg += "Please rerun with `-v` for detailed errors"
@@ -537,12 +537,12 @@ def process_tree(args, clone_id, tree):
 def validate_airr_clone_and_trees(args, clone):
     # Set repertoire_id to sample_id or clone_id if not available (required by AIRR schema)
     clone["repertoire_id"] = clone.get("sample_id") or clone.get("clone_id") or "unknown"
-    
+
     # prepare tree(s)
     clone["trees"] = list(map(
         functools.partial(process_tree, args, clone["clone_id"]), clone.get("trees", [])
     ))
-    
+
     # Use common validation function with official AIRR schema
     is_valid, error = validate_airr_clone(clone)
     if not is_valid:
@@ -606,7 +606,7 @@ def write_out(data, dirname, filename, args):
         os.makedirs(dirname)
     full_path = os.path.normpath(os.path.join(dirname, filename))
     with open(full_path, "w") as fh:
-        print("writing " + full_path)
+        print(f"writing {full_path}")
         # Then assume json
         json.dump(
             data,
@@ -767,6 +767,11 @@ def get_args():
         "--schema-dir",
         help="Path to directory containing JSON schema files (defaults to ../data_schema)"
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Random seed for deterministic processing (currently unused for AIRR format, added for API consistency)"
+    )
     return parser.parse_args()
 
 
@@ -774,7 +779,7 @@ def main():
     args = get_args()
     datasets, clones_dict, trees = [], {}, []
     for infile in args.inputs or []:
-        print("\nProcessing infile: {}".format(str(infile)))
+        print(f"\nProcessing infile: {str(infile)}")
         try:
             with open(infile, "r") as fh:
                 dataset = json.load(fh)
@@ -793,7 +798,7 @@ def main():
                 dataset = process_dataset(args, dataset, clones_dict, trees)
                 datasets.append(dataset)
         except Exception as e:
-            print("Unable to process infile: {}".format(infile))
+            print(f"Unable to process infile: {infile}")
             if args.verbose:
                 exc_info = sys.exc_info()
                 traceback.print_exception(*exc_info)

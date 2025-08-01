@@ -4,6 +4,7 @@ const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
 const { execFile } = require('child_process');
+const { applyUploadHandler } = require("./src/server/uploadHandler");
 
 /* documentation in the static site! */
 
@@ -82,6 +83,9 @@ if (devServer) {
 
 /* redirect www.nextstrain.org to nextstrain.org */
 app.use(require('express-naked-redirect')({reverse: true}));
+
+/* Apply upload handler for file uploads */
+applyUploadHandler(app);
 
 app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));

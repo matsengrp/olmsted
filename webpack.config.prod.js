@@ -24,7 +24,7 @@ module.exports = {
     /* Note: console.log statements are not stripped out */
     new webpack.optimize.AggressiveMergingPlugin(), // merge chunks - https://github.com/webpack/docs/wiki/list-of-plugins#aggressivemergingplugin
     new CompressionPlugin({ // gzip everything - https://github.com/webpack-contrib/compression-webpack-plugin
-      asset: "[path].gz[query]",
+      filename: "[path][base].gz",
       algorithm: "gzip",
       test: /\.js$|\.css$|\.html$/,
       threshold: 10240,

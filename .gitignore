@@ -7,6 +7,7 @@ server.dist.js
 /static/
 s3/
 /scratch/
+server.log
 
 ### OSX ###
 .DS_Store
@@ -22,5 +23,5 @@ proddata
 ### development ###
 **/tmp*/
 **/_claude*/
-tests/_output*/
+tests/_output*
 
