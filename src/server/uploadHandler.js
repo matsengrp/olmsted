@@ -29,12 +29,12 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024 // 100MB limit
   },
   fileFilter: function (req, file, cb) {
-    const allowedExtensions = ['.json', '.csv', '.gz'];
+    const allowedExtensions = ['.json', '.gz'];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowedExtensions.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JSON, CSV, and GZ files are allowed.'));
+      cb(new Error('Invalid file type. Only JSON and GZ files are allowed. Convert PCP CSV files to AIRR format first.'));
     }
   }
 });

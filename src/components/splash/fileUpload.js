@@ -26,19 +26,15 @@ class FileUpload extends React.Component {
 
       if (fileName.endsWith('.json')) {
         fileType = 'airr';
-      } else if (fileName.endsWith('.csv')) {
-        fileType = 'pcp';
       } else if (fileName.endsWith('.gz')) {
         // Check the extension before .gz
         if (fileName.includes('.json.gz')) {
           fileType = 'airr';
-        } else if (fileName.includes('.csv.gz')) {
-          fileType = 'pcp';
         }
       }
 
       if (!fileType) {
-        throw new Error('Unsupported file type. Please upload AIRR JSON or PCP CSV files.');
+        throw new Error('Unsupported file type. Please upload AIRR JSON files (.json or .json.gz). PCP CSV files must be converted to AIRR format first using the olmsted CLI.');
       }
 
       // Create FormData for file upload
@@ -113,7 +109,7 @@ class FileUpload extends React.Component {
           
           <Dropzone
             onDrop={this.onDrop}
-            accept="application/json, text/csv, application/gzip, .json, .csv, .gz"
+            accept="application/json, application/gzip, .json, .gz"
             multiple={true}
             disabled={isProcessing}
             style={{
@@ -151,7 +147,7 @@ class FileUpload extends React.Component {
                   or click to browse
                 </div>
                 <div style={{ fontSize: 12, color: '#999' }}>
-                  Supported formats: AIRR JSON (.json), PCP CSV (.csv), or compressed (.gz)
+                  Supported formats: AIRR JSON (.json or .json.gz only). Convert PCP CSV files using olmsted CLI first.
                 </div>
               </div>
             )}
