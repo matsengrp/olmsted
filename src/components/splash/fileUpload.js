@@ -1,6 +1,8 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
 import { CenterContent } from "./centerContent";
+import AIRRProcessor from '../../utils/airrProcessor';
+import clientDataStore from '../../utils/clientDataStore';
 
 class FileUpload extends React.Component {
   constructor(props) {
@@ -20,7 +22,7 @@ class FileUpload extends React.Component {
     this.setState({ error: null, isProcessing: true });
 
     try {
-      // Detect file type based on extension and content
+      // Detect file type based on extension
       const fileName = file.name.toLowerCase();
       let fileType = null;
 
@@ -30,54 +32,57 @@ class FileUpload extends React.Component {
         // Check the extension before .gz
         if (fileName.includes('.json.gz')) {
           fileType = 'airr';
+          // Note: gzip support would need additional implementation
+          throw new Error('Gzipped files are not yet supported. Please upload uncompressed JSON files.');
         }
       }
 
       if (!fileType) {
-        throw new Error('Unsupported file type. Please upload AIRR JSON files (.json or .json.gz). PCP CSV files must be converted to AIRR format first using the olmsted CLI.');
+        throw new Error('Unsupported file type. Please upload AIRR JSON files (.json). PCP CSV files must be converted to AIRR format first using the olmsted CLI.');
       }
 
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileType', fileType);
-
-      // Upload to server
-      const response = await fetch('/upload-data', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to upload file');
-      }
-
-      const result = await response.json();
+      // Process file entirely client-side - no server communication!
+      console.log('Processing file client-side:', file.name);
+      const result = await AIRRProcessor.processFile(file);
       
-      // Add the processed dataset to the list
+      // Store processed data in browser
+      const datasetId = clientDataStore.storeProcessedData(result);
+      
+      // Add to uploaded files list
       this.setState(prevState => ({
         uploadedFiles: [...prevState.uploadedFiles, {
           fileName: file.name,
-          datasetId: result.datasetId,
+          datasetId: datasetId,
           fileType,
-          ...result
+          dataset: result.datasets[0],
+          success: true
         }]
       }));
 
-      // Notify parent component
+      // Notify parent component with processed data
       if (this.props.onFileUpload) {
-        this.props.onFileUpload(result);
+        this.props.onFileUpload({
+          datasetId: datasetId,
+          dataset: result.datasets[0],
+          success: true
+        });
       }
       
       // Trigger datasets reload by refreshing the page
-      // In a production app, we'd dispatch an action to reload datasets
+      // In a production app, we'd dispatch a Redux action to reload datasets
       setTimeout(() => {
         window.location.reload();
       }, 1000);
 
+      console.log('Client-side processing complete:', {
+        datasetId,
+        datasets: result.datasets.length,
+        clones: Object.keys(result.clones).length,
+        trees: result.trees.length
+      });
+
     } catch (err) {
-      console.error('File processing error:', err);
+      console.error('Client-side file processing error:', err);
       this.setState({ error: err.message || 'Failed to process file' });
     } finally {
       this.setState({ isProcessing: false });
@@ -94,7 +99,10 @@ class FileUpload extends React.Component {
     this.setState(prevState => ({
       uploadedFiles: prevState.uploadedFiles.filter(f => f.datasetId !== datasetId)
     }));
-    // TODO: Call server to clean up temporary files
+    
+    // Remove data from client-side storage
+    clientDataStore.removeDataset(datasetId);
+    console.log('Removed dataset from client storage:', datasetId);
   }
 
   render() {
