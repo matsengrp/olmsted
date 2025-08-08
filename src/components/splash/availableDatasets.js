@@ -1,6 +1,7 @@
 import React from "react";
 import { red } from "./displayError";
 import { getClonalFamilies } from "../../actions/loadData";
+import { getClientClonalFamilies, loadDataSmart } from "../../actions/clientDataLoader";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
 import * as _ from "lodash";
@@ -32,7 +33,13 @@ class DatasetRow extends React.Component {
           dataset_id: this.props.dataset.dataset_id,
           loading: "LOADING"
         });
-        getClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id)
+        
+        // Try client-side data first, fallback to server
+        if (this.props.dataset.isClientSide) {
+          getClientClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id);
+        } else {
+          getClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id);
+        }
         break;
       }
     }    

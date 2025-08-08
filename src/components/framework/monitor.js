@@ -5,6 +5,7 @@ import _throttle from "lodash/throttle";
 import { BROWSER_DIMENSIONS, CHANGE_PANEL_LAYOUT } from "../../actions/types";
 import { browserBackForward } from "../../actions/navigation";
 import { getDatasets } from "../../actions/loadData";
+import { getClientDatasets } from "../../actions/clientDataLoader";
 import { twoColumnBreakpoint } from "../../util/globals";
 
 @connect((state) => ({
@@ -24,8 +25,8 @@ class Monitor extends React.Component {
     document.body.appendChild(script);
   }
   componentDidMount() {
-    /* API call to charon to get initial datasets etc (needed to load the splash page) */
-    getDatasets(this.props.dispatch);
+    /* Load datasets from client storage first, then server (needed to load the splash page) */
+    getClientDatasets(this.props.dispatch);
     this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener( // future resizes

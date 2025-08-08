@@ -1,6 +1,7 @@
 
 import * as types from "./types"
-import * as loadData from "../actions/loadData.js"
+import * as loadData from "../actions/loadData.js";
+import { getClientTree } from "../actions/clientDataLoader";
 import * as treesSelector from "../selectors/trees"
 
 export const pageDown = {type: types.PAGE_DOWN}

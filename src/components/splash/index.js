@@ -9,7 +9,8 @@ import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
 import { Provider } from 'react-redux';
 import { DatasetsTable } from './availableDatasets';
-import { getSelectedDatasets } from "../../reducers/datasets"
+import { getSelectedDatasets } from "../../reducers/datasets";
+import FileUpload from './fileUpload'
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -78,6 +79,15 @@ class Splash extends React.Component {
             </button>
           </CenterContent>
           {/* hack; insert line */}
+          {/* File Upload Section */}
+          <FileUpload 
+            dispatch={this.props.dispatch}
+            onFileUpload={(result) => {
+              // Reload datasets after successful upload
+              // TODO: Add the uploaded dataset to availableDatasets
+              console.log('File uploaded:', result);
+            }}
+          />
         </div>
       </div>
 
