@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Consolidated Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test Consolidated Data Upload</h1>
+    
+    <div class="test-section">
+        <h2>Test Consolidated JSON Processing</h2>
+        <button onclick="testConsolidatedProcessing()">Run Test</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        import AIRRProcessor from './src/utils/airrProcessor.js';
+        import clientDataStore from './src/utils/clientDataStore.js';
+        
+        window.testConsolidatedProcessing = async function() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p class="info">Running test...</p>';
+            
+            try {
+                // Create a mock consolidated format data
+                const mockData = {
+                    metadata: {
+                        format_version: "1.0",
+                        schema_version: "2.0.0",
+                        created_at: new Date().toISOString(),
+                        source_format: "pcp"
+                    },
+                    datasets: [{
+                        dataset_id: "test-dataset",
+                        ident: "dataset-123",
+                        clone_count: 2,
+                        subjects_count: 1
+                    }],
+                    clones: {
+                        "test-dataset": [
+                            {
+                                clone_id: "clone-1",
+                                ident: "clone-ident-1",
+                                trees: [
+                                    { ident: "tree-ref-1", tree_id: "tree-1" }
+                                ]
+                            },
+                            {
+                                clone_id: "clone-2", 
+                                ident: "clone-ident-2",
+                                trees: [
+                                    { ident: "tree-ref-2", tree_id: "tree-2" }
+                                ]
+                            }
+                        ]
+                    },
+                    trees: [
+                        {
+                            ident: "tree-actual-1",
+                            tree_id: "tree-1",
+                            clone_id: "clone-1",
+                            newick: "(A:0.1,B:0.2)C:0.0;",
+                            nodes: []
+                        },
+                        {
+                            ident: "tree-actual-2",
+                            tree_id: "tree-2",
+                            clone_id: "clone-2",
+                            newick: "(D:0.3,E:0.4)F:0.0;",
+                            nodes: []
+                        }
+                    ]
+                };
+                
+                // Process the data
+                const result = AIRRProcessor.processConsolidatedFormat(mockData, "test.json");
+                
+                // Store the data
+                const datasetId = clientDataStore.storeProcessedData(result);
+                
+                // Verify tree storage and retrieval
+                let testsPassed = true;
+                let output = '<h3>Test Results:</h3><ul>';
+                
+                // Check if clones have correct tree references
+                const clones = result.clones[datasetId];
+                
+                output += `<li>Dataset ID: ${datasetId}</li>`;
+                output += `<li>Number of clones: ${clones.length}</li>`;
+                output += `<li>Number of trees: ${result.trees.length}</li>`;
+                
+                // Check each clone's tree references
+                clones.forEach(clone => {
+                    output += `<li>Clone ${clone.clone_id}:<ul>`;
+                    clone.trees.forEach(treeRef => {
+                        const storedTree = clientDataStore.getTree(treeRef.ident);
+                        if (storedTree) {
+                            output += `<li class="success">✓ Tree ${treeRef.tree_id} found with ident: ${treeRef.ident}</li>`;
+                        } else {
+                            output += `<li class="error">✗ Tree ${treeRef.tree_id} NOT found with ident: ${treeRef.ident}</li>`;
+                            testsPassed = false;
+                        }
+                    });
+                    output += '</ul></li>';
+                });
+                
+                // Check tree storage
+                output += '<li>Tree Storage:<ul>';
+                result.trees.forEach(tree => {
+                    const storedTree = clientDataStore.getTree(tree.ident);
+                    if (storedTree) {
+                        output += `<li class="success">✓ Tree ${tree.tree_id} stored with ident: ${tree.ident}</li>`;
+                    } else {
+                        output += `<li class="error">✗ Tree ${tree.tree_id} NOT stored with ident: ${tree.ident}</li>`;
+                        testsPassed = false;
+                    }
+                });
+                output += '</ul></li>';
+                
+                output += '</ul>';
+                
+                if (testsPassed) {
+                    output += '<p class="success"><strong>✓ All tests passed!</strong></p>';
+                } else {
+                    output += '<p class="error"><strong>✗ Some tests failed!</strong></p>';
+                }
+                
+                output += '<h3>Processed Data:</h3>';
+                output += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+                resultsDiv.innerHTML = output;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">Test failed: ${error.message}</p>`;
+                console.error(error);
+            }
+        };
+    </script>
+</body>
+</html>

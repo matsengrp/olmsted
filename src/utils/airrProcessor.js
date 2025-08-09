@@ -13,7 +13,7 @@ class AIRRProcessor {
     static async processFile(file) {
         try {
             const content = await this.readFile(file);
-            let dataset;
+            let data;
             
             // Handle gzipped files
             if (file.name.endsWith('.gz')) {
@@ -21,15 +21,138 @@ class AIRRProcessor {
             }
             
             try {
-                dataset = JSON.parse(content);
+                data = JSON.parse(content);
             } catch (parseError) {
                 throw new Error('Invalid JSON format');
             }
             
-            return this.processDataset(dataset, file.name);
+            // Check if this is consolidated format
+            if (this.isConsolidatedFormat(data)) {
+                return this.processConsolidatedFormat(data, file.name);
+            }
+            
+            // Process as standard AIRR dataset
+            return this.processDataset(data, file.name);
         } catch (error) {
             throw new Error(`Failed to process AIRR file: ${error.message}`);
         }
+    }
+    
+    /**
+     * Check if data is in consolidated format
+     * @param {Object} data - Parsed JSON data
+     * @returns {boolean} Whether this is consolidated format
+     */
+    static isConsolidatedFormat(data) {
+        return data && 
+               typeof data === 'object' &&
+               data.metadata &&
+               data.datasets &&
+               data.clones &&
+               data.trees;
+    }
+    
+    /**
+     * Process consolidated format data
+     * @param {Object} data - Consolidated format data
+     * @param {string} filename - Original filename
+     * @returns {Object} Processed data structure
+     */
+    static processConsolidatedFormat(data, filename) {
+        console.log('Processing consolidated format...');
+        console.log('Consolidated data structure:', {
+            datasets: data.datasets?.length || 0,
+            clones_keys: Object.keys(data.clones || {}),
+            trees: data.trees?.length || 0
+        });
+        
+        // Debug tree info
+        if (data.trees) {
+            console.log('Trees in consolidated data:', data.trees.map(t => ({
+                ident: t.ident,
+                tree_id: t.tree_id,
+                clone_id: t.clone_id
+            })));
+        }
+        
+        // Validate structure
+        if (!Array.isArray(data.datasets) || data.datasets.length === 0) {
+            throw new Error('Consolidated format missing datasets array');
+        }
+        
+        // Generate unique dataset ID for this session
+        const datasetId = this.generateDatasetId();
+        
+        // Process the first dataset (typically consolidated format has one dataset)
+        const dataset = data.datasets[0];
+        
+        // Get clones for this dataset
+        const datasetClones = data.clones[dataset.dataset_id] || 
+                             data.clones[Object.keys(data.clones)[0]] || 
+                             [];
+                             
+        // Debug clone tree references
+        console.log('Clone tree references in consolidated data:');
+        datasetClones.slice(0, 3).forEach((clone, i) => {
+            if (clone.trees) {
+                console.log(`  Clone ${i} (${clone.clone_id}):`, clone.trees.map(t => ({
+                    ident: t.ident,
+                    tree_id: t.tree_id
+                })));
+            }
+        });
+        
+        // Process dataset metadata
+        const processedDataset = {
+            ...dataset,
+            dataset_id: datasetId, // Use new temporary ID
+            original_dataset_id: dataset.dataset_id,
+            clone_count: datasetClones.length || dataset.clone_count || 0,
+            subjects_count: dataset.subjects_count || 1,
+            schema_version: data.metadata?.schema_version || "2.0.0",
+            temporary: true,
+            isClientSide: true,
+            upload_time: new Date().toISOString(),
+            original_filename: filename,
+            format_type: 'consolidated',
+            metadata: data.metadata,
+            build: dataset.build || {
+                time: data.metadata?.created_at || new Date().toISOString(),
+                commit: "client-side-processing"
+            }
+        };
+        
+        // First process trees - just add dataset_id, keep existing idents
+        const processedTrees = (data.trees || []).map(tree => {
+            const processedTree = {
+                ...tree,
+                dataset_id: datasetId,
+                ident: tree.ident || this.generateUUID()
+            };
+            return processedTree;
+        });
+        
+        // Process clones - ensure they have the right dataset_id
+        // Tree references should already be correct from the server processing
+        const processedClones = datasetClones.map(clone => {
+            const processedClone = {
+                ...clone,
+                dataset_id: datasetId,
+                ident: clone.ident || this.generateUUID()
+            };
+            
+            // For consolidated format from olmsted-cli, tree references should already be correct
+            // We don't need to modify them since the Python code already ensures matching idents
+            
+            return processedClone;
+        });
+        
+        return {
+            datasets: [processedDataset],
+            clones: { [datasetId]: processedClones },
+            trees: processedTrees,
+            datasetId: datasetId
+        };
     }
     
     /**
@@ -58,9 +181,8 @@ class AIRRProcessor {
             throw new Error('Invalid AIRR format: missing or invalid clones array');
         }
         
-        if (!dataset.samples || !Array.isArray(dataset.samples)) {
-            throw new Error('Invalid AIRR format: missing or invalid samples array');
-        }
+        // Samples array is optional - some formats don't include it
+        const hasSamples = dataset.samples && Array.isArray(dataset.samples);
         
         // Generate unique dataset ID for this session
         const datasetId = this.generateDatasetId();
@@ -69,14 +191,19 @@ class AIRRProcessor {
         const processedDataset = {
             ...dataset,
             dataset_id: datasetId,
-            clone_count: dataset.clones.length,
-            subjects_count: new Set(dataset.clones.map(c => c.subject_id)).size,
-            timepoints_count: new Set(dataset.samples.map(s => s.timepoint_id)).size,
+            clone_count: dataset.clones ? dataset.clones.length : (dataset.clone_count || 0),
+            subjects_count: dataset.clones ? new Set(dataset.clones.map(c => c.subject_id)).size : (dataset.subjects_count || 1),
+            timepoints_count: hasSamples ? new Set(dataset.samples.map(s => s.timepoint_id)).size : (dataset.timepoints_count || 1),
             schema_version: "2.0.0",
             temporary: true,
+            isClientSide: true,
             upload_time: new Date().toISOString(),
             original_filename: filename,
-            ident: dataset.ident || this.generateUUID()
+            ident: dataset.ident || this.generateUUID(),
+            build: dataset.build || {
+                time: new Date().toISOString(),
+                commit: "client-side-processing"
+            }
         };
         
         // Process clones and extract trees

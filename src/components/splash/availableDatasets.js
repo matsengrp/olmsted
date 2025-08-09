@@ -2,6 +2,7 @@ import React from "react";
 import { red } from "./displayError";
 import { getClonalFamilies } from "../../actions/loadData";
 import { getClientClonalFamilies, loadDataSmart } from "../../actions/clientDataLoader";
+import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
 import * as _ from "lodash";
@@ -11,6 +12,24 @@ class DatasetRow extends React.Component {
     super(props);
     // This binding is necessary to make `this` work in the callback
     this.selectDataset = this.selectDataset.bind(this);
+    this.deleteDataset = this.deleteDataset.bind(this);
+  }
+  
+  deleteDataset(e) {
+    e.stopPropagation(); // Prevent row click event
+    
+    if (window.confirm(`Are you sure you want to delete dataset ${this.props.dataset.dataset_id}?`)) {
+      // Remove from client store
+      clientDataStore.removeDataset(this.props.dataset.dataset_id);
+      
+      // Dispatch action to remove from Redux state
+      this.props.dispatch({
+        type: types.REMOVE_DATASET,
+        dataset_id: this.props.dataset.dataset_id
+      });
+      
+      console.log('Deleted client-side dataset:', this.props.dataset.dataset_id);
+    }
   }
 
   selectDataset(){
@@ -46,6 +65,8 @@ class DatasetRow extends React.Component {
   }
 
   render(){
+    const isClientSide = this.props.dataset.isClientSide || this.props.dataset.temporary;
+    
     return (
       <tr key={this.props.dataset.dataset_id}
         style={{backgroundColor: this.props.dataset.loading ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"}}
@@ -53,13 +74,38 @@ class DatasetRow extends React.Component {
         <td>
           <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
         </td>
-        <td>{this.props.dataset.dataset_id}</td>
+        <td>
+          {this.props.dataset.dataset_id}
+          {isClientSide && (
+            <span style={{marginLeft: "8px", fontSize: "80%", color: "#666", fontStyle: "italic"}}>
+              (uploaded)
+            </span>
+          )}
+        </td>
         <td>{this.props.dataset.subjects_count}</td>
         <td>{this.props.dataset.clone_count}</td>
-        <td>{this.props.dataset.build.time}</td>
+        <td>{this.props.dataset.build ? this.props.dataset.build.time : 'N/A'}</td>
         {this.props.dataset.paper ? <td>{this.props.dataset.paper.url ? <a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a> : this.props.dataset.paper.authorstring}</td>
-          : null
+          : this.props.showCitation ? <td></td> : null
         }
+        {isClientSide && (
+          <td>
+            <button
+              onClick={this.deleteDataset}
+              style={{
+                padding: "2px 8px",
+                fontSize: "12px",
+                backgroundColor: "#dc3545",
+                color: "white",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer"
+              }}
+            >
+              Delete
+            </button>
+          </td>
+        )}
       </tr>
     );
   }
@@ -78,6 +124,9 @@ export class DatasetsTable extends React.Component {
     const showCitation = _.reduce(this.props.availableDatasets,
                                   (hasPaperInfo, dataset) => hasPaperInfo || dataset.paper !== undefined,
                                   false) //base case
+    // Check if any datasets are client-side/temporary
+    const hasClientDatasets = this.props.availableDatasets.some(d => d.isClientSide || d.temporary);
+    
     return (
       <div>
         <div style={{fontSize: "26px"}}>
@@ -92,8 +141,9 @@ export class DatasetsTable extends React.Component {
               <th>Clonal Families</th>
               <th>Build time</th>
               {showCitation ? <th>From paper</th> : null}
+              {hasClientDatasets ? <th>Actions</th> : null}
             </tr>
-            {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} dispatch={this.props.dispatch}/> )}
+            {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} showCitation={showCitation} dispatch={this.props.dispatch}/> )}
           </tbody>
         </table>
       </div>

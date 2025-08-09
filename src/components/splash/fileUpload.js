@@ -2,6 +2,7 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 import { CenterContent } from "./centerContent";
 import AIRRProcessor from '../../utils/airrProcessor';
+import SplitFileProcessor from '../../utils/splitFileProcessor';
 import clientDataStore from '../../utils/clientDataStore';
 
 class FileUpload extends React.Component {
@@ -38,7 +39,7 @@ class FileUpload extends React.Component {
       }
 
       if (!fileType) {
-        throw new Error('Unsupported file type. Please upload AIRR JSON files (.json). PCP CSV files must be converted to AIRR format first using the olmsted CLI.');
+        throw new Error('Unsupported file type. Please upload AIRR JSON files (.json). For split files, select all files together (datasets.json, clones.*.json, tree.*.json).');
       }
 
       // Process file entirely client-side - no server communication!
@@ -90,8 +91,75 @@ class FileUpload extends React.Component {
   }
 
   async onDrop(acceptedFiles) {
-    for (const file of acceptedFiles) {
-      await this.processFile(file);
+    this.setState({ error: null, isProcessing: true });
+
+    try {
+      // Check if we have multiple files that might be split format
+      if (acceptedFiles.length > 1) {
+        console.log(`Processing ${acceptedFiles.length} files, checking for split format...`);
+        
+        // Try split file processing first
+        const splitResult = await SplitFileProcessor.processFiles(acceptedFiles);
+        
+        if (splitResult) {
+          // Successfully processed as split format
+          console.log('Processed as split format:', splitResult);
+          
+          // Process the consolidated dataset using AIRR processor
+          const consolidatedResult = await AIRRProcessor.processDataset(
+            splitResult.consolidatedDataset,
+            `Split files (${splitResult.fileCount} files)`
+          );
+          
+          // Merge in the trees from split processing
+          consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
+          
+          // Store processed data
+          const datasetId = clientDataStore.storeProcessedData(consolidatedResult);
+          
+          // Update UI
+          this.setState(prevState => ({
+            uploadedFiles: [...prevState.uploadedFiles, {
+              fileName: `Split format (${acceptedFiles.length} files)`,
+              datasetId: datasetId,
+              fileType: 'airr-split',
+              dataset: consolidatedResult.datasets[0],
+              success: true,
+              fileCount: acceptedFiles.length,
+              originalFiles: splitResult.originalFiles
+            }],
+            isProcessing: false
+          }));
+          
+          // Notify parent
+          if (this.props.onFileUpload) {
+            this.props.onFileUpload({
+              datasetId: datasetId,
+              dataset: consolidatedResult.datasets[0],
+              success: true
+            });
+          }
+          
+          // Reload to show new dataset
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          
+          return; // Successfully processed as split
+        }
+      }
+      
+      // Process as individual consolidated files
+      for (const file of acceptedFiles) {
+        await this.processFile(file);
+      }
+      
+    } catch (error) {
+      console.error('Error processing files:', error);
+      this.setState({ 
+        error: error.message || 'Failed to process files',
+        isProcessing: false 
+      });
     }
   }
 
@@ -155,7 +223,19 @@ class FileUpload extends React.Component {
                   or click to browse
                 </div>
                 <div style={{ fontSize: 12, color: '#999' }}>
-                  Supported formats: AIRR JSON (.json or .json.gz only). Convert PCP CSV files using olmsted CLI first.
+                  <strong>Supported formats:</strong> AIRR JSON (.json only)
+                  <br />
+                  • Single consolidated file from olmsted-cli (recommended)
+                  <br />
+                  • Multiple split files together (datasets.json, clones.*.json, tree.*.json)
+                  <br />
+                  <span style={{ color: '#c90', fontWeight: 'bold' }}>
+                    Note: PCP CSV files must be converted to AIRR format using olmsted-cli first:
+                  </span>
+                  <br />
+                  <code style={{ fontSize: 11, backgroundColor: '#f5f5f5', padding: '2px 4px', borderRadius: 2 }}>
+                    olmsted process -i data.csv -o output.json -f pcp
+                  </code>
                 </div>
               </div>
             )}
@@ -192,12 +272,17 @@ class FileUpload extends React.Component {
                     <div>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: '#666' }}>
-                        ({file.fileType.toUpperCase()} format)
+                        ({file.fileType === 'airr-split' ? 'AIRR Split' : file.fileType.toUpperCase()} format)
                       </span>
-                      {file.clone_count && (
+                      {file.dataset && file.dataset.clone_count && (
                         <span style={{ marginLeft: 10, color: '#666' }}>
-                          - {file.clone_count} clonal families
+                          - {file.dataset.clone_count} clonal families
                         </span>
+                      )}
+                      {file.fileCount && (
+                        <div style={{ fontSize: 11, color: '#888', marginTop: 3 }}>
+                          Files: {file.originalFiles ? file.originalFiles.join(', ') : `${file.fileCount} files`}
+                        </div>
                       )}
                     </div>
                     <button

@@ -192,7 +192,7 @@ const concatTreeWithAlignmentSpec = () => {
                         {"shape": "orthogonal", "type": "linkpath", "orient": "horizontal"}],
          "source": "tree"},
         {"name": "nodes", "transform": [
-                                          {"expr": "datum.type == 'node' || datum.type =='root'", "type": "filter"},
+                                          {"expr": "datum.type == 'node' || datum.type =='root' || datum.type == 'internal'", "type": "filter"},
                                           {
                                             "type": "extent",
                                             "field": "branch_width_by_field",
@@ -890,7 +890,7 @@ const concatTreeWithAlignmentSpec = () => {
                   "y": {
                     "field": "y"
                   },
-                  "fill": {"value": "transparent"},
+                  "fill": {"value": "#000"},
                   "x": {
                     "field": "x"
                   },
@@ -900,8 +900,7 @@ const concatTreeWithAlignmentSpec = () => {
                 },
                 "enter": {
                   "size": {"value": 20},
-                  // Change this to black to see internal nodes
-                  "stroke": {"value": "transparent"},
+                  "stroke": {"value": "#000"},
                 }
               },
               "type": "symbol",

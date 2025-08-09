@@ -28,8 +28,18 @@ class ClientDataStore {
             this.clones.set(id, cloneList);
         });
         
+        console.log('Storing trees:', trees.map(t => ({ ident: t.ident, tree_id: t.tree_id, clone_id: t.clone_id })));
         trees.forEach(tree => {
             this.trees.set(tree.ident, tree);
+        });
+        
+        // Debug: Check what tree references the clones have
+        Object.entries(clones).forEach(([datasetId, cloneList]) => {
+            cloneList.forEach(clone => {
+                if (clone.trees && clone.trees.length > 0) {
+                    console.log(`Clone ${clone.clone_id} tree refs:`, clone.trees.map(t => ({ ident: t.ident, tree_id: t.tree_id })));
+                }
+            });
         });
         
         // Also store in sessionStorage as backup
@@ -95,6 +105,9 @@ class ClientDataStore {
      * @returns {Object|null} Tree object or null if not found
      */
     getTree(treeIdent) {
+        console.log('Looking for tree:', treeIdent);
+        console.log('Available tree keys in memory:', Array.from(this.trees.keys()));
+        
         let tree = this.trees.get(treeIdent);
         
         // If not in memory, try sessionStorage
@@ -104,10 +117,18 @@ class ClientDataStore {
                 if (stored) {
                     tree = JSON.parse(stored);
                     this.trees.set(treeIdent, tree);
+                    console.log('Found tree in sessionStorage:', treeIdent);
                 }
             } catch (error) {
                 console.warn('Failed to load tree from sessionStorage:', error);
             }
+        }
+        
+        if (!tree) {
+            console.warn('Tree not found:', treeIdent);
+            // Try to see what's in sessionStorage
+            const storageKeys = Object.keys(sessionStorage).filter(k => k.startsWith(this.storagePrefix + 'tree_'));
+            console.log('Available tree keys in sessionStorage:', storageKeys.map(k => k.replace(this.storagePrefix + 'tree_', '')));
         }
         
         return tree || null;

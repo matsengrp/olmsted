@@ -21,7 +21,6 @@ export const getClientTree = (dispatch, tree_id) => {
         tree_id,
         tree
       });
-      console.log('Tree loaded from client storage:', tree_id);
     } else {
       console.warn('Tree not found in client storage:', tree_id);
       // Dispatch error or fallback to server
@@ -51,7 +50,6 @@ export const getClientClonalFamilies = (dispatch, dataset_id) => {
         dataset_id,
         loading: "DONE"
       });
-      console.log('Clonal families loaded from client storage:', dataset_id, clonalFamilies.length);
     } else {
       console.warn('Clonal families not found in client storage:', dataset_id);
       // Dispatch error or fallback to server
@@ -70,30 +68,24 @@ export const getClientDatasets = (dispatch, s3bucket = "live") => {
   try {
     const clientDatasets = clientDataStore.getAllDatasets();
     
-    // Combine with any existing server datasets if needed
-    const processData = (clientDatasets) => {
-      const availableDatasets = clientDatasets.map(dataset => ({
-        ...dataset,
-        isClientSide: true, // Mark as client-side for UI distinction
-        temporary: true
-      }));
-      
+    // Process client datasets
+    const availableDatasets = clientDatasets.map(dataset => ({
+      ...dataset,
+      isClientSide: true, // Mark as client-side for UI distinction
+      temporary: true
+    }));
+    
+    if (availableDatasets.length > 0) {
+      // If we have client datasets, dispatch them immediately
       dispatch({
         type: types.DATASETS_RECEIVED,
         availableDatasets
       });
-      
-      console.log('Client datasets loaded:', availableDatasets.length);
-      
-      // If we have client datasets, we should also load any pre-existing server datasets
-      // This allows mixing client-side uploaded data with server-side data
-      if (availableDatasets.length > 0) {
-        // We can still load server datasets in parallel
-        loadServerDatasets(dispatch);
-      }
-    };
+    }
     
-    processData(clientDatasets);
+    // Always attempt to load server datasets in parallel
+    // This allows mixing client-side uploaded data with server-side data
+    loadServerDatasets(dispatch);
     
   } catch (error) {
     console.error('Error loading client datasets:', error);
@@ -111,49 +103,65 @@ const loadServerDatasets = (dispatch) => {
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
-      try {
-        const serverDatasets = JSON.parse(request.responseText);
-        
-        // Get existing client datasets
-        const existingDatasets = clientDataStore.getAllDatasets().map(d => ({
-          ...d,
-          isClientSide: true,
-          temporary: true
-        }));
-        
-        // Combine client and server datasets
-        const combinedDatasets = [
-          ...existingDatasets,
-          ...serverDatasets.map(d => ({ ...d, isClientSide: false }))
-        ];
-        
-        dispatch({
-          type: types.DATASETS_RECEIVED,
-          availableDatasets: combinedDatasets
-        });
-        
-        console.log('Combined datasets loaded:', {
-          client: existingDatasets.length,
-          server: serverDatasets.length,
-          total: combinedDatasets.length
-        });
-        
-      } catch (error) {
-        console.error('Error parsing server datasets:', error);
-        
-        // If server fails, just use client datasets
+      // Check if response is JSON before trying to parse
+      const contentType = request.getResponseHeader('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+      
+      if (isJson || request.responseText.trim().startsWith('[') || request.responseText.trim().startsWith('{')) {
+        try {
+          const serverDatasets = JSON.parse(request.responseText);
+          
+          // Get existing client datasets
+          const existingDatasets = clientDataStore.getAllDatasets().map(d => ({
+            ...d,
+            isClientSide: true,
+            temporary: true
+          }));
+          
+          // Combine client and server datasets
+          const combinedDatasets = [
+            ...existingDatasets,
+            ...serverDatasets.map(d => ({ ...d, isClientSide: false }))
+          ];
+          
+          dispatch({
+            type: types.DATASETS_RECEIVED,
+            availableDatasets: combinedDatasets
+          });
+          
+          console.log('Combined datasets loaded:', {
+            client: existingDatasets.length,
+            server: serverDatasets.length,
+            total: combinedDatasets.length
+          });
+          
+        } catch (error) {
+          // Silently fall back to client-only datasets
+          const clientOnly = clientDataStore.getAllDatasets().map(d => ({
+            ...d,
+            isClientSide: true,
+            temporary: true
+          }));
+          
+          if (clientOnly.length > 0) {
+            dispatch({
+              type: types.DATASETS_RECEIVED,
+              availableDatasets: clientOnly
+            });
+          }
+        }
+      } else {
+        // Response is not JSON (likely HTML error page), use client-only datasets
         const clientOnly = clientDataStore.getAllDatasets().map(d => ({
           ...d,
           isClientSide: true,
           temporary: true
         }));
         
-        if (clientOnly.length > 0) {
-          dispatch({
-            type: types.DATASETS_RECEIVED,
-            availableDatasets: clientOnly
-          });
-        }
+        dispatch({
+          type: types.DATASETS_RECEIVED,
+          availableDatasets: clientOnly
+        });
       }
     } else {
       // Server request failed, use client-only datasets
@@ -167,8 +175,6 @@ const loadServerDatasets = (dispatch) => {
         type: types.DATASETS_RECEIVED,
         availableDatasets: clientOnly
       });
-      
-      console.log('Server unavailable, using client-only datasets:', clientOnly.length);
     }
   };
   
@@ -184,8 +190,6 @@ const loadServerDatasets = (dispatch) => {
       type: types.DATASETS_RECEIVED,
       availableDatasets: clientOnly
     });
-    
-    console.log('Network error, using client-only datasets:', clientOnly.length);
   };
   
   // Load from server API (original endpoint)

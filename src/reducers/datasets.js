@@ -45,6 +45,15 @@ const datasets = (state = {
     // I guess its ok to keep this, but not sure that what its doing here will make any sense or be necessary once all reorg is said and done
     } case types.PROCEED_SANS_MANIFEST: {
       return Object.assign({}, state, {datapath: action.datapath});
+    
+    } case types.REMOVE_DATASET: {
+      // Filter out the removed dataset from availableDatasets
+      const filteredDatasets = state.availableDatasets.filter(
+        dataset => dataset.dataset_id !== action.dataset_id
+      );
+      return Object.assign({}, state, {
+        availableDatasets: filteredDatasets
+      });
 
     // Not sure what this is...
     } case types.URL: {

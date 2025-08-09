@@ -3,6 +3,7 @@ import * as types from "./types"
 import * as loadData from "../actions/loadData.js";
 import { getClientTree } from "../actions/clientDataLoader";
 import * as treesSelector from "../selectors/trees"
+import * as _ from "lodash";
 
 export const pageDown = {type: types.PAGE_DOWN}
 export const pageUp = {type: types.PAGE_UP}
@@ -16,10 +17,23 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (ident, updateBrushSelection=false) => {
   return (dispatch, getState) => {
     dispatch({type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection})
-    let {trees, clonalFamilies} = getState()
+    let {trees, clonalFamilies, datasets} = getState()
     let clonalFamily = clonalFamilies.byIdent[ident]
     let clonalFamilyTrees = clonalFamily ? (clonalFamily.trees || []) : []
-    _.forEach(clonalFamilyTrees, (tree) => loadData.getTree(dispatch, tree.ident))}}
+    
+    // Check if this is a client-side dataset
+    const datasetId = clonalFamily?.dataset_id;
+    const dataset = datasets.availableDatasets?.find(d => d.dataset_id === datasetId);
+    const isClientSide = dataset?.isClientSide || dataset?.temporary;
+    
+    // Use appropriate loader based on dataset source
+    _.forEach(clonalFamilyTrees, (tree) => {
+      if (isClientSide) {
+        getClientTree(dispatch, tree.ident);
+      } else {
+        loadData.getTree(dispatch, tree.ident);
+      }
+    })}}
 
 export const updateSelectedSeq = (seq) => {
   return {type: types.UPDATE_SELECTED_SEQ, seq: seq}}
