@@ -18,7 +18,8 @@ class DatasetRow extends React.Component {
   deleteDataset(e) {
     e.stopPropagation(); // Prevent row click event
     
-    if (window.confirm(`Are you sure you want to delete dataset ${this.props.dataset.dataset_id}?`)) {
+    const datasetName = this.props.dataset.name || this.props.dataset.dataset_id;
+    if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
       // Remove from client store
       clientDataStore.removeDataset(this.props.dataset.dataset_id);
       
@@ -75,7 +76,7 @@ class DatasetRow extends React.Component {
           <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
         </td>
         <td>
-          {this.props.dataset.dataset_id}
+          {this.props.dataset.name || this.props.dataset.dataset_id}
           {isClientSide && (
             <span style={{marginLeft: "8px", fontSize: "80%", color: "#666", fontStyle: "italic"}}>
               (uploaded)

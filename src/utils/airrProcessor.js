@@ -116,6 +116,7 @@ class AIRRProcessor {
             original_filename: filename,
             format_type: 'consolidated',
             metadata: data.metadata,
+            name: data.metadata?.name || filename, // Use metadata name if available, otherwise filename
             build: dataset.build || {
                 time: data.metadata?.created_at || new Date().toISOString(),
                 commit: "client-side-processing"

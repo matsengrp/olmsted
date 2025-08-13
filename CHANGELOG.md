@@ -1,14 +1,14 @@
 ## version 2.2.3 - 2025/07/21
-[PR207](https://github.com/matsengrp/olmsted/pull/206) Changed:
+[PR219](https://github.com/matsengrp/olmsted/pull/219) Changed:
 * Fixed npm package vulneratibilities, focused on D3/Vega (reduced to 0)
 
 ## version 2.2.2 - 2025/07/17
-[PR207](https://github.com/matsengrp/olmsted/pull/206) Changed:
+[PR214](https://github.com/matsengrp/olmsted/pull/214) Changed:
 * Fixed npm package vulneratibilities, apart from D3/Vega (reduced to 16)
 * Updated 50+ packages
 
 ## version 2.2.1 - 2025/07/14
-[PR207](https://github.com/matsengrp/olmsted/pull/206) Changed:
+[PR207](https://github.com/matsengrp/olmsted/pull/207) Changed:
 * Upgraded Node.js v9.6.x to v18 lts
 * Upgraded a couple npm packages for compatibility
 
