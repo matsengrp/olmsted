@@ -68,7 +68,7 @@ const modifyStateViaMetadata = (state, metadata) => {
     // TODO: why are these false / False
     if (metadata.defaults.mapTriplicate) {
       // convert string to boolean; default is true; turned off with either false (js) or False (python)
-      state["mapTriplicate"] = (metadata.defaults.mapTriplicate === 'false' || metadata.defaults.mapTriplicate === 'False') ? false : true;
+      state["mapTriplicate"] = !((metadata.defaults.mapTriplicate === 'false' || metadata.defaults.mapTriplicate === 'False'));
     }
   }
 
@@ -107,14 +107,13 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
   }
 
 
-
   /* distanceMeasure */
   if (["div", "num_date"].indexOf(state["distanceMeasure"]) === -1) {
     state["distanceMeasure"] = "num_date";
     console.error("Error detected. Setting distanceMeasure to ", state["distanceMeasure"]);
   }
 
- 
+
   /* temporalConfidence */
   if (state.temporalConfidence.exists) {
     if (state.layout !== "rect") {
@@ -132,9 +131,6 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
 
   return state;
 };
-
-
-
 
 
 export const createStateFromQueryOrJSONs = ({
@@ -165,7 +161,7 @@ export const createStateFromQueryOrJSONs = ({
     /* revisit this - but it helps prevent bugs */
     controls = {...oldState.controls};
     entropy = {...oldState.entropy};
-    
+
     metadata = {...oldState.metadata};
 
     controls = restoreQueryableStateToDefaults(controls);
@@ -174,13 +170,7 @@ export const createStateFromQueryOrJSONs = ({
   controls = checkAndCorrectErrorsInState(controls, metadata); /* must run last */
 
 
-
-
-
-
-
-
-
-  return {metadata, entropy, controls, query};
+  return {
+    metadata, entropy, controls, query
+  };
 };
-

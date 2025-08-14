@@ -1,12 +1,12 @@
+import { connect } from "react-redux";
+import React from "react";
+import { hot } from 'react-hot-loader';
 import App from "./components/explorer/app";
 import Splash from "./components/splash/index";
 import Monitor from "./components/framework/monitor";
 import NavBar from "./components/framework/nav-bar";
 import { logos } from "./components/splash/logos";
 import { CenterContent } from "./components/splash/centerContent";
-import { connect } from "react-redux";
-import React from "react";
-import { hot } from 'react-hot-loader'
 
 
 // ROUTING
@@ -17,7 +17,7 @@ class MainComponentSwitch extends React.Component {
     switch (this.props.displayComponent) {
       // splash & dataset selector
       case "splash": return (<Splash/>);
-      case "app" : return (<App/>);
+      case "app": return (<App/>);
       default:
         console.error(`reduxStore.datasets.displayComponent is invalid (${this.props.displayComponent})`);
         return (<Splash/>);
@@ -26,8 +26,8 @@ class MainComponentSwitch extends React.Component {
 }
 
 class Root extends React.Component {
-  render () {
-    return(
+  render() {
+    return (
       <div>
         <Monitor/>
         <NavBar/>
@@ -39,7 +39,7 @@ class Root extends React.Component {
         </div>
       </div>
     );
-  };
+  }
 }
 
 export default hot(module)(Root);

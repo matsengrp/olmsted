@@ -13,7 +13,7 @@ class FileUpload extends React.Component {
       isProcessing: false,
       error: null
     };
-    
+
     this.processFile = this.processFile.bind(this);
     this.onDrop = this.onDrop.bind(this);
     this.removeFile = this.removeFile.bind(this);
@@ -45,12 +45,12 @@ class FileUpload extends React.Component {
       // Process file entirely client-side - no server communication!
       console.log('Processing file client-side:', file.name);
       const result = await AIRRProcessor.processFile(file);
-      
+
       // Store processed data in browser
       const datasetId = clientDataStore.storeProcessedData(result);
-      
+
       // Add to uploaded files list
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         uploadedFiles: [...prevState.uploadedFiles, {
           fileName: file.name,
           datasetId: datasetId,
@@ -68,7 +68,7 @@ class FileUpload extends React.Component {
           success: true
         });
       }
-      
+
       // Trigger datasets reload by refreshing the page
       // In a production app, we'd dispatch a Redux action to reload datasets
       setTimeout(() => {
@@ -97,28 +97,28 @@ class FileUpload extends React.Component {
       // Check if we have multiple files that might be split format
       if (acceptedFiles.length > 1) {
         console.log(`Processing ${acceptedFiles.length} files, checking for split format...`);
-        
+
         // Try split file processing first
         const splitResult = await SplitFileProcessor.processFiles(acceptedFiles);
-        
+
         if (splitResult) {
           // Successfully processed as split format
           console.log('Processed as split format:', splitResult);
-          
+
           // Process the consolidated dataset using AIRR processor
           const consolidatedResult = await AIRRProcessor.processDataset(
             splitResult.consolidatedDataset,
             `Split files (${splitResult.fileCount} files)`
           );
-          
+
           // Merge in the trees from split processing
           consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
-          
+
           // Store processed data
           const datasetId = clientDataStore.storeProcessedData(consolidatedResult);
-          
+
           // Update UI
-          this.setState(prevState => ({
+          this.setState((prevState) => ({
             uploadedFiles: [...prevState.uploadedFiles, {
               fileName: `Split format (${acceptedFiles.length} files)`,
               datasetId: datasetId,
@@ -130,7 +130,7 @@ class FileUpload extends React.Component {
             }],
             isProcessing: false
           }));
-          
+
           // Notify parent
           if (this.props.onFileUpload) {
             this.props.onFileUpload({
@@ -139,35 +139,35 @@ class FileUpload extends React.Component {
               success: true
             });
           }
-          
+
           // Reload to show new dataset
           setTimeout(() => {
             window.location.reload();
           }, 1000);
-          
+
           return; // Successfully processed as split
         }
       }
-      
+
       // Process as individual consolidated files
       for (const file of acceptedFiles) {
         await this.processFile(file);
       }
-      
+
     } catch (error) {
       console.error('Error processing files:', error);
-      this.setState({ 
+      this.setState({
         error: error.message || 'Failed to process files',
-        isProcessing: false 
+        isProcessing: false
       });
     }
   }
 
   removeFile(datasetId) {
-    this.setState(prevState => ({
-      uploadedFiles: prevState.uploadedFiles.filter(f => f.datasetId !== datasetId)
+    this.setState((prevState) => ({
+      uploadedFiles: prevState.uploadedFiles.filter((f) => f.datasetId !== datasetId)
     }));
-    
+
     // Remove data from client-side storage
     clientDataStore.removeDataset(datasetId);
     console.log('Removed dataset from client storage:', datasetId);
@@ -182,11 +182,11 @@ class FileUpload extends React.Component {
           <h3 style={{ textAlign: 'center', marginBottom: 20 }}>
             Or upload your own data
           </h3>
-          
+
           <Dropzone
             onDrop={this.onDrop}
             accept="application/json, application/gzip, .json, .gz"
-            multiple={true}
+            multiple
             disabled={isProcessing}
             style={{
               border: '2px dashed #ccc',
@@ -223,7 +223,9 @@ class FileUpload extends React.Component {
                   or click to browse
                 </div>
                 <div style={{ fontSize: 12, color: '#999' }}>
-                  <strong>Supported formats:</strong> AIRR JSON (.json only)
+                  <strong>Supported formats:</strong>
+                  {' '}
+                  AIRR JSON (.json only)
                   <br />
                   • Single consolidated file from olmsted-cli (recommended)
                   <br />
@@ -233,7 +235,10 @@ class FileUpload extends React.Component {
                     Note: PCP CSV files must be converted to AIRR format using olmsted-cli first:
                   </span>
                   <br />
-                  <code style={{ fontSize: 11, backgroundColor: '#f5f5f5', padding: '2px 4px', borderRadius: 2 }}>
+                  <code style={{
+                    fontSize: 11, backgroundColor: '#f5f5f5', padding: '2px 4px', borderRadius: 2
+                  }}
+                  >
                     olmsted process -i data.csv -o output.json -f pcp
                   </code>
                 </div>
@@ -250,7 +255,8 @@ class FileUpload extends React.Component {
               borderRadius: 5,
               color: '#c00',
               textAlign: 'center'
-            }}>
+            }}
+            >
               {error}
             </div>
           )}
@@ -259,29 +265,40 @@ class FileUpload extends React.Component {
             <div style={{ marginTop: 30 }}>
               <h4>Uploaded Files:</h4>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                {uploadedFiles.map(file => (
-                  <li key={file.datasetId} style={{
-                    padding: 10,
-                    marginBottom: 5,
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: 5,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
+                {uploadedFiles.map((file) => (
+                  <li key={file.datasetId}
+                    style={{
+                      padding: 10,
+                      marginBottom: 5,
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: 5,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
                     <div>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: '#666' }}>
-                        ({file.fileType === 'airr-split' ? 'AIRR Split' : file.fileType.toUpperCase()} format)
+                        (
+                        {file.fileType === 'airr-split' ? 'AIRR Split' : file.fileType.toUpperCase()}
+                        {' '}
+                        format)
                       </span>
                       {file.dataset && file.dataset.clone_count && (
                         <span style={{ marginLeft: 10, color: '#666' }}>
-                          - {file.dataset.clone_count} clonal families
+                          -
+                          {' '}
+                          {file.dataset.clone_count}
+                          {' '}
+                          clonal families
                         </span>
                       )}
                       {file.fileCount && (
                         <div style={{ fontSize: 11, color: '#888', marginTop: 3 }}>
-                          Files: {file.originalFiles ? file.originalFiles.join(', ') : `${file.fileCount} files`}
+                          Files:
+                          {' '}
+                          {file.originalFiles ? file.originalFiles.join(', ') : `${file.fileCount} files`}
                         </div>
                       )}
                     </div>

@@ -41,14 +41,14 @@ export const changePage = ({path, query = undefined, push = true}) => (dispatch,
   };
 
   // Set the new datapath if we are changing to the app page
-  if (d.displayComponent === "app"){
-    d.datapath = getDatapath(path, datasets.availableDatasets)
+  if (d.displayComponent === "app") {
+    d.datapath = getDatapath(path, datasets.availableDatasets);
   }
 
-  // If we were PREVIOUSLY on the app page and change to a different dataset or go 
+  // If we were PREVIOUSLY on the app page and change to a different dataset or go
   // back to splash, we want to reset the clonal families state
-  if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath){
-    dispatch({type: types.RESET_CLONAL_FAMILIES_STATE})
+  if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath) {
+    dispatch({type: types.RESET_CLONAL_FAMILIES_STATE});
   }
 
   if (query !== undefined) { d.query = query; }
@@ -71,20 +71,22 @@ ARGUMENTS:
 (1) query - REQUIRED - {object}
 (2) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
 */
-export const changePageQuery = ({path, queryToUse, queryToDisplay = false, push = true}) => (dispatch, getState) => {
-  const state =  getState();
-  if( chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets ){
-    let queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets))
-    // Tried to check to see that datasets were in the state before requesting them from server but they are 
+export const changePageQuery = ({
+  path, queryToUse, queryToDisplay = false, push = true
+}) => (dispatch, getState) => {
+  const state = getState();
+  if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
+    const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
+    // Tried to check to see that datasets were in the state before requesting them from server but they are
     // not necessarily loaded when this function is called; instead we should check this in a componentDidUpdate somewhere (Monitor)?
-    queryStringDatasets.forEach( (id) => {
+    queryStringDatasets.forEach((id) => {
       dispatch({
         type: types.LOADING_DATASET,
         dataset_id: id,
         loading: "LOADING"
       });
-      getClonalFamilies(dispatch, id)
-    })
+      getClonalFamilies(dispatch, id);
+    });
   }
   dispatch({
     type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
@@ -101,10 +103,10 @@ export const browserBackForward = () => (dispatch, getState) => {
   // console.log("broswer back/forward detected. From: ", datasets.urlPath, datasets.urlSearch, "to:", window.location.pathname, window.location.search)
   // console.log('PATH', window.location.pathname);
   if (datasets.urlPath !== window.location.pathname) {
-    
+
     dispatch(changePage({path: window.location.pathname}));
-  } 
+  }
 
   dispatch(changePageQuery({path: window.location.pathname, queryToUse: queryString.parse(window.location.search)}));
-  
+
 };

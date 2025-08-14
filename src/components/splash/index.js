@@ -1,16 +1,14 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, Provider } from "react-redux";
 import Title from "../framework/title";
-import Flex from "../../components/framework/flex";
+import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
 import { logos } from "./logos";
-import { displayAvailableDatasets } from "./availableDatasets";
+import { displayAvailableDatasets, DatasetsTable } from "./availableDatasets";
 import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
-import { Provider } from 'react-redux';
-import { DatasetsTable } from './availableDatasets';
 import { getSelectedDatasets } from "../../reducers/datasets";
-import FileUpload from './fileUpload'
+import FileUpload from './fileUpload';
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -38,17 +36,23 @@ class Splash extends React.Component {
               {displayError(this.props.errorMessage)}
             </CenterContent>
           ) : (
-            <p style={{maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143}}>
+            <p style={{
+              maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143
+            }}
+            >
               Olmsted is an open source tool for visualizing B-cell repertoire data.
             </p>
           )}
           {/* Secondly, list the available datasets */}
 
           <CenterContent>
-            <p style={{maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143}}>
+            <p style={{
+              maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143
+            }}
+            >
               Select datasets below and click "Explore!" to visualize clonal families.
             </p>
-            {/*This only happens when the app loads up, not when we change the state.*/}
+            {/* This only happens when the app loads up, not when we change the state. */}
             <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
             <button
               style={{
@@ -67,20 +71,25 @@ class Splash extends React.Component {
               onClick={
                 (e) => this.props.dispatch(
                   changePage(
-                    {path: "/app", query: 
-                      {selectedDatasets: getSelectedDatasets(
-                              this.props.availableDatasets).map(dataset => dataset.dataset_id)
+                    {
+                      path: "/app",
+                      query:
+                      {
+                        selectedDatasets: getSelectedDatasets(
+                          this.props.availableDatasets
+                        ).map((dataset) => dataset.dataset_id)
                       }
                     }
                   )
                 )
-                }>
-                Explore!
+                }
+            >
+              Explore!
             </button>
           </CenterContent>
           {/* hack; insert line */}
           {/* File Upload Section */}
-          <FileUpload 
+          <FileUpload
             dispatch={this.props.dispatch}
             onFileUpload={(result) => {
               // Reload datasets after successful upload

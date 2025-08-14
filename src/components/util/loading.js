@@ -3,7 +3,7 @@ import React from "react";
 class SimpleInProgress extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {counter: 0}
+    this.state = {counter: 0};
   }
 
   componentDidMount() {
@@ -23,23 +23,23 @@ class SimpleInProgress extends React.Component {
     }));
   }
 
-  render(){
-    return "Loading"+"...".substring(0,this.state.counter%4+1)
+  render() {
+    return "Loading"+"...".substring(0, this.state.counter%4+1);
   }
 
 }
 
 class LoadingStatus extends React.Component {
-  render(){
-    switch(this.props.loadingStatus){
-      case "LOADING":{
-        return this.props.loading
+  render() {
+    switch (this.props.loadingStatus) {
+      case "LOADING": {
+        return this.props.loading;
       }
-      case "DONE":{
-        return this.props.done
+      case "DONE": {
+        return this.props.done;
       }
-      default :{
-        return this.props.default
+      default: {
+        return this.props.default;
       }
     }
   }

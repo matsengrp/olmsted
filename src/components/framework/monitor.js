@@ -15,15 +15,18 @@ class Monitor extends React.Component {
   constructor(props) {
     super(props);
   }
+
   static propTypes = {
     dispatch: PropTypes.func.isRequired
   }
+
   componentWillMount() {
     const script = document.createElement("script");
     script.src = "https://platform.twitter.com/widgets.js";
     script.async = true;
     document.body.appendChild(script);
   }
+
   componentDidMount() {
     /* Load datasets from client storage first, then server (needed to load the splash page) */
     getClientDatasets(this.props.dispatch);

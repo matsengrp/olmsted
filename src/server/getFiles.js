@@ -22,10 +22,10 @@ const getDataFile = (res, filePath, s3) => {
 
 const getDatasets = (query, res) => {
   // If you wanna be picky about having users
-  //if (Object.keys(query).indexOf("user") === -1) {
-    //res.status(404).send('No user defined');
-    //return;
-  //}
+  // if (Object.keys(query).indexOf("user") === -1) {
+  // res.status(404).send('No user defined');
+  // return;
+  // }
   getDataFile(res, 'datasets.json', query.s3);
 };
 

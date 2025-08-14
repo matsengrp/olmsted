@@ -3,7 +3,7 @@
 import "./util/polyfills"; // eslint-disable-line
 /* L I B R A R I E S */
 import React from "react";
-import { render } from 'react-dom'
+import { render } from 'react-dom';
 import { Provider } from "react-redux";
 import configureStore from "./store";
 /* S T Y L E S H E E T S */
@@ -32,11 +32,10 @@ const renderApp = () => {
 };
 
 if (process.env.NODE_ENV !== 'production' && module.hot) {
-  console.log("hot component reload")
+  console.log("hot component reload");
   module.hot.accept("./Root", () => {
-    renderApp()
-  })
+    renderApp();
+  });
 }
 
-renderApp()
-
+renderApp();

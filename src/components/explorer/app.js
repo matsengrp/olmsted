@@ -1,17 +1,17 @@
 import React from "react";
 import { connect } from "react-redux";
-import ClonalFamiliesTable from "./table";
 import { hot } from 'react-hot-loader';
+import ClonalFamiliesTable from "./table";
 import LoadingTable from './loadingTable';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
-import {TreeViz} from "../explorer/tree";
-import {ClonalFamiliesViz} from "../explorer/scatterplot";
-import {Lineage} from "../explorer/lineage";
+import {TreeViz} from "./tree";
+import {ClonalFamiliesViz} from "./scatterplot";
+import {Lineage} from "./lineage";
 import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 
 // STYLES
-const PADDING_FRACTION = 0.03
+const PADDING_FRACTION = 0.03;
 
 // Compute how much padding the page should have.
 // Use above percentage of available width for padding on either side
@@ -22,30 +22,36 @@ const usableWidthStyle = (availableWidth) => {
     paddingRight: availableWidth*PADDING_FRACTION,
     paddingTop: 40,
     paddingBottom: 20
-  }
-}
+  };
+};
 
-const tableStyle = {marginBottom: 20, overflow:'auto'};
+const tableStyle = {marginBottom: 20, overflow: 'auto'};
 
 const sectionStyle = {paddingBottom: 10, marginBottom: 40, overflow: 'auto'};
 
 const mapStateToProps = (state) => {
-    let selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state)
-    let nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length
-    return {selectedFamily, nClonalFamiliesBrushed}
-}
+  const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
+  const nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length;
+  return {selectedFamily, nClonalFamiliesBrushed};
+};
 
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
-  render () {
+  render() {
     return (
-      <p>Number of families currently selected: {this.props.nClonalFamiliesBrushed}</p>)}}
+      <p>
+        Number of families currently selected:
+        {this.props.nClonalFamiliesBrushed}
+      </p>
+    );
+  }
+}
 
 const Overlay = ({styles, mobileDisplay, handler}) => {
   return (
-    mobileDisplay ?
-      <div style={styles} onClick={handler} onTouchStart={handler}/> :
-      <div/>
+    mobileDisplay
+      ? <div style={styles} onClick={handler} onTouchStart={handler}/>
+      : <div/>
   );
 };
 
@@ -63,15 +69,17 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     // For resize media query listener see this link (helps resize for mobile etc):
-    //https://github.com/nextstrain/auspice/blob/master/src/components/app.js#L112-L122
+    // https://github.com/nextstrain/auspice/blob/master/src/components/app.js#L112-L122
   }
+
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
   // }
   componentDidMount() {
     document.addEventListener("dragover", (e) => {e.preventDefault();}, false);
-    
+
   }
+
   // componentDidUpdate(prevProps) {
   //   if (prevProps.datapath !== this.props.datapath) {
   //     console.log("LOAD JSON")
@@ -80,13 +88,13 @@ class App extends React.Component {
   // }
   render() {
     /* D I M E N S I O N S */
-    let availableWidth = this.props.browserDimensions.width;
+    const availableWidth = this.props.browserDimensions.width;
     const availableHeight = this.props.browserDimensions.height;
 
     // let sidebarWidth = 0;
-    
+
     // sidebarWidth = controlsWidth;
-    
+
     // sidebarWidth += controlsPadding;
 
     // const visibleSidebarWidth = this.state.sidebarOpen ? sidebarWidth : 0;
@@ -109,7 +117,7 @@ class App extends React.Component {
       display: "block",
       width: availableWidth,
       height: availableHeight,
-      left:  0,
+      left: 0,
       opacity: 0,
       visibility: "hidden",
       zIndex: 8000,
@@ -131,60 +139,72 @@ class App extends React.Component {
               <LoadingTable datasets={this.props.availableDatasets}/>
             </div>
             <div style={sectionStyle}>
-              <h2></h2>
-              <CollapseHelpTitle 
-                titleText={"Clonal Families"}
-                helpText={<div>The Clonal Families section represents each clonal family as a point in
-                 a scatterplot. Choose an immunoglobulin locus to restrict the clonal
-                 families in the scatterplot to that locus - the default is immunoglobulin gamma,
-                 or igh (where h stands for heavy chain). In order to visualize all clonal families from all
-                 loci in the dataset at once, choose "ALL" in the locus selector. By default, the scatterplot maps the number
-                 of unique members in a clonal family, unique_seqs_count, to the x-axis, and the average
-                 mutation frequency among members of that clonal family, mean_mut_freq, to the y-axis. 
-                 However, you may configure both axes as well as the color and shape of the points to map 
-                 to a range of fields, including sequence sampling time (sample.timepoint_id).
-                 See <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
-                 <br/>
-                 <br/>
-                 For comparison of subsets, you may facet the plot into separated panels according to data values
-                 for a range of fields. Interact with the plot by clicking and dragging across a subset of points
-                 or clicking individual points to filter the resulting clonal families in the Selected clonal families table below.
-                 </div>}/>
+              <h2 />
+              <CollapseHelpTitle
+                titleText="Clonal Families"
+                helpText={(
+                  <div>
+                    The Clonal Families section represents each clonal family as a point in
+                    a scatterplot. Choose an immunoglobulin locus to restrict the clonal
+                    families in the scatterplot to that locus - the default is immunoglobulin gamma,
+                    or igh (where h stands for heavy chain). In order to visualize all clonal families from all
+                    loci in the dataset at once, choose "ALL" in the locus selector. By default, the scatterplot maps the number
+                    of unique members in a clonal family, unique_seqs_count, to the x-axis, and the average
+                    mutation frequency among members of that clonal family, mean_mut_freq, to the y-axis.
+                    However, you may configure both axes as well as the color and shape of the points to map
+                    to a range of fields, including sequence sampling time (sample.timepoint_id).
+                    See
+                    <a href="http://www.olmstedviz.org/schema.html">the schema</a>
+                    {' '}
+                    for field descriptions.
+                    <br/>
+                    <br/>
+                    For comparison of subsets, you may facet the plot into separated panels according to data values
+                    for a range of fields. Interact with the plot by clicking and dragging across a subset of points
+                    or clicking individual points to filter the resulting clonal families in the Selected clonal families table below.
+                  </div>
+)}
+              />
               <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
               <select value={this.props.locus}
-                  onChange={(event) => {
-                    this.props.resetState()
-                    this.props.filterLocus(event.target.value)
-                    }}>
-                  {['igh','igk','igl', 'ALL'].map( (locus) =>
-                    <option key={locus} value={locus}>{locus}</option>)}
+                onChange={(event) => {
+                  this.props.resetState();
+                  this.props.filterLocus(event.target.value);
+                }}
+              >
+                {['igh', 'igk', 'igl', 'ALL'].map((locus) => <option key={locus} value={locus}>{locus}</option>)}
               </select>
               <SelectedFamiliesSummary/>
               <ClonalFamiliesViz/>
             </div>
 
             <div style={{paddingBottom: 40, ...sectionStyle}}>
-              <CollapseHelpTitle 
-                titleText={"Selected clonal families"}
+              <CollapseHelpTitle
+                titleText="Selected clonal families"
                 helpText={`Below the scatterplot, the full collection or selected subset of clonal families
                  appears in a table including a visualization of the recombination event resulting in the naive
                  antibody sequence and a subset of clonal family metadata. Each row in the table represents one clonal
                  family. The table automatically selects the top clonal family according to the sorting column. Click on
                  the checkbox in the "Select" column in the table to select a clonal family for further visualization.
                  Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family
-                 (as specified in the input JSON) is visualized below the table in the Clonal family details section.`}/>
+                 (as specified in the input JSON) is visualized below the table in the Clonal family details section.`}
+              />
               <div style={tableStyle}>
                 <ClonalFamiliesTable/>
               </div>
             </div>
-            { this.props.selectedFamily &&
+            { this.props.selectedFamily
+                && (
                 <div style={sectionStyle}>
                   <TreeViz availableHeight={availableHeight}/>
-                </div> }
-            {!_.isEmpty(this.props.selectedSeq) &&
+                </div>
+                ) }
+            {!_.isEmpty(this.props.selectedSeq)
+                && (
                 <div style={sectionStyle}>
                   <Lineage/>
-                </div>}
+                </div>
+                )}
           </div>
         </div>
         <Overlay

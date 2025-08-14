@@ -4,7 +4,6 @@ const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
 const { execFile } = require('child_process');
-const { applyUploadHandler } = require("./src/server/uploadHandler");
 
 /* documentation in the static site! */
 
@@ -84,9 +83,6 @@ if (devServer) {
 /* redirect www.nextstrain.org to nextstrain.org */
 app.use(require('express-naked-redirect')({reverse: true}));
 
-/* Apply upload handler for file uploads */
-applyUploadHandler(app);
-
 app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
@@ -101,5 +97,5 @@ const server = app.listen(app.get('port'), () => {
   console.log("Olmsted server started on port " + server.address().port);
   console.log(devServer ? "Serving dev bundle with hot-reloading enabled" : "Serving compiled bundle from /dist");
   console.log(global.LOCAL_DATA ? "Data is being sourced from " + global.LOCAL_DATA_PATH : "Dataset JSONs are being sourced from S3, narratives via the static github repo");
-  console.log("-----------------------------------\n\n"); 
+  console.log("-----------------------------------\n\n");
 });
