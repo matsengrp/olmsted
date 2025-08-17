@@ -136,8 +136,7 @@ class App extends React.Component {
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
-                <p>You have the following datasets loaded:</p>
-                <LoadingTable datasets={this.props.availableDatasets}/>
+                <LoadingTable datasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
               </CollapsibleSection>
             </div>
             <div style={sectionStyle}>

@@ -6,6 +6,7 @@ import { getClientClonalFamilies, loadDataSmart } from "../../actions/clientData
 import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
+import { getClientDatasets } from "../../actions/clientDataLoader";
 
 class DatasetRow extends React.Component {
   constructor(props) {
@@ -67,52 +68,112 @@ class DatasetRow extends React.Component {
 
   render() {
     const isClientSide = this.props.dataset.isClientSide || this.props.dataset.temporary;
+    const isSelected = this.props.dataset.loading;
+
+    // Define columns data for easier alternating column styling
+    const columns = [
+      {
+        content: <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>,
+        style: {}
+      },
+      {
+        content: this.props.dataset.name || this.props.dataset.dataset_id,
+        style: {}
+      },
+      {
+        content: this.props.dataset.dataset_id,
+        style: { fontSize: "12px", color: "#666", fontFamily: "monospace" }
+      },
+      {
+        content: isClientSide ? "Local" : "Server",
+        style: { fontSize: "12px", color: isClientSide ? "#007bff" : "#666" }
+      },
+      {
+        content: this.props.dataset.subjects_count || '—',
+        style: {}
+      },
+      {
+        content: this.props.dataset.clone_count || '—',
+        style: {}
+      },
+      {
+        content: this.props.dataset.build ? this.props.dataset.build.time || '—' : '—',
+        style: {}
+      }
+    ];
+
+    // Add citation column if needed
+    if (this.props.dataset.paper) {
+      columns.push({
+        content: this.props.dataset.paper.url ? 
+          <a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a> : 
+          this.props.dataset.paper.authorstring,
+        style: {}
+      });
+    } else if (this.props.showCitation) {
+      columns.push({
+        content: '',
+        style: {}
+      });
+    }
+
+    // Add delete button column if needed
+    if (isClientSide) {
+      columns.push({
+        content: (
+          <button
+            onClick={this.deleteDataset}
+            style={{
+              padding: "2px 8px",
+              fontSize: "12px",
+              backgroundColor: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "3px",
+              cursor: "pointer"
+            }}
+          >
+            Delete
+          </button>
+        ),
+        style: {}
+      });
+    }
 
     return (
       <tr key={this.props.dataset.dataset_id}
         style={{
-          backgroundColor: this.props.dataset.loading ? "lightblue" : "white", cursor: "pointer", fontWeight: "400", fontSize: "94%"
+          backgroundColor: isSelected ? "lightblue" : "white", 
+          cursor: "pointer", 
+          fontWeight: "400", 
+          fontSize: "94%",
+          height: "40px" // Fixed row height
         }}
         onClick={this.selectDataset}
       >
-        <td>
-          <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>
-        </td>
-        <td>
-          {this.props.dataset.name || this.props.dataset.dataset_id}
-          {isClientSide && (
-            <span style={{
-              marginLeft: "8px", fontSize: "80%", color: "#666", fontStyle: "italic"
-            }}
-            >
-              (uploaded)
-            </span>
-          )}
-        </td>
-        <td>{this.props.dataset.subjects_count}</td>
-        <td>{this.props.dataset.clone_count}</td>
-        <td>{this.props.dataset.build ? this.props.dataset.build.time : 'N/A'}</td>
-        {this.props.dataset.paper ? <td>{this.props.dataset.paper.url ? <a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a> : this.props.dataset.paper.authorstring}</td>
-          : this.props.showCitation ? <td /> : null
-        }
-        {isClientSide && (
-          <td>
-            <button
-              onClick={this.deleteDataset}
-              style={{
-                padding: "2px 8px",
-                fontSize: "12px",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "3px",
-                cursor: "pointer"
-              }}
-            >
-              Delete
-            </button>
-          </td>
-        )}
+        {columns.map((column, colIndex) => {
+          const isEvenColumn = colIndex % 2 === 0;
+          const cellStyle = {
+            ...column.style,
+            padding: "8px",
+            height: "40px",
+            verticalAlign: "middle",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          };
+          
+          // Apply alternating column shading only if row is not selected
+          if (!isSelected && isEvenColumn) {
+            cellStyle.backgroundColor = '#f8f9fa';
+          }
+          
+          return (
+            <td key={colIndex} style={cellStyle}>
+              {column.content}
+            </td>
+          );
+        })}
       </tr>
     );
   }
@@ -139,16 +200,52 @@ export class DatasetsTable extends React.Component {
         <div style={{fontSize: "26px"}}>
           Available Datasets:
         </div>
-        <table style={{marginLeft: "-22px"}}>
+        <table style={{
+          marginLeft: "-22px",
+          width: "100%",
+          tableLayout: "fixed",
+          borderCollapse: "collapse"
+        }}>
+          <colgroup>
+            <col style={{ width: "80px" }} /> {/* Load Status */}
+            <col style={{ width: "200px" }} /> {/* Name */}
+            <col style={{ width: "150px" }} /> {/* ID */}
+            <col style={{ width: "80px" }} /> {/* Source */}
+            <col style={{ width: "80px" }} /> {/* Subjects */}
+            <col style={{ width: "120px" }} /> {/* Clonal Families */}
+            <col style={{ width: "120px" }} /> {/* Build time */}
+            {showCitation && <col style={{ width: "150px" }} />} {/* From paper */}
+            {hasClientDatasets && <col style={{ width: "80px" }} />} {/* Actions */}
+          </colgroup>
           <tbody>
-            <tr>
-              <th>Load Status</th>
-              <th>ID</th>
-              <th>Subjects</th>
-              <th>Clonal Families</th>
-              <th>Build time</th>
-              {showCitation ? <th>From paper</th> : null}
-              {hasClientDatasets ? <th>Actions</th> : null}
+            <tr style={{ height: "40px" }}>
+              {[
+                "Load Status",
+                "Name", 
+                "ID",
+                "Source",
+                "Subjects",
+                "Clonal Families",
+                "Build time",
+                ...(showCitation ? ["From paper"] : []),
+                ...(hasClientDatasets ? ["Actions"] : [])
+              ].map((header, colIndex) => {
+                const isEvenColumn = colIndex % 2 === 0;
+                return (
+                  <th 
+                    key={colIndex}
+                    style={{
+                      backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
+                      padding: "8px",
+                      height: "40px",
+                      verticalAlign: "middle",
+                      textAlign: "left"
+                    }}
+                  >
+                    {header}
+                  </th>
+                );
+              })}
             </tr>
             {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} showCitation={showCitation} dispatch={this.props.dispatch}/>)}
           </tbody>
