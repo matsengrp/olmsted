@@ -3,7 +3,7 @@
 import "./util/polyfills"; // eslint-disable-line
 /* L I B R A R I E S */
 import React from "react";
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from "react-redux";
 import configureStore from "./store";
 /* S T Y L E S H E E T S */
@@ -20,14 +20,20 @@ Using React Hot Loader 4
 https://github.com/gaearon/react-hot-loader
 */
 
+let root;
 
 const renderApp = () => {
   const Root = require("./Root").default;
-  render(
+  const container = document.getElementById('root');
+  
+  if (!root) {
+    root = createRoot(container);
+  }
+  
+  root.render(
     <Provider store={store}>
       <Root />
-    </Provider>,
-    document.getElementById('root')
+    </Provider>
   );
 };
 
