@@ -4,8 +4,9 @@ import Title from "../framework/title";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
 import { logos } from "./logos";
-import { displayAvailableDatasets, DatasetsTable } from "./availableDatasets";
+import { DatasetsTable } from "./availableDatasetsNew";
 import { CenterContent } from "./centerContent";
+import { CenterContentNoLine } from "./centerContentNoLine";
 import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
 import FileUpload from './fileUpload';
@@ -15,6 +16,10 @@ import FileUpload from './fileUpload';
   errorMessage: state.datasets.errorMessage
 }))
 class Splash extends React.Component {
+  constructor(props) {
+    super(props);
+    this.fileUploadRef = React.createRef();
+  }
   render() {
     return (
       <div style={{justifyContent: "space-around", display: "flex", marginRight: 50}}>
@@ -44,52 +49,79 @@ class Splash extends React.Component {
             </p>
           )}
           {/* Secondly, list the available datasets */}
-
-          <CenterContent>
-            <p style={{
-              maxWidth: 600, marginTop: 0, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143
-            }}
-            >
-              Select datasets below and click "Explore!" to visualize clonal families.
-            </p>
-            {/* This only happens when the app loads up, not when we change the state. */}
+          
+          <p style={{
+            maxWidth: 600, marginTop: 20, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143
+          }}
+          >
+            Select datasets below and click "Explore!" to visualize clonal families.
+          </p>
+          
+          {/* Full width table section */}
+          <div style={{ marginLeft: "-15px", marginRight: "-15px", marginBottom: 20 }}>
             <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
-            <button
-              style={{
-                border: "0px",
-                backgroundColor: "#05337f",
-                marginTop: 20,
-                borderRadius: 5,
-                cursor: "pointer",
-                padding: 20,
-                fontFamily: "Lato",
-                color: "white",
-                fontWeight: 400,
-                fontSize: 18,
-                outline: 0
-              }}
-              onClick={
-                (e) => this.props.dispatch(
-                  changePage(
-                    {
-                      path: "/app",
-                      query:
+          </div>
+          
+          <CenterContentNoLine>
+            <div style={{ display: "flex", gap: "15px", justifyContent: "center", marginTop: 20 }}>
+              <button
+                style={{
+                  border: "0px",
+                  backgroundColor: "#05337f",
+                  borderRadius: 5,
+                  cursor: "pointer",
+                  padding: 20,
+                  fontFamily: "Lato",
+                  color: "white",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  outline: 0
+                }}
+                onClick={
+                  (e) => this.props.dispatch(
+                    changePage(
                       {
-                        selectedDatasets: getSelectedDatasets(
-                          this.props.availableDatasets
-                        ).map((dataset) => dataset.dataset_id)
+                        path: "/app",
+                        query:
+                        {
+                          selectedDatasets: getSelectedDatasets(
+                            this.props.availableDatasets
+                          ).map((dataset) => dataset.dataset_id)
+                        }
                       }
-                    }
+                    )
                   )
-                )
-                }
-            >
-              Explore!
-            </button>
-          </CenterContent>
-          {/* hack; insert line */}
+                  }
+              >
+                Explore!
+              </button>
+              <button
+                style={{
+                  border: "2px solid #05337f",
+                  backgroundColor: "transparent",
+                  borderRadius: 5,
+                  cursor: "pointer",
+                  padding: 20,
+                  fontFamily: "Lato",
+                  color: "#05337f",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  outline: 0
+                }}
+                onClick={() => {
+                  // Trigger file selection
+                  if (this.fileUploadRef.current) {
+                    this.fileUploadRef.current.triggerFileSelect();
+                  }
+                }}
+              >
+                Upload Data
+              </button>
+            </div>
+          </CenterContentNoLine>
           {/* File Upload Section */}
           <FileUpload
+            ref={this.fileUploadRef}
             dispatch={this.props.dispatch}
             onFileUpload={(result) => {
               // Reload datasets after successful upload

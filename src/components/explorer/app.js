@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { hot } from 'react-hot-loader';
 import ClonalFamiliesTable from "./table";
-import LoadingTable from './loadingTable';
+import LoadingTable from './loadingTableNew';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
 import {TreeViz} from "./tree";

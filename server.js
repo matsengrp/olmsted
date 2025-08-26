@@ -21,25 +21,6 @@ globals.setGlobals({localData, localDataPath})
 const app = express();
 app.set('port', process.env.PORT || port);
 
-// gzip all files matching *.clones.json in the data dir
-execFile('find', [global.LOCAL_DATA_PATH, '-name', 'clones.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, stdout, stderr) {
-  if (err) {
-    console.error('Error gzipping clone files:', err);
-    return;
-  }
-  if (stderr) process.stderr.write(stderr);
-  if (stdout) process.stdout.write(stdout);
-});
-
-// gzip data/datasets.json
-execFile('gzip', ['-k9f', path.join(global.LOCAL_DATA_PATH,'datasets.json')], function(err, stdout, stderr) {
-  if (err) {
-    console.error('Error gzipping datasets.json:', err);
-    return;
-  }
-  if (stderr) process.stderr.write(stderr);
-  if (stdout) process.stdout.write(stdout);
-});
 
 
 var options = {

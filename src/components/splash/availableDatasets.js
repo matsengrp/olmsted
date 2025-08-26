@@ -180,6 +180,7 @@ class DatasetRow extends React.Component {
 }
 
 export class DatasetsTable extends React.Component {
+
   render() {
     if (!this.props.availableDatasets) {
       return (
@@ -200,56 +201,77 @@ export class DatasetsTable extends React.Component {
         <div style={{fontSize: "26px"}}>
           Available Datasets:
         </div>
-        <table style={{
-          marginLeft: "-22px",
-          width: "100%",
-          tableLayout: "fixed",
-          borderCollapse: "collapse"
-        }}>
-          <colgroup>
-            <col style={{ width: "80px" }} /> {/* Load Status */}
-            <col style={{ width: "200px" }} /> {/* Name */}
-            <col style={{ width: "150px" }} /> {/* ID */}
-            <col style={{ width: "80px" }} /> {/* Source */}
-            <col style={{ width: "80px" }} /> {/* Subjects */}
-            <col style={{ width: "120px" }} /> {/* Clonal Families */}
-            <col style={{ width: "120px" }} /> {/* Build time */}
-            {showCitation && <col style={{ width: "150px" }} />} {/* From paper */}
-            {hasClientDatasets && <col style={{ width: "80px" }} />} {/* Actions */}
-          </colgroup>
-          <tbody>
-            <tr style={{ height: "40px" }}>
-              {[
-                "Load Status",
-                "Name", 
-                "ID",
-                "Source",
-                "Subjects",
-                "Clonal Families",
-                "Build time",
-                ...(showCitation ? ["From paper"] : []),
-                ...(hasClientDatasets ? ["Actions"] : [])
-              ].map((header, colIndex) => {
-                const isEvenColumn = colIndex % 2 === 0;
-                return (
-                  <th 
-                    key={colIndex}
-                    style={{
-                      backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
-                      padding: "8px",
-                      height: "40px",
-                      verticalAlign: "middle",
-                      textAlign: "left"
-                    }}
-                  >
-                    {header}
-                  </th>
-                );
-              })}
-            </tr>
-            {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} showCitation={showCitation} dispatch={this.props.dispatch}/>)}
-          </tbody>
-        </table>
+        <div style={{
+            marginLeft: "-22px",
+            width: "calc(100% + 22px)",
+            border: "1px solid #dee2e6",
+            borderRadius: "4px",
+            overflow: "hidden"
+          }}>
+          <div style={{
+            maxHeight: "400px",
+            overflowY: "auto",
+            overflowX: "auto"
+          }}>
+            <table style={{
+              width: "100%",
+              tableLayout: "fixed",
+              borderCollapse: "collapse"
+            }}>
+              <colgroup>
+                <col style={{ width: "80px" }} />
+                <col style={{ width: "200px" }} />
+                <col style={{ width: "150px" }} />
+                <col style={{ width: "80px" }} />
+                <col style={{ width: "80px" }} />
+                <col style={{ width: "120px" }} />
+                <col style={{ width: "120px" }} />
+                {showCitation && <col style={{ width: "150px" }} />}
+                {hasClientDatasets && <col style={{ width: "80px" }} />}
+              </colgroup>
+              <thead style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 10,
+                backgroundColor: "white"
+              }}>
+                <tr style={{ height: "40px" }}>
+                  {[
+                    "Load Status",
+                    "Name", 
+                    "ID",
+                    "Source",
+                    "Subjects",
+                    "Clonal Families",
+                    "Build time",
+                    ...(showCitation ? ["From paper"] : []),
+                    ...(hasClientDatasets ? ["Actions"] : [])
+                  ].map((header, colIndex) => {
+                    const isEvenColumn = colIndex % 2 === 0;
+                    return (
+                      <th 
+                        key={colIndex}
+                        style={{
+                          backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
+                          padding: "8px",
+                          height: "40px",
+                          verticalAlign: "middle",
+                          textAlign: "left",
+                          borderBottom: "2px solid #dee2e6"
+                        }}
+                      >
+                        {header}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} showCitation={showCitation} dispatch={this.props.dispatch}/>)}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     );
   }

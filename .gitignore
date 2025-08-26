@@ -23,5 +23,5 @@ proddata
 ### development ###
 **/tmp*/
 **/_claude*/
-tests/_output*
+**/_test*/
 

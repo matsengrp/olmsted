@@ -22,6 +22,8 @@
     "start": "BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev",
     "start:local": "BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData",
     "start:local:perf": "BABEL_ENV=devtiming ./node_modules/.bin/babel-node server.js dev localData",
+    "test:perf": "echo 'Open tests/performance/index.html in your browser to run performance tests'",
+    "test:perf:serve": "npx http-server tests/performance -p 8080 -o",
     "lint": "eslint src",
     "run:electron": "npm run clean && npm run build:electron && npm run getdata && ./node_modules/.bin/electron . ",
     "dist:electron": "npm run clean && npm run build:electron && npm run getdata && electron-builder",

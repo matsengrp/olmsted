@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import { CenterContent } from "./centerContent";
+import { CenterContentNoLine } from "./centerContentNoLine";
 import AIRRProcessor from '../../utils/airrProcessor';
 import SplitFileProcessor from '../../utils/splitFileProcessor';
 import clientDataStore from '../../utils/clientDataStore';
@@ -17,6 +17,22 @@ class FileUpload extends React.Component {
     this.processFile = this.processFile.bind(this);
     this.onDrop = this.onDrop.bind(this);
     this.removeFile = this.removeFile.bind(this);
+    this.fileInputRef = React.createRef();
+  }
+
+  // Method to trigger file selection
+  triggerFileSelect() {
+    if (this.fileInputRef.current) {
+      this.fileInputRef.current.click();
+    }
+  }
+
+  // Handle file input change
+  handleFileInputChange(event) {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      this.onDrop(files);
+    }
   }
 
   async processFile(file) {
@@ -177,12 +193,17 @@ class FileUpload extends React.Component {
     const { uploadedFiles, isProcessing, error } = this.state;
 
     return (
-      <CenterContent>
+      <CenterContentNoLine>
         <div style={{ marginTop: 40, marginBottom: 40 }}>
-          <h3 style={{ textAlign: 'center', marginBottom: 20 }}>
-            Or upload your own data
-          </h3>
-
+          {/* Hidden file input for programmatic access */}
+          <input
+            ref={this.fileInputRef}
+            type="file"
+            accept="application/json, .json"
+            multiple
+            style={{ display: 'none' }}
+            onChange={this.handleFileInputChange.bind(this)}
+          />
           <Dropzone
             onDrop={this.onDrop}
             accept="application/json, application/gzip, .json, .gz"
@@ -322,7 +343,7 @@ class FileUpload extends React.Component {
             </div>
           )}
         </div>
-      </CenterContent>
+      </CenterContentNoLine>
     );
   }
 }
