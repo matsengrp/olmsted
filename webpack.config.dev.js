@@ -15,6 +15,11 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/dist/'
   },
+  resolve: {
+    alias: {
+      'vega-lib': 'vega'
+    }
+  },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     // NODE_ENV is automatically set by webpack 5 based on mode
@@ -33,7 +38,7 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: "file-loader",
+        type: "asset/resource",
         include: path.join(__dirname, "src")
       }
     ]

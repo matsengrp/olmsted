@@ -1,5 +1,5 @@
 import React from "react";
-import DownloadText from "../util/downloadtext";
+import DownloadText from "../util/downloadText";
 
 class DownloadFasta extends React.Component {
   constructor(props) {

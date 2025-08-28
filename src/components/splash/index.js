@@ -4,9 +4,8 @@ import Title from "../framework/title";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
 import { logos } from "./logos";
-import { DatasetsTable } from "./availableDatasetsNew";
+import { DatasetsTable } from "./availableDatasets";
 import { CenterContent } from "./centerContent";
-import { CenterContentNoLine } from "./centerContentNoLine";
 import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
 import FileUpload from './fileUpload';
@@ -62,7 +61,7 @@ class Splash extends React.Component {
             <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
           </div>
           
-          <CenterContentNoLine>
+          <CenterContent>
             <div style={{ display: "flex", gap: "15px", justifyContent: "center", marginTop: 20 }}>
               <button
                 style={{
@@ -118,7 +117,7 @@ class Splash extends React.Component {
                 Upload Data
               </button>
             </div>
-          </CenterContentNoLine>
+          </CenterContent>
           {/* File Upload Section */}
           <FileUpload
             ref={this.fileUploadRef}

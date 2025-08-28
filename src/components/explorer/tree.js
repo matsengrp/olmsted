@@ -4,11 +4,11 @@ import Vega from 'react-vega';
 import * as _ from "lodash";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import {concatTreeWithAlignmentSpec} from './vega/clonal_family_details';
+import {concatTreeWithAlignmentSpec} from './vega/clonalFamilyDetails';
 import {getNaiveVizData} from "./naive";
 import * as explorerActions from "../../actions/explorer.js";
-import DownloadFasta from "./downloadfasta";
-import DownloadText from "../util/downloadtext";
+import DownloadFasta from "./downloadFasta";
+import DownloadText from "../util/downloadText";
 import {IncompleteDataWarning} from "../util/incomplete";
 import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 

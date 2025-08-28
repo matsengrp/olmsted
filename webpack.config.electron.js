@@ -49,7 +49,7 @@ module.exports = {
     },
     {
       test: /\.(gif|png|jpe?g|svg)$/i,
-      use: "file-loader",
+      type: "asset/resource",
       include: path.join(__dirname, "src")
     }]
   }

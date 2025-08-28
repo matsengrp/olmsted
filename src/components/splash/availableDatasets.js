@@ -2,48 +2,31 @@ import React from "react";
 import * as _ from "lodash";
 import { red } from "./displayError";
 import { getClonalFamilies } from "../../actions/loadData";
-import { getClientClonalFamilies, loadDataSmart } from "../../actions/clientDataLoader";
+import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
-import { getClientDatasets } from "../../actions/clientDataLoader";
+import { ResizableTable } from "../util/resizableTable";
 
-class DatasetRow extends React.Component {
+// Component for the load status column
+class LoadStatusCell extends React.Component {
   constructor(props) {
     super(props);
-    // This binding is necessary to make `this` work in the callback
     this.selectDataset = this.selectDataset.bind(this);
-    this.deleteDataset = this.deleteDataset.bind(this);
   }
 
-  deleteDataset(e) {
-    e.stopPropagation(); // Prevent row click event
-
-    const datasetName = this.props.dataset.name || this.props.dataset.dataset_id;
-    if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
-      // Remove from client store
-      clientDataStore.removeDataset(this.props.dataset.dataset_id);
-
-      // Dispatch action to remove from Redux state
-      this.props.dispatch({
-        type: types.REMOVE_DATASET,
-        dataset_id: this.props.dataset.dataset_id
-      });
-
-      console.log('Deleted client-side dataset:', this.props.dataset.dataset_id);
-    }
-  }
-
-  selectDataset() {
-    console.log("select dataset");
-    switch (this.props.dataset.loading) {
+  selectDataset(e) {
+    e.stopPropagation();
+    const dataset = this.props.datum;
+    
+    switch (dataset.loading) {
       case "LOADING": {
         break;
       }
       case "DONE": {
         this.props.dispatch({
           type: types.LOADING_DATASET,
-          dataset_id: this.props.dataset.dataset_id,
+          dataset_id: dataset.dataset_id,
           loading: false
         });
         break;
@@ -51,15 +34,15 @@ class DatasetRow extends React.Component {
       default: {
         this.props.dispatch({
           type: types.LOADING_DATASET,
-          dataset_id: this.props.dataset.dataset_id,
+          dataset_id: dataset.dataset_id,
           loading: "LOADING"
         });
 
         // Try client-side data first, fallback to server
-        if (this.props.dataset.isClientSide) {
-          getClientClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id);
+        if (dataset.isClientSide) {
+          getClientClonalFamilies(this.props.dispatch, dataset.dataset_id);
         } else {
-          getClonalFamilies(this.props.dispatch, this.props.dataset.dataset_id);
+          getClonalFamilies(this.props.dispatch, dataset.dataset_id);
         }
         break;
       }
@@ -67,120 +50,81 @@ class DatasetRow extends React.Component {
   }
 
   render() {
-    const isClientSide = this.props.dataset.isClientSide || this.props.dataset.temporary;
-    const isSelected = this.props.dataset.loading;
-
-    // Define columns data for easier alternating column styling
-    const columns = [
-      {
-        content: <LoadingStatus loadingStatus={this.props.dataset.loading} loading={<SimpleInProgress/>} done={'\u2713'} default={'\u2795'}/>,
-        style: {}
-      },
-      {
-        content: this.props.dataset.name || this.props.dataset.dataset_id,
-        style: {}
-      },
-      {
-        content: this.props.dataset.dataset_id,
-        style: { fontSize: "12px", color: "#666", fontFamily: "monospace" }
-      },
-      {
-        content: isClientSide ? "Local" : "Server",
-        style: { fontSize: "12px", color: isClientSide ? "#007bff" : "#666" }
-      },
-      {
-        content: this.props.dataset.subjects_count || '—',
-        style: {}
-      },
-      {
-        content: this.props.dataset.clone_count || '—',
-        style: {}
-      },
-      {
-        content: this.props.dataset.build ? this.props.dataset.build.time || '—' : '—',
-        style: {}
-      }
-    ];
-
-    // Add citation column if needed
-    if (this.props.dataset.paper) {
-      columns.push({
-        content: this.props.dataset.paper.url ? 
-          <a href={this.props.dataset.paper.url}>{this.props.dataset.paper.authorstring}</a> : 
-          this.props.dataset.paper.authorstring,
-        style: {}
-      });
-    } else if (this.props.showCitation) {
-      columns.push({
-        content: '',
-        style: {}
-      });
-    }
-
-    // Add delete button column if needed
-    if (isClientSide) {
-      columns.push({
-        content: (
-          <button
-            onClick={this.deleteDataset}
-            style={{
-              padding: "2px 8px",
-              fontSize: "12px",
-              backgroundColor: "#dc3545",
-              color: "white",
-              border: "none",
-              borderRadius: "3px",
-              cursor: "pointer"
-            }}
-          >
-            Delete
-          </button>
-        ),
-        style: {}
-      });
-    }
-
     return (
-      <tr key={this.props.dataset.dataset_id}
+      <div onClick={this.selectDataset} style={{ cursor: 'pointer', width: '100%', textAlign: 'center' }}>
+        <LoadingStatus 
+          loadingStatus={this.props.datum.loading} 
+          loading={<SimpleInProgress/>} 
+          done={'\u2713'} 
+          default={'\u2795'}
+        />
+      </div>
+    );
+  }
+}
+
+// Component for the citation column
+class CitationCell extends React.Component {
+  render() {
+    const paper = this.props.datum.paper;
+    if (!paper) return <span>—</span>;
+    
+    if (paper.url) {
+      return <a href={paper.url} onClick={(e) => e.stopPropagation()}>{paper.authorstring}</a>;
+    }
+    return <span>{paper.authorstring}</span>;
+  }
+}
+
+// Component for the delete button
+class DeleteButtonCell extends React.Component {
+  constructor(props) {
+    super(props);
+    this.deleteDataset = this.deleteDataset.bind(this);
+  }
+
+  deleteDataset(e) {
+    e.stopPropagation();
+    const dataset = this.props.datum;
+    const datasetName = dataset.name || dataset.dataset_id;
+    
+    if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
+      clientDataStore.removeDataset(dataset.dataset_id);
+      this.props.dispatch({
+        type: types.REMOVE_DATASET,
+        dataset_id: dataset.dataset_id
+      });
+      console.log('Deleted client-side dataset:', dataset.dataset_id);
+    }
+  }
+
+  render() {
+    const isClientSide = this.props.datum.isClientSide || this.props.datum.temporary;
+    
+    if (!isClientSide) {
+      return <span>—</span>;
+    }
+    
+    return (
+      <button
+        onClick={this.deleteDataset}
         style={{
-          backgroundColor: isSelected ? "lightblue" : "white", 
-          cursor: "pointer", 
-          fontWeight: "400", 
-          fontSize: "94%",
-          height: "40px" // Fixed row height
+          padding: "2px 8px",
+          fontSize: "12px",
+          backgroundColor: "#dc3545",
+          color: "white",
+          border: "none",
+          borderRadius: "3px",
+          cursor: "pointer"
         }}
-        onClick={this.selectDataset}
       >
-        {columns.map((column, colIndex) => {
-          const isEvenColumn = colIndex % 2 === 0;
-          const cellStyle = {
-            ...column.style,
-            padding: "8px",
-            height: "40px",
-            verticalAlign: "middle",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap"
-          };
-          
-          // Apply alternating column shading only if row is not selected
-          if (!isSelected && isEvenColumn) {
-            cellStyle.backgroundColor = '#f8f9fa';
-          }
-          
-          return (
-            <td key={colIndex} style={cellStyle}>
-              {column.content}
-            </td>
-          );
-        })}
-      </tr>
+        Delete
+      </button>
     );
   }
 }
 
 export class DatasetsTable extends React.Component {
-
   render() {
     if (!this.props.availableDatasets) {
       return (
@@ -189,89 +133,61 @@ export class DatasetsTable extends React.Component {
         </div>
       );
     }
-    // Do any of the datasets have a "paper" field
-    const showCitation = _.reduce(this.props.availableDatasets,
-      (hasPaperInfo, dataset) => hasPaperInfo || dataset.paper !== undefined,
-      false); // base case
-    // Check if any datasets are client-side/temporary
-    const hasClientDatasets = this.props.availableDatasets.some((d) => d.isClientSide || d.temporary);
+
+    // Check if we need citation column
+    const showCitation = _.some(this.props.availableDatasets, d => d.paper !== undefined);
+    // Check if we need delete button column
+    const hasClientDatasets = _.some(this.props.availableDatasets, d => d.isClientSide || d.temporary);
+
+    // Build mappings for the table
+    const mappings = [
+      ["Load", LoadStatusCell, { sortKey: "loading" }],
+      ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
+      ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
+      ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"), 
+        { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
+      ["Subjects", "subjects_count"],
+      ["Families", "clone_count"],
+      ["Build Time", (d) => (d.build ? d.build.time || '—' : '—'), { sortKey: "build.time" }]
+    ];
+
+    if (showCitation) {
+      mappings.push(["Citation", CitationCell, { sortable: false }]);
+    }
+
+    if (hasClientDatasets) {
+      mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
+    }
+
+    // Define column widths
+    const columnWidths = [
+      60,   // Load
+      200,  // Name
+      150,  // ID
+      80,   // Source
+      80,   // Subjects
+      100,  // Families
+      120,  // Build time
+      ...(showCitation ? [150] : []),
+      ...(hasClientDatasets ? [80] : [])
+    ];
 
     return (
-      <div>
-        <div style={{fontSize: "26px"}}>
+      <div style={{ width: "100%" }}>
+        <div style={{fontSize: "26px", marginBottom: "10px"}}>
           Available Datasets:
         </div>
-        <div style={{
-            marginLeft: "-22px",
-            width: "calc(100% + 22px)",
-            border: "1px solid #dee2e6",
-            borderRadius: "4px",
-            overflow: "hidden"
-          }}>
-          <div style={{
-            maxHeight: "400px",
-            overflowY: "auto",
-            overflowX: "auto"
-          }}>
-            <table style={{
-              width: "100%",
-              tableLayout: "fixed",
-              borderCollapse: "collapse"
-            }}>
-              <colgroup>
-                <col style={{ width: "80px" }} />
-                <col style={{ width: "200px" }} />
-                <col style={{ width: "150px" }} />
-                <col style={{ width: "80px" }} />
-                <col style={{ width: "80px" }} />
-                <col style={{ width: "120px" }} />
-                <col style={{ width: "120px" }} />
-                {showCitation && <col style={{ width: "150px" }} />}
-                {hasClientDatasets && <col style={{ width: "80px" }} />}
-              </colgroup>
-              <thead style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 10,
-                backgroundColor: "white"
-              }}>
-                <tr style={{ height: "40px" }}>
-                  {[
-                    "Load Status",
-                    "Name", 
-                    "ID",
-                    "Source",
-                    "Subjects",
-                    "Clonal Families",
-                    "Build time",
-                    ...(showCitation ? ["From paper"] : []),
-                    ...(hasClientDatasets ? ["Actions"] : [])
-                  ].map((header, colIndex) => {
-                    const isEvenColumn = colIndex % 2 === 0;
-                    return (
-                      <th 
-                        key={colIndex}
-                        style={{
-                          backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
-                          padding: "8px",
-                          height: "40px",
-                          verticalAlign: "middle",
-                          textAlign: "left",
-                          borderBottom: "2px solid #dee2e6"
-                        }}
-                      >
-                        {header}
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {this.props.availableDatasets.map((dataset) => <DatasetRow key={dataset.dataset_id} dataset={dataset} showCitation={showCitation} dispatch={this.props.dispatch}/>)}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <ResizableTable
+          data={this.props.availableDatasets}
+          mappings={mappings}
+          columnWidths={columnWidths}
+          containerHeight={200}
+          itemName="datasets"
+          componentProps={{ dispatch: this.props.dispatch }}
+          getRowStyle={(dataset) => ({
+            backgroundColor: dataset.loading ? "lightblue" : "white"
+          })}
+        />
       </div>
     );
   }

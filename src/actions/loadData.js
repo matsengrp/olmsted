@@ -14,7 +14,6 @@ const charonErrorHandler = () => {
   dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
 };
 
-
 export const getTree = (dispatch, tree_id) => {
   const processData = (data, tree_id) => {
     let tree;
@@ -134,7 +133,6 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   request.send(null);
 };
 
-
 const getSegmentName = (datapath, availableDatasets) => {
   /* this code is duplicated too many times. TODO */
   const paramFields = parseParams(datapath, availableDatasets).dataset;
@@ -153,7 +151,6 @@ const getSegmentName = (datapath, availableDatasets) => {
   }
   return undefined;
 };
-
 
 const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
   const apiPath = (jsonType) => `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
@@ -227,21 +224,3 @@ export const changeS3Bucket = () => {
     dispatch(loadJSONs(newBucket));
   };
 };
-
-// Dead code - commented out to fix webpack warnings
-// This function references undefined exports: createTreeTooState and TREE_TOO_DATA
-// export const loadTreeToo = (name, path) => (dispatch, getState) => {
-//   const { datasets } = getState();
-//   const apiCall = `${charonAPIAddress}request=json&path=${path}_tree.json&s3=${datasets.s3bucket}`;
-//   fetch(apiCall)
-//     .then((res) => res.json())
-//     .then((res) => {
-//       const newState = createTreeTooState(
-//         {treeTooJSON: res, oldState: getState(), segment: name}
-//       );
-//       dispatch({ type: types.TREE_TOO_DATA, treeToo: newState.treeToo, controls: newState.controls, segment: name});
-//     })
-//     .catch((err) => {
-//       console.error("Error while loading second tree", err);
-//     });
-// };

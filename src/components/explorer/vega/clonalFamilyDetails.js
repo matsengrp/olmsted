@@ -90,7 +90,7 @@ const IMGTScientificChartColors = [
 const concatTreeWithAlignmentSpec = () => {
   return (
     {
-      $schema: "https://vega.github.io/schema/vega/v4.json",
+      $schema: "https://vega.github.io/schema/vega/v5.json",
       description: "",
       autosize: {type: "pad", resize: true},
       // Note that we have some datasets named for signals
@@ -1462,7 +1462,7 @@ const seqAlignSpec = (family) => {
   const height = (family["lineage_seq_counter"]+2)*mutation_mark_height+padding;
   return (
     {
-      $schema: "https://vega.github.io/schema/vega/v4.json",
+      $schema: "https://vega.github.io/schema/vega/v5.json",
       padding: 5,
       height: height,
       width: 1000,

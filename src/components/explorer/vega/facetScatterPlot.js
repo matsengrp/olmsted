@@ -1,7 +1,7 @@
 const facetClonalFamiliesVizSpec = () => {
   return (
     {
-      $schema: "https://vega.github.io/schema/vega/v4.json",
+      $schema: "https://vega.github.io/schema/vega/v5.json",
       autosize: {type: "pad"},
       // DATA
       data: [
@@ -18,8 +18,7 @@ const facetClonalFamiliesVizSpec = () => {
           name: "brush_store",
           on: [
             // single trigger version
-            {trigger: "brush_selection", insert: "brush_selection", remove: true},
-            {trigger: "facet_by_signal", remove: true}
+            {trigger: "brush_selection", insert: "brush_selection", remove: true}
 
             // Use a pattern similar to this for #114
             // {"trigger": "!shift", "remove": true},
@@ -60,21 +59,20 @@ const facetClonalFamiliesVizSpec = () => {
             {
               type: "filter",
               expr: "datum[\"unique_seqs_count\"] !== null && !isNaN(datum[\"unique_seqs_count\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
-            },
-            // Add the facet by field work around since it cannot be updated directly
-            // with a signal see https://github.com/vega/vega/issues/1461
-            {type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field"}
-
+            }
+          ]
+        },
+        {
+          name: "faceted_data",
+          source: "data_0",
+          transform: [
+            {type: "formula", expr: "facet_by_signal == 'none' ? '' : datum[facet_by_signal]", as: "facet_key"}
           ]
         },
         {
           name: "column_domain",
-          source: "data_0",
-          transform: [{type: "aggregate", groupby: [{signal: "facet_by_signal"}]},
-            // Add the facet by field work around since it cannot be updated directly
-            // with a signal see https://github.com/vega/vega/issues/1461
-            {type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field"}
-          ]
+          source: "faceted_data",
+          transform: [{type: "aggregate", groupby: ["facet_key"]}]
         }
       ],
       // SIGNALS
@@ -286,9 +284,9 @@ const facetClonalFamiliesVizSpec = () => {
           type: "group",
           role: "column-header",
           from: {data: "column_domain"},
-          sort: {field: "datum[\"facet_by_field\"]", order: "ascending"},
+          sort: {field: "datum[\"facet_key\"]", order: "ascending"},
           title: {
-            text: {signal: "'' + (toString(parent[\"facet_by_field\"]) ? parent[\"facet_by_field\"] : '')"},
+            text: {signal: "'' + (toString(parent[\"facet_key\"]) ? parent[\"facet_key\"] : '')"},
             offset: 10,
             style: "guide-label",
             baseline: "middle"
@@ -300,7 +298,7 @@ const facetClonalFamiliesVizSpec = () => {
           type: "group",
           role: "column-footer",
           from: {data: "column_domain"},
-          sort: {field: "datum[\"facet_by_field\"]", order: "ascending"},
+          sort: {field: "datum[\"facet_key\"]", order: "ascending"},
           encode: {update: {width: {signal: "child_width"}}},
           axes: [
             {
@@ -321,9 +319,9 @@ const facetClonalFamiliesVizSpec = () => {
           type: "group",
           style: "cell",
           from: {
-            facet: {name: "facet", data: "data_0", groupby: "facet_by_field"}
+            facet: {name: "facet", data: "faceted_data", groupby: ["facet_key"]}
           },
-          sort: {field: "datum.facet_by_field", order: "ascending"},
+          sort: {field: ["datum", "facet_key"], order: "ascending"},
           encode: {
             update: {
               width: {signal: "child_width"},
@@ -343,11 +341,11 @@ const facetClonalFamiliesVizSpec = () => {
             },
             {
               name: "local_facet_value",
-              update: "facet_by_signal !== \"none\" ? facet.facet_by_field : 'none'"
+              update: "facet_by_signal != 'none' && datum && datum.facet_key ? datum.facet_key : ''"
             },
             {
               name: "brush_test",
-              update: "data(\"brush_store\").length && (local_facet_value !== \"none\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
+              update: "data(\"brush_store\").length && (local_facet_value != '' ? (data(\"brush_store\")[0].facetValue == datum.facet_key) : true)"
             },
             // TODO (#118): use brush store and get rid of brushed_facet_value
             {
@@ -355,7 +353,7 @@ const facetClonalFamiliesVizSpec = () => {
               push: "outer",
               on: [
                 {
-                  events: "@cell:mousedown", update: "[facet_by_signal, facet.facet_by_field]"
+                  events: "@cell:mousedown", update: "[facet_by_signal, datum && datum.facet_key ? datum.facet_key : '']"
                 }
               ]
             },

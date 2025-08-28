@@ -52,7 +52,9 @@ if (devServer) {
   }));
 
   // Change this to zip data instead of dist
-  app.use("/data", expressStaticGzip(global.LOCAL_DATA_PATH, options));
+  if (global.LOCAL_DATA_PATH) {
+    app.use("/data", expressStaticGzip(global.LOCAL_DATA_PATH, options));
+  }
   app.use(express.static(path.join(__dirname, "dist")));
 
 } else {

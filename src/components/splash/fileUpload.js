@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import { CenterContentNoLine } from "./centerContentNoLine";
+import { CenterContent } from "./centerContent";
 import AIRRProcessor from '../../utils/airrProcessor';
 import SplitFileProcessor from '../../utils/splitFileProcessor';
 import clientDataStore from '../../utils/clientDataStore';
@@ -193,7 +193,7 @@ class FileUpload extends React.Component {
     const { uploadedFiles, isProcessing, error } = this.state;
 
     return (
-      <CenterContentNoLine>
+      <CenterContent>
         <div style={{ marginTop: 40, marginBottom: 40 }}>
           {/* Hidden file input for programmatic access */}
           <input
@@ -343,7 +343,7 @@ class FileUpload extends React.Component {
             </div>
           )}
         </div>
-      </CenterContentNoLine>
+      </CenterContent>
     );
   }
 }

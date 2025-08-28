@@ -4,9 +4,9 @@ import Vega from 'react-vega';
 import * as _ from "lodash";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import {seqAlignSpec} from './vega/clonal_family_details';
+import {seqAlignSpec} from './vega/clonalFamilyDetails';
 import Copy from "../util/copy";
-import DownloadFasta from "./downloadfasta";
+import DownloadFasta from "./downloadFasta";
 import {getNaiveVizData} from "./naive";
 import {CollapseHelpTitle} from "../util/collapseHelpTitle";
 
