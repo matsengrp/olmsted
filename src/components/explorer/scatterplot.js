@@ -4,9 +4,11 @@ import Vega from 'react-vega';
 import * as _ from "lodash";
 import * as vega from 'vega';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import facetClonalFamiliesVizSpec from './vega/facetScatterPlot';
+// import facetClonalFamiliesVizSpec from './vega/facet_scatter_plot';
+// import facetClonalFamiliesVizSpec from './vega/facetScatterPlot';
 // import facetClonalFamiliesVizSpec from './vega/facetScatterPlotSimple';
 // import facetClonalFamiliesVizSpec from './vega/facetScatterPlotFixed';
+import facetClonalFamiliesVizSpec from './vega/facetScatterPlotV5';
 import * as explorerActions from "../../actions/explorer.js";
 
 // Clonal Families Viz

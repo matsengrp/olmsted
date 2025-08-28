@@ -32,20 +32,47 @@ div.vega-bindings {
   font-size: 10pt;
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+div.vega-bindings div.vega-bind,
+.vega-bind {
+  display: inline-flex;
+  flex-direction: row;
+  padding: 8px 12px !important;
+  margin: 5px !important;
+  flex: 0 1 auto;
+  min-width: 350px;
+  align-items: center;
+}
+
+div.vega-bindings div.vega-bind:has(input[type="checkbox"]) {
+  min-width: 150px;
+}
+div.vega-bindings div.vega-bind .vega-bind-name,
+div.vega-bindings div.vega-bind span.vega-bind-name {
+  margin-right: 12px;
+  font-weight: 500;
+  padding-right: 5px;
 }
 
 div.vega-bindings div.vega-bind {
-  display: flex;
-  flex-direction: row;
-  padding: 10px;
-  width: 330px;
-  align-items: center;
+  padding: 10px !important;
 }
-div.vega-bindings div.vega-bind .vega-bind-name {
-  margin-right: 8px;
-}
-div.vega-bindings div.vega-bind input {
+div.vega-bindings div.vega-bind input,
+div.vega-bindings div.vega-bind select {
   margin-right: 6px;
+}
+
+div.vega-bindings div.vega-bind select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: white;
+  font-size: 10pt;
 }
 
 div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-thumb {
