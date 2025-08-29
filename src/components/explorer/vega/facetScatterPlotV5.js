@@ -16,12 +16,6 @@ const facetClonalFamiliesVizSpec = () => {
           name: "locus"
         },
         {
-          name: "brush_store",
-          on: [
-            {trigger: "brush_selection", insert: "brush_selection", remove: true}
-          ]
-        },
-        {
           name: "source"
         },
         {
@@ -116,17 +110,17 @@ const facetClonalFamiliesVizSpec = () => {
         {
           name: "colorBy",
           value: "subject_id",
-          bind: {name: "Color by ", input: "select", options: ["subject_id", "sample.timepoint_id", "sample.locus", "dataset.dataset_id"]}
+          bind: {name: "Color by ", input: "select", options: ["<none>", "subject_id", "sample.timepoint_id", "sample.locus", "dataset.dataset_id"]}
         },
         {
           name: "shapeBy",
           value: "sample.timepoint_id",
-          bind: {name: "Shape by ", input: "select", options: ["sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
+          bind: {name: "Shape by ", input: "select", options: ["<none>", "sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
         },
         {
           name: "sizeBy",
           value: "unique_seqs_count",
-          bind: {name: "Size by ", input: "select", options: ["unique_seqs_count", "mean_mut_freq", "junction_length", "unique_sample"]}
+          bind: {name: "Size by ", input: "select", options: ["<none>", "unique_seqs_count", "mean_mut_freq", "junction_length", "unique_sample"]}
         },
         {
           name: "filledShapes",
@@ -145,88 +139,97 @@ const facetClonalFamiliesVizSpec = () => {
             }
           ]
         },
-        // Brush signals - simplified for Vega 5
         {
-          name: "brush_x",
-          value: [],
+          name: "down",
+          value: null,
+          on: [
+            {events: "mousedown", update: "xy()"},
+            {events: "mouseup", update: "null"}
+          ]
+        },
+        {
+          name: "xcur",
+          value: null,
+          on: [
+            {events: "mousedown", update: "slice(xdom)"}
+          ]
+        },
+        {
+          name: "ycur", 
+          value: null,
+          on: [
+            {events: "mousedown", update: "slice(ydom)"}
+          ]
+        },
+        {
+          name: "delta",
+          value: [0, 0],
           on: [
             {
-              events: {source: "scope", type: "mousedown", filter: ["!event.item"]},
-              update: "[x(), x()]"
-            },
-            {
-              events: {source: "scope", type: "mousemove", between: [
-                {source: "scope", type: "mousedown", filter: ["!event.item"]}, 
-                {source: "scope", type: "mouseup"}
-              ]},
-              update: "[brush_x[0], clamp(x(), 0, width)]"
-            },
-            {
-              events: {source: "scope", type: "dblclick"},
-              update: "[]"
+              events: [{source: "window", type: "mousemove", consume: true, between: [{type: "mousedown"}, {source: "window", type: "mouseup"}]}],
+              update: "down ? [down[0] - x(), down[1] - y()] : [0,0]"
             }
           ]
         },
         {
-          name: "brush_y",
-          value: [],
+          name: "anchor",
+          value: [0, 0],
+          on: [
+            {events: "wheel", update: "[invert('x', x()), invert('y', y())]"}
+          ]
+        },
+        {
+          name: "zoom",
+          value: 1,
           on: [
             {
-              events: {source: "scope", type: "mousedown", filter: ["!event.item"]},
-              update: "[y(), y()]"
-            },
-            {
-              events: {source: "scope", type: "mousemove", between: [
-                {source: "scope", type: "mousedown", filter: ["!event.item"]}, 
-                {source: "scope", type: "mouseup"}
-              ]},
-              update: "[brush_y[0], clamp(y(), 0, height)]"
-            },
-            {
-              events: {source: "scope", type: "dblclick"},
-              update: "[]"
+              events: "wheel!",
+              force: true,
+              update: "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
             }
           ]
         },
         {
-          name: "brush_x_field",
-          value: [],
+          name: "xdom",
+          init: "extent(data('data_0'), xField)",
           on: [
             {
-              events: {source: "scope", type: "dblclick"},
-              update: "null"
+              events: "signal:xField",
+              update: "extent(data('data_0'), xField)"
             },
             {
-              events: {signal: "brush_x"},
-              update: "brush_x[0] === brush_x[1] ? null : invert('x', brush_x)"
+              events: "dblclick",
+              update: "extent(data('data_0'), xField)"
+            },
+            {
+              events: "signal:delta",
+              update: "[xcur[0] + delta[0] / child_width * (xcur[1] - xcur[0]), xcur[1] + delta[0] / child_width * (xcur[1] - xcur[0])]"
+            },
+            {
+              events: "signal:zoom",
+              update: "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
             }
           ]
         },
         {
-          name: "brush_y_field",
-          value: [],
+          name: "ydom", 
+          init: "extent(data('data_0'), yField)",
           on: [
             {
-              events: {source: "scope", type: "dblclick"},
-              update: "null"
+              events: "signal:yField",
+              update: "extent(data('data_0'), yField)"
             },
             {
-              events: {signal: "brush_y"},
-              update: "brush_y[0] === brush_y[1] ? null : invert('y', brush_y)"
-            }
-          ]
-        },
-        {
-          name: "brush_selection",
-          value: {},
-          on: [
+              events: "dblclick",
+              update: "extent(data('data_0'), yField)"
+            },
             {
-              events: [
-                {signal: "brush_x_field"},
-                {signal: "brush_y_field"}
-              ],
-              update: "{intervals: { \"x\": { field: xField, extent: brush_x_field },  \"y\": { field: yField, extent: brush_y_field } } }",
-              force: true
+              events: "signal:delta",
+              update: "[ycur[0] - delta[1] / child_height * (ycur[1] - ycur[0]), ycur[1] - delta[1] / child_height * (ycur[1] - ycur[0])]"
+            },
+            {
+              events: "signal:zoom", 
+              update: "[anchor[1] + (ydom[0] - anchor[1]) * zoom, anchor[1] + (ydom[1] - anchor[1]) * zoom]"
             }
           ]
         }
@@ -236,17 +239,17 @@ const facetClonalFamiliesVizSpec = () => {
         {
           name: "x",
           type: "linear",
-          domain: {data: "data_0", field: {signal: "xField"}},
+          domain: {signal: "xdom"},
           range: [0, {signal: "child_width"}],
-          nice: true,
+          nice: false,
           zero: false
         },
         {
           name: "y",
           type: "linear",
-          domain: {data: "data_0", field: {signal: "yField"}},
+          domain: {signal: "ydom"},
           range: [{signal: "child_height"}, 0],
-          nice: true,
+          nice: false,
           zero: false
         },
         {
@@ -342,12 +345,20 @@ const facetClonalFamiliesVizSpec = () => {
                   test: "data('selected')[0] && data('selected')[0].ident === datum.ident",
                   value: "red"
                 },
+                {
+                  test: "colorBy === '<none>'",
+                  value: "#4682b4"
+                },
                 {scale: "color", field: {signal: "colorBy"}}
               ],
               stroke: [
                 {
                   test: "!filledShapes && data('selected')[0] && data('selected')[0].ident === datum.ident",
                   value: "red"
+                },
+                {
+                  test: "!filledShapes && colorBy === '<none>'",
+                  value: "#4682b4"
                 },
                 {
                   test: "!filledShapes",
@@ -362,13 +373,25 @@ const facetClonalFamiliesVizSpec = () => {
               strokeWidth: {
                 value: 2
               },
-              shape: {
-                scale: "shape",
-                field: {signal: "shapeBy"}
-              },
+              shape: [
+                {
+                  test: "shapeBy === '<none>'",
+                  value: "circle"
+                },
+                {
+                  scale: "shape",
+                  field: {signal: "shapeBy"}
+                }
+              ],
               x: {scale: "x", field: {signal: "xField"}},
               y: {scale: "y", field: {signal: "yField"}},
-              size: {scale: "size", field: {signal: "sizeBy"}},
+              size: [
+                {
+                  test: "sizeBy === '<none>'",
+                  value: 100
+                },
+                {scale: "size", field: {signal: "sizeBy"}}
+              ],
               tooltip: {
                 signal: "{\"Clone ID\": datum.ident, \"X\": datum[xField], \"Y\": datum[yField], \"Color\": datum[colorBy], \"Shape\": datum[shapeBy], \"Size\": datum[sizeBy]}"
               }
@@ -376,22 +399,6 @@ const facetClonalFamiliesVizSpec = () => {
             hover: {
               opacity: {value: 0.5},
               cursor: {value: "pointer"}
-            }
-          }
-        },
-        {
-          name: "brush",
-          type: "rect",
-          encode: {
-            enter: {
-              fill: {value: "#333"},
-              fillOpacity: {value: 0.125}
-            },
-            update: {
-              x: {signal: "brush_x[0]"},
-              y: {signal: "brush_y[0]"},
-              x2: {signal: "brush_x[1]"},
-              y2: {signal: "brush_y[1]"}
             }
           }
         }

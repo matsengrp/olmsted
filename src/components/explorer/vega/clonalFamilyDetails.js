@@ -178,12 +178,12 @@ const concatTreeWithAlignmentSpec = () => {
             {expr: "scale(\"yscale\", datum.y_tree)", type: "formula", as: "y"},
             {
               type: "formula",
-              expr: "branch_width_by !== 'none' ? datum[branch_width_by] : null",
+              expr: "branch_width_by !== '<none>' ? datum[branch_width_by] : null",
               as: "branch_width_by_field"
             },
             {
               type: "formula",
-              expr: "branch_color_by !== 'none' ? datum[branch_color_by] : null",
+              expr: "branch_color_by !== '<none>' ? datum[branch_color_by] : null",
               as: "branch_color_by_field"
             }
           ],
@@ -223,8 +223,8 @@ const concatTreeWithAlignmentSpec = () => {
             // to a new field named "leaf_size_by" so we can always expect to
             // use that field from here on with respect to sizing the leaves.
             // Make sure it is a number / not NaN (vega differentiates these)
-            // Handle "none" option by setting constant value
-            { type: "formula", expr: "leaf_size_by === 'none' ? 1 : (isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", as: "leaf_size_by"}
+            // Handle "<none>" option by setting constant value
+            { type: "formula", expr: "leaf_size_by === '<none>' ? 1 : (isNumber(datum[leaf_size_by]) &&  datum[leaf_size_by] !== NaN) ? datum[leaf_size_by] : NaN", as: "leaf_size_by"}
           ],
           source: "tree"
         },
@@ -453,8 +453,8 @@ const concatTreeWithAlignmentSpec = () => {
         {
           // Metadata field to use for sizing the leaves
           name: "leaf_size_by",
-          value: "none",
-          bind: {input: "select", options: ["none", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]}
+          value: "<none>",
+          bind: {input: "select", options: ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]}
         },
         {
           name: "leaf_size_by_legend_label",
@@ -469,15 +469,15 @@ const concatTreeWithAlignmentSpec = () => {
           // Seq metric to use for sizing branches;
           // uses value from the child of the branch
           name: "branch_width_by",
-          value: "none",
-          bind: {input: "select", options: ["none", "lbr", "lbi"]}
+          value: "<none>",
+          bind: {input: "select", options: ["<none>", "lbr", "lbi"]}
         },
         {
           // Seq metric to use for coloring branches;
           // uses value from the child of the branch
           name: "branch_color_by",
           value: "parent",
-          bind: {input: "select", options: ["none", "lbr", "lbi", "parent"]}
+          bind: {input: "select", options: ["<none>", "lbr", "lbi", "parent"]}
         },
         {
           name: "branch_color_scheme",
@@ -882,22 +882,22 @@ const concatTreeWithAlignmentSpec = () => {
                   strokeWidth: [
                     // Size branches by the branch_width_by_field (see data transform)
                     {
-                      test: "branch_width_by !== \"none\"",
+                      test: "branch_width_by !== \"<none>\"",
                       scale: "branch_width",
                       field: "target.branch_width_by_field"
 
                     },
-                    // Size all branches the same if branch_width_by is "none"
+                    // Size all branches the same if branch_width_by is "<none>"
                     {value: "2"}
                   ],
                   stroke: [
                     // Color branches by the branch_color_by_field (see data transform)
                     {
-                      test: "branch_color_by !== \"none\"",
+                      test: "branch_color_by !== \"<none>\"",
                       scale: {signal: "branch_color_scale"},
                       field: "target.branch_color_by_field"
                     },
-                    // Color all branches grey if branch_color_by is "none"
+                    // Color all branches grey if branch_color_by is "<none>"
                     {value: "grey"}
                   ]
                 }
