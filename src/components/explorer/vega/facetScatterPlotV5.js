@@ -145,7 +145,7 @@ const facetClonalFamiliesVizSpec = () => {
             }
           ]
         },
-        // Brush signals
+        // Brush signals - simplified for Vega 5
         {
           name: "brush_x",
           value: [],
@@ -155,19 +155,15 @@ const facetClonalFamiliesVizSpec = () => {
               update: "[x(), x()]"
             },
             {
-              events: {source: "window", type: "mousemove", consume: true, between: [
-                {source: "scope", type: "mousedown", filter: ["!event.item"]},
-                {source: "window", type: "mouseup"}
+              events: {source: "scope", type: "mousemove", between: [
+                {source: "scope", type: "mousedown", filter: ["!event.item"]}, 
+                {source: "scope", type: "mouseup"}
               ]},
-              update: "[brush_x[0], clamp(x(), 0, child_width)]"
+              update: "[brush_x[0], clamp(x(), 0, width)]"
             },
             {
-              events: {signal: "brush_translate_delta"},
-              update: "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / child_width), 0, child_width)"
-            },
-            {
-              events: {signal: "brush_zoom_delta"},
-              update: "clampRange(zoomLinear(brush_x, brush_zoom_anchor.x, brush_zoom_delta), 0, child_width)"
+              events: {source: "scope", type: "dblclick"},
+              update: "[]"
             }
           ]
         },
@@ -180,63 +176,15 @@ const facetClonalFamiliesVizSpec = () => {
               update: "[y(), y()]"
             },
             {
-              events: {source: "window", type: "mousemove", consume: true, between: [
-                {source: "scope", type: "mousedown", filter: ["!event.item"]},
-                {source: "window", type: "mouseup"}
+              events: {source: "scope", type: "mousemove", between: [
+                {source: "scope", type: "mousedown", filter: ["!event.item"]}, 
+                {source: "scope", type: "mouseup"}
               ]},
-              update: "[brush_y[0], clamp(y(), 0, child_height)]"
+              update: "[brush_y[0], clamp(y(), 0, height)]"
             },
             {
-              events: {signal: "brush_translate_delta"},
-              update: "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / child_height), 0, child_height)"
-            },
-            {
-              events: {signal: "brush_zoom_delta"},
-              update: "clampRange(zoomLinear(brush_y, brush_zoom_anchor.y, brush_zoom_delta), 0, child_height)"
-            }
-          ]
-        },
-        {
-          name: "brush_translate_anchor",
-          value: {},
-          on: [
-            {
-              events: [{source: "scope", type: "mousedown", markname: "brush"}],
-              update: "{x: x(), y: y(), extent_x: brush_x, extent_y: brush_y}"
-            }
-          ]
-        },
-        {
-          name: "brush_translate_delta",
-          value: {},
-          on: [
-            {
-              events: [{source: "window", type: "mousemove", consume: true, between: [
-                {source: "scope", type: "mousedown", markname: "brush"},
-                {source: "window", type: "mouseup"}
-              ]}],
-              update: "{x: brush_translate_anchor.x - x(), y: brush_translate_anchor.y - y()}"
-            }
-          ]
-        },
-        {
-          name: "brush_zoom_anchor",
-          value: {},
-          on: [
-            {
-              events: [{source: "scope", type: "wheel", markname: "brush"}],
-              update: "{x: x(), y: y()}"
-            }
-          ]
-        },
-        {
-          name: "brush_zoom_delta",
-          value: 1,
-          on: [
-            {
-              events: [{source: "scope", type: "wheel", markname: "brush"}],
-              force: true,
-              update: "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+              events: {source: "scope", type: "dblclick"},
+              update: "[]"
             }
           ]
         },
