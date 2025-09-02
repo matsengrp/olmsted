@@ -127,6 +127,16 @@ const facetClonalFamiliesVizSpec = () => {
           value: false,
           bind: {name: "Filled shapes ", input: "checkbox"}
         },
+        {
+          name: "symbolSize",
+          value: 1,
+          bind: {name: "Symbol size ", input: "range", min: 0.1, max: 3, step: 0.1}
+        },
+        {
+          name: "symbolOpacity",
+          value: 0.9,
+          bind: {name: "Symbol opacity ", input: "range", min: 0.1, max: 1, step: 0.05}
+        },
         // Click signal
         {
           name: "clicked",
@@ -191,65 +201,29 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           name: "xdom",
-          init: "extent(data('data_0'), xField)",
-          on: [
-            {
-              events: "signal:xField",
-              update: "extent(data('data_0'), xField)"
-            },
-            {
-              events: "dblclick",
-              update: "extent(data('data_0'), xField)"
-            },
-            {
-              events: "signal:delta",
-              update: "[xcur[0] + delta[0] / child_width * (xcur[1] - xcur[0]), xcur[1] + delta[0] / child_width * (xcur[1] - xcur[0])]"
-            },
-            {
-              events: "signal:zoom",
-              update: "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
-            }
-          ]
+          init: "domain('x')"
         },
         {
-          name: "ydom", 
-          init: "extent(data('data_0'), yField)",
-          on: [
-            {
-              events: "signal:yField",
-              update: "extent(data('data_0'), yField)"
-            },
-            {
-              events: "dblclick",
-              update: "extent(data('data_0'), yField)"
-            },
-            {
-              events: "signal:delta",
-              update: "[ycur[0] - delta[1] / child_height * (ycur[1] - ycur[0]), ycur[1] - delta[1] / child_height * (ycur[1] - ycur[0])]"
-            },
-            {
-              events: "signal:zoom", 
-              update: "[anchor[1] + (ydom[0] - anchor[1]) * zoom, anchor[1] + (ydom[1] - anchor[1]) * zoom]"
-            }
-          ]
-        }
+          name: "ydom",
+          init: "domain('y')"
+        },
       ],
       // SCALES
       scales: [
         {
           name: "x",
           type: "linear",
-          domain: {signal: "xdom"},
+          domain: {data: "data_0", field: {signal: "xField"}},
           range: [0, {signal: "child_width"}],
-          nice: false,
+          nice: true,
           zero: false
         },
         {
           name: "y",
           type: "linear",
-          domain: {signal: "ydom"},
+          domain: {data: "data_0", field: {signal: "yField"}},
           range: [{signal: "child_height"}, 0],
-          nice: false,
+          nice: true,
           zero: false
         },
         {
@@ -335,7 +309,7 @@ const facetClonalFamiliesVizSpec = () => {
           from: {data: "data_0"},
           encode: {
             update: {
-              opacity: {value: 0.9},
+              opacity: {signal: "symbolOpacity"},
               fill: [
                 {
                   test: "!filledShapes",
@@ -388,16 +362,20 @@ const facetClonalFamiliesVizSpec = () => {
               size: [
                 {
                   test: "sizeBy === '<none>'",
-                  value: 100
+                  value: {signal: "100 * symbolSize"}
                 },
-                {scale: "size", field: {signal: "sizeBy"}}
+                {
+                  scale: "size", 
+                  field: {signal: "sizeBy"},
+                  mult: {signal: "symbolSize"}
+                }
               ],
               tooltip: {
                 signal: "{\"Clone ID\": datum.ident, \"X\": datum[xField], \"Y\": datum[yField], \"Color\": datum[colorBy], \"Shape\": datum[shapeBy], \"Size\": datum[sizeBy]}"
               }
             },
             hover: {
-              opacity: {value: 0.5},
+              opacity: {signal: "symbolOpacity * 0.6"},
               cursor: {value: "pointer"}
             }
           }
@@ -416,7 +394,9 @@ const facetClonalFamiliesVizSpec = () => {
           maxExtent: 0,
           minExtent: 0,
           ticks: false,
-          zindex: 0
+          zindex: 0,
+          gridColor: "#ddd",
+          gridOpacity: 0.7
         },
         {
           scale: "y",
@@ -430,7 +410,9 @@ const facetClonalFamiliesVizSpec = () => {
           maxExtent: 0,
           minExtent: 0,
           ticks: false,
-          zindex: 0
+          zindex: 0,
+          gridColor: "#ddd",
+          gridOpacity: 0.7
         },
         {
           scale: "x",
