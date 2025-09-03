@@ -80,11 +80,6 @@ class OlmstedDB extends Dexie {
   async storeDataset(processedData) {
     const { datasets, clones, trees, datasetId } = processedData;
     
-    console.log('OlmstedDB: Storing dataset with ID:', datasetId);
-    console.log('OlmstedDB: Datasets to store:', datasets.length);
-    console.log('OlmstedDB: Clone groups:', Object.keys(clones));
-    console.log('OlmstedDB: Trees to store:', trees.length);
-    
     try {
       await this.transaction('rw', this.datasets, this.clones, this.trees, async () => {
         // Store dataset metadata
@@ -94,15 +89,12 @@ class OlmstedDB extends Dexie {
         
         // Store clone metadata and separate heavy data
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
-          console.log(`OlmstedDB: Storing ${cloneList.length} clones for dataset_id: ${dataset_id}`);
           for (const clone of cloneList) {
             // Lightweight clone metadata (no embedded trees)
-            const finalDatasetId = clone.dataset_id || dataset_id;
-            console.log(`OlmstedDB: Clone ${clone.clone_id} -> dataset_id: ${finalDatasetId}`);
             const cloneMeta = {
               clone_id: clone.clone_id,
               ident: clone.ident || clone.clone_id,
-              dataset_id: finalDatasetId,
+              dataset_id: clone.dataset_id || dataset_id,
               subject_id: clone.subject_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
@@ -179,21 +171,11 @@ class OlmstedDB extends Dexie {
    */
   async getCloneMetadata(datasetId) {
     try {
-      console.log('OlmstedDB: Searching for clones with dataset_id:', datasetId);
-      
-      // Debug: Get all clones to see what's actually stored
-      const allClones = await this.clones.toArray();
-      console.log('OlmstedDB: All stored clones:', allClones.length);
-      if (allClones.length > 0) {
-        console.log('OlmstedDB: Sample clone dataset_ids:', allClones.slice(0, 3).map(c => c.dataset_id));
-      }
-      
       const clones = await this.clones
         .where('dataset_id')
         .equals(datasetId)
         .toArray();
       
-      console.log('OlmstedDB: Found clones for dataset:', clones.length);
       return clones;
     } catch (error) {
       console.error('OlmstedDB: Failed to get clone metadata:', error);

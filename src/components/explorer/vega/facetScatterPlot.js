@@ -272,6 +272,7 @@ const facetClonalFamiliesVizSpec = () => {
         // Outer level brush signals to subscribe to
         {
           name: "brush_x_field",
+          value: null,
           on: [{
             events: {
               signal: "facet_by_signal"
@@ -281,6 +282,7 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           name: "brush_y_field",
+          value: null,
           on: [{
             events: {
               signal: "facet_by_signal"

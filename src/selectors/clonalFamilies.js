@@ -50,21 +50,27 @@ const checkInRange = (axis, datum, brushSelection) => {
   return (brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]) && (datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1]);
 };
 
-const checkBrushSelection = (brushSelection, datum) => {
+const checkBrushSelection = (brushSelection, datum, datasets = []) => {
   // Check filter on a specific field
   // This is necessary when we facet and
   // want to only select from the pane
   // where "has_seed == true", for example
-  // if(brushSelection["filter"] &&
-  //   brushSelection["filter"].range !== undefined &&
-  //   datum[brushSelection["filter"].fieldName] !== brushSelection["filter"].range){
-  //     return false
-  // }
-  if (brushSelection.filter
-     && brushSelection.filter.fieldName !== "none"
-  // Using _.at to allow indexing nested fields like dataset.dataset_id; reject datum if it does not match filter
-     && _.at(datum, brushSelection.filter.fieldName).length && _.at(datum, brushSelection.filter.fieldName)[0] !== brushSelection.filter.range) {
-    return false;
+  if (brushSelection.filter && brushSelection.filter.fieldName !== "none") {
+    let fieldValue;
+    
+    // Special handling for dataset_name - resolve from dataset_id
+    if (brushSelection.filter.fieldName === "dataset_name") {
+      const dataset = datasets.find(d => d.dataset_id === datum.dataset_id);
+      fieldValue = dataset ? (dataset.name || dataset.dataset_id) : datum.dataset_id;
+    } else {
+      // Using _.at to allow indexing nested fields like dataset.dataset_id
+      const fieldValues = _.at(datum, brushSelection.filter.fieldName);
+      fieldValue = fieldValues.length ? fieldValues[0] : undefined;
+    }
+    
+    if (fieldValue !== brushSelection.filter.range) {
+      return false;
+    }
   }
   // Check brush selection ranges
   if (brushSelection["x"] && brushSelection["y"]) {
@@ -75,19 +81,19 @@ const checkBrushSelection = (brushSelection, datum) => {
   return true;
 };
 
-const applyFilters = (data, brushSelection) => {
+const applyFilters = (data, brushSelection, datasets) => {
   if (brushSelection) {
     // If we have clicked a family instead of doing a brush selection, that
     // family's ident should be the value of brushSelection.clicked
     // Otherwise, we should filter as always on the bounds of the brush selection
     data = brushSelection.clicked ? [_.find(data, {ident: brushSelection.clicked})]
-      : _.filter(data, _.partial(checkBrushSelection, brushSelection));
+      : _.filter(data, (datum) => checkBrushSelection(brushSelection, datum, datasets));
   }
   return data;
 };
 
 export const getBrushedClonalFamilies = createDeepEqualSelector(
-  [getAvailableClonalFamilies, getBrushSelection],
+  [getAvailableClonalFamilies, getBrushSelection, getDatasets],
   applyFilters
 );
 

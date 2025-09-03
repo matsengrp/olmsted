@@ -167,6 +167,9 @@ class App extends React.Component {
                   )}
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
+                <label style={{display: 'block', marginBottom: 5, fontSize: 14, fontWeight: 'bold'}}>
+                  Filter by locus:
+                </label>
                 <select value={this.props.locus}
                   onChange={(event) => {
                     this.props.resetState();

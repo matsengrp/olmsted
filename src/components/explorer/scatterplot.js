@@ -63,7 +63,7 @@ class ClonalFamiliesViz extends React.Component {
           // }}
             onSignalPts_tuple={(...args) => {
               const family = args.slice(1)[0];
-              if (family.ident) {
+              if (family && family.ident) {
                 // Second argument specifies that we would like to
                 // include just this family in our brush selection
                 // and therefore in the table since we have clicked it
@@ -113,6 +113,22 @@ class ClonalFamiliesViz extends React.Component {
             onSignalBrush_y_field={(...args) => {
               const result = args.slice(1)[0];
               this.props.updateBrushSelection("y", this.yField, result);
+            }}
+            onSignalBrush_selection={(...args) => {
+              const brushData = args.slice(1)[0];
+              if (brushData && brushData.intervals) {
+                // Update brush selection with both X and Y ranges
+                if (brushData.intervals.x && brushData.intervals.x.extent) {
+                  this.props.updateBrushSelection("x", brushData.intervals.x.field, brushData.intervals.x.extent);
+                }
+                if (brushData.intervals.y && brushData.intervals.y.extent) {
+                  this.props.updateBrushSelection("y", brushData.intervals.y.field, brushData.intervals.y.extent);
+                }
+                // Handle facet filtering if present
+                if (brushData.facetKey && brushData.facetValue && brushData.facetKey !== '<none>') {
+                  this.props.filterBrushSelection(brushData.facetKey, brushData.facetValue);
+                }
+              }
             }}
             onSignalBrushed_facet_value={(...args) => {
               const keyVal = args.slice(1)[0];
