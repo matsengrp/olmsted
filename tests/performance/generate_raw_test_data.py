@@ -19,7 +19,7 @@ def generate_sequence(length=300):
     return ''.join(random.choices('ACGT', k=length))
 
 
-def generate_tree_node(node_id, parent_id=None, depth=0):
+def generate_tree_node(node_id, parent_id=None, depth=0, evolution_rate=0.05):
     """Generate a single tree node."""
     seq = generate_sequence()
     return {
@@ -27,10 +27,10 @@ def generate_tree_node(node_id, parent_id=None, depth=0):
         "parent": parent_id,
         "sequence_alignment": seq,
         "sequence_alignment_aa": ''.join(random.choices('ACDEFGHIKLMNPQRSTVWY', k=len(seq)//3)),
-        "distance": depth * random.uniform(0.01, 0.05),
-        "length": random.uniform(0.001, 0.01),
+        "distance": depth * random.uniform(0.01 * evolution_rate, 0.05 * evolution_rate),
+        "length": random.uniform(0.001 * evolution_rate, 0.01 * evolution_rate),
         "unique_seqs_count": random.randint(1, 50),
-        "mean_mut_freq": random.uniform(0.01, 0.15),
+        "mean_mut_freq": random.uniform(0.01 * evolution_rate, 0.15 * evolution_rate),
         "timepoint_multiplicities": {},
         "lbi": random.uniform(0, 1) if random.random() > 0.5 else None,
         "lbr": random.uniform(0, 1) if random.random() > 0.5 else None,
@@ -58,14 +58,14 @@ def generate_newick_from_tree(tree):
     return build_newick(root_id) + ";"
 
 
-def generate_tree(clone_id, num_nodes=50):
+def generate_tree(clone_id, num_nodes=50, evolution_rate=0.05):
     """Generate a tree with specified number of nodes."""
     nodes = []
     edges = []
     
     # Create root node
     root_id = f"{clone_id}_root"
-    nodes.append(generate_tree_node(root_id, None, 0))
+    nodes.append(generate_tree_node(root_id, None, 0, evolution_rate))
     
     # Create other nodes with random parent selection
     for i in range(1, num_nodes):
@@ -75,7 +75,7 @@ def generate_tree(clone_id, num_nodes=50):
         parent_id = nodes[parent_idx]["node_id"]
         depth = nodes[parent_idx].get("distance", 0) + 1
         
-        node = generate_tree_node(node_id, parent_id, depth)
+        node = generate_tree_node(node_id, parent_id, depth, evolution_rate)
         nodes.append(node)
         
         # Add edge
@@ -91,12 +91,12 @@ def generate_tree(clone_id, num_nodes=50):
     }
 
 
-def generate_clone(clone_index, dataset_id, subject_id, num_nodes=50):
+def generate_clone(clone_index, dataset_id, subject_id, num_nodes=50, evolution_rate=0.05):
     """Generate a single clone with tree."""
     clone_id = f"clone_{clone_index:04d}"
     
     # Generate the tree for this clone
-    tree = generate_tree(clone_id, num_nodes)
+    tree = generate_tree(clone_id, num_nodes, evolution_rate)
     
     # Generate V/D/J gene calls
     v_genes = ["IGHV1-2*01", "IGHV1-3*01", "IGHV2-5*01", "IGHV3-11*01", "IGHV3-23*01"]
@@ -140,7 +140,7 @@ def generate_clone(clone_index, dataset_id, subject_id, num_nodes=50):
     return clone, tree
 
 
-def generate_dataset(num_clones=1000, nodes_per_tree=50, dataset_name="performance_test"):
+def generate_dataset(num_clones=1000, nodes_per_tree=50, dataset_name="performance_test", evolution_rate=0.05):
     """Generate a complete dataset with specified number of clones."""
     
     print(f"Generating dataset with {num_clones} clones, ~{nodes_per_tree} nodes per tree...")
@@ -167,7 +167,7 @@ def generate_dataset(num_clones=1000, nodes_per_tree=50, dataset_name="performan
         
         # Vary the number of nodes per tree slightly for realism
         num_nodes = random.randint(max(10, nodes_per_tree - 20), nodes_per_tree + 20)
-        clone, tree = generate_clone(i, dataset_id, subject_id, num_nodes)
+        clone, tree = generate_clone(i, dataset_id, subject_id, num_nodes, evolution_rate)
         
         # Create AIRR-compatible tree (metadata + nodes as dict + newick)
         nodes_dict = {}
@@ -270,6 +270,12 @@ def main():
         type=int,
         help='Target file size in MB (overrides --clones)'
     )
+    parser.add_argument(
+        '--evolution-rate',
+        type=float,
+        default=0.05,
+        help='Base evolution rate for generating mutations (default: 0.05)'
+    )
     
     args = parser.parse_args()
     
@@ -285,7 +291,7 @@ def main():
     print(f"Estimated file size: {estimated_mb:.1f}MB")
     
     # Generate the dataset
-    dataset = generate_dataset(args.clones, args.nodes, args.name)
+    dataset = generate_dataset(args.clones, args.nodes, args.name, args.evolution_rate)
     
     # Write to file
     print(f"Writing to {args.output}...")

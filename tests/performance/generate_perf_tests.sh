@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # Generate performance test datasets of various sizes
-
-echo "🚀 Generating Olmsted Performance Test Datasets"
-echo "=============================================="
+# Can be sourced to use generate_dataset function independently
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -11,36 +9,36 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Create test data directory
-TEST_DIR="_test_data"
-mkdir -p $TEST_DIR
-
-GENERATE_SCRIPT="python3 generate_test_data.py"
-
-# Check if olmsted is installed
-if ! command -v olmsted &> /dev/null; then
-    echo -e "${YELLOW}⚠️  olmsted CLI not found. Please install it first:${NC}"
-    echo "   pip install -e olmsted-cli/"
-    exit 1
-fi
+# Default values (can be overridden when sourcing)
+TEST_DIR="${TEST_DIR:-_test_data}"
+GENERATE_SCRIPT="${GENERATE_SCRIPT:-python3 generate_raw_test_data.py}"
 
 # Function to generate and process dataset
-generate_dataset() {
+# Usage: generate_test_dataset <clones> <name> <output_dir> [evolution_rate] [description]
+generate_test_dataset() {
     local clones=$1
     local name=$2
-    local description=$3
+    local output_dir=$3
+    local evolution_rate=${4:-0.05}
+    local description="${5:-Test dataset with $clones clones (evolution rate: $evolution_rate)}"
 
     echo -e "\n${BLUE}Generating: ${description}${NC}"
     echo "  Clones: $clones"
-    echo "  Target file: ${TEST_DIR}/${name}.json"
+    echo "  Evolution rate: $evolution_rate"
+    echo "  Output dir: $output_dir"
+    echo "  Target file: ${output_dir}/${name}.json"
+
+    # Create output directory
+    mkdir -p "$output_dir"
 
     # Generate the test data
     $GENERATE_SCRIPT \
         --clones $clones \
         --name "$name" \
-        --output "${TEST_DIR}/${name}_raw.json"
+        --evolution-rate $evolution_rate \
+        --output "${output_dir}/${name}_raw.json"
 
-    if [ ! -f "${TEST_DIR}/${name}_raw.json" ]; then
+    if [ ! -f "${output_dir}/${name}_raw.json" ]; then
         echo -e "  ${YELLOW}❌ Failed to generate raw data${NC}"
         return 1
     fi
@@ -48,36 +46,51 @@ generate_dataset() {
     # Process with olmsted CLI to ensure it's valid
     echo "  Processing with olmsted CLI..."
     olmsted process -v \
-        -i "${TEST_DIR}/${name}_raw.json" \
-        -o "${TEST_DIR}/${name}.json" \
+        -i "${output_dir}/${name}_raw.json" \
+        -o "${output_dir}/${name}.json" \
         --name "$name"
 
     # Get file size
-    if [ -f "${TEST_DIR}/${name}.json" ]; then
-        SIZE=$(du -h "${TEST_DIR}/${name}.json" | cut -f1)
+    if [ -f "${output_dir}/${name}.json" ]; then
+        SIZE=$(du -h "${output_dir}/${name}.json" | cut -f1)
         echo -e "  ${GREEN}✅ Generated: ${SIZE}${NC}"
         # Clean up raw file
-        rm -f "${TEST_DIR}/${name}_raw.json"
+        rm -f "${output_dir}/${name}_raw.json"
     else
         echo -e "  ${YELLOW}❌ Failed to process with olmsted CLI${NC}"
-        echo "  Raw file available at: ${TEST_DIR}/${name}_raw.json"
+        echo "  Raw file available at: ${output_dir}/${name}_raw.json"
     fi
 }
 
-# Generate test datasets of different sizes
-echo -e "\n${BLUE}Test Suite 1: Performance Targets${NC}"
+# Main execution - only runs when script is executed directly (not sourced)
+main() {
+    echo "🚀 Generating Olmsted Performance Test Datasets"
+    echo "=============================================="
+    
+    # Create test data directory
+    mkdir -p $TEST_DIR
+    
+    # Check if olmsted is installed
+    if ! command -v olmsted &> /dev/null; then
+        echo -e "${YELLOW}⚠️  olmsted CLI not found. Please install it first:${NC}"
+        echo "   pip install -e olmsted-cli/"
+        exit 1
+    fi
+
+    # Generate test datasets of different sizes
+    echo -e "\n${BLUE}Test Suite 1: Performance Targets${NC}"
 
 # Small dataset for quick testing
-generate_dataset 100 "perf_test_small" "Small dataset (100 clones)"
+generate_test_dataset 100 "perf_test_small" "$TEST_DIR" 0.05 "Small dataset (100 clones)"
 
 # Medium dataset - target for good performance
-generate_dataset 1000 "perf_test_medium" "Medium dataset (1000 clones) - PRIMARY TARGET"
+generate_test_dataset 1000 "perf_test_medium" "$TEST_DIR" 0.05 "Medium dataset (1000 clones) - PRIMARY TARGET"
 
 # Large dataset - stress test
-generate_dataset 5000 "perf_test_large" "Large dataset (5000 clones)"
+generate_test_dataset 5000 "perf_test_large" "$TEST_DIR" 0.05 "Large dataset (5000 clones)"
 
 # Extra large - edge case
-# generate_dataset 10000 "perf_test_xlarge" "Extra large dataset (10000 clones)"
+# generate_test_dataset 10000 "perf_test_xlarge" "$TEST_DIR" 0.05 "Extra large dataset (10000 clones)"
 
 # Summary
 echo -e "\n${GREEN}📊 Test Data Generation Complete!${NC}"
@@ -108,8 +121,14 @@ echo "  ✅ Initial load: < 2 seconds for 10MB datasets"
 echo "  ✅ Tree switching: < 100ms (from memory)"
 echo "  ✅ Table scrolling: Smooth with 1000+ rows"
 
-# Cleanup any temporary files
-if [ -f "generate_test_data.py" ] && [ ! -f "../../olmsted-cli/olmsted_cli/generate_test_data.py" ]; then
-    echo -e "\n${BLUE}Note: Created temporary generate_test_data.py${NC}"
-    echo "You can delete it or move it to a permanent location if needed."
+    # Cleanup any temporary files
+    if [ -f "generate_raw_test_data.py" ] && [ ! -f "../../olmsted-cli/olmsted_cli/generate_raw_test_data.py" ]; then
+        echo -e "\n${BLUE}Note: Created temporary generate_raw_test_data.py${NC}"
+        echo "You can delete it or move it to a permanent location if needed."
+    fi
+}
+
+# Only run main function if script is executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
 fi
