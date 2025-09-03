@@ -11,12 +11,15 @@ class FileUpload extends React.Component {
     this.state = {
       uploadedFiles: [],
       isProcessing: false,
-      error: null
+      error: null,
+      loadingStage: '',
+      loadingProgress: 0
     };
 
     this.processFile = this.processFile.bind(this);
     this.onDrop = this.onDrop.bind(this);
     this.removeFile = this.removeFile.bind(this);
+    this.updateLoadingStatus = this.updateLoadingStatus.bind(this);
     this.fileInputRef = React.createRef();
   }
 
@@ -35,11 +38,21 @@ class FileUpload extends React.Component {
     }
   }
 
+  // Update loading status with stage and progress
+  updateLoadingStatus(stage, progress = 0) {
+    this.setState({
+      loadingStage: stage,
+      loadingProgress: Math.min(100, Math.max(0, progress))
+    });
+  }
+
   async processFile(file) {
     this.setState({ error: null, isProcessing: true });
+    this.updateLoadingStatus('Initializing...', 0);
 
     try {
       // Detect file type based on extension
+      this.updateLoadingStatus('Validating file format...', 10);
       const fileName = file.name.toLowerCase();
       let fileType = null;
 
@@ -59,13 +72,15 @@ class FileUpload extends React.Component {
       }
 
       // Process file entirely client-side - no server communication!
-      console.log('Processing file client-side:', file.name);
+      this.updateLoadingStatus('Reading and parsing file data...', 25);
       const result = await AIRRProcessor.processFile(file);
 
       // Store processed data in browser (IndexedDB)
+      this.updateLoadingStatus('Storing data in browser database...', 75);
       const datasetId = await clientDataStore.storeProcessedData(result);
 
       // Add to uploaded files list
+      this.updateLoadingStatus('Finalizing upload...', 90);
       this.setState((prevState) => ({
         uploadedFiles: [...prevState.uploadedFiles, {
           fileName: file.name,
@@ -86,12 +101,10 @@ class FileUpload extends React.Component {
       }
 
       // Trigger datasets reload by refreshing the page
-      // In a production app, we'd dispatch a Redux action to reload datasets
-      // TEMPORARILY DISABLED for debugging - refresh manually to see uploaded data
-      console.log('Upload complete - refresh page manually to see datasets');
-      // setTimeout(() => {
+      this.updateLoadingStatus('Upload complete! Refreshing page...', 100);
+      setTimeout(() => {
         window.location.reload();
-      // }, 1000);
+      }, 1000);
 
       console.log('Client-side processing complete:', {
         datasetId,
@@ -104,26 +117,33 @@ class FileUpload extends React.Component {
       console.error('Client-side file processing error:', err);
       this.setState({ error: err.message || 'Failed to process file' });
     } finally {
-      this.setState({ isProcessing: false });
+      this.setState({ 
+        isProcessing: false,
+        loadingStage: '',
+        loadingProgress: 0
+      });
     }
   }
 
   async onDrop(acceptedFiles) {
     this.setState({ error: null, isProcessing: true });
+    this.updateLoadingStatus('Initializing...', 0);
 
     try {
       // Check if we have multiple files that might be split format
       if (acceptedFiles.length > 1) {
-        console.log(`Processing ${acceptedFiles.length} files, checking for split format...`);
+        this.updateLoadingStatus(`Processing ${acceptedFiles.length} files, checking format...`, 10);
 
         // Try split file processing first
+        this.updateLoadingStatus('Reading split files...', 20);
         const splitResult = await SplitFileProcessor.processFiles(acceptedFiles);
 
         if (splitResult) {
           // Successfully processed as split format
-          console.log('Processed as split format:', splitResult);
+          this.updateLoadingStatus('Consolidating split file data...', 40);
 
           // Process the consolidated dataset using AIRR processor
+          this.updateLoadingStatus('Processing consolidated dataset...', 55);
           const consolidatedResult = await AIRRProcessor.processDataset(
             splitResult.consolidatedDataset,
             `Split files (${splitResult.fileCount} files)`
@@ -133,9 +153,11 @@ class FileUpload extends React.Component {
           consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
 
           // Store processed data
-          const datasetId = clientDataStore.storeProcessedData(consolidatedResult);
+          this.updateLoadingStatus('Storing data in browser database...', 75);
+          const datasetId = await clientDataStore.storeProcessedData(consolidatedResult);
 
           // Update UI
+          this.updateLoadingStatus('Finalizing upload...', 90);
           this.setState((prevState) => ({
             uploadedFiles: [...prevState.uploadedFiles, {
               fileName: `Split format (${acceptedFiles.length} files)`,
@@ -159,17 +181,22 @@ class FileUpload extends React.Component {
           }
 
           // Reload to show new dataset
-          // TEMPORARILY DISABLED for debugging - refresh manually to see uploaded data  
-          console.log('Split file upload complete - refresh page manually to see datasets');
-          // setTimeout(() => {
+          this.updateLoadingStatus('Upload complete! Refreshing page...', 100);
+          setTimeout(() => {
             window.location.reload();
-          // }, 1000);
+          }, 1000);
 
           return; // Successfully processed as split
         }
       }
 
       // Process as individual consolidated files
+      if (acceptedFiles.length === 1) {
+        this.updateLoadingStatus('Processing single file...', 30);
+      } else {
+        this.updateLoadingStatus(`Processing ${acceptedFiles.length} individual files...`, 30);
+      }
+      
       for (const file of acceptedFiles) {
         await this.processFile(file);
       }
@@ -178,7 +205,9 @@ class FileUpload extends React.Component {
       console.error('Error processing files:', error);
       this.setState({
         error: error.message || 'Failed to process files',
-        isProcessing: false
+        isProcessing: false,
+        loadingStage: '',
+        loadingProgress: 0
       });
     }
   }
@@ -194,7 +223,7 @@ class FileUpload extends React.Component {
   }
 
   render() {
-    const { uploadedFiles, isProcessing, error } = this.state;
+    const { uploadedFiles, isProcessing, error, loadingStage, loadingProgress } = this.state;
 
     return (
       <CenterContent>
@@ -233,10 +262,46 @@ class FileUpload extends React.Component {
             }}
           >
             {isProcessing ? (
-              <div>
-                <div style={{ fontSize: 18, marginBottom: 10 }}>Processing...</div>
-                <div style={{ fontSize: 14, color: '#666' }}>
-                  Please wait while we process your data
+              <div style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}>
+                <div style={{ fontSize: 18, marginBottom: 15, fontWeight: 'bold' }}>
+                  Processing Your Data
+                </div>
+                
+                {/* Progress Bar */}
+                <div style={{
+                  width: '100%',
+                  height: 8,
+                  backgroundColor: '#e9ecef',
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  marginBottom: 10
+                }}>
+                  <div style={{
+                    width: `${this.state.loadingProgress}%`,
+                    height: '100%',
+                    backgroundColor: '#007bff',
+                    transition: 'width 0.3s ease',
+                    borderRadius: 4
+                  }} />
+                </div>
+                
+                {/* Progress Text */}
+                <div style={{ 
+                  fontSize: 14, 
+                  color: '#666',
+                  marginBottom: 5,
+                  minHeight: 20
+                }}>
+                  {this.state.loadingStage || 'Initializing...'}
+                </div>
+                
+                {/* Progress Percentage */}
+                <div style={{ 
+                  fontSize: 12, 
+                  color: '#999',
+                  fontWeight: 'bold'
+                }}>
+                  {this.state.loadingProgress}% Complete
                 </div>
               </div>
             ) : (
