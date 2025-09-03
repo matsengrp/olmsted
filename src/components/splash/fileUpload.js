@@ -87,9 +87,10 @@ class FileUpload extends React.Component {
 
       // Trigger datasets reload by refreshing the page
       // In a production app, we'd dispatch a Redux action to reload datasets
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // TEMPORARILY DISABLED FOR DEBUGGING LARGE DATASETS
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
 
       console.log('Client-side processing complete:', {
         datasetId,

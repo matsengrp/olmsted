@@ -21,12 +21,21 @@ class ClientDataStore {
       datasets, clones, trees, datasetId
     } = processedData;
 
+    console.log('ClientDataStore: Storing data for dataset:', datasetId);
+    console.log('ClientDataStore: Data sizes:', {
+      datasets: datasets?.length || 0,
+      clones: Object.keys(clones || {}).length,
+      trees: trees?.length || 0
+    });
+
     // Store in memory for immediate access
     datasets.forEach((dataset) => {
+      console.log('ClientDataStore: Storing dataset:', dataset.dataset_id);
       this.datasets.set(dataset.dataset_id, dataset);
     });
 
     Object.entries(clones).forEach(([id, cloneList]) => {
+      console.log(`ClientDataStore: Storing ${cloneList?.length || 0} clones for dataset:`, id);
       this.clones.set(id, cloneList);
     });
 
@@ -46,15 +55,36 @@ class ClientDataStore {
 
     // Also store in sessionStorage as backup
     try {
-      sessionStorage.setItem(`${this.storagePrefix}datasets`, JSON.stringify(Array.from(this.datasets.values())));
+      console.log('ClientDataStore: Attempting to store in sessionStorage...');
+      
+      // Store datasets
+      const datasetsJson = JSON.stringify(Array.from(this.datasets.values()));
+      console.log(`ClientDataStore: Storing datasets (${(datasetsJson.length / 1024).toFixed(1)}KB)`);
+      sessionStorage.setItem(`${this.storagePrefix}datasets`, datasetsJson);
+      
+      // Store clones
       Object.entries(clones).forEach(([id, cloneList]) => {
-        sessionStorage.setItem(`${this.storagePrefix}clones_${id}`, JSON.stringify(cloneList));
+        const clonesJson = JSON.stringify(cloneList);
+        console.log(`ClientDataStore: Storing clones for ${id} (${(clonesJson.length / 1024).toFixed(1)}KB)`);
+        sessionStorage.setItem(`${this.storagePrefix}clones_${id}`, clonesJson);
       });
+      
+      // Store trees
       trees.forEach((tree) => {
-        sessionStorage.setItem(`${this.storagePrefix}tree_${tree.ident}`, JSON.stringify(tree));
+        const treeJson = JSON.stringify(tree);
+        console.log(`ClientDataStore: Storing tree ${tree.ident} (${(treeJson.length / 1024).toFixed(1)}KB)`);
+        sessionStorage.setItem(`${this.storagePrefix}tree_${tree.ident}`, treeJson);
       });
+      
+      console.log('ClientDataStore: Successfully stored all data in sessionStorage');
+      
     } catch (error) {
-      console.warn('Failed to store data in sessionStorage:', error);
+      console.error('ClientDataStore: Failed to store data in sessionStorage:', error);
+      if (error.name === 'QuotaExceededError') {
+        console.error('ClientDataStore: SessionStorage quota exceeded! Dataset too large for browser storage.');
+        console.error('ClientDataStore: Data will be available in memory only during this session.');
+        // Could implement fallback strategies here
+      }
       // Continue without sessionStorage - data will be in memory only
     }
 
@@ -83,19 +113,31 @@ class ClientDataStore {
      * @returns {Array} Array of clone objects
      */
   getClones(datasetId) {
+    console.log(`ClientDataStore: Looking for clones for dataset: ${datasetId}`);
+    console.log(`ClientDataStore: Available clone keys in memory:`, Array.from(this.clones.keys()));
+    
     let cloneList = this.clones.get(datasetId);
 
     // If not in memory, try sessionStorage
     if (!cloneList) {
+      console.log(`ClientDataStore: Clones not in memory, checking sessionStorage...`);
       try {
         const stored = sessionStorage.getItem(`${this.storagePrefix}clones_${datasetId}`);
         if (stored) {
+          console.log(`ClientDataStore: Found clones in sessionStorage for ${datasetId}`);
           cloneList = JSON.parse(stored);
           this.clones.set(datasetId, cloneList);
+        } else {
+          console.log(`ClientDataStore: No clones in sessionStorage for ${datasetId}`);
+          // Check what keys ARE in sessionStorage
+          const storageKeys = Object.keys(sessionStorage).filter(k => k.startsWith(this.storagePrefix + 'clones_'));
+          console.log(`ClientDataStore: Available clone keys in sessionStorage:`, storageKeys.map(k => k.replace(this.storagePrefix + 'clones_', '')));
         }
       } catch (error) {
         console.warn('Failed to load clones from sessionStorage:', error);
       }
+    } else {
+      console.log(`ClientDataStore: Found ${cloneList.length} clones in memory for ${datasetId}`);
     }
 
     return cloneList || [];

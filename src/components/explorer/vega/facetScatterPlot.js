@@ -144,7 +144,7 @@ const facetClonalFamiliesVizSpec = () => {
           value: {},
           on: [
             {
-              events: [{source: "view", type: "click", marktype: "symbol"}],
+              events: [{source: "scope", type: "click"}],
               update: "datum && item().mark.marktype == 'symbol' ? datum : null"
             }
           ]
@@ -155,16 +155,6 @@ const facetClonalFamiliesVizSpec = () => {
             {
               events: {signal: "pts_tuple"},
               update: "modify(\"pts_store\", pts_tuple, true)"
-            }
-          ]
-        },
-        {
-          name: "clicked_group",
-          value: null,
-          on: [
-            {
-              events: [{source: "view", type: "click", marktype: "symbol"}],
-              update: "item().mark.group ? item().mark.group.datum : null"
             }
           ]
         },
@@ -707,7 +697,7 @@ const facetClonalFamiliesVizSpec = () => {
                   x: {scale: "x", field: {signal: "xField"}},
                   y: {scale: "y", field: {signal: "yField"}},
                   opacity: [
-                    {test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field)", value: 1},
+                    {test: "indata('selected', 'ident', datum.ident)", value: 1},
                     {signal: "symbolOpacity"}
                   ],
                   tooltip: {
@@ -766,11 +756,11 @@ const facetClonalFamiliesVizSpec = () => {
                   },
                   size: [
                     {
-                      test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field) && sizeBy === '<none>'", 
+                      test: "indata('selected', 'ident', datum.ident) && sizeBy === '<none>'", 
                       signal: "600 * symbolSize"
                     },
                     {
-                      test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field) && sizeBy !== '<none>'", 
+                      test: "indata('selected', 'ident', datum.ident) && sizeBy !== '<none>'", 
                       signal: "scale('size', datum[sizeBy]) * symbolSize * 3"
                     },
                     {
