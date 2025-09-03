@@ -94,7 +94,7 @@ class OlmstedDB extends Dexie {
             const cloneMeta = {
               clone_id: clone.clone_id,
               ident: clone.ident || clone.clone_id,
-              dataset_id: clone.dataset_id,
+              dataset_id: clone.dataset_id || dataset_id,
               subject_id: clone.subject_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,

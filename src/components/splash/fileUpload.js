@@ -4,6 +4,7 @@ import { CenterContent } from "./centerContent";
 import AIRRProcessor from '../../utils/airrProcessor';
 import SplitFileProcessor from '../../utils/splitFileProcessor';
 import clientDataStore from '../../utils/clientDataStore';
+import { SimpleInProgress } from '../util/loading';
 
 class FileUpload extends React.Component {
   constructor(props) {
@@ -74,6 +75,11 @@ class FileUpload extends React.Component {
       // Process file entirely client-side - no server communication!
       this.updateLoadingStatus('Reading and parsing file data...', 25);
       const result = await AIRRProcessor.processFile(file);
+      
+      // Add file size to the first dataset
+      if (result.datasets && result.datasets.length > 0) {
+        result.datasets[0].file_size = file.size;
+      }
 
       // Store processed data in browser (IndexedDB)
       this.updateLoadingStatus('Storing data in browser database...', 75);
@@ -151,6 +157,12 @@ class FileUpload extends React.Component {
 
           // Merge in the trees from split processing
           consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
+          
+          // Add total file size to the first dataset
+          if (consolidatedResult.datasets && consolidatedResult.datasets.length > 0) {
+            const totalSize = acceptedFiles.reduce((sum, file) => sum + file.size, 0);
+            consolidatedResult.datasets[0].file_size = totalSize;
+          }
 
           // Store processed data
           this.updateLoadingStatus('Storing data in browser database...', 75);
@@ -263,7 +275,8 @@ class FileUpload extends React.Component {
           >
             {isProcessing ? (
               <div style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}>
-                <div style={{ fontSize: 18, marginBottom: 15, fontWeight: 'bold' }}>
+                <div style={{ fontSize: 18, marginBottom: 15, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  <SimpleInProgress />
                   Processing Your Data
                 </div>
                 

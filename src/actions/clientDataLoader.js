@@ -30,10 +30,19 @@ export const getClientTree = async (dispatch, tree_id) => {
       console.log(`ClientDataLoader: Loaded tree ${tree_id} (${(treeSize / 1024).toFixed(1)}KB)`);
     } else {
       console.warn('Tree not found in client storage:', tree_id);
-      // Dispatch error or fallback to server
+      dispatch({
+        type: types.TREE_ERROR,
+        tree_id,
+        error: 'Tree not found in client storage'
+      });
     }
   } catch (error) {
     console.error('Error loading tree from client storage:', error);
+    dispatch({
+      type: types.TREE_ERROR,
+      tree_id,
+      error: error.message
+    });
   }
 };
 
@@ -65,10 +74,19 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
       console.log(`ClientDataLoader: Loaded ${clonalFamilies.length} clone families (${(JSON.stringify(clonalFamilies).length / 1024).toFixed(1)}KB)`);
     } else {
       console.warn('Clonal families not found in client storage:', dataset_id);
-      // Dispatch error or fallback to server
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id,
+        loading: "ERROR"
+      });
     }
   } catch (error) {
     console.error('Error loading clonal families from client storage:', error);
+    dispatch({
+      type: types.LOADING_DATASET,
+      dataset_id,
+      loading: "ERROR"
+    });
   }
 };
 

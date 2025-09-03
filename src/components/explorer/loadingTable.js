@@ -18,16 +18,28 @@ class CitationCell extends React.Component {
   }
 }
 
+// Component for the size column
+class SizeCell extends React.Component {
+  render() {
+    const dataset = this.props.datum;
+    const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
+    
+    if (sizeInBytes === 0) {
+      return <span>—</span>;
+    }
+    
+    const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
+    return <span>{sizeInMB} MB</span>;
+  }
+}
+
 // Component for non-selectable load status
 class LoadStatusDisplay extends React.Component {
   render() {
     return (
       <div style={{ width: '100%', textAlign: 'center' }}>
         <LoadingStatus 
-          loadingStatus={this.props.datum.loading} 
-          loading={<SimpleInProgress/>} 
-          done={'\u2713'} 
-          default=""
+          loadingStatus={this.props.datum.loading}
         />
       </div>
     );
@@ -56,6 +68,7 @@ export default class LoadingTable extends React.Component {
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
       ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"), 
         { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
+      ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
       ["Build Time", (d) => (d.build ? d.build.time || '—' : '—'), { sortKey: "build.time" }]
@@ -67,10 +80,11 @@ export default class LoadingTable extends React.Component {
 
     // Define column widths
     const columnWidths = [
-      60,   // Status
+      120,  // Status
       200,  // Name
       150,  // ID
       80,   // Source
+      80,   // Size (MB)
       80,   // Subjects
       100,  // Families
       120,  // Build time

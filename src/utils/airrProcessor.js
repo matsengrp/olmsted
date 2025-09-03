@@ -283,7 +283,7 @@ class AIRRProcessor {
      * @returns {string} Dataset ID
      */
   static generateDatasetId() {
-    return `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**

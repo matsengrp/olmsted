@@ -15,6 +15,9 @@ const facetClonalFamiliesVizSpec = () => {
           name: "locus"
         },
         {
+          name: "datasets"
+        },
+        {
           name: "brush_store",
           on: [
             // single trigger version
@@ -58,9 +61,16 @@ const facetClonalFamiliesVizSpec = () => {
               as: "dataset.dataset_id"
             },
             {
+              type: "lookup",
+              from: "datasets",
+              key: "dataset_id",
+              fields: ["dataset_id"],
+              values: ["name", "dataset_id"]
+            },
+            {
               type: "formula",
-              expr: "datum[\"dataset\"] && (datum[\"dataset\"][\"name\"] || datum[\"dataset\"][\"dataset_id\"])",
-              as: "dataset.name"
+              expr: "datum.name || datum.dataset_id",
+              as: "dataset_name"
             },
             {
               type: "filter",
@@ -217,7 +227,7 @@ const facetClonalFamiliesVizSpec = () => {
         {
           name: "facet_by_signal",
           value: "<none>",
-          bind: {name: "Facet by field ", input: "select", options: ["<none>", "has_seed", "dataset.name", "subject_id", "sample.timepoint_id", "sample.locus"]}
+          bind: {name: "Facet by field ", input: "select", options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]}
         },
         {
           name: "yField",
@@ -713,7 +723,7 @@ const facetClonalFamiliesVizSpec = () => {
                   tooltip: {
                     signal: "{" +
                       "'Clone ID': datum.clone_id, " +
-                      "'Dataset': datum.dataset ? (datum.dataset.name || datum.dataset.dataset_id) : '', " +
+                      "'Dataset': datum.dataset_name || '', " +
                       "'Subject': datum.subject_id, " +
                       "'Locus': datum.sample ? datum.sample.locus : '', " +
                       "'Unique Sequences': datum.unique_seqs_count, " +

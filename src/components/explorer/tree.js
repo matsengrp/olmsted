@@ -11,6 +11,7 @@ import DownloadFasta from "./downloadFasta";
 import DownloadText from "../util/downloadText";
 import {IncompleteDataWarning} from "../util/incomplete";
 import {CollapseHelpTitle} from "../util/collapseHelpTitle";
+import {SimpleInProgress} from "../util/loading";
 
 // Tree header component
 // =================================
@@ -186,10 +187,9 @@ class TreeViz extends React.Component {
         {!incompleteFamily && treeLoading
             && (
             <div>
-              <h2>
-                Loading data for clonal family:
-                {this.props.selectedFamily.clone_id}
-                ...
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <SimpleInProgress />
+                Loading data for clonal family: {this.props.selectedFamily.clone_id}
               </h2>
             </div>
             )

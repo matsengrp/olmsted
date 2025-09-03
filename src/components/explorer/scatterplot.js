@@ -17,7 +17,8 @@ import * as explorerActions from "../../actions/explorer.js";
 @connect((state) => ({
   availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
   selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
-  locus: state.clonalFamilies.locus
+  locus: state.clonalFamilies.locus,
+  datasets: state.datasets.availableDatasets
 }),
 // This is a shorthand way of specifying mapDispatchToProps
 {
@@ -128,7 +129,8 @@ class ClonalFamiliesViz extends React.Component {
               // selected family so as to check quickly for this id within the
               // viz to highlight the selected family.
               selected: [{ident: this.props.selectedFamily ? this.props.selectedFamily.ident : "none"}],
-              locus: [{locus: this.props.locus}]
+              locus: [{locus: this.props.locus}],
+              datasets: this.props.datasets
             }}
             spec={this.spec}
           />

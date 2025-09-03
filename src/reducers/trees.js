@@ -11,6 +11,10 @@ const trees = (state = {
       const updates = {};
       updates[action.tree_id] = action.tree;
       return Object.assign({}, state, {cache: Object.assign({}, state.cache, updates)});
+    } case types.TREE_ERROR: {
+      const updates = {};
+      updates[action.tree_id] = { error: action.error };
+      return Object.assign({}, state, {cache: Object.assign({}, state.cache, updates)});
     } case types.UPDATE_SELECTED_TREE: {
       return Object.assign({}, state, {
         selectedTreeIdent: action.tree

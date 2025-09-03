@@ -31,6 +31,14 @@ class LoadStatusCell extends React.Component {
         });
         break;
       }
+      case "ERROR": {
+        this.props.dispatch({
+          type: types.LOADING_DATASET,
+          dataset_id: dataset.dataset_id,
+          loading: false
+        });
+        break;
+      }
       default: {
         this.props.dispatch({
           type: types.LOADING_DATASET,
@@ -53,10 +61,7 @@ class LoadStatusCell extends React.Component {
     return (
       <div onClick={this.selectDataset} style={{ cursor: 'pointer', width: '100%', textAlign: 'center' }}>
         <LoadingStatus 
-          loadingStatus={this.props.datum.loading} 
-          loading={<SimpleInProgress/>} 
-          done={'\u2713'} 
-          default={'\u2795'}
+          loadingStatus={this.props.datum.loading}
         />
       </div>
     );
@@ -73,6 +78,21 @@ class CitationCell extends React.Component {
       return <a href={paper.url} onClick={(e) => e.stopPropagation()}>{paper.authorstring}</a>;
     }
     return <span>{paper.authorstring}</span>;
+  }
+}
+
+// Component for the size column
+class SizeCell extends React.Component {
+  render() {
+    const dataset = this.props.datum;
+    const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
+    
+    if (sizeInBytes === 0) {
+      return <span>—</span>;
+    }
+    
+    const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
+    return <span>{sizeInMB} MB</span>;
   }
 }
 
@@ -146,6 +166,7 @@ export class DatasetsTable extends React.Component {
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
       ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"), 
         { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
+      ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
       ["Build Time", (d) => (d.build ? d.build.time || '—' : '—'), { sortKey: "build.time" }]
@@ -161,10 +182,11 @@ export class DatasetsTable extends React.Component {
 
     // Define column widths
     const columnWidths = [
-      60,   // Load
+      120,  // Load (doubled from 60)
       200,  // Name
       150,  // ID
       80,   // Source
+      80,   // Size (MB)
       80,   // Subjects
       100,  // Families
       120,  // Build time
