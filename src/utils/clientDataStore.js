@@ -1,289 +1,299 @@
 /**
- * Client-side data storage for processed AIRR data
- * Stores data in browser memory/sessionStorage instead of server
+ * Client-side data storage for processed AIRR data using Dexie with lazy loading
  */
+
+import olmstedDB from './olmstedDB';
 
 class ClientDataStore {
 
   constructor() {
-    this.datasets = new Map();
-    this.clones = new Map();
-    this.trees = new Map();
-    this.storagePrefix = 'olmsted_temp_';
+    // Keep minimal memory cache for recently accessed data
+    this.recentClones = new Map(); // Cache recently loaded full clone data
+    this.recentTrees = new Map();  // Cache recently loaded trees
+    this.maxCacheSize = 10; // Keep last 10 accessed items in memory
   }
 
   /**
-     * Store processed AIRR data in browser storage
-     * @param {Object} processedData - Data from AIRRProcessor
-     */
-  storeProcessedData(processedData) {
-    const {
-      datasets, clones, trees, datasetId
-    } = processedData;
-
-    console.log('ClientDataStore: Storing data for dataset:', datasetId);
-    console.log('ClientDataStore: Data sizes:', {
-      datasets: datasets?.length || 0,
-      clones: Object.keys(clones || {}).length,
-      trees: trees?.length || 0
-    });
-
-    // Store in memory for immediate access
-    datasets.forEach((dataset) => {
-      console.log('ClientDataStore: Storing dataset:', dataset.dataset_id);
-      this.datasets.set(dataset.dataset_id, dataset);
-    });
-
-    Object.entries(clones).forEach(([id, cloneList]) => {
-      console.log(`ClientDataStore: Storing ${cloneList?.length || 0} clones for dataset:`, id);
-      this.clones.set(id, cloneList);
-    });
-
-    console.log('Storing trees:', trees.map((t) => ({ ident: t.ident, tree_id: t.tree_id, clone_id: t.clone_id })));
-    trees.forEach((tree) => {
-      this.trees.set(tree.ident, tree);
-    });
-
-    // Debug: Check what tree references the clones have
-    Object.entries(clones).forEach(([datasetId, cloneList]) => {
-      cloneList.forEach((clone) => {
-        if (clone.trees && clone.trees.length > 0) {
-          console.log(`Clone ${clone.clone_id} tree refs:`, clone.trees.map((t) => ({ ident: t.ident, tree_id: t.tree_id })));
-        }
-      });
-    });
-
-    // Also store in sessionStorage as backup
-    try {
-      console.log('ClientDataStore: Attempting to store in sessionStorage...');
-      
-      // Store datasets
-      const datasetsJson = JSON.stringify(Array.from(this.datasets.values()));
-      console.log(`ClientDataStore: Storing datasets (${(datasetsJson.length / 1024).toFixed(1)}KB)`);
-      sessionStorage.setItem(`${this.storagePrefix}datasets`, datasetsJson);
-      
-      // Store clones
-      Object.entries(clones).forEach(([id, cloneList]) => {
-        const clonesJson = JSON.stringify(cloneList);
-        console.log(`ClientDataStore: Storing clones for ${id} (${(clonesJson.length / 1024).toFixed(1)}KB)`);
-        sessionStorage.setItem(`${this.storagePrefix}clones_${id}`, clonesJson);
-      });
-      
-      // Store trees
-      trees.forEach((tree) => {
-        const treeJson = JSON.stringify(tree);
-        console.log(`ClientDataStore: Storing tree ${tree.ident} (${(treeJson.length / 1024).toFixed(1)}KB)`);
-        sessionStorage.setItem(`${this.storagePrefix}tree_${tree.ident}`, treeJson);
-      });
-      
-      console.log('ClientDataStore: Successfully stored all data in sessionStorage');
-      
-    } catch (error) {
-      console.error('ClientDataStore: Failed to store data in sessionStorage:', error);
-      if (error.name === 'QuotaExceededError') {
-        console.error('ClientDataStore: SessionStorage quota exceeded! Dataset too large for browser storage.');
-        console.error('ClientDataStore: Data will be available in memory only during this session.');
-        // Could implement fallback strategies here
-      }
-      // Continue without sessionStorage - data will be in memory only
-    }
-
-    return datasetId;
-  }
-
-  /**
-     * Get all datasets (for datasets list view)
-     * @returns {Array} Array of dataset objects
-     */
-  getAllDatasets() {
-    const memoryDatasets = Array.from(this.datasets.values());
-
-    // If no data in memory, try to load from sessionStorage
-    if (memoryDatasets.length === 0) {
-      this.loadFromSessionStorage();
-      return Array.from(this.datasets.values());
-    }
-
-    return memoryDatasets;
-  }
-
-  /**
-     * Get clones for a specific dataset
-     * @param {string} datasetId - Dataset identifier
-     * @returns {Array} Array of clone objects
-     */
-  getClones(datasetId) {
-    console.log(`ClientDataStore: Looking for clones for dataset: ${datasetId}`);
-    console.log(`ClientDataStore: Available clone keys in memory:`, Array.from(this.clones.keys()));
+   * Store processed AIRR data with lazy loading structure
+   * @param {Object} processedData - Data from AIRRProcessor
+   */
+  async storeProcessedData(processedData) {
+    console.log('ClientDataStore: Storing data with lazy loading...');
     
-    let cloneList = this.clones.get(datasetId);
+    try {
+      const datasetId = await olmstedDB.storeDataset(processedData);
+      console.log('ClientDataStore: Successfully stored data in Dexie');
+      return datasetId;
+    } catch (error) {
+      console.error('ClientDataStore: Failed to store data:', error);
+      throw error;
+    }
+  }
 
-    // If not in memory, try sessionStorage
-    if (!cloneList) {
-      console.log(`ClientDataStore: Clones not in memory, checking sessionStorage...`);
-      try {
-        const stored = sessionStorage.getItem(`${this.storagePrefix}clones_${datasetId}`);
-        if (stored) {
-          console.log(`ClientDataStore: Found clones in sessionStorage for ${datasetId}`);
-          cloneList = JSON.parse(stored);
-          this.clones.set(datasetId, cloneList);
-        } else {
-          console.log(`ClientDataStore: No clones in sessionStorage for ${datasetId}`);
-          // Check what keys ARE in sessionStorage
-          const storageKeys = Object.keys(sessionStorage).filter(k => k.startsWith(this.storagePrefix + 'clones_'));
-          console.log(`ClientDataStore: Available clone keys in sessionStorage:`, storageKeys.map(k => k.replace(this.storagePrefix + 'clones_', '')));
-        }
-      } catch (error) {
-        console.warn('Failed to load clones from sessionStorage:', error);
+  /**
+   * Get all datasets (lightweight, always fast)
+   * @returns {Promise<Array>} Array of dataset objects
+   */
+  async getAllDatasets() {
+    try {
+      const datasets = await olmstedDB.getAllDatasets();
+      console.log(`ClientDataStore: Retrieved ${datasets.length} datasets`);
+      return datasets;
+    } catch (error) {
+      console.error('ClientDataStore: Failed to get datasets:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get clone metadata for dataset (lightweight, no sequences)
+   * This is what powers the clone family list - fast loading
+   * @param {string} datasetId - Dataset identifier
+   * @returns {Promise<Array>} Array of clone metadata objects
+   */
+  async getClones(datasetId) {
+    console.log(`ClientDataStore: Getting clone metadata for ${datasetId}`);
+    
+    try {
+      const cloneMeta = await olmstedDB.getCloneMetadata(datasetId);
+      
+      if (cloneMeta.length === 0) {
+        console.warn(`ClientDataStore: No clones found for dataset ${datasetId}`);
+        return [];
       }
-    } else {
-      console.log(`ClientDataStore: Found ${cloneList.length} clones in memory for ${datasetId}`);
+      
+      // Convert to format expected by existing code
+      const cloneList = cloneMeta.map(clone => ({
+        ...clone,
+        // Add tree references in expected format
+        trees: clone.tree_ids ? clone.tree_ids.map(tree_id => ({
+          ident: tree_id,
+          tree_id: tree_id
+        })) : []
+      }));
+      
+      console.log(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);
+      return cloneList;
+      
+    } catch (error) {
+      console.error('ClientDataStore: Failed to get clone metadata:', error);
+      return [];
     }
-
-    return cloneList || [];
   }
 
   /**
-     * Get a specific tree by identifier
-     * @param {string} treeIdent - Tree identifier
-     * @returns {Object|null} Tree object or null if not found
-     */
-  getTree(treeIdent) {
-    console.log('Looking for tree:', treeIdent);
-    console.log('Available tree keys in memory:', Array.from(this.trees.keys()));
-
-    let tree = this.trees.get(treeIdent);
-
-    // If not in memory, try sessionStorage
-    if (!tree) {
-      try {
-        const stored = sessionStorage.getItem(`${this.storagePrefix}tree_${treeIdent}`);
-        if (stored) {
-          tree = JSON.parse(stored);
-          this.trees.set(treeIdent, tree);
-          console.log('Found tree in sessionStorage:', treeIdent);
+   * Get full tree with sequences (heavy, loaded on demand)
+   * This is called when user clicks on a specific clone family
+   * @param {string} treeIdent - Tree identifier
+   * @returns {Promise<Object|null>} Tree object with sequences or null
+   */
+  async getTree(treeIdent) {
+    console.log(`ClientDataStore: Loading full tree data for ${treeIdent}`);
+    
+    // Check memory cache first
+    if (this.recentTrees.has(treeIdent)) {
+      console.log(`ClientDataStore: Found tree ${treeIdent} in memory cache`);
+      return this.recentTrees.get(treeIdent);
+    }
+    
+    try {
+      // Try direct lookup by tree identifier first
+      let fullTree = await olmstedDB.getTreeByIdent(treeIdent);
+      
+      if (!fullTree) {
+        // Fallback: Extract clone_id from tree identifier
+        // Tree idents follow patterns like "tree_clone_0099_ident" → "clone_0099"
+        let cloneId = treeIdent;
+        
+        if (treeIdent.includes('tree_clone_')) {
+          // Pattern: "tree_clone_XXXX_ident" → "clone_XXXX"
+          const match = treeIdent.match(/tree_(clone_\d+)/);
+          if (match) {
+            cloneId = match[1]; // Extract "clone_XXXX"
+          }
+        } else if (treeIdent.startsWith('tree_') && treeIdent.includes('clone_')) {
+          // Other variations, try to find clone_XXXX pattern
+          const match = treeIdent.match(/(clone_\d+)/);
+          if (match) {
+            cloneId = match[1];
+          }
         }
-      } catch (error) {
-        console.warn('Failed to load tree from sessionStorage:', error);
+        
+        console.log(`ClientDataStore: Trying fallback - parsed "${treeIdent}" → clone ID "${cloneId}"`);
+        fullTree = await olmstedDB.getTreeForClone(cloneId);
       }
-    }
-
-    if (!tree) {
-      console.warn('Tree not found:', treeIdent);
-      // Try to see what's in sessionStorage
-      const storageKeys = Object.keys(sessionStorage).filter((k) => k.startsWith(this.storagePrefix + 'tree_'));
-      console.log('Available tree keys in sessionStorage:', storageKeys.map((k) => k.replace(this.storagePrefix + 'tree_', '')));
-    }
-
-    return tree || null;
-  }
-
-  /**
-     * Remove a temporary dataset and all associated data
-     * @param {string} datasetId - Dataset to remove
-     */
-  removeDataset(datasetId) {
-    // Remove from memory
-    this.datasets.delete(datasetId);
-    const cloneList = this.clones.get(datasetId);
-    this.clones.delete(datasetId);
-
-    // Remove associated trees
-    if (cloneList) {
-      cloneList.forEach((clone) => {
-        if (clone.trees) {
-          clone.trees.forEach((treeRef) => {
-            this.trees.delete(treeRef.ident);
-            // Remove from sessionStorage
-            try {
-              sessionStorage.removeItem(`${this.storagePrefix}tree_${treeRef.ident}`);
-            } catch (error) {
-              console.warn('Failed to remove tree from sessionStorage:', error);
-            }
-          });
-        }
-      });
-    }
-
-    // Remove from sessionStorage
-    try {
-      sessionStorage.removeItem(`${this.storagePrefix}clones_${datasetId}`);
-      // Update datasets in sessionStorage
-      const remainingDatasets = Array.from(this.datasets.values());
-      sessionStorage.setItem(`${this.storagePrefix}datasets`, JSON.stringify(remainingDatasets));
-    } catch (error) {
-      console.warn('Failed to remove data from sessionStorage:', error);
-    }
-  }
-
-  /**
-     * Load data from sessionStorage into memory
-     */
-  loadFromSessionStorage() {
-    try {
-      const datasetsJson = sessionStorage.getItem(`${this.storagePrefix}datasets`);
-      if (datasetsJson) {
-        const datasets = JSON.parse(datasetsJson);
-        datasets.forEach((dataset) => {
-          this.datasets.set(dataset.dataset_id, dataset);
-        });
+      
+      if (fullTree) {
+        // Cache in memory for fast subsequent access
+        this.addToCache(this.recentTrees, treeIdent, fullTree);
+        console.log(`ClientDataStore: Loaded and cached tree ${treeIdent}`);
+        return fullTree;
       }
+      
+      console.warn(`ClientDataStore: Tree not found: ${treeIdent}`);
+      return null;
+      
     } catch (error) {
-      console.warn('Failed to load datasets from sessionStorage:', error);
+      console.error('ClientDataStore: Failed to get tree:', error);
+      return null;
     }
   }
 
   /**
-     * Clear all temporary data
-     */
-  clearAllData() {
-    this.datasets.clear();
-    this.clones.clear();
-    this.trees.clear();
-
-    // Clear from sessionStorage
+   * Get full clone data with sequences (for when we need everything)
+   * @param {string} cloneId - Clone identifier  
+   * @param {string} datasetId - Dataset identifier
+   * @returns {Promise<Object|null>} Full clone object with embedded trees
+   */
+  async getFullClone(cloneId, datasetId) {
+    console.log(`ClientDataStore: Loading full clone data for ${cloneId}`);
+    
+    // Check memory cache first
+    const cacheKey = `${datasetId}_${cloneId}`;
+    if (this.recentClones.has(cacheKey)) {
+      console.log(`ClientDataStore: Found full clone ${cloneId} in memory cache`);
+      return this.recentClones.get(cacheKey);
+    }
+    
     try {
-      const keys = Object.keys(sessionStorage);
-      keys.forEach((key) => {
-        if (key.startsWith(this.storagePrefix)) {
-          sessionStorage.removeItem(key);
+      // Get clone metadata
+      const cloneMetaList = await olmstedDB.getCloneMetadata(datasetId);
+      const cloneMeta = cloneMetaList.find(c => c.clone_id === cloneId);
+      
+      if (!cloneMeta) {
+        console.warn(`ClientDataStore: Clone metadata not found: ${cloneId}`);
+        return null;
+      }
+      
+      // Get full tree data
+      const fullTree = await olmstedDB.getTreeForClone(cloneId);
+      
+      if (!fullTree) {
+        console.warn(`ClientDataStore: Tree data not found for clone: ${cloneId}`);
+        return null;
+      }
+      
+      // Combine metadata + tree data in expected format
+      const fullClone = {
+        ...cloneMeta,
+        trees: [fullTree] // Embed full tree object
+      };
+      
+      // Cache in memory
+      this.addToCache(this.recentClones, cacheKey, fullClone);
+      console.log(`ClientDataStore: Loaded and cached full clone ${cloneId}`);
+      return fullClone;
+      
+    } catch (error) {
+      console.error('ClientDataStore: Failed to get full clone:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Add item to cache with size limit
+   * @param {Map} cache - Cache map to add to
+   * @param {string} key - Cache key
+   * @param {any} value - Value to cache
+   */
+  addToCache(cache, key, value) {
+    // Remove oldest if at limit
+    if (cache.size >= this.maxCacheSize) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
+    }
+    
+    cache.set(key, value);
+  }
+
+  /**
+   * Remove a dataset and all associated data
+   * @param {string} datasetId - Dataset to remove
+   */
+  async removeDataset(datasetId) {
+    try {
+      await olmstedDB.removeDataset(datasetId);
+      
+      // Clear memory cache for this dataset
+      for (const [key, value] of this.recentClones.entries()) {
+        if (key.startsWith(datasetId + '_')) {
+          this.recentClones.delete(key);
         }
-      });
+      }
+      
+      // Clear tree cache for this dataset's trees
+      // This is imperfect but will be cleaned up naturally
+      
+      console.log(`ClientDataStore: Removed dataset ${datasetId}`);
     } catch (error) {
-      console.warn('Failed to clear sessionStorage:', error);
+      console.error('ClientDataStore: Failed to remove dataset:', error);
     }
   }
 
   /**
-     * Get summary of stored data
-     * @returns {Object} Data summary
-     */
-  getStorageSummary() {
-    return {
-      datasets: this.datasets.size,
-      clones: this.clones.size,
-      trees: this.trees.size,
-      memoryUsage: this.estimateMemoryUsage()
-    };
-  }
-
-  /**
-     * Estimate memory usage (rough calculation)
-     * @returns {string} Memory usage estimate
-     */
-  estimateMemoryUsage() {
+   * Clear all data
+   */
+  async clearAllData() {
     try {
-      const dataSize = JSON.stringify({
-        datasets: Array.from(this.datasets.values()),
-        clones: Array.from(this.clones.entries()),
-        trees: Array.from(this.trees.values())
-      }).length;
-
-      const mb = (dataSize / (1024 * 1024)).toFixed(2);
-      return `~${mb} MB`;
+      await olmstedDB.clearAll();
+      this.recentClones.clear();
+      this.recentTrees.clear();
+      console.log('ClientDataStore: Cleared all data');
     } catch (error) {
-      return 'Unknown';
+      console.error('ClientDataStore: Failed to clear all data:', error);
     }
+  }
+
+  /**
+   * Get storage summary with performance metrics
+   * @returns {Promise<Object>} Storage and performance summary
+   */
+  async getStorageSummary() {
+    try {
+      const dbStats = await olmstedDB.getStats();
+      const storageInfo = await olmstedDB.getStorageEstimate();
+      
+      return {
+        database: dbStats,
+        storage: storageInfo,
+        memoryCache: {
+          clones: this.recentClones.size,
+          trees: this.recentTrees.size,
+          maxSize: this.maxCacheSize
+        }
+      };
+    } catch (error) {
+      console.error('ClientDataStore: Failed to get storage summary:', error);
+      return { error: error.message };
+    }
+  }
+
+  /**
+   * Preload commonly accessed data (optional optimization)
+   * @param {string} datasetId - Dataset to preload
+   */
+  async preloadDataset(datasetId) {
+    try {
+      console.log(`ClientDataStore: Preloading dataset ${datasetId}...`);
+      
+      // Just load the clone metadata - trees will be loaded on demand
+      const clones = await this.getClones(datasetId);
+      console.log(`ClientDataStore: Preloaded ${clones.length} clone metadata entries`);
+      
+      return clones.length;
+    } catch (error) {
+      console.error('ClientDataStore: Failed to preload dataset:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Clear memory cache to free up RAM
+   */
+  clearMemoryCache() {
+    this.recentClones.clear();
+    this.recentTrees.clear();
+    console.log('ClientDataStore: Cleared memory cache');
   }
 }
 

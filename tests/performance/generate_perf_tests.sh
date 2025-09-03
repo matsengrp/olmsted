@@ -66,10 +66,10 @@ generate_test_dataset() {
 main() {
     echo "🚀 Generating Olmsted Performance Test Datasets"
     echo "=============================================="
-    
+
     # Create test data directory
     mkdir -p $TEST_DIR
-    
+
     # Check if olmsted is installed
     if ! command -v olmsted &> /dev/null; then
         echo -e "${YELLOW}⚠️  olmsted CLI not found. Please install it first:${NC}"
@@ -79,6 +79,9 @@ main() {
 
     # Generate test datasets of different sizes
     echo -e "\n${BLUE}Test Suite 1: Performance Targets${NC}"
+
+# Tiny dataset for debugging
+generate_test_dataset 5 "perf_test_tiny" "$TEST_DIR" 0.05 "Small dataset (1 clones)"
 
 # Small dataset for quick testing
 generate_test_dataset 100 "perf_test_small" "$TEST_DIR" 0.05 "Small dataset (100 clones)"

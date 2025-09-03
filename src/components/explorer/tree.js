@@ -25,7 +25,7 @@ class TreeHeader extends React.Component {
     return (
       <div>
         <CollapseHelpTitle
-          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id} ${this.props.selectedFamily.clone_id}`}
+          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample'} ${this.props.selectedFamily.clone_id}`}
           helpText={(
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below the table in the
@@ -144,7 +144,10 @@ class TreeViz extends React.Component {
   componentDidMount() {
     // Automatically request a tree for the selected family
     // when the component is first inserted into the DOM tree.
-    this.props.dispatchSelectFamily(this.props.selectedFamily.ident);
+    const familyId = this.props.selectedFamily?.ident || this.props.selectedFamily?.clone_id;
+    if (familyId) {
+      this.props.dispatchSelectFamily(familyId);
+    }
   }
 
   // Try to source data for the vega viz from props instead of faking
@@ -215,11 +218,11 @@ class TreeViz extends React.Component {
         {completeData && (
           <div>
             <DownloadFasta sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
-              filename={this.props.selectedFamily.sample_id.concat('-', this.props.selectedFamily.clone_id, '.fasta')}
+              filename={(this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample').concat('-', this.props.selectedFamily.clone_id, '.fasta')}
               label="Download Fasta: Unique Sequences In This Tree"
             />
             <DownloadText text={this.props.selectedTree.newick}
-              filename={this.props.selectedFamily.sample_id.concat('-', this.props.selectedFamily.clone_id, '-newick', '.txt')}
+              filename={(this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample').concat('-', this.props.selectedFamily.clone_id, '-newick', '.txt')}
               label="Download Clonal Family Tree Newick String"
             />
           </div>

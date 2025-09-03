@@ -159,6 +159,16 @@ const facetClonalFamiliesVizSpec = () => {
           ]
         },
         {
+          name: "clicked",
+          value: null,
+          on: [
+            {
+              events: {signal: "pts_tuple"},
+              update: "pts_tuple"
+            }
+          ]
+        },
+        {
           name: "brush_store_signal",
           update: "data(\"brush_store\")"
         },

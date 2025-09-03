@@ -59,21 +59,6 @@ class AIRRProcessor {
      * @returns {Object} Processed data structure
      */
   static processConsolidatedFormat(data, filename) {
-    console.log('Processing consolidated format...');
-    console.log('Consolidated data structure:', {
-      datasets: data.datasets?.length || 0,
-      clones_keys: Object.keys(data.clones || {}),
-      trees: data.trees?.length || 0
-    });
-
-    // Debug tree info
-    if (data.trees) {
-      console.log('Trees in consolidated data:', data.trees.map((t) => ({
-        ident: t.ident,
-        tree_id: t.tree_id,
-        clone_id: t.clone_id
-      })));
-    }
 
     // Validate structure
     if (!Array.isArray(data.datasets) || data.datasets.length === 0) {
@@ -91,16 +76,6 @@ class AIRRProcessor {
                              || data.clones[Object.keys(data.clones)[0]]
                              || [];
 
-    // Debug clone tree references
-    console.log('Clone tree references in consolidated data:');
-    datasetClones.slice(0, 3).forEach((clone, i) => {
-      if (clone.trees) {
-        console.log(`  Clone ${i} (${clone.clone_id}):`, clone.trees.map((t) => ({
-          ident: t.ident,
-          tree_id: t.tree_id
-        })));
-      }
-    });
 
     // Process dataset metadata
     const processedDataset = {
@@ -124,9 +99,22 @@ class AIRRProcessor {
     };
 
     // First process trees - just add dataset_id, keep existing idents
-    const processedTrees = (data.trees || []).map((tree) => {
+    const processedTrees = (data.trees || []).map((tree, index) => {
+      
+      // CRITICAL: Convert nodes array to object indexed by sequence_id if needed
+      let processedNodes = tree.nodes;
+      if (tree.nodes && Array.isArray(tree.nodes)) {
+        processedNodes = {};
+        tree.nodes.forEach((node, nodeIndex) => {
+          // Use sequence_id as key, or fall back to index if not available
+          const nodeId = node.sequence_id || String(nodeIndex);
+          processedNodes[nodeId] = node;
+        });
+      }
+      
       const processedTree = {
         ...tree,
+        nodes: processedNodes,  // Use the processed nodes (now always an object)
         dataset_id: datasetId,
         ident: tree.ident || this.generateUUID()
       };
@@ -237,6 +225,7 @@ class AIRRProcessor {
       // Extract trees and add to global trees array
       if (processedClone.trees && Array.isArray(processedClone.trees)) {
         processedClone.trees.forEach((tree) => {
+          
           // Add full tree to trees array
           trees.push({
             ...tree,

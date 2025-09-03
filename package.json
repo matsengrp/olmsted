@@ -55,6 +55,7 @@
     "d3-time-format": "^4.1.0",
     "d3-timer": "^3.0.1",
     "d3-zoom": "^3.0.0",
+    "dexie": "^4.2.0",
     "es6-object-assign": "^1.1.0",
     "es6-promise-polyfill": "^1.2.0",
     "express-naked-redirect": "^0.1.3",

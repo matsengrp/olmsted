@@ -62,8 +62,8 @@ class FileUpload extends React.Component {
       console.log('Processing file client-side:', file.name);
       const result = await AIRRProcessor.processFile(file);
 
-      // Store processed data in browser
-      const datasetId = clientDataStore.storeProcessedData(result);
+      // Store processed data in browser (IndexedDB)
+      const datasetId = await clientDataStore.storeProcessedData(result);
 
       // Add to uploaded files list
       this.setState((prevState) => ({
@@ -87,9 +87,10 @@ class FileUpload extends React.Component {
 
       // Trigger datasets reload by refreshing the page
       // In a production app, we'd dispatch a Redux action to reload datasets
-      // TEMPORARILY DISABLED FOR DEBUGGING LARGE DATASETS
+      // TEMPORARILY DISABLED for debugging - refresh manually to see uploaded data
+      console.log('Upload complete - refresh page manually to see datasets');
       // setTimeout(() => {
-      //   window.location.reload();
+        window.location.reload();
       // }, 1000);
 
       console.log('Client-side processing complete:', {
@@ -158,9 +159,11 @@ class FileUpload extends React.Component {
           }
 
           // Reload to show new dataset
-          setTimeout(() => {
+          // TEMPORARILY DISABLED for debugging - refresh manually to see uploaded data  
+          console.log('Split file upload complete - refresh page manually to see datasets');
+          // setTimeout(() => {
             window.location.reload();
-          }, 1000);
+          // }, 1000);
 
           return; // Successfully processed as split
         }

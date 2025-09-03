@@ -337,8 +337,12 @@ class SelectAttribute extends React.Component {
       <input
         type="checkbox"
         style={{cursor: "pointer"}}
-        checked={this.props.selectedFamily? (this.props.datum.ident == this.props.selectedFamily.ident): false}
-        onChange={() => this.props.dispatchSelect(this.props.datum.ident)}
+        checked={this.props.selectedFamily? (
+          (this.props.datum.ident || this.props.datum.clone_id) == (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
+        ): false}
+        onChange={() => {
+          this.props.dispatchSelect(this.props.datum.ident || this.props.datum.clone_id);
+        }}
       />
     );
   }

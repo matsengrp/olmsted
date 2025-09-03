@@ -7,13 +7,17 @@ import * as types from "./types";
 import clientDataStore from '../utils/clientDataStore';
 
 /**
- * Get tree data from client storage (replaces server getTree)
+ * Get tree data from client storage (replaces server getTree)  
+ * Now loads full tree with sequences on demand (lazy loading)
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} tree_id - Tree identifier
  */
-export const getClientTree = (dispatch, tree_id) => {
+export const getClientTree = async (dispatch, tree_id) => {
   try {
-    const tree = clientDataStore.getTree(tree_id);
+    console.log(`ClientDataLoader: Loading full tree data for ${tree_id} (on demand)`);
+    
+    // This loads the complete tree with all sequence data
+    const tree = await clientDataStore.getTree(tree_id);
 
     if (tree) {
       dispatch({
@@ -21,6 +25,9 @@ export const getClientTree = (dispatch, tree_id) => {
         tree_id,
         tree
       });
+      
+      const treeSize = JSON.stringify(tree).length;
+      console.log(`ClientDataLoader: Loaded tree ${tree_id} (${(treeSize / 1024).toFixed(1)}KB)`);
     } else {
       console.warn('Tree not found in client storage:', tree_id);
       // Dispatch error or fallback to server
@@ -32,12 +39,16 @@ export const getClientTree = (dispatch, tree_id) => {
 
 /**
  * Get clonal families from client storage (replaces server getClonalFamilies)
+ * Now loads lightweight metadata only - trees loaded on demand
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} dataset_id - Dataset identifier
  */
-export const getClientClonalFamilies = (dispatch, dataset_id) => {
+export const getClientClonalFamilies = async (dispatch, dataset_id) => {
   try {
-    const clonalFamilies = clientDataStore.getClones(dataset_id);
+    console.log(`ClientDataLoader: Loading clone families for ${dataset_id} (metadata only)`);
+    
+    // This now loads only lightweight clone metadata, not full trees
+    const clonalFamilies = await clientDataStore.getClones(dataset_id);
 
     if (clonalFamilies && clonalFamilies.length > 0) {
       dispatch({
@@ -50,6 +61,8 @@ export const getClientClonalFamilies = (dispatch, dataset_id) => {
         dataset_id,
         loading: "DONE"
       });
+      
+      console.log(`ClientDataLoader: Loaded ${clonalFamilies.length} clone families (${(JSON.stringify(clonalFamilies).length / 1024).toFixed(1)}KB)`);
     } else {
       console.warn('Clonal families not found in client storage:', dataset_id);
       // Dispatch error or fallback to server
@@ -64,9 +77,9 @@ export const getClientClonalFamilies = (dispatch, dataset_id) => {
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} s3bucket - Legacy parameter for server compatibility (ignored)
  */
-export const getClientDatasets = (dispatch, s3bucket = "live") => {
+export const getClientDatasets = async (dispatch, s3bucket = "live") => {
   try {
-    const clientDatasets = clientDataStore.getAllDatasets();
+    const clientDatasets = await clientDataStore.getAllDatasets();
 
     // Process client datasets
     const availableDatasets = clientDatasets.map((dataset) => ({
@@ -98,104 +111,97 @@ export const getClientDatasets = (dispatch, s3bucket = "live") => {
  * Load server datasets (original functionality)
  * This allows mixing client-side and server-side data
  */
-const loadServerDatasets = (dispatch) => {
-  // Use the original server loading logic as fallback
-  const request = new XMLHttpRequest();
-  request.onload = () => {
-    if (request.readyState === 4 && request.status === 200) {
-      // Check if response is JSON before trying to parse
-      const contentType = request.getResponseHeader('content-type');
-      const isJson = contentType && contentType.includes('application/json');
-
-      if (isJson || request.responseText.trim().startsWith('[') || request.responseText.trim().startsWith('{')) {
-        try {
-          const serverDatasets = JSON.parse(request.responseText);
-
-          // Get existing client datasets
-          const existingDatasets = clientDataStore.getAllDatasets().map((d) => ({
-            ...d,
-            isClientSide: true,
-            temporary: true
-          }));
-
-          // Combine client and server datasets
-          const combinedDatasets = [
-            ...existingDatasets,
-            ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))
-          ];
-
-          dispatch({
-            type: types.DATASETS_RECEIVED,
-            availableDatasets: combinedDatasets
-          });
-
-          console.log('Combined datasets loaded:', {
-            client: existingDatasets.length,
-            server: serverDatasets.length,
-            total: combinedDatasets.length
-          });
-
-        } catch (error) {
-          // Silently fall back to client-only datasets
-          const clientOnly = clientDataStore.getAllDatasets().map((d) => ({
-            ...d,
-            isClientSide: true,
-            temporary: true
-          }));
-
-          if (clientOnly.length > 0) {
-            dispatch({
-              type: types.DATASETS_RECEIVED,
-              availableDatasets: clientOnly
-            });
-          }
-        }
-      } else {
-        // Response is not JSON (likely HTML error page), use client-only datasets
-        const clientOnly = clientDataStore.getAllDatasets().map((d) => ({
-          ...d,
-          isClientSide: true,
-          temporary: true
-        }));
-
-        dispatch({
-          type: types.DATASETS_RECEIVED,
-          availableDatasets: clientOnly
-        });
-      }
-    } else {
-      // Server request failed, use client-only datasets
-      const clientOnly = clientDataStore.getAllDatasets().map((d) => ({
-        ...d,
-        isClientSide: true,
-        temporary: true
-      }));
-
-      dispatch({
-        type: types.DATASETS_RECEIVED,
-        availableDatasets: clientOnly
-      });
-    }
-  };
-
-  request.onerror = () => {
-    // Network error, use client-only datasets
-    const clientOnly = clientDataStore.getAllDatasets().map((d) => ({
+const loadServerDatasets = async (dispatch) => {
+  // Helper function to get client datasets and format them
+  const getClientOnlyDatasets = async () => {
+    const clientDatasets = await clientDataStore.getAllDatasets();
+    return clientDatasets.map((d) => ({
       ...d,
       isClientSide: true,
       temporary: true
     }));
-
-    dispatch({
-      type: types.DATASETS_RECEIVED,
-      availableDatasets: clientOnly
-    });
   };
 
-  // Load from server API (original endpoint)
-  const { charonAPIAddress } = require("../util/globals");
-  request.open("get", `${charonAPIAddress}/datasets.json`, true);
-  request.send(null);
+  try {
+    // Get client datasets first
+    const clientDatasets = await getClientOnlyDatasets();
+    
+    // Use the original server loading logic as fallback
+    const request = new XMLHttpRequest();
+    
+    request.onload = () => {
+      if (request.readyState === 4 && request.status === 200) {
+        // Check if response is JSON before trying to parse
+        const contentType = request.getResponseHeader('content-type');
+        const isJson = contentType && contentType.includes('application/json');
+
+        if (isJson || request.responseText.trim().startsWith('[') || request.responseText.trim().startsWith('{')) {
+          try {
+            const serverDatasets = JSON.parse(request.responseText);
+
+            // Combine client and server datasets
+            const combinedDatasets = [
+              ...clientDatasets,
+              ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))
+            ];
+
+            dispatch({
+              type: types.DATASETS_RECEIVED,
+              availableDatasets: combinedDatasets
+            });
+
+            console.log('Combined datasets loaded:', {
+              client: clientDatasets.length,
+              server: serverDatasets.length,
+              total: combinedDatasets.length
+            });
+
+          } catch (error) {
+            // Silently fall back to client-only datasets
+            if (clientDatasets.length > 0) {
+              dispatch({
+                type: types.DATASETS_RECEIVED,
+                availableDatasets: clientDatasets
+              });
+            }
+          }
+        } else {
+          // Response is not JSON (likely HTML error page), use client-only datasets
+          dispatch({
+            type: types.DATASETS_RECEIVED,
+            availableDatasets: clientDatasets
+          });
+        }
+      } else {
+        // Server request failed, use client-only datasets
+        dispatch({
+          type: types.DATASETS_RECEIVED,
+          availableDatasets: clientDatasets
+        });
+      }
+    };
+
+    request.onerror = () => {
+      // Network error, use client-only datasets
+      dispatch({
+        type: types.DATASETS_RECEIVED,
+        availableDatasets: clientDatasets
+      });
+    };
+
+    // Load from server API (original endpoint)
+    const { charonAPIAddress } = require("../util/globals");
+    request.open("get", `${charonAPIAddress}/datasets.json`, true);
+    request.send(null);
+    
+  } catch (error) {
+    // If even client dataset loading fails, dispatch empty array
+    console.error('Failed to load client datasets:', error);
+    dispatch({
+      type: types.DATASETS_RECEIVED,
+      availableDatasets: []
+    });
+  }
 };
 
 /**
