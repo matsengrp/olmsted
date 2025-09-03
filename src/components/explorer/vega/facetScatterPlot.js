@@ -58,6 +58,11 @@ const facetClonalFamiliesVizSpec = () => {
               as: "dataset.dataset_id"
             },
             {
+              type: "formula",
+              expr: "datum[\"dataset\"] && (datum[\"dataset\"][\"name\"] || datum[\"dataset\"][\"dataset_id\"])",
+              as: "dataset.name"
+            },
+            {
               type: "filter",
               expr: "datum[\"unique_seqs_count\"] !== null && !isNaN(datum[\"unique_seqs_count\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
             },
@@ -202,7 +207,7 @@ const facetClonalFamiliesVizSpec = () => {
         {
           name: "facet_by_signal",
           value: "<none>",
-          bind: {name: "Facet by field ", input: "select", options: ["<none>", "has_seed", "dataset.dataset_id", "subject_id", "sample.timepoint_id", "sample.locus"]}
+          bind: {name: "Facet by field ", input: "select", options: ["<none>", "has_seed", "dataset.name", "subject_id", "sample.timepoint_id", "sample.locus"]}
         },
         {
           name: "yField",
