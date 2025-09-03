@@ -46,6 +46,11 @@ const facetClonalFamiliesVizSpec = () => {
             {
               type: "filter",
               expr: "datum[\"unique_seqs_count\"] !== null && !isNaN(datum[\"unique_seqs_count\"]) && datum[\"mean_mut_freq\"] !== null && !isNaN(datum[\"mean_mut_freq\"])"
+            },
+            {
+              type: "formula",
+              as: "_sizeField",
+              expr: "sizeBy === '<none>' ? 1 : datum[sizeBy]"
             }
           ]
         }
@@ -229,7 +234,7 @@ const facetClonalFamiliesVizSpec = () => {
         {
           name: "size",
           type: "sqrt",
-          domain: {data: "data_0", field: {signal: "sizeBy"}},
+          domain: {data: "data_0", field: "_sizeField"},
           range: [9, 361]
         },
         {
@@ -359,17 +364,9 @@ const facetClonalFamiliesVizSpec = () => {
               ],
               x: {scale: "x", field: {signal: "xField"}},
               y: {scale: "y", field: {signal: "yField"}},
-              size: [
-                {
-                  test: "sizeBy === '<none>'",
-                  value: {signal: "100 * symbolSize"}
-                },
-                {
-                  scale: "size", 
-                  field: {signal: "sizeBy"},
-                  mult: {signal: "symbolSize"}
-                }
-              ],
+              size: {
+                signal: "scale('size', datum._sizeField) * symbolSize"
+              },
               tooltip: {
                 signal: "{\"Clone ID\": datum.ident, \"X\": datum[xField], \"Y\": datum[yField], \"Color\": datum[colorBy], \"Shape\": datum[shapeBy], \"Size\": datum[sizeBy]}"
               }
