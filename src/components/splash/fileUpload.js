@@ -4,6 +4,7 @@ import { CenterContent } from "./centerContent";
 import AIRRProcessor from '../../utils/airrProcessor';
 import SplitFileProcessor from '../../utils/splitFileProcessor';
 import clientDataStore from '../../utils/clientDataStore';
+import { getClientDatasets } from '../../actions/clientDataLoader';
 import { SimpleInProgress } from '../util/loading';
 
 class FileUpload extends React.Component {
@@ -106,11 +107,20 @@ class FileUpload extends React.Component {
         });
       }
 
-      // Trigger datasets reload by refreshing the page
-      this.updateLoadingStatus('Upload complete! Refreshing page...', 100);
+      // Trigger datasets reload by refreshing the datasets list
+      this.updateLoadingStatus('Upload complete! Refreshing datasets list...', 100);
+      if (this.props.dispatch) {
+        await getClientDatasets(this.props.dispatch);
+      }
+      
+      // Clear loading status after a brief delay
       setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+        this.setState({
+          loadingMessage: '',
+          loadingProgress: 0,
+          isLoading: false
+        });
+      }, 500);
 
       console.log('Client-side processing complete:', {
         datasetId,

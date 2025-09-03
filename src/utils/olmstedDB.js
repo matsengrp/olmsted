@@ -6,7 +6,7 @@ import Dexie from 'dexie';
 
 class OlmstedDB extends Dexie {
   constructor() {
-    super('OlmstedClientStorage_v2'); // New database name to avoid conflicts
+    super('OlmstedClientStorage_v3'); // Bump version for compound key fix
     
     // Define database schema with separate stores for lazy loading
     this.version(1).stores({
@@ -14,7 +14,7 @@ class OlmstedDB extends Dexie {
       datasets: 'dataset_id, name, clone_count',
       
       // Clone family metadata (lightweight, loaded for lists)
-      clones: 'clone_id, dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq',
+      clones: '[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq',
       
       // Complete tree data (heavy, loaded on demand per family)
       trees: 'tree_id, clone_id, ident'
@@ -36,7 +36,7 @@ class OlmstedDB extends Dexie {
     try {
       // Check if old database exists
       const databases = await Dexie.getDatabaseNames();
-      const hasOldDatabase = databases.includes('OlmstedClientStorage');
+      const hasOldDatabase = databases.includes('OlmstedClientStorage') || databases.includes('OlmstedClientStorage_v2');
       
       if (hasOldDatabase) {
         console.log('OlmstedDB: Found old database format');
@@ -51,7 +51,8 @@ class OlmstedDB extends Dexie {
         
         if (userConfirmed) {
           await Dexie.delete('OlmstedClientStorage');
-          console.log('OlmstedDB: User approved - cleared old database');
+          await Dexie.delete('OlmstedClientStorage_v2');
+          console.log('OlmstedDB: User approved - cleared old databases');
           
           // Show success message
           setTimeout(() => {
@@ -79,6 +80,10 @@ class OlmstedDB extends Dexie {
   async storeDataset(processedData) {
     const { datasets, clones, trees, datasetId } = processedData;
     
+    console.log('OlmstedDB: Storing dataset with ID:', datasetId);
+    console.log('OlmstedDB: Datasets to store:', datasets.length);
+    console.log('OlmstedDB: Clone groups:', Object.keys(clones));
+    console.log('OlmstedDB: Trees to store:', trees.length);
     
     try {
       await this.transaction('rw', this.datasets, this.clones, this.trees, async () => {
@@ -89,12 +94,15 @@ class OlmstedDB extends Dexie {
         
         // Store clone metadata and separate heavy data
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
+          console.log(`OlmstedDB: Storing ${cloneList.length} clones for dataset_id: ${dataset_id}`);
           for (const clone of cloneList) {
             // Lightweight clone metadata (no embedded trees)
+            const finalDatasetId = clone.dataset_id || dataset_id;
+            console.log(`OlmstedDB: Clone ${clone.clone_id} -> dataset_id: ${finalDatasetId}`);
             const cloneMeta = {
               clone_id: clone.clone_id,
               ident: clone.ident || clone.clone_id,
-              dataset_id: clone.dataset_id || dataset_id,
+              dataset_id: finalDatasetId,
               subject_id: clone.subject_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
@@ -171,11 +179,21 @@ class OlmstedDB extends Dexie {
    */
   async getCloneMetadata(datasetId) {
     try {
+      console.log('OlmstedDB: Searching for clones with dataset_id:', datasetId);
+      
+      // Debug: Get all clones to see what's actually stored
+      const allClones = await this.clones.toArray();
+      console.log('OlmstedDB: All stored clones:', allClones.length);
+      if (allClones.length > 0) {
+        console.log('OlmstedDB: Sample clone dataset_ids:', allClones.slice(0, 3).map(c => c.dataset_id));
+      }
+      
       const clones = await this.clones
         .where('dataset_id')
         .equals(datasetId)
         .toArray();
       
+      console.log('OlmstedDB: Found clones for dataset:', clones.length);
       return clones;
     } catch (error) {
       console.error('OlmstedDB: Failed to get clone metadata:', error);
