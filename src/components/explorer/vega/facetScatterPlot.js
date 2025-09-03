@@ -201,8 +201,8 @@ const facetClonalFamiliesVizSpec = () => {
         // Dropdown menus
         {
           name: "facet_by_signal",
-          value: "none",
-          bind: {name: "Facet by field ", input: "select", options: ["none", "has_seed", "dataset.dataset_id", "subject_id", "sample.timepoint_id", "sample.locus"]}
+          value: "<none>",
+          bind: {name: "Facet by field ", input: "select", options: ["<none>", "has_seed", "dataset.dataset_id", "subject_id", "sample.timepoint_id", "sample.locus"]}
         },
         {
           name: "yField",
@@ -216,35 +216,53 @@ const facetClonalFamiliesVizSpec = () => {
         },
         {
           name: "colorBy",
-          value: "subject_id",
-          bind: {name: "Color by ", input: "select", options: ["subject_id", "sample.timepoint_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
+          value: "<none>",
+          bind: {name: "Color by ", input: "select", options: ["<none>", "subject_id", "sample.timepoint_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
         },
         {
           name: "shapeBy",
-          value: "sample.timepoint_id",
-          bind: {name: "Shape by ", input: "select", options: ["sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
+          value: "<none>",
+          bind: {name: "Shape by ", input: "select", options: ["<none>", "sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
+        },
+        {
+          name: "sizeBy",
+          value: "<none>",
+          bind: {name: "Size by ", input: "select", options: ["<none>", "unique_seqs_count", "mean_mut_freq", "junction_length"]}
+        },
+        {
+          name: "symbolSize",
+          value: 1,
+          bind: {name: "Symbol size ", input: "range", min: 0.1, max: 3, step: 0.1}
+        },
+        {
+          name: "symbolOpacity",
+          value: 0.4,
+          bind: {name: "Symbol opacity ", input: "range", min: 0.1, max: 1, step: 0.05}
+        },
+        {
+          name: "filledShapes",
+          value: false,
+          bind: {name: "Filled shapes ", input: "checkbox"}
         },
         // Outer level brush signals to subscribe to
-        // {
-        //   name: "brush_x_field",
-        //   on: [{
-        //     events: {
-        //       signal: "facet_by_signal"
-        //     },
-        //     update: "null"
-        //   }]
-        // },
-        // {
-        //   name: "brush_y_field",
-        //   on: [{
-        //     events: {
-        //       signal: "facet_by_signal"
-        //     },
-        //     update: "null"
-        //   }]
-        // },
-        { name: "brush_x_field", value: null },
-        { name: "brush_y_field", value: null },
+        {
+          name: "brush_x_field",
+          on: [{
+            events: {
+              signal: "facet_by_signal"
+            },
+            update: "null"
+          }]
+        },
+        {
+          name: "brush_y_field",
+          on: [{
+            events: {
+              signal: "facet_by_signal"
+            },
+            update: "null"
+          }]
+        },
         {
           name: "locus_value",
           update: "data('locus').length ? data('locus')[0].locus : null"
@@ -264,7 +282,7 @@ const facetClonalFamiliesVizSpec = () => {
           name: "column-title",
           type: "group",
           role: "column-title",
-          title: {text: {signal: "facet_by_signal == 'none' ? '' : facet_by_signal"}, offset: 10, style: "guide-title"}
+          title: {text: {signal: "facet_by_signal == '<none>' ? '' : facet_by_signal"}, offset: 10, style: "guide-title"}
         },
         {
           name: "row_header",
@@ -345,11 +363,11 @@ const facetClonalFamiliesVizSpec = () => {
             },
             {
               name: "local_facet_value",
-              update: "facet_by_signal !== \"none\" ? facet.facet_by_field : 'none'"
+              update: "facet_by_signal !== \"<none>\" ? facet.facet_by_field : '<none>'"
             },
             {
               name: "brush_test",
-              update: "data(\"brush_store\").length && (local_facet_value !== \"none\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
+              update: "data(\"brush_store\").length && (local_facet_value !== \"<none>\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
             },
             // TODO (#118): use brush store and get rid of brushed_facet_value
             {
@@ -675,24 +693,64 @@ const facetClonalFamiliesVizSpec = () => {
                   y: {scale: "y", field: {signal: "yField"}},
                   opacity: [
                     {test: "indata('selected', 'ident', datum.ident)", value: 1},
-                    {value: 0.35}
+                    {signal: "symbolOpacity"}
                   ],
-                  fill: {
-                    value: "transparent"
-                  },
-                  stroke: [
+                  fill: [
+                    {
+                      test: "!filledShapes",
+                      value: "transparent"
+                    },
+                    {
+                      test: "colorBy === '<none>'",
+                      value: "#4682b4"
+                    },
                     {
                       scale: "color",
                       field: {signal: "colorBy"}
                     }
+                  ],
+                  stroke: [
+                    {
+                      test: "!filledShapes && colorBy === '<none>'",
+                      value: "#4682b4"
+                    },
+                    {
+                      test: "!filledShapes",
+                      scale: "color",
+                      field: {signal: "colorBy"}
+                    },
+                    {
+                      test: "filledShapes",
+                      value: "transparent"
+                    }
+                  ],
+                  strokeWidth: [
+                    {
+                      test: "filledShapes",
+                      value: 0
+                    },
+                    {value: 2}
                   ],
                   shape: {
                     scale: "shape",
                     field: {signal: "shapeBy"}
                   },
                   size: [
-                    {test: "indata('selected', 'ident', datum.ident)", value: 600},
-                    {value: 20}
+                    {
+                      test: "indata('selected', 'ident', datum.ident) && sizeBy === '<none>'", 
+                      signal: "600 * symbolSize"
+                    },
+                    {
+                      test: "indata('selected', 'ident', datum.ident) && sizeBy !== '<none>'", 
+                      signal: "scale('size', datum[sizeBy]) * symbolSize * 3"
+                    },
+                    {
+                      test: "sizeBy === '<none>'",
+                      signal: "100 * symbolSize"
+                    },
+                    {
+                      signal: "scale('size', datum[sizeBy]) * symbolSize"
+                    }
                   ]
                 }
               }
@@ -829,6 +887,16 @@ const facetClonalFamiliesVizSpec = () => {
             sort: true
           },
           range: "symbol"
+        },
+        {
+          name: "size",
+          type: "sqrt",
+          domain: {
+            signal: "sizeBy === '<none>' ? [0, 100] : extent(pluck(data('data_0'), sizeBy))"
+          },
+          range: [9, 361],
+          nice: true,
+          zero: true
         }
       ],
       // LEGENDS

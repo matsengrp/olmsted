@@ -52,11 +52,12 @@ div.vega-bindings div.vega-bind,
 div.vega-bindings div.vega-bind:has(input[type="checkbox"]) {
   min-width: 150px;
 }
-div.vega-bindings div.vega-bind .vega-bind-name,
-div.vega-bindings div.vega-bind span.vega-bind-name {
+div.vega-bindings div.vega-bind > *:first-child {
   margin-right: 12px;
   font-weight: 500;
-  padding-right: 5px;
+  padding-right: 10px !important;
+  min-width: 80px;
+  display: inline-block;
 }
 
 div.vega-bindings div.vega-bind {
@@ -73,6 +74,8 @@ div.vega-bindings div.vega-bind select {
   border-radius: 3px;
   background: white;
   font-size: 10pt;
+  width: auto;
+  min-width: fit-content;
 }
 
 div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-thumb {
