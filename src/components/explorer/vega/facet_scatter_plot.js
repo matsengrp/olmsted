@@ -2,7 +2,7 @@ const facetClonalFamiliesVizSpec = () => {
   return (
     {
       $schema: "https://vega.github.io/schema/vega/v5.json",
-      autosize: {type: "pad"},
+      autosize: {type: "pad", resize: true},
       // DATA
       data: [
         {
@@ -225,27 +225,29 @@ const facetClonalFamiliesVizSpec = () => {
           bind: {name: "Shape by ", input: "select", options: ["sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]}
         },
         // Outer level brush signals to subscribe to
+        // {
+        //   name: "brush_x_field",
+        //   on: [{
+        //     events: {
+        //       signal: "facet_by_signal"
+        //     },
+        //     update: "null"
+        //   }]
+        // },
+        // {
+        //   name: "brush_y_field",
+        //   on: [{
+        //     events: {
+        //       signal: "facet_by_signal"
+        //     },
+        //     update: "null"
+        //   }]
+        // },
+        { name: "brush_x_field", value: null },
+        { name: "brush_y_field", value: null },
         {
-          name: "brush_x_field",
-          on: [{
-            events: {
-              signal: "facet_by_signal"
-            },
-            update: "null"
-          }]
-        },
-        {
-          name: "brush_y_field",
-          on: [{
-            events: {
-              signal: "facet_by_signal"
-            },
-            update: "null"
-          }]
-        },
-        {
-          name: "locus",
-          update: "data(\"locus\")[0].locus"
+          name: "locus_value",
+          update: "data('locus').length ? data('locus')[0].locus : null"
         }
       ],
       // LAYOUT
@@ -414,12 +416,12 @@ const facetClonalFamiliesVizSpec = () => {
                   },
                   update: "[brush_x[0], clamp(x(cell), 0, child_width)]"
                 },
-                {
-                  events: {
-                    signal: "brush_scale_trigger"
-                  },
-                  update: "brush_x_field_nested ? [scale(\"x\", brush_x_field_nested[0]), scale(\"x\", brush_x_field_nested[1])] : null"
-                },
+                // {
+                //   events: {
+                //     signal: "brush_scale_trigger"
+                //   },
+                //   update: "brush_x_field_nested ? [scale(\"x\", brush_x_field_nested[0]), scale(\"x\", brush_x_field_nested[1])] : null"
+                // },
                 {
                   events: {
                     signal: "brush_translate_delta"
@@ -430,7 +432,7 @@ const facetClonalFamiliesVizSpec = () => {
                   events: [
                     {signal: "facet_by_signal"},
                     {signal: "brushed_facet_value"},
-                    {signal: "locus"}
+                    {signal: "locus_value"}
                   ],
                   update: "[]"
                 }
@@ -499,12 +501,12 @@ const facetClonalFamiliesVizSpec = () => {
                   },
                   update: "[brush_y[0], clamp(y(cell), 0, child_height)]"
                 },
-                {
-                  events: {
-                    signal: "brush_scale_trigger"
-                  },
-                  update: "brush_y_field_nested ? [scale(\"y\", brush_y_field_nested[0]), scale(\"y\", brush_y_field_nested[1])] : null"
-                },
+                // {
+                //   events: {
+                //     signal: "brush_scale_trigger"
+                //   },
+                //   update: "brush_y_field_nested ? [scale(\"y\", brush_y_field_nested[0]), scale(\"y\", brush_y_field_nested[1])] : null"
+                // },
                 {
                   events: {
                     signal: "brush_translate_delta"
@@ -515,7 +517,7 @@ const facetClonalFamiliesVizSpec = () => {
                   events: [
                     {signal: "facet_by_signal"},
                     {signal: "brushed_facet_value"},
-                    {signal: "locus"}
+                    {signal: "locus_value"}
                   ],
                   update: "[]"
                 }
@@ -816,7 +818,7 @@ const facetClonalFamiliesVizSpec = () => {
             field: {signal: "colorBy"},
             sort: true
           },
-          range: "category"
+          range: {scheme: "category10"}
         },
         {
           name: "shape",
