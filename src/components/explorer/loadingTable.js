@@ -50,26 +50,26 @@ class LoadStatusDisplay extends React.Component {
   }
 }
 
-// Component for dataset selection checkbox
-const DatasetSelectionCheckbox = connect((state) => ({
-  selectedDatasets: state.datasets.selectedDatasets
-}))((props) => {
-  const { datum, selectedDatasets, dispatch } = props;
-  const isSelected = selectedDatasets.includes(datum.dataset_id);
-  
-  return (
-    <div style={{ width: '100%', textAlign: 'center' }}>
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => {
-          dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
-        }}
-        style={{ cursor: 'pointer' }}
-      />
-    </div>
-  );
-});
+// Component for dataset selection checkbox  
+class SelectionCell extends React.Component {
+  render() {
+    const { datum, selectedDatasets, dispatch } = this.props;
+    const isSelected = selectedDatasets && selectedDatasets.includes(datum.dataset_id);
+    
+    return (
+      <div style={{ width: '100%', textAlign: 'center' }}>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => {
+            dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
+          }}
+          style={{ cursor: 'pointer' }}
+        />
+      </div>
+    );
+  }
+}
 
 @connect((state) => ({
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
@@ -152,7 +152,7 @@ export default class LoadingTable extends React.Component {
 
     // Build mappings for the table - same as Available Datasets but with selection checkboxes
     const mappings = [
-      ["Select", DatasetSelectionCheckbox, { sortable: false }],
+      ["Select", SelectionCell, { sortable: false }],
       ["Status", LoadStatusDisplay, { sortable: false }],
       ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
@@ -194,7 +194,10 @@ export default class LoadingTable extends React.Component {
           columnWidths={columnWidths}
           containerHeight={200}
           itemName="available datasets"
-          componentProps={{ dispatch: this.props.dispatch }}
+          componentProps={{ 
+            dispatch: this.props.dispatch, 
+            selectedDatasets: this.props.selectedDatasets 
+          }}
         />
         
         <div style={{ marginTop: "15px", marginBottom: "15px", textAlign: "center" }}>
