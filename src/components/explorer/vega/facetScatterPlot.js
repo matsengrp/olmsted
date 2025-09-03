@@ -144,7 +144,7 @@ const facetClonalFamiliesVizSpec = () => {
           value: {},
           on: [
             {
-              events: [{source: "scope", type: "click"}],
+              events: [{source: "view", type: "click", marktype: "symbol"}],
               update: "datum && item().mark.marktype == 'symbol' ? datum : null"
             }
           ]
@@ -155,6 +155,16 @@ const facetClonalFamiliesVizSpec = () => {
             {
               events: {signal: "pts_tuple"},
               update: "modify(\"pts_store\", pts_tuple, true)"
+            }
+          ]
+        },
+        {
+          name: "clicked_group",
+          value: null,
+          on: [
+            {
+              events: [{source: "view", type: "click", marktype: "symbol"}],
+              update: "item().mark.group ? item().mark.group.datum : null"
             }
           ]
         },
@@ -697,9 +707,23 @@ const facetClonalFamiliesVizSpec = () => {
                   x: {scale: "x", field: {signal: "xField"}},
                   y: {scale: "y", field: {signal: "yField"}},
                   opacity: [
-                    {test: "indata('selected', 'ident', datum.ident)", value: 1},
+                    {test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field)", value: 1},
                     {signal: "symbolOpacity"}
                   ],
+                  tooltip: {
+                    signal: "{" +
+                      "'Clone ID': datum.clone_id, " +
+                      "'Dataset': datum.dataset ? (datum.dataset.name || datum.dataset.dataset_id) : '', " +
+                      "'Subject': datum.subject_id, " +
+                      "'Locus': datum.sample ? datum.sample.locus : '', " +
+                      "'Unique Sequences': datum.unique_seqs_count, " +
+                      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
+                      "'Junction Length': datum.junction_length, " +
+                      "'V Gene': datum.v_call, " +
+                      "'J Gene': datum.j_call, " +
+                      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
+                    "}"
+                  },
                   fill: [
                     {
                       test: "!filledShapes",
@@ -742,11 +766,11 @@ const facetClonalFamiliesVizSpec = () => {
                   },
                   size: [
                     {
-                      test: "indata('selected', 'ident', datum.ident) && sizeBy === '<none>'", 
+                      test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field) && sizeBy === '<none>'", 
                       signal: "600 * symbolSize"
                     },
                     {
-                      test: "indata('selected', 'ident', datum.ident) && sizeBy !== '<none>'", 
+                      test: "indata('selected', 'ident', datum.ident) && (!clicked_group || clicked_group.facet_by_field === datum.facet_by_field) && sizeBy !== '<none>'", 
                       signal: "scale('size', datum[sizeBy]) * symbolSize * 3"
                     },
                     {
