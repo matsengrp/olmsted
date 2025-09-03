@@ -3,6 +3,10 @@ import { connect } from "react-redux";
 import { LoadingStatus, SimpleInProgress } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
+import { getClientClonalFamilies } from "../../actions/clientDataLoader";
+import { getClonalFamilies } from "../../actions/loadData";
+import * as explorerActions from "../../actions/explorer";
+import * as types from "../../actions/types";
 import * as _ from "lodash";
 
 // Component for the citation column
@@ -46,23 +50,109 @@ class LoadStatusDisplay extends React.Component {
   }
 }
 
+// Component for dataset selection checkbox
+const DatasetSelectionCheckbox = connect((state) => ({
+  selectedDatasets: state.datasets.selectedDatasets
+}))((props) => {
+  const { datum, selectedDatasets, dispatch } = props;
+  const isSelected = selectedDatasets.includes(datum.dataset_id);
+  
+  return (
+    <div style={{ width: '100%', textAlign: 'center' }}>
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => {
+          dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
+        }}
+        style={{ cursor: 'pointer' }}
+      />
+    </div>
+  );
+});
+
 @connect((state) => ({
-  loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets)
+  loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
+  selectedDatasets: state.datasets.selectedDatasets,
+  allDatasets: state.datasets.availableDatasets
 }))
 export default class LoadingTable extends React.Component {
   constructor(props) {
     super(props);
+    this.handleBatchUpdate = this.handleBatchUpdate.bind(this);
+  }
+
+  componentDidMount() {
+    // Initialize selections with currently loaded datasets
+    const { allDatasets, selectedDatasets, dispatch } = this.props;
+    const currentlyLoaded = allDatasets.filter(d => d.loading === "DONE").map(d => d.dataset_id);
+    
+    // Only initialize if no selections are made yet
+    if (selectedDatasets.length === 0 && currentlyLoaded.length > 0) {
+      currentlyLoaded.forEach(dataset_id => {
+        dispatch(explorerActions.toggleDatasetSelection(dataset_id));
+      });
+    }
+  }
+
+  async handleBatchUpdate() {
+    const { selectedDatasets, allDatasets, dispatch } = this.props;
+    
+    // Get currently loaded dataset IDs
+    const currentlyLoaded = new Set(allDatasets.filter(d => d.loading === "DONE").map(d => d.dataset_id));
+    
+    // Determine what needs to be loaded and unloaded
+    const toLoad = selectedDatasets.filter(id => !currentlyLoaded.has(id));
+    const toUnload = Array.from(currentlyLoaded).filter(id => !selectedDatasets.includes(id));
+    
+    console.log(`Batch update: Loading ${toLoad.length}, Unloading ${toUnload.length}`);
+    
+    // First, unload datasets that are no longer selected
+    toUnload.forEach(dataset_id => {
+      dispatch({ type: types.LOADING_DATASET, dataset_id, loading: false });
+    });
+    
+    // Then load new datasets
+    toLoad.forEach(async (dataset_id) => {
+      const dataset = allDatasets.find(d => d.dataset_id === dataset_id);
+      if (dataset) {
+        dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
+        
+        try {
+          if (dataset.isClientSide) {
+            await getClientClonalFamilies(dispatch, dataset_id);
+            // Success is handled by getClientClonalFamilies dispatch
+          } else {
+            await getClonalFamilies(dispatch, dataset_id);
+            // Success is handled by getClonalFamilies dispatch
+          }
+        } catch (error) {
+          console.error(`Failed to load dataset ${dataset_id}:`, error);
+          dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "ERROR" });
+        }
+      }
+    });
+    
+    // Clear selections after processing
+    dispatch(explorerActions.clearDatasetSelections());
   }
 
   render() {
-    // Filter only loaded datasets
-    const loadedDatasets = this.props.datasets.filter(d => d.loading);
+    // Use all datasets (including loaded ones)  
+    const allDatasets = this.props.allDatasets || this.props.datasets || [];
+    const { selectedDatasets } = this.props;
+    
+    // Calculate changes pending
+    const currentlyLoaded = new Set(allDatasets.filter(d => d.loading === "DONE").map(d => d.dataset_id));
+    const pendingChanges = selectedDatasets.filter(id => !currentlyLoaded.has(id)).length + 
+                          Array.from(currentlyLoaded).filter(id => !selectedDatasets.includes(id)).length;
     
     // Check if we need citation column
-    const showCitation = _.some(loadedDatasets, d => d.paper !== undefined);
+    const showCitation = _.some(allDatasets, d => d.paper !== undefined);
 
-    // Build mappings for the table - same as Available Datasets but without Actions and non-selectable Load Status
+    // Build mappings for the table - same as Available Datasets but with selection checkboxes
     const mappings = [
+      ["Select", DatasetSelectionCheckbox, { sortable: false }],
       ["Status", LoadStatusDisplay, { sortable: false }],
       ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
@@ -80,6 +170,7 @@ export default class LoadingTable extends React.Component {
 
     // Define column widths
     const columnWidths = [
+      60,   // Select
       120,  // Status
       200,  // Name
       150,  // ID
@@ -94,17 +185,36 @@ export default class LoadingTable extends React.Component {
     return (
       <div>
         <div style={{ marginBottom: "10px" }}>
-          <span>You have the following datasets loaded:</span>
+          <span>Select datasets to visualize:</span>
         </div>
         
         <ResizableTable
-          data={loadedDatasets}
+          data={allDatasets}
           mappings={mappings}
           columnWidths={columnWidths}
           containerHeight={200}
-          itemName="loaded datasets"
+          itemName="available datasets"
           componentProps={{ dispatch: this.props.dispatch }}
         />
+        
+        <div style={{ marginTop: "15px", marginBottom: "15px", textAlign: "center" }}>
+          <button 
+            onClick={this.handleBatchUpdate}
+            disabled={pendingChanges === 0}
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              backgroundColor: pendingChanges > 0 ? "#007bff" : "#6c757d",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: pendingChanges > 0 ? "pointer" : "not-allowed"
+            }}
+          >
+            Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+          </button>
+        </div>
         
         <p style={{ marginTop: "10px" }}>
           Loaded clonal families: {this.props.loadedClonalFamilies}

@@ -174,12 +174,11 @@ export class ResizableTable extends React.Component {
               </div>
             );
           } else if (typeof AttrOrComponent === 'function') {
-            // Check if it's a React component or a simple function
-            if (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) {
-              // It's a React component
+            // Always try to render as a React component first
+            try {
               content = <AttrOrComponent datum={datum} {...(this.props.componentProps || {})}/>;
-            } else {
-              // It's a simple function that returns a value
+            } catch (e) {
+              // If that fails, treat it as a simple function
               const value = AttrOrComponent(datum);
               content = (
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>

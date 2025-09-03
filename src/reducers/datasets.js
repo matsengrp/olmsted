@@ -10,6 +10,7 @@ const datasets = (state = {
   // TODO: remove
   s3bucket: "live",
   availableDatasets: [],
+  selectedDatasets: [], // Array of dataset IDs selected for batch loading
   // TODO: remove
   splash: undefined,
   datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
@@ -59,6 +60,15 @@ const datasets = (state = {
         urlPath: action.path,
         urlSearch: action.query
       });
+
+    } case types.TOGGLE_DATASET_SELECTION: {
+      const selectedDatasets = state.selectedDatasets.includes(action.dataset_id)
+        ? state.selectedDatasets.filter(id => id !== action.dataset_id) // Remove if already selected
+        : [...state.selectedDatasets, action.dataset_id]; // Add if not selected
+      return Object.assign({}, state, { selectedDatasets });
+
+    } case types.CLEAR_DATASET_SELECTIONS: {
+      return Object.assign({}, state, { selectedDatasets: [] });
 
     } default: {
       return state;

@@ -5,6 +5,7 @@ import ClonalFamiliesTable from "./table";
 import LoadingTable from './loadingTable';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
+import { getClientDatasets } from "../../actions/clientDataLoader";
 import {TreeViz} from "./tree";
 import {ClonalFamiliesViz} from "./scatterplot";
 import {Lineage} from "./lineage";
@@ -78,7 +79,12 @@ class App extends React.Component {
   // }
   componentDidMount() {
     document.addEventListener("dragover", (e) => {e.preventDefault();}, false);
-
+    
+    // Ensure datasets are loaded when app component mounts
+    // This fixes the refresh issue where datasets don't reload properly
+    if (this.props.availableDatasets.length === 0) {
+      getClientDatasets(this.props.dispatch);
+    }
   }
 
   // componentDidUpdate(prevProps) {

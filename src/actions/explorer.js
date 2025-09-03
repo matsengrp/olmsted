@@ -84,3 +84,16 @@ export const filterLocus = (locus) => {
 export const resetState = () => {
   return {type: types.RESET_CLONAL_FAMILIES_STATE};
 };
+
+// Dataset selection actions for batch updates
+export const toggleDatasetSelection = (dataset_id) => {
+  return {type: types.TOGGLE_DATASET_SELECTION, dataset_id};
+};
+
+export const clearDatasetSelections = () => {
+  return {type: types.CLEAR_DATASET_SELECTIONS};
+};
+
+export const batchUpdateDatasets = () => {
+  return {type: types.BATCH_UPDATE_DATASETS};
+};
