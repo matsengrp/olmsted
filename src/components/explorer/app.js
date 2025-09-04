@@ -5,7 +5,9 @@ import ClonalFamiliesTable from "./table";
 import LoadingTable from './loadingTable';
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
-import { getClientDatasets } from "../../actions/clientDataLoader";
+import { getClientDatasets, getClientClonalFamilies } from "../../actions/clientDataLoader";
+import * as loadData from "../../actions/loadData";
+import * as types from "../../actions/types";
 import {TreeViz} from "./tree";
 import {ClonalFamiliesViz} from "./scatterplot";
 import {Lineage} from "./lineage";
@@ -60,13 +62,15 @@ const Overlay = ({styles, mobileDisplay, handler}) => {
 @connect((state) => ({
   browserDimensions: state.browserDimensions.browserDimensions,
   availableDatasets: state.datasets.availableDatasets,
+  pendingDatasetLoads: state.datasets.pendingDatasetLoads,
   selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
   selectedSeq: state.clonalFamilies.selectedSeq,
   locus: state.clonalFamilies.locus
-}), {
+}), (dispatch) => ({
+  dispatch,
   filterLocus: explorerActions.filterLocus,
   resetState: explorerActions.resetState
-})
+}))
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -77,22 +81,55 @@ class App extends React.Component {
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
   // }
-  componentDidMount() {
+  async componentDidMount() {
     document.addEventListener("dragover", (e) => {e.preventDefault();}, false);
     
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
-    if (this.props.availableDatasets.length === 0) {
-      getClientDatasets(this.props.dispatch);
+    if (this.props.availableDatasets.length === 0 && !this._datasetsLoading) {
+      this._datasetsLoading = true; // Prevent multiple simultaneous calls
+      // Wait for IndexedDB to be ready before loading datasets
+      try {
+        const olmstedDB = (await import('../../utils/olmstedDB')).default;
+        await olmstedDB.ready; // Wait for database to be ready
+        await getClientDatasets(this.props.dispatch);
+      } catch (error) {
+        console.error('Error waiting for database to be ready:', error);
+        // Fallback to immediate loading (for cases where DB isn't available)
+        await getClientDatasets(this.props.dispatch);
+      }
+      this._datasetsLoading = false;
     }
   }
 
-  // componentDidUpdate(prevProps) {
-  //   if (prevProps.datapath !== this.props.datapath) {
-  //     console.log("LOAD JSON")
-  //     this.props.dispatch(loadJSONs());
-  //   }
-  // }
+  componentDidUpdate(prevProps) {
+    // Check if datasets were just loaded and we have pending dataset loads from URL
+    if (prevProps.availableDatasets.length === 0 && 
+        this.props.availableDatasets.length > 0 && 
+        this.props.pendingDatasetLoads && 
+        this.props.pendingDatasetLoads.length > 0) {
+      
+      // Process each pending dataset load
+      this.props.pendingDatasetLoads.forEach(dataset_id => {
+        const dataset = this.props.availableDatasets.find(d => d.dataset_id === dataset_id);
+        if (dataset) {
+          this.props.dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
+          
+          // Use appropriate loader based on dataset type
+          if (dataset.isClientSide) {
+            getClientClonalFamilies(this.props.dispatch, dataset_id);
+          } else {
+            loadData.getClonalFamilies(this.props.dispatch, dataset_id);
+          }
+        } else {
+          console.warn(`App: Dataset ${dataset_id} not found in available datasets`);
+        }
+      });
+      
+      // Clear pending dataset loads
+      this.props.dispatch({ type: types.CLEAR_PENDING_DATASET_LOADS });
+    }
+  }
   render() {
     /* D I M E N S I O N S */
     const availableWidth = this.props.browserDimensions.width;

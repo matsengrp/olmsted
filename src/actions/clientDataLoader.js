@@ -110,7 +110,8 @@ export const getClientDatasets = async (dispatch, s3bucket = "live") => {
       // If we have client datasets, dispatch them immediately
       dispatch({
         type: types.DATASETS_RECEIVED,
-        availableDatasets
+        availableDatasets,
+        preserveLoadingStatus: true // Preserve existing loading status when updating datasets
       });
     }
 
@@ -179,7 +180,8 @@ const loadServerDatasets = async (dispatch) => {
             if (clientDatasets.length > 0) {
               dispatch({
                 type: types.DATASETS_RECEIVED,
-                availableDatasets: clientDatasets
+                availableDatasets: clientDatasets,
+                preserveLoadingStatus: true
               });
             }
           }
@@ -187,14 +189,16 @@ const loadServerDatasets = async (dispatch) => {
           // Response is not JSON (likely HTML error page), use client-only datasets
           dispatch({
             type: types.DATASETS_RECEIVED,
-            availableDatasets: clientDatasets
+            availableDatasets: clientDatasets,
+            preserveLoadingStatus: true
           });
         }
       } else {
         // Server request failed, use client-only datasets
         dispatch({
           type: types.DATASETS_RECEIVED,
-          availableDatasets: clientDatasets
+          availableDatasets: clientDatasets,
+          preserveLoadingStatus: true
         });
       }
     };
@@ -203,7 +207,8 @@ const loadServerDatasets = async (dispatch) => {
       // Network error, use client-only datasets
       dispatch({
         type: types.DATASETS_RECEIVED,
-        availableDatasets: clientDatasets
+        availableDatasets: clientDatasets,
+        preserveLoadingStatus: true
       });
     };
 

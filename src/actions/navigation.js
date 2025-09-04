@@ -77,16 +77,19 @@ export const changePageQuery = ({
   const state = getState();
   if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
     const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
-    // Tried to check to see that datasets were in the state before requesting them from server but they are
-    // not necessarily loaded when this function is called; instead we should check this in a componentDidUpdate somewhere (Monitor)?
-    queryStringDatasets.forEach((id) => {
-      dispatch({
-        type: types.LOADING_DATASET,
-        dataset_id: id,
-        loading: "LOADING"
-      });
-      getClonalFamilies(dispatch, id);
+    
+    // Don't immediately load datasets - wait for datasets to be available first
+    // This will be handled by a componentDidUpdate when datasets are loaded
+    
+    // Store the requested datasets in Redux state so we can load them later
+    dispatch({
+      type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
+      ...state,
+      pushState: push,
+      query: queryToDisplay ? queryToDisplay : queryToUse,
+      pendingDatasetLoads: Array.from(queryStringDatasets) // Store for later processing
     });
+    return;
   }
   dispatch({
     type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,

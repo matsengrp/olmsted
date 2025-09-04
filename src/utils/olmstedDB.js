@@ -20,13 +20,17 @@ class OlmstedDB extends Dexie {
       trees: 'tree_id, clone_id, ident'
     });
 
+    // Create a ready promise that resolves when database is open
+    this.ready = this.open().then(() => {
+      console.log('OlmstedDB: Database ready');
+      return this;
+    }).catch(error => {
+      console.error('Failed to open OlmstedDB:', error);
+      throw error;
+    });
+
     // Check for old database and prompt user if needed
     this.checkAndPromptForOldDatabase();
-    
-    // Add hooks for logging (optional)
-    this.open().catch(error => {
-      console.error('Failed to open OlmstedDB:', error);
-    });
   }
 
   /**

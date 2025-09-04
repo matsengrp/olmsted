@@ -9,6 +9,7 @@ import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
 import FileUpload from './fileUpload';
+import clientDataStore from '../../utils/clientDataStore';
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -19,6 +20,30 @@ class Splash extends React.Component {
     super(props);
     this.fileUploadRef = React.createRef();
   }
+
+  handleClearAll = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete ALL datasets from the database?\n\n' +
+      'This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n' +
+      'Click OK to confirm deletion, or Cancel to keep your data.'
+    );
+    
+    if (confirmed) {
+      try {
+        await clientDataStore.clearAllData();
+        
+        // Refresh the page to update the datasets table
+        window.location.reload();
+        
+        // Optional: Show success message
+        // alert('All datasets have been successfully deleted.');
+      } catch (error) {
+        console.error('Error clearing datasets:', error);
+        alert('Error deleting datasets. Please try again or check the console for details.');
+      }
+    }
+  }
+
   render() {
     return (
       <div style={{justifyContent: "space-around", display: "flex", marginRight: 50}}>
@@ -115,6 +140,23 @@ class Splash extends React.Component {
                 }}
               >
                 Upload Data
+              </button>
+              <button
+                style={{
+                  border: "2px solid #dc3545",
+                  backgroundColor: "transparent",
+                  borderRadius: 5,
+                  cursor: "pointer",
+                  padding: 20,
+                  fontFamily: "Lato",
+                  color: "#dc3545",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  outline: 0
+                }}
+                onClick={this.handleClearAll}
+              >
+                Clear All Datasets
               </button>
             </div>
           </CenterContent>

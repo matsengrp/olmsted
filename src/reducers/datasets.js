@@ -11,6 +11,7 @@ const datasets = (state = {
   s3bucket: "live",
   availableDatasets: [],
   selectedDatasets: [], // Array of dataset IDs selected for batch loading
+  pendingDatasetLoads: [], // Array of dataset IDs that need to be loaded from URL query string
   // TODO: remove
   splash: undefined,
   datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
@@ -33,10 +34,21 @@ const datasets = (state = {
       });
     }
     case types.DATASETS_RECEIVED: {
+      let availableDatasets = action.availableDatasets;
+      
+      // If preserveLoadingStatus is true, merge with existing loading status
+      if (action.preserveLoadingStatus && state.availableDatasets.length > 0) {
+        const existingDatasets = new Map(state.availableDatasets.map(d => [d.dataset_id, d]));
+        availableDatasets = action.availableDatasets.map(dataset => {
+          const existing = existingDatasets.get(dataset.dataset_id);
+          return existing ? { ...dataset, loading: existing.loading } : dataset;
+        });
+      }
+      
       return Object.assign({}, state, {
         s3bucket: action.s3bucket,
         splash: action.splash,
-        availableDatasets: action.availableDatasets,
+        availableDatasets,
         user: action.user,
         datapath: action.datapath
       });
@@ -69,6 +81,14 @@ const datasets = (state = {
 
     } case types.CLEAR_DATASET_SELECTIONS: {
       return Object.assign({}, state, { selectedDatasets: [] });
+
+    } case types.CLEAR_PENDING_DATASET_LOADS: {
+      return Object.assign({}, state, { pendingDatasetLoads: [] });
+
+    } case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: {
+      return Object.assign({}, state, {
+        pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads
+      });
 
     } default: {
       return state;

@@ -212,10 +212,27 @@ export default class LoadingTable extends React.Component {
               color: "white",
               border: "none",
               borderRadius: "4px",
-              cursor: pendingChanges > 0 ? "pointer" : "not-allowed"
+              cursor: pendingChanges > 0 ? "pointer" : "not-allowed",
+              marginRight: "10px"
             }}
           >
             Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+          </button>
+          
+          <button 
+            onClick={() => window.location.href = "/"}
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Manage Datasets
           </button>
         </div>
         
