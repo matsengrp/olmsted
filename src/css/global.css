@@ -27,6 +27,11 @@ html, body, #root, [data-reactid=".0"] {
   font-size: 11pt;
 }
 
+/* Global margin-left for all form controls */
+input, button, select, textarea {
+  margin-left: 15px;
+}
+
 
 div.vega-bindings {
   font-size: 10pt;
