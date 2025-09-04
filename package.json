@@ -109,7 +109,7 @@
     "compression-webpack-plugin": "^11.1.0",
     "css-loader": "^6.11.0",
     "diff": "^5.2.0",
-    "electron": "^32.2.7",
+    "electron": "^35.7.5",
     "electron-builder": "^26.0.12",
     "es6-promise": "~1.0.0",
     "eslint": "^5.16.0",
