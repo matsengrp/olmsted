@@ -896,7 +896,7 @@ const facetClonalFamiliesVizSpec = () => {
           domain: {data: "data_0", field: {signal: "xField"}},
           range: [0, {signal: "child_width"}],
           nice: true,
-          zero: true
+          zero: false
 
         },
         {
@@ -905,7 +905,7 @@ const facetClonalFamiliesVizSpec = () => {
           domain: {data: "data_0", field: {signal: "yField"}},
           range: [{signal: "child_height"}, 0],
           nice: true,
-          zero: true
+          zero: false
 
         },
 
