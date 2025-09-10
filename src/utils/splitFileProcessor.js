@@ -3,7 +3,9 @@
  * Combines split datasets, clones, and trees files back into a unified structure
  */
 
-import { FileProcessingError, ValidationError, ErrorLogger, validateRequired } from './errors';
+import {
+  FileProcessingError, ValidationError, ErrorLogger, validateRequired
+} from './errors';
 
 class SplitFileProcessor {
 
@@ -20,13 +22,13 @@ class SplitFileProcessor {
           try {
             const fileContent = await this.readFile(file);
             let parsedContent;
-            
+
             try {
               parsedContent = JSON.parse(fileContent);
             } catch (parseError) {
               throw new Error(`Failed to parse JSON from ${file.name}: ${parseError.message}`);
             }
-            
+
             return {
               name: file.name,
               content: parsedContent,
@@ -114,7 +116,7 @@ class SplitFileProcessor {
       if (error instanceof ValidationError || error instanceof FileProcessingError) {
         throw error; // Re-throw specific errors as-is
       }
-      
+
       const processingError = new FileProcessingError(
         `Failed to process split files: ${error.message}`,
         null,
@@ -312,7 +314,7 @@ class SplitFileProcessor {
     return new Promise((resolve, reject) => {
       try {
         validateRequired(file, 'file');
-        
+
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target.result);
         reader.onerror = (error) => {
@@ -322,7 +324,7 @@ class SplitFileProcessor {
             error
           ));
         };
-        
+
         reader.readAsText(file);
       } catch (error) {
         if (error instanceof ValidationError) {

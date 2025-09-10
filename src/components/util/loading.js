@@ -1,5 +1,7 @@
 import React from "react";
-import { FiCheck, FiPlus, FiX, FiLoader } from "react-icons/fi";
+import {
+  FiCheck, FiPlus, FiX, FiLoader
+} from "react-icons/fi";
 
 class SimpleInProgress extends React.Component {
   constructor(props) {
@@ -29,17 +31,19 @@ class SimpleInProgress extends React.Component {
     if (this.props.small) {
       return "Loading"+"...".substring(0, this.state.counter%4+1);
     }
-    
+
     // Animated spinning loader icon
     return (
       <div style={{ display: 'inline-block' }}>
-        <style>{`
+        <style>
+          {`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-        `}</style>
-        <FiLoader 
+        `}
+        </style>
+        <FiLoader
           style={{
             animation: 'spin 1s linear infinite',
             color: '#007bff',
@@ -65,7 +69,8 @@ class GreenCheckmark extends React.Component {
         backgroundColor: '#28a745',
         borderRadius: '50%',
         ...this.props.style
-      }}>
+      }}
+      >
         <FiCheck style={{ color: 'white', fontSize: '12px' }} />
       </div>
     );
@@ -85,7 +90,8 @@ class RedXIcon extends React.Component {
         backgroundColor: '#dc3545',
         borderRadius: '50%',
         ...this.props.style
-      }}>
+      }}
+      >
         <FiX style={{ color: 'white', fontSize: '12px' }} />
       </div>
     );
@@ -106,7 +112,8 @@ class PlusIcon extends React.Component {
         borderRadius: '50%',
         cursor: 'pointer',
         ...this.props.style
-      }}>
+      }}
+      >
         <FiPlus style={{ color: 'white', fontSize: '12px' }} />
       </div>
     );
@@ -132,4 +139,6 @@ class LoadingStatus extends React.Component {
   }
 }
 
-export {LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon};
+export {
+  LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon
+};

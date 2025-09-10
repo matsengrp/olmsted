@@ -57,17 +57,17 @@ const checkBrushSelection = (brushSelection, datum, datasets = []) => {
   // where "has_seed == true", for example
   if (brushSelection.filter && brushSelection.filter.fieldName !== "none") {
     let fieldValue;
-    
+
     // Special handling for dataset_name - resolve from dataset_id
     if (brushSelection.filter.fieldName === "dataset_name") {
-      const dataset = datasets.find(d => d.dataset_id === datum.dataset_id);
+      const dataset = datasets.find((d) => d.dataset_id === datum.dataset_id);
       fieldValue = dataset ? (dataset.name || dataset.dataset_id) : datum.dataset_id;
     } else {
       // Using _.at to allow indexing nested fields like dataset.dataset_id
       const fieldValues = _.at(datum, brushSelection.filter.fieldName);
       fieldValue = fieldValues.length ? fieldValues[0] : undefined;
     }
-    
+
     if (fieldValue !== brushSelection.filter.range) {
       return false;
     }

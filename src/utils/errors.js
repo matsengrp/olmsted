@@ -11,7 +11,7 @@ export class OlmstedError extends Error {
     this.name = this.constructor.name;
     this.code = code;
     this.timestamp = new Date().toISOString();
-    
+
     // Capture stack trace
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
@@ -77,7 +77,7 @@ export class ErrorLogger {
       },
       context
     };
-    
+
     // Log to console with appropriate level
     if (error instanceof ValidationError) {
       console.warn('Validation Error:', logData);
@@ -86,15 +86,15 @@ export class ErrorLogger {
     } else {
       console.error('Application Error:', logData);
     }
-    
+
     // In production, you might want to send to a logging service
     // Example: sendToLoggingService(logData);
   }
-  
+
   static warn(message, context = {}) {
     console.warn(`[${new Date().toISOString()}] ${message}`, context);
   }
-  
+
   static info(message, context = {}) {
     console.log(`[${new Date().toISOString()}] ${message}`, context);
   }

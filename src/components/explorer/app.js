@@ -83,7 +83,7 @@ class App extends React.Component {
   // }
   async componentDidMount() {
     document.addEventListener("dragover", (e) => {e.preventDefault();}, false);
-    
+
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
     if (this.props.availableDatasets.length === 0 && !this._datasetsLoading) {
@@ -104,17 +104,17 @@ class App extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Check if datasets were just loaded and we have pending dataset loads from URL
-    if (prevProps.availableDatasets.length === 0 && 
-        this.props.availableDatasets.length > 0 && 
-        this.props.pendingDatasetLoads && 
-        this.props.pendingDatasetLoads.length > 0) {
-      
+    if (prevProps.availableDatasets.length === 0
+        && this.props.availableDatasets.length > 0
+        && this.props.pendingDatasetLoads
+        && this.props.pendingDatasetLoads.length > 0) {
+
       // Process each pending dataset load
-      this.props.pendingDatasetLoads.forEach(dataset_id => {
-        const dataset = this.props.availableDatasets.find(d => d.dataset_id === dataset_id);
+      this.props.pendingDatasetLoads.forEach((dataset_id) => {
+        const dataset = this.props.availableDatasets.find((d) => d.dataset_id === dataset_id);
         if (dataset) {
           this.props.dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
-          
+
           // Use appropriate loader based on dataset type
           if (dataset.isClientSide) {
             getClientClonalFamilies(this.props.dispatch, dataset_id);
@@ -125,11 +125,12 @@ class App extends React.Component {
           console.warn(`App: Dataset ${dataset_id} not found in available datasets`);
         }
       });
-      
+
       // Clear pending dataset loads
       this.props.dispatch({ type: types.CLEAR_PENDING_DATASET_LOADS });
     }
   }
+
   render() {
     /* D I M E N S I O N S */
     const availableWidth = this.props.browserDimensions.width;
@@ -210,7 +211,10 @@ class App extends React.Component {
                   )}
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
-                <label style={{display: 'block', marginBottom: 5, fontSize: 14, fontWeight: 'bold'}}>
+                <label style={{
+                  display: 'block', marginBottom: 5, fontSize: 14, fontWeight: 'bold'
+                }}
+                >
                   Filter by locus:
                 </label>
                 <select value={this.props.locus}

@@ -205,12 +205,16 @@ const createControlSignals = () => ([
   {
     name: "symbolSize",
     value: 1,
-    bind: { name: "Symbol size ", input: "range", min: 0.1, max: 3, step: 0.1 }
+    bind: {
+      name: "Symbol size ", input: "range", min: 0.1, max: 3, step: 0.1
+    }
   },
   {
     name: "symbolOpacity",
     value: 0.4,
-    bind: { name: "Symbol opacity ", input: "range", min: 0.1, max: 1, step: 0.05 }
+    bind: {
+      name: "Symbol opacity ", input: "range", min: 0.1, max: 1, step: 0.05
+    }
   },
   {
     name: "filledShapes",
@@ -530,8 +534,8 @@ const createBrushTranslateSignals = () => ([
   {
     name: "brush_x_field",
     push: "outer",
-    on: [{ 
-      events: { signal: "brush_x" }, 
+    on: [{
+      events: { signal: "brush_x" },
       update: "brush_x[0] === brush_x[1] ? null : invert('x', brush_x)",
       force: true
     }]
@@ -539,8 +543,8 @@ const createBrushTranslateSignals = () => ([
   {
     name: "brush_y_field",
     push: "outer",
-    on: [{ 
-      events: { signal: "brush_y" }, 
+    on: [{
+      events: { signal: "brush_y" },
       update: "brush_y[0] === brush_y[1] ? null : invert('y', brush_y)",
       force: true
     }]
@@ -612,18 +616,18 @@ const createSymbolEncoding = () => ({
     {signal: "symbolOpacity"}
   ],
   tooltip: {
-    signal: "{" +
-      "'Clone ID': datum.clone_id, " +
-      "'Dataset': datum.dataset_name || '', " +
-      "'Subject': datum.subject_id, " +
-      "'Locus': datum.sample ? datum.sample.locus : '', " +
-      "'Unique Sequences': datum.unique_seqs_count, " +
-      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
-      "'Junction Length': datum.junction_length, " +
-      "'V Gene': datum.v_call, " +
-      "'J Gene': datum.j_call, " +
-      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
-    "}"
+    signal: "{"
+      + "'Clone ID': datum.clone_id, "
+      + "'Dataset': datum.dataset_name || '', "
+      + "'Subject': datum.subject_id, "
+      + "'Locus': datum.sample ? datum.sample.locus : '', "
+      + "'Unique Sequences': datum.unique_seqs_count, "
+      + "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), "
+      + "'Junction Length': datum.junction_length, "
+      + "'V Gene': datum.v_call, "
+      + "'J Gene': datum.j_call, "
+      + "'Has Seed': datum.has_seed ? 'Yes' : 'No'"
+    + "}"
   },
   fill: [
     { test: "!filledShapes", value: "transparent" },

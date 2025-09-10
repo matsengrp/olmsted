@@ -7,7 +7,7 @@ import * as types from "./types";
 import clientDataStore from '../utils/clientDataStore';
 
 /**
- * Get tree data from client storage (replaces server getTree)  
+ * Get tree data from client storage (replaces server getTree)
  * Now loads full tree with sequences on demand (lazy loading)
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} tree_id - Tree identifier
@@ -15,7 +15,7 @@ import clientDataStore from '../utils/clientDataStore';
 export const getClientTree = async (dispatch, tree_id) => {
   try {
     console.log(`ClientDataLoader: Loading full tree data for ${tree_id} (on demand)`);
-    
+
     // This loads the complete tree with all sequence data
     const tree = await clientDataStore.getTree(tree_id);
 
@@ -25,7 +25,7 @@ export const getClientTree = async (dispatch, tree_id) => {
         tree_id,
         tree
       });
-      
+
       const treeSize = JSON.stringify(tree).length;
       console.log(`ClientDataLoader: Loaded tree ${tree_id} (${(treeSize / 1024).toFixed(1)}KB)`);
     } else {
@@ -55,7 +55,7 @@ export const getClientTree = async (dispatch, tree_id) => {
 export const getClientClonalFamilies = async (dispatch, dataset_id) => {
   try {
     console.log(`ClientDataLoader: Loading clone families for ${dataset_id} (metadata only)`);
-    
+
     // This now loads only lightweight clone metadata, not full trees
     const clonalFamilies = await clientDataStore.getClones(dataset_id);
 
@@ -70,7 +70,7 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
         dataset_id,
         loading: "DONE"
       });
-      
+
       console.log(`ClientDataLoader: Loaded ${clonalFamilies.length} clone families (${(JSON.stringify(clonalFamilies).length / 1024).toFixed(1)}KB)`);
     } else {
       console.warn('Clonal families not found in client storage:', dataset_id);
@@ -144,10 +144,10 @@ const loadServerDatasets = async (dispatch) => {
   try {
     // Get client datasets first
     const clientDatasets = await getClientOnlyDatasets();
-    
+
     // Use the original server loading logic as fallback
     const request = new XMLHttpRequest();
-    
+
     request.onload = () => {
       if (request.readyState === 4 && request.status === 200) {
         // Check if response is JSON before trying to parse
@@ -216,7 +216,7 @@ const loadServerDatasets = async (dispatch) => {
     const { charonAPIAddress } = require("../util/globals");
     request.open("get", `${charonAPIAddress}/datasets.json`, true);
     request.send(null);
-    
+
   } catch (error) {
     // If even client dataset loading fails, dispatch empty array
     console.error('Failed to load client datasets:', error);

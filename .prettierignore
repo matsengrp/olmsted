@@ -1,0 +1,12 @@
+node_modules/
+deploy/
+dist/
+.git/
+*.min.js
+*.bundle.js
+package-lock.json
+yarn.lock
+.cache/
+coverage/
+.nyc_output/
+*.log

@@ -76,7 +76,7 @@ class FileUpload extends React.Component {
       // Process file entirely client-side - no server communication!
       this.updateLoadingStatus('Reading and parsing file data...', 25);
       const result = await AIRRProcessor.processFile(file);
-      
+
       // Add file size to the first dataset
       if (result.datasets && result.datasets.length > 0) {
         result.datasets[0].file_size = file.size;
@@ -112,7 +112,7 @@ class FileUpload extends React.Component {
       if (this.props.dispatch) {
         await getClientDatasets(this.props.dispatch);
       }
-      
+
       // Clear loading status after a brief delay
       setTimeout(() => {
         this.setState({
@@ -133,7 +133,7 @@ class FileUpload extends React.Component {
       console.error('Client-side file processing error:', err);
       this.setState({ error: err.message || 'Failed to process file' });
     } finally {
-      this.setState({ 
+      this.setState({
         isProcessing: false,
         loadingStage: '',
         loadingProgress: 0
@@ -167,7 +167,7 @@ class FileUpload extends React.Component {
 
           // Merge in the trees from split processing
           consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
-          
+
           // Add total file size to the first dataset
           if (consolidatedResult.datasets && consolidatedResult.datasets.length > 0) {
             const totalSize = acceptedFiles.reduce((sum, file) => sum + file.size, 0);
@@ -218,7 +218,7 @@ class FileUpload extends React.Component {
       } else {
         this.updateLoadingStatus(`Processing ${acceptedFiles.length} individual files...`, 30);
       }
-      
+
       for (const file of acceptedFiles) {
         await this.processFile(file);
       }
@@ -245,7 +245,9 @@ class FileUpload extends React.Component {
   }
 
   render() {
-    const { uploadedFiles, isProcessing, error, loadingStage, loadingProgress } = this.state;
+    const {
+      uploadedFiles, isProcessing, error, loadingStage, loadingProgress
+    } = this.state;
 
     return (
       <CenterContent>
@@ -285,11 +287,14 @@ class FileUpload extends React.Component {
           >
             {isProcessing ? (
               <div style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}>
-                <div style={{ fontSize: 18, marginBottom: 15, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <div style={{
+                  fontSize: 18, marginBottom: 15, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                }}
+                >
                   <SimpleInProgress />
                   Processing Your Data
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div style={{
                   width: '100%',
@@ -298,33 +303,38 @@ class FileUpload extends React.Component {
                   borderRadius: 4,
                   overflow: 'hidden',
                   marginBottom: 10
-                }}>
+                }}
+                >
                   <div style={{
                     width: `${this.state.loadingProgress}%`,
                     height: '100%',
                     backgroundColor: '#007bff',
                     transition: 'width 0.3s ease',
                     borderRadius: 4
-                  }} />
+                  }}
+                  />
                 </div>
-                
+
                 {/* Progress Text */}
-                <div style={{ 
-                  fontSize: 14, 
+                <div style={{
+                  fontSize: 14,
                   color: '#666',
                   marginBottom: 5,
                   minHeight: 20
-                }}>
+                }}
+                >
                   {this.state.loadingStage || 'Initializing...'}
                 </div>
-                
+
                 {/* Progress Percentage */}
-                <div style={{ 
-                  fontSize: 12, 
+                <div style={{
+                  fontSize: 12,
                   color: '#999',
                   fontWeight: 'bold'
-                }}>
-                  {this.state.loadingProgress}% Complete
+                }}
+                >
+                  {this.state.loadingProgress}
+                  % Complete
                 </div>
               </div>
             ) : (

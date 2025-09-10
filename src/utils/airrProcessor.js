@@ -100,7 +100,7 @@ class AIRRProcessor {
 
     // First process trees - just add dataset_id, keep existing idents
     const processedTrees = (data.trees || []).map((tree, index) => {
-      
+
       // CRITICAL: Convert nodes array to object indexed by sequence_id if needed
       let processedNodes = tree.nodes;
       if (tree.nodes && Array.isArray(tree.nodes)) {
@@ -111,10 +111,10 @@ class AIRRProcessor {
           processedNodes[nodeId] = node;
         });
       }
-      
+
       const processedTree = {
         ...tree,
-        nodes: processedNodes,  // Use the processed nodes (now always an object)
+        nodes: processedNodes, // Use the processed nodes (now always an object)
         dataset_id: datasetId,
         ident: tree.ident || this.generateUUID()
       };
@@ -225,7 +225,7 @@ class AIRRProcessor {
       // Extract trees and add to global trees array
       if (processedClone.trees && Array.isArray(processedClone.trees)) {
         processedClone.trees.forEach((tree) => {
-          
+
           // Add full tree to trees array
           trees.push({
             ...tree,

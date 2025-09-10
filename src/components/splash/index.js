@@ -23,18 +23,18 @@ class Splash extends React.Component {
 
   handleClearAll = async () => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete ALL datasets from the database?\n\n' +
-      'This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n' +
-      'Click OK to confirm deletion, or Cancel to keep your data.'
+      'Are you sure you want to delete ALL datasets from the database?\n\n'
+      + 'This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n'
+      + 'Click OK to confirm deletion, or Cancel to keep your data.'
     );
-    
+
     if (confirmed) {
       try {
         await clientDataStore.clearAllData();
-        
+
         // Refresh the page to update the datasets table
         window.location.reload();
-        
+
         // Optional: Show success message
         // alert('All datasets have been successfully deleted.');
       } catch (error) {
@@ -73,21 +73,24 @@ class Splash extends React.Component {
             </p>
           )}
           {/* Secondly, list the available datasets */}
-          
+
           <p style={{
             maxWidth: 600, marginTop: 20, marginRight: "auto", marginBottom: 20, marginLeft: "auto", textAlign: "center", fontSize: 16, fontWeight: 300, lineHeight: 1.42857143
           }}
           >
             Select datasets below and click "Explore!" to visualize clonal families.
           </p>
-          
+
           {/* Full width table section */}
           <div style={{ marginLeft: "-15px", marginRight: "-15px", marginBottom: 20 }}>
             <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch}/>
           </div>
-          
+
           <CenterContent>
-            <div style={{ display: "flex", gap: "15px", justifyContent: "center", marginTop: 20 }}>
+            <div style={{
+              display: "flex", gap: "15px", justifyContent: "center", marginTop: 20
+            }}
+            >
               <button
                 style={{
                   border: "0px",

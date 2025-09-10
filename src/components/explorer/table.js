@@ -10,25 +10,25 @@ import {NaiveSequence} from './naive';
 class ResizableVirtualTable extends React.Component {
   constructor(props) {
     super(props);
-    
+
     // Initialize column widths
     const defaultWidths = [
-      60,   // Select
-      260,  // Naive sequence  
-      120,  // ID
-      100,  // Unique seqs
-      80,   // V gene
-      80,   // D gene
-      80,   // J gene
-      80,   // Seed run
-      100,  // Subject
-      100,  // Sample
-      100,  // Timepoint
-      80,   // Mut freq
-      120,  // Dataset
-      120   // Ident
+      60, // Select
+      260, // Naive sequence
+      120, // ID
+      100, // Unique seqs
+      80, // V gene
+      80, // D gene
+      80, // J gene
+      80, // Seed run
+      100, // Subject
+      100, // Sample
+      100, // Timepoint
+      80, // Mut freq
+      120, // Dataset
+      120 // Ident
     ];
-    
+
     this.state = {
       scrollTop: 0,
       columnWidths: defaultWidths.slice(0, props.mappings.length),
@@ -36,7 +36,7 @@ class ResizableVirtualTable extends React.Component {
       resizingColumn: null,
       scrollbarWidth: 0
     };
-    
+
     this.headerRef = React.createRef();
     this.bodyRef = React.createRef();
     this.onScroll = this.onScroll.bind(this);
@@ -89,14 +89,14 @@ class ResizableVirtualTable extends React.Component {
 
   onMouseMove(e) {
     if (!this.state.isResizing) return;
-    
+
     const { startX, startWidth, resizingColumn } = this.state;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
-    
+
     const newWidths = [...this.state.columnWidths];
     newWidths[resizingColumn] = newWidth;
-    
+
     this.setState({ columnWidths: newWidths });
   }
 
@@ -110,9 +110,9 @@ class ResizableVirtualTable extends React.Component {
   renderTableRow(datum, index) {
     const isSelected = this.props.selectedFamily && datum.ident === this.props.selectedFamily.ident;
     const { columnWidths } = this.state;
-    
+
     return (
-      <div 
+      <div
         key={datum.ident}
         style={{
           display: 'flex',
@@ -128,8 +128,8 @@ class ResizableVirtualTable extends React.Component {
           const isAttr = ((typeof AttrOrComponent) === "string");
           const key = datum.ident + '.' + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
-          
-          let style = {
+
+          const style = {
             padding: 8,
             height: '100%',
             display: 'flex',
@@ -142,18 +142,23 @@ class ResizableVirtualTable extends React.Component {
             maxWidth: columnWidths[colIndex],
             borderRight: '1px solid #eee'
           };
-          
+
           // Apply alternating column shading only if row is not selected
           if (!isSelected && isEvenColumn) {
             style.backgroundColor = '#f8f9fa';
           }
-          
+
           return (
             <div key={key} style={style}>
               {isAttr
-                ? <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                ? (
+                  <div style={{
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
+                  }}
+                  >
                     {_.get(datum, AttrOrComponent) || '—'}
                   </div>
+                )
                 : <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
             </div>
           );
@@ -166,26 +171,27 @@ class ResizableVirtualTable extends React.Component {
     const { data, containerHeight = 500 } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
-    
+
     // Calculate which items are visible
     const startIndex = Math.floor(scrollTop / rowHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / rowHeight) + 1,
       data.length
     );
-    
+
     // Only render visible items
     const visibleItems = data.slice(startIndex, endIndex);
-    
+
     return (
-      <div style={{ 
-        width: '100%', 
+      <div style={{
+        width: '100%',
         border: '1px solid #dee2e6',
-        overflow: 'hidden',  // Prevent container from creating its own scrollbars
+        overflow: 'hidden', // Prevent container from creating its own scrollbars
         boxSizing: 'border-box'
-      }}>
+      }}
+      >
         {/* Fixed Header */}
-        <div 
+        <div
           ref={this.headerRef}
           style={{
             overflowX: 'hidden',
@@ -195,7 +201,7 @@ class ResizableVirtualTable extends React.Component {
             paddingRight: scrollbarWidth + 'px'
           }}
         >
-          <div 
+          <div
             style={{
               display: 'flex',
               fontWeight: 'bold',
@@ -207,9 +213,9 @@ class ResizableVirtualTable extends React.Component {
             {_.map(this.props.mappings, ([name, AttrOrComponent], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
               const isAttr = ((typeof AttrOrComponent) === "string");
-              
+
               const style = {
-                fontSize: 13, 
+                fontSize: 13,
                 padding: 8,
                 height: '40px',
                 display: 'flex',
@@ -222,17 +228,20 @@ class ResizableVirtualTable extends React.Component {
                 position: 'relative',
                 cursor: isAttr ? 'pointer' : 'default'
               };
-              
+
               const { pagination } = this.props;
               const isCurrentSort = isAttr && pagination && pagination.order_by === AttrOrComponent;
-              
+
               return (
                 <div
                   key={name}
                   style={style}
                   onClick={() => {isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent));}}
                 >
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{
+                    flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                  }}
+                  >
                     {name}
                     {isAttr && isCurrentSort && (
                       <span style={{ marginLeft: 4 }}>
@@ -258,7 +267,7 @@ class ResizableVirtualTable extends React.Component {
             })}
           </div>
         </div>
-        
+
         {/* Scrollable Body */}
         <div
           ref={this.bodyRef}
@@ -274,24 +283,29 @@ class ResizableVirtualTable extends React.Component {
           <div style={{ height: data.length * rowHeight, position: 'relative' }}>
             {/* Visible items positioned absolutely */}
             <div style={{ position: 'absolute', top: startIndex * rowHeight, width: '100%' }}>
-              {visibleItems.map((item, index) => 
+              {visibleItems.map((item, index) => (
                 <div key={startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
-        
-        <div style={{ 
-          marginTop: 10, 
-          fontSize: 12, 
-          color: '#666', 
+
+        <div style={{
+          marginTop: 10,
+          fontSize: 12,
+          color: '#666',
           padding: '0 8px',
           boxSizing: 'border-box',
           overflow: 'hidden'
-        }}>
-          Showing {data.length} families
+        }}
+        >
+          Showing
+          {' '}
+          {data.length}
+          {' '}
+          families
         </div>
       </div>
     );
@@ -322,9 +336,9 @@ class Table extends React.Component {
 class DatasetName extends React.Component {
   render() {
     const { datum, datasets } = this.props;
-    const dataset = datasets.find(d => d.dataset_id === datum.dataset_id);
+    const dataset = datasets.find((d) => d.dataset_id === datum.dataset_id);
     const displayName = dataset ? (dataset.name || dataset.dataset_id) : (datum.dataset_id || '—');
-    
+
     return (
       <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {displayName}
@@ -361,13 +375,13 @@ class SelectAttribute extends React.Component {
 const mapStateToProps = (state) => {
   const brushedClonalFamilies = getBrushedClonalFamilies(state);
   // Apply sorting to all families instead of just a page
-  const pagination = state.clonalFamilies.pagination;
+  const {pagination} = state.clonalFamilies;
   const sortedFamilies = _.orderBy(
-    brushedClonalFamilies, 
-    [pagination.order_by], 
+    brushedClonalFamilies,
+    [pagination.order_by],
     [pagination.desc ? "desc" : "asc"]
   );
-  
+
   return {
     visibleClonalFamilies: sortedFamilies,
     pagination: pagination,

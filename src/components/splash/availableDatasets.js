@@ -18,7 +18,7 @@ class LoadStatusCell extends React.Component {
   selectDataset(e) {
     e.stopPropagation();
     const dataset = this.props.datum;
-    
+
     switch (dataset.loading) {
       case "LOADING": {
         break;
@@ -60,7 +60,7 @@ class LoadStatusCell extends React.Component {
   render() {
     return (
       <div onClick={this.selectDataset} style={{ cursor: 'pointer', width: '100%', textAlign: 'center' }}>
-        <LoadingStatus 
+        <LoadingStatus
           loadingStatus={this.props.datum.loading}
         />
       </div>
@@ -71,9 +71,9 @@ class LoadStatusCell extends React.Component {
 // Component for the citation column
 class CitationCell extends React.Component {
   render() {
-    const paper = this.props.datum.paper;
+    const {paper} = this.props.datum;
     if (!paper) return <span>—</span>;
-    
+
     if (paper.url) {
       return <a href={paper.url} onClick={(e) => e.stopPropagation()}>{paper.authorstring}</a>;
     }
@@ -86,13 +86,19 @@ class SizeCell extends React.Component {
   render() {
     const dataset = this.props.datum;
     const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
-    
+
     if (sizeInBytes === 0) {
       return <span>—</span>;
     }
-    
+
     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return <span>{sizeInMB} MB</span>;
+    return (
+      <span>
+        {sizeInMB}
+        {' '}
+        MB
+      </span>
+    );
   }
 }
 
@@ -107,7 +113,7 @@ class DeleteButtonCell extends React.Component {
     e.stopPropagation();
     const dataset = this.props.datum;
     const datasetName = dataset.name || dataset.dataset_id;
-    
+
     if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
       clientDataStore.removeDataset(dataset.dataset_id);
       this.props.dispatch({
@@ -120,11 +126,11 @@ class DeleteButtonCell extends React.Component {
 
   render() {
     const isClientSide = this.props.datum.isClientSide || this.props.datum.temporary;
-    
+
     if (!isClientSide) {
       return <span>—</span>;
     }
-    
+
     return (
       <button
         onClick={this.deleteDataset}
@@ -155,16 +161,16 @@ export class DatasetsTable extends React.Component {
     }
 
     // Check if we need citation column
-    const showCitation = _.some(this.props.availableDatasets, d => d.paper !== undefined);
+    const showCitation = _.some(this.props.availableDatasets, (d) => d.paper !== undefined);
     // Check if we need delete button column
-    const hasClientDatasets = _.some(this.props.availableDatasets, d => d.isClientSide || d.temporary);
+    const hasClientDatasets = _.some(this.props.availableDatasets, (d) => d.isClientSide || d.temporary);
 
     // Build mappings for the table
     const mappings = [
       ["Load", LoadStatusCell, { sortKey: "loading" }],
       ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
-      ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"), 
+      ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"),
         { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
@@ -182,14 +188,14 @@ export class DatasetsTable extends React.Component {
 
     // Define column widths
     const columnWidths = [
-      120,  // Load (doubled from 60)
-      200,  // Name
-      150,  // ID
-      80,   // Source
-      80,   // Size (MB)
-      80,   // Subjects
-      100,  // Families
-      120,  // Build time
+      120, // Load (doubled from 60)
+      200, // Name
+      150, // ID
+      80, // Source
+      80, // Size (MB)
+      80, // Subjects
+      100, // Families
+      120, // Build time
       ...(showCitation ? [150] : []),
       ...(hasClientDatasets ? [80] : [])
     ];

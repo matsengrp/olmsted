@@ -34,17 +34,17 @@ const datasets = (state = {
       });
     }
     case types.DATASETS_RECEIVED: {
-      let availableDatasets = action.availableDatasets;
-      
+      let {availableDatasets} = action;
+
       // If preserveLoadingStatus is true, merge with existing loading status
       if (action.preserveLoadingStatus && state.availableDatasets.length > 0) {
-        const existingDatasets = new Map(state.availableDatasets.map(d => [d.dataset_id, d]));
-        availableDatasets = action.availableDatasets.map(dataset => {
+        const existingDatasets = new Map(state.availableDatasets.map((d) => [d.dataset_id, d]));
+        availableDatasets = action.availableDatasets.map((dataset) => {
           const existing = existingDatasets.get(dataset.dataset_id);
           return existing ? { ...dataset, loading: existing.loading } : dataset;
         });
       }
-      
+
       return Object.assign({}, state, {
         s3bucket: action.s3bucket,
         splash: action.splash,
@@ -75,7 +75,7 @@ const datasets = (state = {
 
     } case types.TOGGLE_DATASET_SELECTION: {
       const selectedDatasets = state.selectedDatasets.includes(action.dataset_id)
-        ? state.selectedDatasets.filter(id => id !== action.dataset_id) // Remove if already selected
+        ? state.selectedDatasets.filter((id) => id !== action.dataset_id) // Remove if already selected
         : [...state.selectedDatasets, action.dataset_id]; // Add if not selected
       return Object.assign({}, state, { selectedDatasets });
 

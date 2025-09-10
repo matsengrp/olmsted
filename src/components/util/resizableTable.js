@@ -5,10 +5,10 @@ import * as _ from 'lodash';
 export class ResizableTable extends React.Component {
   constructor(props) {
     super(props);
-    
+
     // Initialize column widths from props or use defaults
     const defaultWidths = props.columnWidths || props.mappings.map(() => 120);
-    
+
     this.state = {
       scrollTop: 0,
       columnWidths: defaultWidths,
@@ -18,7 +18,7 @@ export class ResizableTable extends React.Component {
       sortColumn: props.defaultSortColumn || null,
       sortDesc: false
     };
-    
+
     this.headerRef = React.createRef();
     this.bodyRef = React.createRef();
     this.onScroll = this.onScroll.bind(this);
@@ -72,14 +72,14 @@ export class ResizableTable extends React.Component {
 
   onMouseMove(e) {
     if (!this.state.isResizing) return;
-    
+
     const { startX, startWidth, resizingColumn } = this.state;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
-    
+
     const newWidths = [...this.state.columnWidths];
     newWidths[resizingColumn] = newWidth;
-    
+
     this.setState({ columnWidths: newWidths });
   }
 
@@ -92,14 +92,14 @@ export class ResizableTable extends React.Component {
 
   handleSort(columnKey) {
     const { sortColumn, sortDesc } = this.state;
-    
+
     // Toggle sort direction if clicking the same column
     if (sortColumn === columnKey) {
       this.setState({ sortDesc: !sortDesc });
     } else {
       this.setState({ sortColumn: columnKey, sortDesc: false });
     }
-    
+
     // Call parent's onSort handler if provided
     if (this.props.onSort) {
       this.props.onSort(columnKey, sortColumn === columnKey ? !sortDesc : false);
@@ -109,9 +109,9 @@ export class ResizableTable extends React.Component {
   getSortedData() {
     const { data } = this.props;
     const { sortColumn, sortDesc } = this.state;
-    
+
     if (!sortColumn) return data;
-    
+
     // Sort the data
     const sorted = _.orderBy(data, [sortColumn], [sortDesc ? 'desc' : 'asc']);
     return sorted;
@@ -120,11 +120,11 @@ export class ResizableTable extends React.Component {
   renderTableRow(datum, index) {
     const { columnWidths } = this.state;
     const { onRowClick, getRowStyle, mappings } = this.props;
-    
+
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
-    
+
     return (
-      <div 
+      <div
         key={datum.id || datum.ident || datum.dataset_id || index}
         style={{
           display: 'flex',
@@ -143,8 +143,8 @@ export class ResizableTable extends React.Component {
           const isAttr = ((typeof AttrOrComponent) === "string");
           const key = (datum.id || datum.ident || datum.dataset_id || index) + '.' + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
-          
-          let style = {
+
+          const style = {
             padding: 8,
             height: '100%',
             display: 'flex',
@@ -158,18 +158,21 @@ export class ResizableTable extends React.Component {
             borderRight: '1px solid #eee',
             ...options.style
           };
-          
+
           // Apply alternating column shading only if row doesn't have custom background
           if (!rowStyle.backgroundColor && isEvenColumn) {
             style.backgroundColor = '#f8f9fa';
           }
-          
+
           // Handle different types of components/attributes
           let content;
           if (isAttr) {
             // It's a string attribute path
             content = (
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+              <div style={{
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
+              }}
+              >
                 {_.get(datum, AttrOrComponent) || '—'}
               </div>
             );
@@ -182,7 +185,10 @@ export class ResizableTable extends React.Component {
               // It's a simple function that returns a value
               const value = AttrOrComponent(datum);
               content = (
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                <div style={{
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
+                }}
+                >
                   {value || '—'}
                 </div>
               );
@@ -190,7 +196,7 @@ export class ResizableTable extends React.Component {
           } else {
             content = <span>—</span>;
           }
-          
+
           return (
             <div key={key} style={style}>
               {content}
@@ -203,31 +209,34 @@ export class ResizableTable extends React.Component {
 
   render() {
     const { containerHeight = 400, mappings, showFooter = true } = this.props;
-    const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
+    const {
+      scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
+    } = this.state;
     const rowHeight = 40;
-    
+
     const sortedData = this.getSortedData();
-    
+
     // Calculate which items are visible
     const startIndex = Math.floor(scrollTop / rowHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / rowHeight) + 1,
       sortedData.length
     );
-    
+
     // Only render visible items
     const visibleItems = sortedData.slice(startIndex, endIndex);
-    
+
     return (
-      <div style={{ 
-        width: '100%', 
+      <div style={{
+        width: '100%',
         border: '1px solid #dee2e6',
         overflow: 'hidden',
         boxSizing: 'border-box',
         borderRadius: '4px'
-      }}>
+      }}
+      >
         {/* Fixed Header */}
-        <div 
+        <div
           ref={this.headerRef}
           style={{
             overflowX: 'hidden',
@@ -237,7 +246,7 @@ export class ResizableTable extends React.Component {
             paddingRight: scrollbarWidth + 'px'
           }}
         >
-          <div 
+          <div
             style={{
               display: 'flex',
               fontWeight: 'bold',
@@ -251,9 +260,9 @@ export class ResizableTable extends React.Component {
               const isAttr = ((typeof AttrOrComponent) === "string");
               const isSortable = options.sortable !== false && (isAttr || options.sortKey);
               const columnKey = isAttr ? AttrOrComponent : options.sortKey;
-              
+
               const style = {
-                fontSize: 13, 
+                fontSize: 13,
                 padding: 8,
                 height: '40px',
                 display: 'flex',
@@ -266,14 +275,17 @@ export class ResizableTable extends React.Component {
                 position: 'relative',
                 cursor: isSortable ? 'pointer' : 'default'
               };
-              
+
               return (
                 <div
                   key={name}
                   style={style}
                   onClick={() => isSortable && this.handleSort(columnKey)}
                 >
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{
+                    flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                  }}
+                  >
                     {name}
                     {isSortable && sortColumn === columnKey && (
                       <span style={{ marginLeft: 4 }}>
@@ -299,7 +311,7 @@ export class ResizableTable extends React.Component {
             })}
           </div>
         </div>
-        
+
         {/* Scrollable Body */}
         <div
           ref={this.bodyRef}
@@ -315,25 +327,30 @@ export class ResizableTable extends React.Component {
           <div style={{ height: sortedData.length * rowHeight, position: 'relative' }}>
             {/* Visible items positioned absolutely */}
             <div style={{ position: 'absolute', top: startIndex * rowHeight, width: '100%' }}>
-              {visibleItems.map((item, index) => 
+              {visibleItems.map((item, index) => (
                 <div key={startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
-        
+
         {showFooter && (
-          <div style={{ 
-            marginTop: 10, 
-            fontSize: 12, 
-            color: '#666', 
+          <div style={{
+            marginTop: 10,
+            fontSize: 12,
+            color: '#666',
             padding: '0 8px',
             boxSizing: 'border-box',
             overflow: 'hidden'
-          }}>
-            Showing {sortedData.length} {this.props.itemName || 'items'}
+          }}
+          >
+            Showing
+            {' '}
+            {sortedData.length}
+            {' '}
+            {this.props.itemName || 'items'}
           </div>
         )}
       </div>

@@ -25,11 +25,11 @@ let root;
 const renderApp = () => {
   const Root = require("./Root").default;
   const container = document.getElementById('root');
-  
+
   if (!root) {
     root = createRoot(container);
   }
-  
+
   root.render(
     <Provider store={store}>
       <Root />

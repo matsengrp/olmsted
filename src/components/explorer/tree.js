@@ -189,7 +189,9 @@ class TreeViz extends React.Component {
             <div>
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <SimpleInProgress />
-                Loading data for clonal family: {this.props.selectedFamily.clone_id}
+                Loading data for clonal family:
+                {' '}
+                {this.props.selectedFamily.clone_id}
               </h2>
             </div>
             )

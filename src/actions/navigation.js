@@ -77,10 +77,10 @@ export const changePageQuery = ({
   const state = getState();
   if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
     const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
-    
+
     // Don't immediately load datasets - wait for datasets to be available first
     // This will be handled by a componentDidUpdate when datasets are loaded
-    
+
     // Store the requested datasets in Redux state so we can load them later
     dispatch({
       type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
