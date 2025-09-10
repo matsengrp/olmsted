@@ -250,7 +250,7 @@ Upon launching Olmsted and navigating in a browser to the appropriate address (o
 
 ![splash](docs/splash-page-dataset-manager.png)
 
-Olmsted uses a client-side database to manage your datasets within the browser. This database is managed from the splash page, where you can load new datasets and delete existing ones.  You can upload datasets by clicking the "Upload Data" and navigating file explorer, or via the drag-n-drop box below.  This will add the dataset to the list of Available Datasets above.  When you check the load icon for the row in the datasets table, it queues the dataset for visualization and adds it to the query string. Click *Explore!* to visually explore selected datasets.
+Olmsted uses a client-side database to manage your datasets within the browser. This database is managed from the splash page, where you can load new datasets and delete existing ones.  You can upload datasets by clicking the "Upload Data" and navigating file explorer, or via the drag-n-drop box below.  This will add the dataset to the Available Datasets table.  When you check the load icon for the row in the datasets table, it queues the dataset for visualization and adds it to the query string. Click *Explore!* visually explore selected datasets.
 
 ![dataset_selector](docs/visualization-dataset-manager.png)
 
