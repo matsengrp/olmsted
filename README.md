@@ -141,7 +141,7 @@ olmsted process [OPTIONS]
 
 Process a PCP CSV file with separate tree data file:
 ```bash
-olmsted process -i data.csv -t trees.csv -o processed.json -f pcp -n "PCP Dataset with Trees"
+olmsted process -i data.csv -t trees.csv -o processed.json -f pcp -n "PCP Dataset"
 ```
 
 Process an AIRR format file:
@@ -252,11 +252,11 @@ Upon launching Olmsted and navigating in a browser to the appropriate address (o
 
 ![splash](docs/splash-page-dataset-manager.png)
 
-Olmsted uses a client-side database to manage your datasets within the browser. This database is managed from the splash page, where you can load new datasets and delete existing ones. When you click on a row in the datasets table, it queues the dataset for visualization and adds it to the query string - dataset loading occurs on-demand when you navigate to the visualization page. Click *Explore!* to visually explore selected datasets.
+Olmsted uses a client-side database to manage your datasets within the browser. This database is managed from the splash page, where you can load new datasets and delete existing ones.  You can upload datasets by clicking the "Upload Data" and navigating file explorer, or via the drag-n-drop box below.  This will add the dataset to the list of Available Datasets above.  When you check the load icon for the row in the datasets table, it queues the dataset for visualization and adds it to the query string. Click *Explore!* to visually explore selected datasets.
 
 ![dataset_selector](docs/visualization-dataset-manager.png)
 
-Once you're in the visualization interface, you can change your dataset selection without returning to the splash page. Simply select the desired datasets in the dataset table on the visualization page, then click the "Update Visualization" button to refresh the view with your new selection. "Manage Datasets" will return you to the splash page.
+Once you're in the visualization interface, you can change your dataset selection on demand. Simply select the desired datasets in the dataset table on the visualization page, then click the "Update Visualization" button to refresh the view with your new selection. "Manage Datasets" will return you to the splash page.
 
 ### Clonal Families Section (AKA "scatterplot")
 
