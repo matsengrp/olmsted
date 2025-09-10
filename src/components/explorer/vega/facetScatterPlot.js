@@ -530,12 +530,20 @@ const createBrushTranslateSignals = () => ([
   {
     name: "brush_x_field",
     push: "outer",
-    on: [{ events: { signal: "brush_x" }, update: "xField" }]
+    on: [{ 
+      events: { signal: "brush_x" }, 
+      update: "brush_x[0] === brush_x[1] ? null : invert('x', brush_x)",
+      force: true
+    }]
   },
   {
     name: "brush_y_field",
     push: "outer",
-    on: [{ events: { signal: "brush_y" }, update: "yField" }]
+    on: [{ 
+      events: { signal: "brush_y" }, 
+      update: "brush_y[0] === brush_y[1] ? null : invert('y', brush_y)",
+      force: true
+    }]
   },
   {
     name: "brush_selection",
