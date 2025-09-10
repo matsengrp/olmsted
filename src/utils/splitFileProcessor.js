@@ -12,13 +12,29 @@ class SplitFileProcessor {
      */
   static async processFiles(files) {
     try {
-      // Read all files
+      // Read all files with proper error handling for each file
       const fileContents = await Promise.all(
-        files.map(async (file) => ({
-          name: file.name,
-          content: JSON.parse(await this.readFile(file)),
-          originalFile: file
-        }))
+        files.map(async (file) => {
+          try {
+            const fileContent = await this.readFile(file);
+            let parsedContent;
+            
+            try {
+              parsedContent = JSON.parse(fileContent);
+            } catch (parseError) {
+              throw new Error(`Failed to parse JSON from ${file.name}: ${parseError.message}`);
+            }
+            
+            return {
+              name: file.name,
+              content: parsedContent,
+              originalFile: file
+            };
+          } catch (error) {
+            // Include file name in error for better debugging
+            throw new Error(`Error processing file "${file.name}": ${error.message}`);
+          }
+        })
       );
 
       // Check if this looks like split format
@@ -278,10 +294,22 @@ class SplitFileProcessor {
      */
   static readFile(file) {
     return new Promise((resolve, reject) => {
+      if (!file) {
+        reject(new Error('No file provided'));
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = () => reject(new Error('File reading failed'));
-      reader.readAsText(file);
+      reader.onerror = (error) => {
+        reject(new Error(`Failed to read file "${file.name}": ${error.message || 'Unknown error'}`));
+      };
+      
+      try {
+        reader.readAsText(file);
+      } catch (error) {
+        reject(new Error(`Failed to initiate file read for "${file.name}": ${error.message}`));
+      }
     });
   }
 }

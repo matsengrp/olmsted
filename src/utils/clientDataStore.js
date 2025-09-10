@@ -1,21 +1,59 @@
 /**
- * Client-side data storage for processed AIRR data using Dexie with lazy loading
+ * Client-side data storage for processed AIRR data using Dexie with lazy loading.
+ * 
+ * This class provides an interface between the application and the Dexie database,
+ * implementing lazy loading strategies to improve performance when working with large
+ * AIRR datasets. It maintains a small in-memory cache for recently accessed data
+ * to reduce database queries.
+ * 
+ * @class ClientDataStore
+ * @module utils/clientDataStore
  */
 
 import olmstedDB from './olmstedDB';
 
+/**
+ * Manages client-side storage and retrieval of AIRR data with optimized caching
+ */
 class ClientDataStore {
 
+  /**
+   * Creates a new ClientDataStore instance with memory caching
+   * @constructor
+   */
   constructor() {
-    // Keep minimal memory cache for recently accessed data
-    this.recentClones = new Map(); // Cache recently loaded full clone data
-    this.recentTrees = new Map();  // Cache recently loaded trees
-    this.maxCacheSize = 10; // Keep last 10 accessed items in memory
+    /**
+     * Cache for recently loaded full clone data
+     * @type {Map<string, Object>}
+     * @private
+     */
+    this.recentClones = new Map();
+    
+    /**
+     * Cache for recently loaded tree data
+     * @type {Map<string, Object>}
+     * @private
+     */
+    this.recentTrees = new Map();
+    
+    /**
+     * Maximum number of items to keep in each cache
+     * @type {number}
+     * @private
+     */
+    this.maxCacheSize = 10;
   }
 
   /**
    * Store processed AIRR data with lazy loading structure
+   * @async
    * @param {Object} processedData - Data from AIRRProcessor
+   * @param {Array} processedData.datasets - Array of dataset objects
+   * @param {Object} processedData.clones - Clone data indexed by dataset ID
+   * @param {Array} processedData.trees - Array of phylogenetic tree objects
+   * @param {string} processedData.datasetId - Primary dataset identifier
+   * @returns {Promise<string>} The dataset ID of the stored data
+   * @throws {Error} If data storage fails
    */
   async storeProcessedData(processedData) {
     console.log('ClientDataStore: Storing data with lazy loading...');
@@ -32,7 +70,12 @@ class ClientDataStore {
 
   /**
    * Get all datasets (lightweight, always fast)
-   * @returns {Promise<Array>} Array of dataset objects
+   * @async
+   * @returns {Promise<Array<Object>>} Array of dataset objects
+   * @returns {Promise<Array>} Empty array if retrieval fails
+   * @example
+   * const datasets = await store.getAllDatasets();
+   * console.log(`Found ${datasets.length} datasets`);
    */
   async getAllDatasets() {
     try {
@@ -46,10 +89,15 @@ class ClientDataStore {
   }
 
   /**
-   * Get clone metadata for dataset (lightweight, no sequences)
-   * This is what powers the clone family list - fast loading
+   * Get clone metadata for dataset (lightweight, no sequences).
+   * This is what powers the clone family list - fast loading.
+   * @async
    * @param {string} datasetId - Dataset identifier
-   * @returns {Promise<Array>} Array of clone metadata objects
+   * @returns {Promise<Array<Object>>} Array of clone metadata objects
+   * @returns {Promise<Array>} Empty array if no clones found or retrieval fails
+   * @example
+   * const clones = await store.getClones('dataset_001');
+   * // Returns lightweight metadata without sequence data
    */
   async getClones(datasetId) {
     console.log(`ClientDataStore: Getting clone metadata for ${datasetId}`);
@@ -82,10 +130,17 @@ class ClientDataStore {
   }
 
   /**
-   * Get full tree with sequences (heavy, loaded on demand)
-   * This is called when user clicks on a specific clone family
+   * Get full tree with sequences (heavy, loaded on demand).
+   * This is called when user clicks on a specific clone family.
+   * Uses memory cache for recently accessed trees.
+   * @async
    * @param {string} treeIdent - Tree identifier
-   * @returns {Promise<Object|null>} Tree object with sequences or null
+   * @returns {Promise<Object|null>} Tree object with sequences or null if not found
+   * @example
+   * const tree = await store.getTree('tree_clone_0099_ident');
+   * if (tree) {
+   *   console.log(`Tree has ${tree.sequences.length} sequences`);
+   * }
    */
   async getTree(treeIdent) {
     console.log(`ClientDataStore: Loading full tree data for ${treeIdent}`);
@@ -140,10 +195,17 @@ class ClientDataStore {
   }
 
   /**
-   * Get full clone data with sequences (for when we need everything)
-   * @param {string} cloneId - Clone identifier  
+   * Get full clone data with sequences (for when we need everything).
+   * Combines clone metadata with full tree data.
+   * @async
+   * @param {string} cloneId - Clone identifier
    * @param {string} datasetId - Dataset identifier
-   * @returns {Promise<Object|null>} Full clone object with embedded trees
+   * @returns {Promise<Object|null>} Full clone object with embedded trees, or null if not found
+   * @example
+   * const fullClone = await store.getFullClone('clone_0099', 'dataset_001');
+   * if (fullClone) {
+   *   console.log(`Clone has ${fullClone.unique_seqs_count} unique sequences`);
+   * }
    */
   async getFullClone(cloneId, datasetId) {
     console.log(`ClientDataStore: Loading full clone data for ${cloneId}`);
@@ -191,10 +253,13 @@ class ClientDataStore {
   }
 
   /**
-   * Add item to cache with size limit
-   * @param {Map} cache - Cache map to add to
+   * Add item to cache with size limit.
+   * Implements LRU (Least Recently Used) eviction when cache exceeds maxCacheSize.
+   * @private
+   * @param {Map<string, any>} cache - Cache map to add to
    * @param {string} key - Cache key
    * @param {any} value - Value to cache
+   * @returns {void}
    */
   addToCache(cache, key, value) {
     // Remove oldest if at limit
@@ -207,8 +272,13 @@ class ClientDataStore {
   }
 
   /**
-   * Remove a dataset and all associated data
-   * @param {string} datasetId - Dataset to remove
+   * Remove a dataset and all associated data.
+   * Also clears related entries from memory caches.
+   * @async
+   * @param {string} datasetId - Dataset identifier to remove
+   * @returns {Promise<void>}
+   * @example
+   * await store.removeDataset('dataset_001');
    */
   async removeDataset(datasetId) {
     try {
@@ -231,7 +301,12 @@ class ClientDataStore {
   }
 
   /**
-   * Clear all data
+   * Clear all data from storage and memory caches.
+   * This will remove all datasets, clones, and trees.
+   * @async
+   * @returns {Promise<void>}
+   * @example
+   * await store.clearAll();
    */
   async clearAllData() {
     try {
@@ -245,8 +320,15 @@ class ClientDataStore {
   }
 
   /**
-   * Get storage summary with performance metrics
+   * Get storage summary with performance metrics.
+   * Provides insights into database usage and cache status.
+   * @async
    * @returns {Promise<Object>} Storage and performance summary
+   * @returns {Promise<Object>} Object with error property if retrieval fails
+   * @example
+   * const summary = await store.getStorageSummary();
+   * console.log(`Using ${summary.storage.usage} bytes of storage`);
+   * console.log(`Cache has ${summary.memoryCache.clones} clones cached`);
    */
   async getStorageSummary() {
     try {

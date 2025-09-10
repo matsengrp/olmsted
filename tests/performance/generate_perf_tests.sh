@@ -80,20 +80,22 @@ main() {
     # Generate test datasets of different sizes
     echo -e "\n${BLUE}Test Suite 1: Performance Targets${NC}"
 
+EVO_RATE=0.0005
+
 # Tiny dataset for debugging
-generate_test_dataset 5 "perf_test_tiny" "$TEST_DIR" 0.05 "Small dataset (1 clones)"
+generate_test_dataset 5 "perf_test_tiny" "$TEST_DIR" "$EVO_RATE" "Small dataset (1 clones)"
 
 # Small dataset for quick testing
-generate_test_dataset 100 "perf_test_small" "$TEST_DIR" 0.05 "Small dataset (100 clones)"
+generate_test_dataset 100 "perf_test_small" "$TEST_DIR" "$EVO_RATE" "Small dataset (100 clones)"
 
 # Medium dataset - target for good performance
-generate_test_dataset 1000 "perf_test_medium" "$TEST_DIR" 0.05 "Medium dataset (1000 clones) - PRIMARY TARGET"
+generate_test_dataset 1000 "perf_test_medium" "$TEST_DIR" "$EVO_RATE" "Medium dataset (1000 clones) - PRIMARY TARGET"
 
 # Large dataset - stress test
-generate_test_dataset 5000 "perf_test_large" "$TEST_DIR" 0.05 "Large dataset (5000 clones)"
+generate_test_dataset 5000 "perf_test_large" "$TEST_DIR" "$EVO_RATE" "Large dataset (5000 clones)"
 
 # Extra large - edge case
-# generate_test_dataset 10000 "perf_test_xlarge" "$TEST_DIR" 0.05 "Extra large dataset (10000 clones)"
+# generate_test_dataset 10000 "perf_test_xlarge" "$TEST_DIR" "$EVO_RATE" "Extra large dataset (10000 clones)"
 
 # Summary
 echo -e "\n${GREEN}📊 Test Data Generation Complete!${NC}"
