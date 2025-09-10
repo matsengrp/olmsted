@@ -45,13 +45,13 @@ git clone https://github.com/matsengrp/olmsted-cli.git
 
 ### 2. Install olmsted-cli
 
-Create a conda environment and install olmsted-cli in development mode:
+Create a conda environment and install olmsted-cli:
 
 ```bash
 conda create -n olmsted python=3.9
 conda activate olmsted
 cd olmsted-cli
-pip install -e .
+pip install .
 ```
 
 ### 3. Build and run Olmsted server
@@ -185,7 +185,7 @@ Example PCP data can be found in the `olmsted-cli/example_data/` directory, demo
 
 #### AIRR Format
 
-Olmsted takes input files in the [AIRR JSON format](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
+The AIRR JSON format is described [here](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
 A list of tools that output this format can be found [here](https://docs.airr-community.org/en/stable/resources/rearrangement_support.html).
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
 
@@ -193,7 +193,7 @@ For a human-readable version of the schema, see [olmstedviz.org/schema.html](htt
 
 #### Using olmsted-cli for Validation
 
-The olmsted-cli package provides built-in validation capabilities to ensure your data meets the required schema standards before processing:
+The olmsted-cli package provides built-in validation capabilities to ensure data meets the required schema standards for processing by Olmsted webapp:
 
 **Validation-only mode:**
 ```bash
