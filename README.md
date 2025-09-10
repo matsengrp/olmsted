@@ -35,7 +35,6 @@ First, clone the main Olmsted repository:
 git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
 git submodule update --init
-cd ..
 ```
 
 Then clone the olmsted-cli data processing tool:
@@ -53,7 +52,6 @@ conda create -n olmsted python=3.9
 conda activate olmsted
 cd olmsted-cli
 pip install -e .
-cd ..
 ```
 
 ### 3. Build and run Olmsted server
