@@ -3,6 +3,8 @@
  * Combines split datasets, clones, and trees files back into a unified structure
  */
 
+import { FileProcessingError, ValidationError, ErrorLogger, validateRequired } from './errors';
+
 class SplitFileProcessor {
 
   /**
@@ -32,7 +34,11 @@ class SplitFileProcessor {
             };
           } catch (error) {
             // Include file name in error for better debugging
-            throw new Error(`Error processing file "${file.name}": ${error.message}`);
+            throw new FileProcessingError(
+              `Error processing file: ${error.message}`,
+              file.name,
+              error
+            );
           }
         })
       );
@@ -50,7 +56,7 @@ class SplitFileProcessor {
       const trees = this.extractTrees(fileContents);
 
       if (datasets.length === 0) {
-        throw new Error('No dataset files found. Expected at least one datasets.json file.');
+        throw new ValidationError('No dataset files found. Expected at least one datasets.json file.');
       }
 
       // Combine into unified structure for each dataset
@@ -85,7 +91,7 @@ class SplitFileProcessor {
       // For now, handle only single dataset uploads
       // Could be extended to handle multiple datasets
       if (processedResults.length > 1) {
-        throw new Error('Multiple datasets found. Please upload one dataset at a time.');
+        throw new ValidationError('Multiple datasets found. Please upload one dataset at a time.');
       }
 
       const result = processedResults[0];
@@ -105,7 +111,17 @@ class SplitFileProcessor {
       };
 
     } catch (error) {
-      throw new Error(`Failed to process split files: ${error.message}`);
+      if (error instanceof ValidationError || error instanceof FileProcessingError) {
+        throw error; // Re-throw specific errors as-is
+      }
+      
+      const processingError = new FileProcessingError(
+        `Failed to process split files: ${error.message}`,
+        null,
+        error
+      );
+      ErrorLogger.log(processingError, { fileCount: files?.length });
+      throw processingError;
     }
   }
 
@@ -294,21 +310,30 @@ class SplitFileProcessor {
      */
   static readFile(file) {
     return new Promise((resolve, reject) => {
-      if (!file) {
-        reject(new Error('No file provided'));
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = (error) => {
-        reject(new Error(`Failed to read file "${file.name}": ${error.message || 'Unknown error'}`));
-      };
-      
       try {
+        validateRequired(file, 'file');
+        
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (error) => {
+          reject(new FileProcessingError(
+            `Failed to read file: ${error.message || 'Unknown error'}`,
+            file.name,
+            error
+          ));
+        };
+        
         reader.readAsText(file);
       } catch (error) {
-        reject(new Error(`Failed to initiate file read for "${file.name}": ${error.message}`));
+        if (error instanceof ValidationError) {
+          reject(error);
+        } else {
+          reject(new FileProcessingError(
+            `Failed to initiate file read: ${error.message}`,
+            file?.name,
+            error
+          ));
+        }
       }
     });
   }

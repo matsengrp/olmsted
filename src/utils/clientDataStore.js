@@ -11,6 +11,7 @@
  */
 
 import olmstedDB from './olmstedDB';
+import { ValidationError, DatabaseError, ErrorLogger, validateRequired, validateType } from './errors';
 
 /**
  * Manages client-side storage and retrieval of AIRR data with optimized caching
@@ -56,15 +57,32 @@ class ClientDataStore {
    * @throws {Error} If data storage fails
    */
   async storeProcessedData(processedData) {
-    console.log('ClientDataStore: Storing data with lazy loading...');
-    
     try {
+      // Input validation using utility functions
+      validateRequired(processedData, 'processedData');
+      validateType(processedData, 'object', 'processedData');
+      validateRequired(processedData.datasets, 'processedData.datasets');
+      validateType(processedData.datasets, 'object', 'processedData.datasets');
+      validateRequired(processedData.datasetId, 'processedData.datasetId');
+      validateType(processedData.datasetId, 'string', 'processedData.datasetId');
+      
+      ErrorLogger.info('ClientDataStore: Storing data with lazy loading...');
+      
       const datasetId = await olmstedDB.storeDataset(processedData);
-      console.log('ClientDataStore: Successfully stored data in Dexie');
+      ErrorLogger.info('ClientDataStore: Successfully stored data in Dexie');
       return datasetId;
     } catch (error) {
-      console.error('ClientDataStore: Failed to store data:', error);
-      throw error;
+      if (error instanceof ValidationError) {
+        throw error; // Re-throw validation errors as-is
+      }
+      
+      const dbError = new DatabaseError(
+        'Failed to store processed data',
+        'storeDataset',
+        error
+      );
+      ErrorLogger.log(dbError, { datasetId: processedData?.datasetId });
+      throw dbError;
     }
   }
 
@@ -100,13 +118,17 @@ class ClientDataStore {
    * // Returns lightweight metadata without sequence data
    */
   async getClones(datasetId) {
-    console.log(`ClientDataStore: Getting clone metadata for ${datasetId}`);
-    
     try {
+      // Input validation
+      validateRequired(datasetId, 'datasetId');
+      validateType(datasetId, 'string', 'datasetId');
+      
+      ErrorLogger.info(`ClientDataStore: Getting clone metadata for ${datasetId}`);
+      
       const cloneMeta = await olmstedDB.getCloneMetadata(datasetId);
       
       if (cloneMeta.length === 0) {
-        console.warn(`ClientDataStore: No clones found for dataset ${datasetId}`);
+        ErrorLogger.warn(`ClientDataStore: No clones found for dataset ${datasetId}`);
         return [];
       }
       
@@ -120,12 +142,21 @@ class ClientDataStore {
         })) : []
       }));
       
-      console.log(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);
+      ErrorLogger.info(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);
       return cloneList;
       
     } catch (error) {
-      console.error('ClientDataStore: Failed to get clone metadata:', error);
-      return [];
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+      
+      const dbError = new DatabaseError(
+        'Failed to get clone metadata',
+        'getCloneMetadata',
+        error
+      );
+      ErrorLogger.log(dbError, { datasetId });
+      return []; // Return empty array for graceful degradation
     }
   }
 
@@ -143,6 +174,11 @@ class ClientDataStore {
    * }
    */
   async getTree(treeIdent) {
+    // Input validation
+    if (!treeIdent || typeof treeIdent !== 'string') {
+      throw new Error('ClientDataStore: treeIdent must be a non-empty string');
+    }
+    
     console.log(`ClientDataStore: Loading full tree data for ${treeIdent}`);
     
     // Check memory cache first
@@ -208,6 +244,15 @@ class ClientDataStore {
    * }
    */
   async getFullClone(cloneId, datasetId) {
+    // Input validation
+    if (!cloneId || typeof cloneId !== 'string') {
+      throw new Error('ClientDataStore: cloneId must be a non-empty string');
+    }
+    
+    if (!datasetId || typeof datasetId !== 'string') {
+      throw new Error('ClientDataStore: datasetId must be a non-empty string');
+    }
+    
     console.log(`ClientDataStore: Loading full clone data for ${cloneId}`);
     
     // Check memory cache first
@@ -281,6 +326,11 @@ class ClientDataStore {
    * await store.removeDataset('dataset_001');
    */
   async removeDataset(datasetId) {
+    // Input validation
+    if (!datasetId || typeof datasetId !== 'string') {
+      throw new Error('ClientDataStore: datasetId must be a non-empty string');
+    }
+    
     try {
       await olmstedDB.removeDataset(datasetId);
       

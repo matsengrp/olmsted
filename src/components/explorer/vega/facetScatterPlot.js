@@ -542,7 +542,7 @@ const createBrushTranslateSignals = () => ([
     push: "outer",
     on: [{
       events: "@cell:mouseup",
-      update: "data('facet').filter(d => inrange(d[xField], brush_x) && inrange(d[yField], brush_y))"
+      update: "span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : []"
     }]
   }
 ]);
