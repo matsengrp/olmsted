@@ -15,7 +15,7 @@ html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
-  -webkit-overflow-scrolling: touch;  
+  -webkit-overflow-scrolling: touch;
 }
 /**
  * Remove default margin.
@@ -29,7 +29,7 @@ html, body, #root, [data-reactid=".0"] {
 
 /* Global margin-left for all form controls */
 input, button, select, textarea {
-  margin-left: 15px;
+  margin-left: 10px !important;
 }
 
 
@@ -207,7 +207,7 @@ button:focus {outline:0;}
   display: grid;
   /*grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];*/
   grid-template-columns: auto;
-  grid-template-rows: auto; 
+  grid-template-rows: auto;
   justify-items: left;
 }
 
@@ -230,7 +230,7 @@ button:focus {outline:0;}
 }
 
 .non-selectable-text{
-  -webkit-user-select: none; /* Safari */        
+  -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */

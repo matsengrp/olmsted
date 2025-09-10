@@ -9,6 +9,33 @@
 
 set -e
 
+# Check for help flags first
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage: $0 [data_directory] [port] [mode]"
+    echo ""
+    echo "Start Olmsted server using local installation"
+    echo ""
+    echo "Arguments:"
+    echo "  data_directory: Path to data directory (default: example_data/build_data)"
+    echo "  port: Local port to use (default: 3999)"
+    echo "  mode: Server mode - 'dev' or 'production' (default: dev)"
+    echo ""
+    echo "Examples:"
+    echo "  $0"
+    echo "  $0 /path/to/data"
+    echo "  $0 /path/to/data 8080"
+    echo "  $0 /path/to/data 3999 production"
+    echo "  $0 example_data/build_data 3999 dev"
+    echo ""
+    echo "Modes:"
+    echo "  dev         Development mode with hot reloading (default)"
+    echo "  production  Production mode with build step"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help  Show this help message"
+    exit 0
+fi
+
 # Default values
 DEFAULT_DATA_DIR="example_data/build_data"
 DEFAULT_PORT="3999"

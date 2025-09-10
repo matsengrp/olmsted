@@ -223,6 +223,9 @@ class ResizableVirtualTable extends React.Component {
                 cursor: isAttr ? 'pointer' : 'default'
               };
               
+              const { pagination } = this.props;
+              const isCurrentSort = isAttr && pagination && pagination.order_by === AttrOrComponent;
+              
               return (
                 <div
                   key={name}
@@ -231,6 +234,11 @@ class ResizableVirtualTable extends React.Component {
                 >
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {name}
+                    {isAttr && isCurrentSort && (
+                      <span style={{ marginLeft: 4 }}>
+                        {pagination.desc ? '▼' : '▲'}
+                      </span>
+                    )}
                   </span>
                   {/* Resize handle */}
                   <div
@@ -300,6 +308,7 @@ class Table extends React.Component {
         mappings={this.props.mappings}
         selectedFamily={this.props.selectedFamily}
         dispatch={this.props.dispatch}
+        pagination={this.props.pagination}
         containerHeight={500}
       />
     );
@@ -409,6 +418,7 @@ class ClonalFamiliesTable extends React.Component {
             ["Ident", "ident"]
           ]}
         selectedFamily={this.selectedFamily}
+        pagination={this.props.pagination}
       />
     );
   }
