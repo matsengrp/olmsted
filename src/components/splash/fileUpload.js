@@ -353,17 +353,6 @@ class FileUpload extends React.Component {
                   • Single consolidated file from olmsted-cli (recommended)
                   <br />
                   • Multiple split files together (datasets.json, clones.*.json, tree.*.json)
-                  <br />
-                  <span style={{ color: '#c90', fontWeight: 'bold' }}>
-                    Note: PCP CSV files must be converted to AIRR format using olmsted-cli first:
-                  </span>
-                  <br />
-                  <code style={{
-                    fontSize: 11, backgroundColor: '#f5f5f5', padding: '2px 4px', borderRadius: 2
-                  }}
-                  >
-                    olmsted process -i data.csv -o output.json -f pcp
-                  </code>
                 </div>
               </div>
             )}
