@@ -85,12 +85,12 @@ Use olmsted-cli to convert your data into Olmsted format. Here are examples usin
 
 **Processing PCP format data:**
 ```bash
-olmsted process -i olmsted-cli/example_data/pcp/pcp.csv -t olmsted-cli/example_data/pcp/trees.csv -o processed_data.json -f pcp
+olmsted process -i olmsted-cli/example_data/pcp/pcp.csv -t olmsted-cli/example_data/pcp/trees.csv -o processed_data.json -f pcp -n "pcp-example"
 ```
 
 **Processing AIRR format data:**
 ```bash
-olmsted process -i olmsted-cli/example_data/airr/full_schema_dataset.json -o processed_data.json -f airr
+olmsted process -i olmsted-cli/example_data/airr/full_schema_dataset.json -o processed_data.json -f airr -n "airr-example"
 ```
 
 **Note**: The `--format` flag is optional as `olmsted process` can automatically infer the input file format from the file extension and contents.
@@ -121,6 +121,8 @@ The olmsted-cli tool provides a simple `process` command:
 ```bash
 olmsted process [OPTIONS]
 ```
+
+**Note**: Use `olmsted process -h` for more options.
 
 **Common options:**
 - `--input, -i`: Input file path (PCP CSV or AIRR json)
@@ -176,7 +178,7 @@ The PCP (Parent Child Pair) format consists of two CSV files:
    - `parent_is_naive`: Boolean indicating if parent is naive/root
    - `child_is_leaf`: Boolean indicating if child is leaf node
 
-2. **Tree Data CSV**: Contains phylogenetic tree information with columns:
+2. **Tree Data CSV**: Contains Newick data with columns:
    - `family_name`: Family identifier matching the family column above
    - `sample_id`: Sample identifier
    - `newick_tree`: Newick format phylogenetic tree string
@@ -220,10 +222,6 @@ To run an interactive session in the container:
 ```
 docker run -it quay.io/matsengrp/olmsted /bin/bash
 ```
-
-## Deploying without Docker
-
-Run `npm start localData /local/data/path 8080` (after installing the necessary dependencies specified in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile)) and navigate to `localhost:8080` in your browser to see the application.
 
 ## Static Build
 
