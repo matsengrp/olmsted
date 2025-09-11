@@ -4,13 +4,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Checkout tags
       run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
     - name: Set git branch variable
-      run: echo ::set-env name=BRANCH::$(git branch --show-current)            
+      run: echo "BRANCH=$(git branch --show-current)" >> $GITHUB_ENV            
     - name: Set image tag variable
-      run: if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "" ];then echo ::set-env name=TAG::$(git describe --tags);else echo ::set-env name=TAG::$BRANCH;fi
+      run: if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "" ];then echo "TAG=$(git describe --tags)" >> $GITHUB_ENV;else echo "TAG=$BRANCH" >> $GITHUB_ENV;fi
     - name: Checkout submodules
       shell: bash
       run: |
