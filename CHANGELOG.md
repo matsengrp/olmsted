@@ -1,3 +1,13 @@
+## version 2.2.4 - 2025/09/11
+[PR220](https://github.com/matsengrp/olmsted/pull/220) Added:
+* Client-side data upload with drag-and-drop interface
+* Persistent dataset storage using IndexedDB
+* Progress indicators and comprehensive error handling
+* Batch dataset operations and management
+* React v16→18 and Vega v4→5 upgrades
+* Memory management and performance optimizations
+* Fixed all npm audit vulnerabilities after upgrade
+
 ## version 2.2.3 - 2025/07/21
 [PR219](https://github.com/matsengrp/olmsted/pull/219) Changed:
 * Fixed npm package vulneratibilities, focused on D3/Vega (reduced to 0)
