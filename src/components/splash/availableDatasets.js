@@ -59,10 +59,8 @@ class LoadStatusCell extends React.Component {
 
   render() {
     return (
-      <div onClick={this.selectDataset} style={{ cursor: 'pointer', width: '100%', textAlign: 'center' }}>
-        <LoadingStatus
-          loadingStatus={this.props.datum.loading}
-        />
+      <div onClick={this.selectDataset} style={{ cursor: "pointer", width: "100%", textAlign: "center" }}>
+        <LoadingStatus loadingStatus={this.props.datum.loading} />
       </div>
     );
   }
@@ -71,11 +69,15 @@ class LoadStatusCell extends React.Component {
 // Component for the citation column
 class CitationCell extends React.Component {
   render() {
-    const {paper} = this.props.datum;
+    const { paper } = this.props.datum;
     if (!paper) return <span>—</span>;
 
     if (paper.url) {
-      return <a href={paper.url} onClick={(e) => e.stopPropagation()}>{paper.authorstring}</a>;
+      return (
+        <a href={paper.url} onClick={(e) => e.stopPropagation()}>
+          {paper.authorstring}
+        </a>
+      );
     }
     return <span>{paper.authorstring}</span>;
   }
@@ -92,13 +94,7 @@ class SizeCell extends React.Component {
     }
 
     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return (
-      <span>
-        {sizeInMB}
-        {' '}
-        MB
-      </span>
-    );
+    return <span>{sizeInMB} MB</span>;
   }
 }
 
@@ -120,7 +116,7 @@ class DeleteButtonCell extends React.Component {
         type: types.REMOVE_DATASET,
         dataset_id: dataset.dataset_id
       });
-      console.log('Deleted client-side dataset:', dataset.dataset_id);
+      console.log("Deleted client-side dataset:", dataset.dataset_id);
     }
   }
 
@@ -154,9 +150,7 @@ export class DatasetsTable extends React.Component {
   render() {
     if (!this.props.availableDatasets) {
       return (
-        <div style={{fontSize: "20px", fontWeight: 400, color: red}}>
-          There was an error fetching the datasets
-        </div>
+        <div style={{ fontSize: "20px", fontWeight: 400, color: red }}>There was an error fetching the datasets</div>
       );
     }
 
@@ -168,14 +162,17 @@ export class DatasetsTable extends React.Component {
     // Build mappings for the table
     const mappings = [
       ["Load", LoadStatusCell, { sortKey: "loading" }],
-      ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
+      ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
-      ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"),
-        { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
+      [
+        "Source",
+        (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
+        { style: { fontSize: "12px" }, sortKey: "isClientSide" }
+      ],
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
-      ["Build Time", (d) => (d.build ? d.build.time || '—' : '—'), { sortKey: "build.time" }]
+      ["Build Time", (d) => (d.build ? d.build.time || "—" : "—"), { sortKey: "build.time" }]
     ];
 
     if (showCitation) {
@@ -202,9 +199,7 @@ export class DatasetsTable extends React.Component {
 
     return (
       <div style={{ width: "100%" }}>
-        <div style={{fontSize: "26px", marginBottom: "10px"}}>
-          Available Datasets:
-        </div>
+        <div style={{ fontSize: "26px", marginBottom: "10px" }}>Available Datasets:</div>
         <ResizableTable
           data={this.props.availableDatasets}
           mappings={mappings}

@@ -21,7 +21,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
 
   /* starting URL values & flags */
   let query = queryString.parse(window.location.search);
-  let {pathname} = window.location;
+  let { pathname } = window.location;
 
   /* first switch: query change */
 
@@ -66,24 +66,32 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     // Format url string
 
     // Get rid of keys with no values
-    Object.keys(query).filter((k) => !query[k]).forEach((k) => delete query[k]);
+    Object.keys(query)
+      .filter((k) => !query[k])
+      .forEach((k) => delete query[k]);
     // Format with no commas or slashes
-    let search = queryString.stringify(query).replace(/%2C/g, ',').replace(/%2F/g, '/');
-    if (search) {search = "?" + search;}
-    if (!pathname.startsWith("/")) {pathname = "/" + pathname;}
+    let search = queryString.stringify(query).replace(/%2C/g, ",").replace(/%2F/g, "/");
+    if (search) {
+      search = "?" + search;
+    }
+    if (!pathname.startsWith("/")) {
+      pathname = "/" + pathname;
+    }
 
     // If url change
     if (pathname !== window.location.pathname || search !== window.location.search) {
       let newURLString = pathname;
-      if (search) {newURLString += search;}
+      if (search) {
+        newURLString += search;
+      }
       if (action.pushState === true) {
         window.history.pushState({}, "", newURLString);
       } else {
         window.history.replaceState({}, "", newURLString);
       }
-      next({type: types.URL, path: pathname, query: search});
+      next({ type: types.URL, path: pathname, query: search });
     } else if (pathname !== state.datasets.urlPath && action.type === types.PAGE_CHANGE) {
-      next({type: types.URL, path: pathname, query: search});
+      next({ type: types.URL, path: pathname, query: search });
     }
   }
 

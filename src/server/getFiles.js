@@ -2,7 +2,7 @@
 // const fs = require('fs');
 const path = require("path");
 // const fetch = require('node-fetch'); // not needed for local data
-const request = require('request');
+const request = require("request");
 // const prettyjson = require('prettyjson');
 
 // const validUsers = ['guest', 'mumps', 'lassa'];
@@ -26,11 +26,11 @@ const getDatasets = (query, res) => {
   // res.status(404).send('No user defined');
   // return;
   // }
-  getDataFile(res, 'datasets.json', query.s3);
+  getDataFile(res, "datasets.json", query.s3);
 };
 
 const getClonalFamilies = (query, res) => {
-  getDataFile(res, 'clones.json', query.s3);
+  getDataFile(res, "clones.json", query.s3);
 };
 
 const getSplashImage = (query, res) => {

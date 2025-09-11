@@ -1,5 +1,5 @@
 // Helper function to create data configuration
-const createDataConfiguration = () => ([
+const createDataConfiguration = () => [
   { name: "pts_store" },
   { name: "selected" },
   { name: "locus" },
@@ -7,8 +7,8 @@ const createDataConfiguration = () => ([
   {
     name: "brush_store",
     on: [
-      {trigger: "brush_selection", insert: "brush_selection", remove: true},
-      {trigger: "facet_by_signal", remove: true}
+      { trigger: "brush_selection", insert: "brush_selection", remove: true },
+      { trigger: "facet_by_signal", remove: true }
     ]
   },
   { name: "source" },
@@ -17,7 +17,7 @@ const createDataConfiguration = () => ([
     source: "source",
     format: {
       type: "json",
-      parse: {unique_seqs_count: "number", mean_mut_freq: "number"},
+      parse: { unique_seqs_count: "number", mean_mut_freq: "number" },
       copy: true
     },
     transform: createDataTransforms()
@@ -26,14 +26,14 @@ const createDataConfiguration = () => ([
     name: "column_domain",
     source: "data_0",
     transform: [
-      {type: "aggregate", groupby: [{signal: "facet_by_signal"}]},
-      {type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field"}
+      { type: "aggregate", groupby: [{ signal: "facet_by_signal" }] },
+      { type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field" }
     ]
   }
-]);
+];
 
 // Helper function to create data transformations
-const createDataTransforms = () => ([
+const createDataTransforms = () => [
   // Get nested data at top level
   {
     type: "formula",
@@ -67,38 +67,42 @@ const createDataTransforms = () => ([
     expr: 'datum["unique_seqs_count"] !== null && !isNaN(datum["unique_seqs_count"]) && datum["mean_mut_freq"] !== null && !isNaN(datum["mean_mut_freq"])'
   },
   // Add the facet by field work around
-  {type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field"}
-]);
+  { type: "formula", expr: "datum[facet_by_signal]", as: "facet_by_field" }
+];
 
 // Helper function to create layout signals
-const createLayoutSignals = () => ([
+const createLayoutSignals = () => [
   { name: "PADDING_FRACTION", value: 0.05 },
   { name: "PADDING_BUFFER_WIDTH", value: 150 },
   { name: "PADDING_BUFFER_HEIGHT", value: 125 },
   {
     name: "width",
     update: "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH",
-    on: [{
-      events: { source: "window", type: "resize" },
-      update: "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
-    }]
+    on: [
+      {
+        events: { source: "window", type: "resize" },
+        update: "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH"
+      }
+    ]
   },
   {
     name: "height",
     update: "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
-    on: [{
-      events: { source: "window", type: "resize" },
-      update: "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
-    }]
+    on: [
+      {
+        events: { source: "window", type: "resize" },
+        update: "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
+      }
+    ]
   },
   { name: "layout_padding", value: 10 },
   { name: "len_col_domain", update: "clamp(length(data('column_domain')), 1, 100)" },
   { name: "child_width", update: "width/len_col_domain-layout_padding" },
   { name: "child_height", update: "height" }
-]);
+];
 
 // Helper function to create selection signals
-const createSelectionSignals = () => ([
+const createSelectionSignals = () => [
   {
     name: "pts",
     update: 'data("pts_store").length && {_vgsid_: data("pts_store")[0]}'
@@ -106,25 +110,31 @@ const createSelectionSignals = () => ([
   {
     name: "pts_tuple",
     value: {},
-    on: [{
-      events: [{source: "scope", type: "click"}],
-      update: "datum && item().mark.marktype == 'symbol' ? datum : null"
-    }]
+    on: [
+      {
+        events: [{ source: "scope", type: "click" }],
+        update: "datum && item().mark.marktype == 'symbol' ? datum : null"
+      }
+    ]
   },
   {
     name: "pts_modify",
-    on: [{
-      events: {signal: "pts_tuple"},
-      update: 'modify("pts_store", pts_tuple, true)'
-    }]
+    on: [
+      {
+        events: { signal: "pts_tuple" },
+        update: 'modify("pts_store", pts_tuple, true)'
+      }
+    ]
   },
   {
     name: "clicked",
     value: null,
-    on: [{
-      events: {signal: "pts_tuple"},
-      update: "pts_tuple"
-    }]
+    on: [
+      {
+        events: { signal: "pts_tuple" },
+        update: "pts_tuple"
+      }
+    ]
   },
   { name: "brush_store_signal", update: 'data("brush_store")' },
   { name: "brush_selection", value: null },
@@ -132,22 +142,26 @@ const createSelectionSignals = () => ([
   { name: "cell", value: null },
   {
     name: "mouseDown",
-    on: [{
-      events: { source: "scope", type: "mousedown", consume: true },
-      update: "[x(cell), y(cell)]"
-    }]
+    on: [
+      {
+        events: { source: "scope", type: "mousedown", consume: true },
+        update: "[x(cell), y(cell)]"
+      }
+    ]
   },
   {
     name: "mouseUp",
-    on: [{
-      events: { source: "window", type: "mouseup" },
-      update: "[x(cell), y(cell)]"
-    }]
+    on: [
+      {
+        events: { source: "window", type: "mouseup" },
+        update: "[x(cell), y(cell)]"
+      }
+    ]
   }
-]);
+];
 
 // Helper function to create control signals (dropdowns)
-const createControlSignals = () => ([
+const createControlSignals = () => [
   {
     name: "facet_by_signal",
     value: "<none>",
@@ -206,14 +220,22 @@ const createControlSignals = () => ([
     name: "symbolSize",
     value: 1,
     bind: {
-      name: "Symbol size ", input: "range", min: 0.1, max: 3, step: 0.1
+      name: "Symbol size ",
+      input: "range",
+      min: 0.1,
+      max: 3,
+      step: 0.1
     }
   },
   {
     name: "symbolOpacity",
     value: 0.4,
     bind: {
-      name: "Symbol opacity ", input: "range", min: 0.1, max: 1, step: 0.05
+      name: "Symbol opacity ",
+      input: "range",
+      min: 0.1,
+      max: 1,
+      step: 0.05
     }
   },
   {
@@ -235,30 +257,26 @@ const createControlSignals = () => ([
     name: "locus_value",
     update: "data('locus').length ? data('locus')[0].locus : null"
   }
-]);
+];
 
 // Helper function to create all signals
-const createSignals = () => ([
-  ...createLayoutSignals(),
-  ...createSelectionSignals(),
-  ...createControlSignals()
-]);
+const createSignals = () => [...createLayoutSignals(), ...createSelectionSignals(), ...createControlSignals()];
 
 // Helper function to create scales configuration
-const createScales = () => ([
+const createScales = () => [
   {
     name: "x",
     type: "linear",
-    domain: {data: "data_0", field: {signal: "xField"}},
-    range: [0, {signal: "child_width"}],
+    domain: { data: "data_0", field: { signal: "xField" } },
+    range: [0, { signal: "child_width" }],
     nice: true,
     zero: false
   },
   {
     name: "y",
     type: "linear",
-    domain: {data: "data_0", field: {signal: "yField"}},
-    range: [{signal: "child_height"}, 0],
+    domain: { data: "data_0", field: { signal: "yField" } },
+    range: [{ signal: "child_height" }, 0],
     nice: true,
     zero: false
   },
@@ -267,17 +285,17 @@ const createScales = () => ([
     type: "ordinal",
     domain: {
       data: "data_0",
-      field: {signal: "colorBy"},
+      field: { signal: "colorBy" },
       sort: true
     },
-    range: {scheme: "category10"}
+    range: { scheme: "category10" }
   },
   {
     name: "shape",
     type: "ordinal",
     domain: {
       data: "data_0",
-      field: {signal: "shapeBy"},
+      field: { signal: "shapeBy" },
       sort: true
     },
     range: "symbol"
@@ -292,13 +310,13 @@ const createScales = () => ([
     nice: true,
     zero: true
   }
-]);
+];
 
 // Helper function to create legends configuration
-const createLegends = () => ([
+const createLegends = () => [
   {
     stroke: "color",
-    title: {signal: "colorBy"},
+    title: { signal: "colorBy" },
     encode: {
       symbols: {
         update: {
@@ -310,7 +328,7 @@ const createLegends = () => ([
   },
   {
     shape: "shape",
-    title: {signal: "shapeBy"},
+    title: { signal: "shapeBy" },
     encode: {
       symbols: {
         update: {
@@ -320,25 +338,25 @@ const createLegends = () => ([
       }
     }
   }
-]);
+];
 
 // Helper function to create layout configuration
 const createLayout = () => ({
-  padding: {row: {signal: "layout_padding"}, column: {signal: "layout_padding"}},
-  offset: {columnTitle: 10},
-  columns: {signal: "len_col_domain"},
+  padding: { row: { signal: "layout_padding" }, column: { signal: "layout_padding" } },
+  offset: { columnTitle: 10 },
+  columns: { signal: "len_col_domain" },
   bounds: "full",
   align: "all"
 });
 
 // Helper function to create header marks
-const createHeaderMarks = () => ([
+const createHeaderMarks = () => [
   {
     name: "column-title",
     type: "group",
     role: "column-title",
     title: {
-      text: {signal: "facet_by_signal == '<none>' ? '' : facet_by_signal"},
+      text: { signal: "facet_by_signal == '<none>' ? '' : facet_by_signal" },
       offset: 10,
       style: "guide-title"
     }
@@ -347,60 +365,66 @@ const createHeaderMarks = () => ([
     name: "row_header",
     type: "group",
     role: "row-header",
-    encode: {update: {height: {signal: "child_height"}}},
-    axes: [{
-      scale: "y",
-      orient: "left",
-      grid: false,
-      title: {signal: "yField"},
-      labelOverlap: true,
-      tickCount: {signal: "ceil(child_height/40)"},
-      zindex: 1
-    }]
+    encode: { update: { height: { signal: "child_height" } } },
+    axes: [
+      {
+        scale: "y",
+        orient: "left",
+        grid: false,
+        title: { signal: "yField" },
+        labelOverlap: true,
+        tickCount: { signal: "ceil(child_height/40)" },
+        zindex: 1
+      }
+    ]
   },
   {
     name: "column_header",
     type: "group",
     role: "column-header",
-    from: {data: "column_domain"},
-    sort: {field: "datum[\"facet_by_field\"]", order: "ascending"},
+    from: { data: "column_domain" },
+    sort: { field: 'datum["facet_by_field"]', order: "ascending" },
     title: {
-      text: {signal: "'' + (toString(parent[\"facet_by_field\"]) ? parent[\"facet_by_field\"] : '')"},
+      text: { signal: "'' + (toString(parent[\"facet_by_field\"]) ? parent[\"facet_by_field\"] : '')" },
       offset: 10,
       style: "guide-label",
       baseline: "middle"
     },
-    encode: {update: {width: {signal: "child_width"}}}
+    encode: { update: { width: { signal: "child_width" } } }
   },
   {
     name: "column_footer",
     type: "group",
     role: "column-footer",
-    from: {data: "column_domain"},
-    sort: {field: "datum[\"facet_by_field\"]", order: "ascending"},
-    encode: {update: {width: {signal: "child_width"}}},
-    axes: [{
-      scale: "x",
-      orient: "bottom",
-      grid: false,
-      title: {signal: "xField"},
-      labelFlush: true,
-      labelOverlap: true,
-      tickCount: {signal: "ceil(child_width/40)"},
-      zindex: 1
-    }]
+    from: { data: "column_domain" },
+    sort: { field: 'datum["facet_by_field"]', order: "ascending" },
+    encode: { update: { width: { signal: "child_width" } } },
+    axes: [
+      {
+        scale: "x",
+        orient: "bottom",
+        grid: false,
+        title: { signal: "xField" },
+        labelFlush: true,
+        labelOverlap: true,
+        tickCount: { signal: "ceil(child_width/40)" },
+        zindex: 1
+      }
+    ]
   }
-]);
+];
 
 // Helper function to create cell-level signals for brushing
-const createCellSignals = () => ([
+const createCellSignals = () => [
   {
     name: "facet",
     value: {},
-    on: [{
-      events: [{source: "scope", type: "mousemove"}],
-      update: "isTuple(facet) ? facet : group(\"cell\").datum"
-    }]
+    on: [
+      {
+        events: [{ source: "scope", type: "mousemove" }],
+        update: 'isTuple(facet) ? facet : group("cell").datum'
+      }
+    ]
   },
   {
     name: "local_facet_value",
@@ -408,15 +432,18 @@ const createCellSignals = () => ([
   },
   {
     name: "brush_test",
-    update: "data(\"brush_store\").length && (local_facet_value !== \"<none>\" ? (data(\"brush_store\")[0].facetValue === facet.facet_by_field) : true)"
+    update:
+      'data("brush_store").length && (local_facet_value !== "<none>" ? (data("brush_store")[0].facetValue === facet.facet_by_field) : true)'
   },
   {
     name: "brushed_facet_value",
     push: "outer",
-    on: [{
-      events: "@cell:mousedown",
-      update: "[facet_by_signal, facet.facet_by_field]"
-    }]
+    on: [
+      {
+        events: "@cell:mousedown",
+        update: "[facet_by_signal, facet.facet_by_field]"
+      }
+    ]
   },
   {
     name: "cell",
@@ -427,10 +454,10 @@ const createCellSignals = () => ([
     ]
   },
   ...createBrushSignals()
-]);
+];
 
 // Helper function to create brush-specific signals
-const createBrushSignals = () => ([
+const createBrushSignals = () => [
   {
     name: "brush_x",
     value: [],
@@ -439,10 +466,7 @@ const createBrushSignals = () => ([
         events: {
           source: "scope",
           type: "mousedown",
-          filter: [
-            "!event.item || event.item.mark.name !== \"brush_brush\"",
-            "inScope(event.item)"
-          ]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
         },
         update: "[x(cell), x(cell)]"
       },
@@ -454,7 +478,7 @@ const createBrushSignals = () => ([
             {
               source: "scope",
               type: "mousedown",
-              filter: ["!event.item || event.item.mark.name !== \"brush_brush\"", "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
             },
             { source: "window", type: "mouseup" }
           ]
@@ -463,7 +487,8 @@ const createBrushSignals = () => ([
       },
       {
         events: { signal: "brush_translate_delta" },
-        update: "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
+        update:
+          "clampRange(panLinear(brush_translate_anchor.extent_x, brush_translate_delta.x / span(brush_translate_anchor.extent_x)), 0, child_width)"
       }
     ]
   },
@@ -475,10 +500,7 @@ const createBrushSignals = () => ([
         events: {
           source: "scope",
           type: "mousedown",
-          filter: [
-            "!event.item || event.item.mark.name !== \"brush_brush\"",
-            "inScope(event.item)"
-          ]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
         },
         update: "[y(cell), y(cell)]"
       },
@@ -490,7 +512,7 @@ const createBrushSignals = () => ([
             {
               source: "scope",
               type: "mousedown",
-              filter: ["!event.item || event.item.mark.name !== \"brush_brush\"", "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
             },
             { source: "window", type: "mouseup" }
           ]
@@ -499,68 +521,82 @@ const createBrushSignals = () => ([
       },
       {
         events: { signal: "brush_translate_delta" },
-        update: "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
+        update:
+          "clampRange(panLinear(brush_translate_anchor.extent_y, brush_translate_delta.y / span(brush_translate_anchor.extent_y)), 0, child_height)"
       }
     ]
   },
   ...createBrushTranslateSignals()
-]);
+];
 
 // Helper function for brush translate signals
-const createBrushTranslateSignals = () => ([
+const createBrushTranslateSignals = () => [
   {
     name: "brush_translate_anchor",
     value: {},
-    on: [{
-      events: [{ source: "scope", type: "mousedown", markname: "brush_brush" }],
-      update: "{x: x(cell), y: y(cell), extent_x: slice(brush_x), extent_y: slice(brush_y)}"
-    }]
+    on: [
+      {
+        events: [{ source: "scope", type: "mousedown", markname: "brush_brush" }],
+        update: "{x: x(cell), y: y(cell), extent_x: slice(brush_x), extent_y: slice(brush_y)}"
+      }
+    ]
   },
   {
     name: "brush_translate_delta",
     value: {},
-    on: [{
-      events: [{
-        source: "window",
-        type: "mousemove",
-        between: [
-          { source: "scope", type: "mousedown", markname: "brush_brush" },
-          { source: "window", type: "mouseup" }
-        ]
-      }],
-      update: "{x: brush_translate_anchor.x - x(cell), y: brush_translate_anchor.y - y(cell)}"
-    }]
+    on: [
+      {
+        events: [
+          {
+            source: "window",
+            type: "mousemove",
+            between: [
+              { source: "scope", type: "mousedown", markname: "brush_brush" },
+              { source: "window", type: "mouseup" }
+            ]
+          }
+        ],
+        update: "{x: brush_translate_anchor.x - x(cell), y: brush_translate_anchor.y - y(cell)}"
+      }
+    ]
   },
   {
     name: "brush_x_field",
     push: "outer",
-    on: [{
-      events: { signal: "brush_x" },
-      update: "brush_x[0] === brush_x[1] ? null : invert('x', brush_x)",
-      force: true
-    }]
+    on: [
+      {
+        events: { signal: "brush_x" },
+        update: "brush_x[0] === brush_x[1] ? null : invert('x', brush_x)",
+        force: true
+      }
+    ]
   },
   {
     name: "brush_y_field",
     push: "outer",
-    on: [{
-      events: { signal: "brush_y" },
-      update: "brush_y[0] === brush_y[1] ? null : invert('y', brush_y)",
-      force: true
-    }]
+    on: [
+      {
+        events: { signal: "brush_y" },
+        update: "brush_y[0] === brush_y[1] ? null : invert('y', brush_y)",
+        force: true
+      }
+    ]
   },
   {
     name: "brush_selection",
     push: "outer",
-    on: [{
-      events: "@cell:mouseup",
-      update: "span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : []"
-    }]
+    on: [
+      {
+        events: "@cell:mouseup",
+        update:
+          "span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : []"
+      }
+    ]
   }
-]);
+];
 
 // Helper function to create brush marks
-const createBrushMarks = () => ([
+const createBrushMarks = () => [
   {
     name: "brush_brush_bg",
     type: "rect",
@@ -598,64 +634,59 @@ const createBrushMarks = () => ([
         y: [{ test: "brush_test", signal: "brush_y[0]" }, { value: 0 }],
         x2: [{ test: "brush_test", signal: "brush_x[1]" }, { value: 0 }],
         y2: [{ test: "brush_test", signal: "brush_y[1]" }, { value: 0 }],
-        stroke: [
-          { test: "brush_x[0] !== brush_x[1] && brush_y[0] !== brush_y[1]", value: "white" },
-          { value: null }
-        ]
+        stroke: [{ test: "brush_x[0] !== brush_x[1] && brush_y[0] !== brush_y[1]", value: "white" }, { value: null }]
       }
     }
   }
-]);
+];
 
 // Helper function to create symbol encoding
 const createSymbolEncoding = () => ({
-  x: {scale: "x", field: {signal: "xField"}},
-  y: {scale: "y", field: {signal: "yField"}},
-  opacity: [
-    {test: "indata('selected', 'ident', datum.ident)", value: 1},
-    {signal: "symbolOpacity"}
-  ],
+  x: { scale: "x", field: { signal: "xField" } },
+  y: { scale: "y", field: { signal: "yField" } },
+  opacity: [{ test: "indata('selected', 'ident', datum.ident)", value: 1 }, { signal: "symbolOpacity" }],
   tooltip: {
-    signal: "{"
-      + "'Clone ID': datum.clone_id, "
-      + "'Dataset': datum.dataset_name || '', "
-      + "'Subject': datum.subject_id, "
-      + "'Locus': datum.sample ? datum.sample.locus : '', "
-      + "'Unique Sequences': datum.unique_seqs_count, "
-      + "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), "
-      + "'Junction Length': datum.junction_length, "
-      + "'V Gene': datum.v_call, "
-      + "'J Gene': datum.j_call, "
-      + "'Has Seed': datum.has_seed ? 'Yes' : 'No'"
-    + "}"
+    signal:
+      "{" +
+      "'Clone ID': datum.clone_id, " +
+      "'Dataset': datum.dataset_name || '', " +
+      "'Subject': datum.subject_id, " +
+      "'Locus': datum.sample ? datum.sample.locus : '', " +
+      "'Unique Sequences': datum.unique_seqs_count, " +
+      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
+      "'Junction Length': datum.junction_length, " +
+      "'V Gene': datum.v_call, " +
+      "'J Gene': datum.j_call, " +
+      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
+      "}"
   },
   fill: [
     { test: "!filledShapes", value: "transparent" },
     { test: "colorBy === '<none>'", value: "#4682b4" },
-    { scale: "color", field: {signal: "colorBy"} }
+    { scale: "color", field: { signal: "colorBy" } }
   ],
   stroke: [
     { test: "!filledShapes && colorBy === '<none>'", value: "#4682b4" },
-    { test: "!filledShapes", scale: "color", field: {signal: "colorBy"} },
+    { test: "!filledShapes", scale: "color", field: { signal: "colorBy" } },
     { value: null }
   ],
   shape: [
     { test: "shapeBy === '<none>'", value: "circle" },
-    { scale: "shape", field: {signal: "shapeBy"} }
+    { scale: "shape", field: { signal: "shapeBy" } }
   ],
   size: [
     { test: "sizeBy === '<none>'", signal: "60 * symbolSize * symbolSize" },
-    { scale: "size", field: {signal: "sizeBy"} }
+    { scale: "size", field: { signal: "sizeBy" } }
   ]
 });
 
 // Helper function to create axes for the cell
-const createCellAxes = () => ([
+const createCellAxes = () => [
   {
     scale: "x",
     orient: "bottom",
     grid: true,
-    tickCount: {signal: "ceil(child_width/40)"},
+    tickCount: { signal: "ceil(child_width/40)" },
     domain: false,
     labels: false,
     maxExtent: 0,
@@ -668,7 +699,7 @@ const createCellAxes = () => ([
     orient: "left",
     gridScale: "x",
     grid: true,
-    tickCount: {signal: "ceil(child_height/40)"},
+    tickCount: { signal: "ceil(child_height/40)" },
     domain: false,
     labels: false,
     maxExtent: 0,
@@ -676,7 +707,7 @@ const createCellAxes = () => ([
     ticks: false,
     zindex: 0
   }
-]);
+];
 
 // Helper function to create the complete cell mark
 const createCellMark = () => ({
@@ -684,13 +715,13 @@ const createCellMark = () => ({
   type: "group",
   style: "cell",
   from: {
-    facet: {name: "facet", data: "data_0", groupby: "facet_by_field"}
+    facet: { name: "facet", data: "data_0", groupby: "facet_by_field" }
   },
-  sort: {field: "datum.facet_by_field", order: "ascending"},
+  sort: { field: "datum.facet_by_field", order: "ascending" },
   encode: {
     update: {
-      width: {signal: "child_width"},
-      height: {signal: "child_height"}
+      width: { signal: "child_width" },
+      height: { signal: "child_height" }
     }
   },
   signals: createCellSignals(),
@@ -699,16 +730,13 @@ const createCellMark = () => ({
 });
 
 // Helper function to create all marks
-const createMarks = () => ([
-  ...createHeaderMarks(),
-  createCellMark()
-]);
+const createMarks = () => [...createHeaderMarks(), createCellMark()];
 
 // Main function that composes the complete spec
 const facetClonalFamiliesVizSpec = () => {
   return {
     $schema: "https://vega.github.io/schema/vega/v5.json",
-    autosize: {type: "pad", resize: true},
+    autosize: { type: "pad", resize: true },
     data: createDataConfiguration(),
     signals: createSignals(),
     layout: createLayout(),

@@ -1,5 +1,5 @@
 import React from "react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import _throttle from "lodash/throttle";
 import { BROWSER_DIMENSIONS, CHANGE_PANEL_LAYOUT } from "../../actions/types";
@@ -18,7 +18,7 @@ class Monitor extends React.Component {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired
-  }
+  };
 
   componentWillMount() {
     const script = document.createElement("script");
@@ -32,7 +32,8 @@ class Monitor extends React.Component {
     getClientDatasets(this.props.dispatch);
     this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
-    window.addEventListener( // future resizes
+    window.addEventListener(
+      // future resizes
       "resize",
       /* lodash throttle invokes resize event at most twice per second
       to let redraws catch up. Could also use debounce for 'wait until resize stops' */
@@ -45,7 +46,7 @@ class Monitor extends React.Component {
     /* Note that just calling history.pushState() or history.replaceState() won't trigger a popstate event.
     The popstate event will be triggered by doing a browser action such as a click on the back or forward button
     (or calling history.back() or history.forward() in JavaScript). */
-    window.addEventListener('popstate', this.onURLChanged);
+    window.addEventListener("popstate", this.onURLChanged);
     // this.onURLChanged();
   }
 
@@ -67,9 +68,11 @@ class Monitor extends React.Component {
       const newBrowserDimensions = {
         width: window.innerWidth,
         height: window.innerHeight,
-        docHeight: window.document.body.clientHeight /* background needs docHeight because sidebar creates absolutely positioned container and blocks height 100% */
+        docHeight:
+          window.document.body
+            .clientHeight /* background needs docHeight because sidebar creates absolutely positioned container and blocks height 100% */
       };
-      dispatch({type: BROWSER_DIMENSIONS, data: newBrowserDimensions});
+      dispatch({ type: BROWSER_DIMENSIONS, data: newBrowserDimensions });
     });
   }
 

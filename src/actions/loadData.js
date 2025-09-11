@@ -1,17 +1,15 @@
 import queryString from "query-string";
 import * as types from "./types";
 import { charonAPIAddress } from "../util/globals";
-import {
-  getDatapath, goTo404, chooseDisplayComponentFromPathname, browserBackForward
-} from "./navigation";
+import { getDatapath, goTo404, chooseDisplayComponentFromPathname, browserBackForward } from "./navigation";
 import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
 import { timerStart, timerEnd } from "../util/perf";
 
 const charonErrorHandler = () => {
   console.warn("Failed to get manifest JSON from server");
-  const datapath = window.location.pathname.replace(/^\//, '').replace(/\/$/, '').replace('/', '_');
-  dispatch({type: types.PROCEED_SANS_MANIFEST, datapath});
+  const datapath = window.location.pathname.replace(/^\//, "").replace(/\/$/, "").replace("/", "_");
+  dispatch({ type: types.PROCEED_SANS_MANIFEST, datapath });
 };
 
 export const getTree = (dispatch, tree_id) => {
@@ -21,8 +19,11 @@ export const getTree = (dispatch, tree_id) => {
       tree = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch (err) {
-      alert("Failed parsing json for " + tree_id
-      + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file");
+      alert(
+        "Failed parsing json for " +
+          tree_id +
+          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
+      );
       console.log(data.substring(0, 100));
     }
 
@@ -47,7 +48,6 @@ export const getTree = (dispatch, tree_id) => {
 
   request.send(null);
   // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
-
 };
 
 export const getClonalFamilies = (dispatch, dataset_id) => {
@@ -57,8 +57,11 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
       clonalFamilies = JSON.parse(data);
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch (err) {
-      alert("Failed parsing json for " + dataset_id
-      + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file");
+      alert(
+        "Failed parsing json for " +
+          dataset_id +
+          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
+      );
       console.log(data.substring(0, 100));
     }
     dispatch({
@@ -89,7 +92,6 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
 
   request.send(null);
   // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
-
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {
@@ -98,13 +100,16 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     let availableDatasets = JSON.parse(data);
     const selectedDatasets = [].concat(query.selectedDatasets);
 
-    availableDatasets = availableDatasets.map((dataset) => Object.assign({...dataset, selected: selectedDatasets.includes(dataset.dataset_id)}));
+    availableDatasets = availableDatasets.map((dataset) =>
+      Object.assign({ ...dataset, selected: selectedDatasets.includes(dataset.dataset_id) })
+    );
 
-    const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app"
-    // getDatapath(window.location.pathname, availableDatasets) :
+    const datapath =
+      chooseDisplayComponentFromPathname(window.location.pathname) === "app"
+        ? // getDatapath(window.location.pathname, availableDatasets) :
 
-      ? window.location.pathname + window.location.search
-      :undefined;
+          window.location.pathname + window.location.search
+        : undefined;
     dispatch({
       type: types.DATASETS_RECEIVED,
       s3bucket,
@@ -114,7 +119,6 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     });
 
     dispatch(browserBackForward());
-
   };
 
   const query = queryString.parse(window.location.search);
@@ -153,7 +157,8 @@ const getSegmentName = (datapath, availableDatasets) => {
 };
 
 const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
-  const apiPath = (jsonType) => `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
+  const apiPath = (jsonType) =>
+    `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
 
   const promisesOrder = ["meta", "tree", "frequencies"];
   const treeName = getSegmentName(datasets.datapath, datasets.availableDatasets);
@@ -163,14 +168,14 @@ const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
     fetch(apiPath("tip-frequencies")).then((res) => res.json())
   ];
   /* add promises according to the URL */
-  if (query.tt) { /* SECOND TREE */
+  if (query.tt) {
+    /* SECOND TREE */
     const secondPath = createDatapathForSecondSegment(query.tt, datasets.datapath, datasets.availableDatasets);
     if (secondPath) {
       promisesOrder.push("treeToo");
       promises.push(
-        fetch(`${charonAPIAddress}request=json&path=${secondPath}_tree.json&s3=${s3bucket}`)
-          .then((res) => res.json())
-          // don't need to catch - it'll be handled in the promises.map below
+        fetch(`${charonAPIAddress}request=json&path=${secondPath}_tree.json&s3=${s3bucket}`).then((res) => res.json())
+        // don't need to catch - it'll be handled in the promises.map below
       );
       // promises.push(fetch(secondPath).then((res) => res.json()));
     }
@@ -179,16 +184,18 @@ const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
     .then((values) => {
       // all promises have not resolved or rejected (value[x] = undefined upon rejection)
       // you must check for undefined here, they won't go to the following catch
-      const data = {JSONs: {}, query, treeName};
+      const data = { JSONs: {}, query, treeName };
       values.forEach((v, i) => {
         if (v) data.JSONs[promisesOrder[i]] = v; // if statement removes undefinds
       });
       // console.log(data);
       if (!(data.JSONs.meta && data.JSONs.tree)) {
         console.error("Tree & Meta JSONs could not be loaded.");
-        dispatch(goTo404(`
-          Auspice attempted to load JSONs for the dataset "${datasets.datapath.replace(/_/, '/')}", but they couldn't be found.
-        `));
+        dispatch(
+          goTo404(`
+          Auspice attempted to load JSONs for the dataset "${datasets.datapath.replace(/_/, "/")}", but they couldn't be found.
+        `)
+        );
         return;
       }
       dispatch({
@@ -206,7 +213,7 @@ export const loadJSONs = (s3override = undefined) => {
   return (dispatch, getState) => {
     const { datasets, tree } = getState();
     if (tree.loaded) {
-      dispatch({type: types.DATA_INVALID});
+      dispatch({ type: types.DATA_INVALID });
     }
     const query = queryString.parse(window.location.search);
     const s3bucket = s3override ? s3override : datasets.s3bucket;
@@ -216,7 +223,7 @@ export const loadJSONs = (s3override = undefined) => {
 
 export const changeS3Bucket = () => {
   return (dispatch, getState) => {
-    const {datasets} = getState();
+    const { datasets } = getState();
     const newBucket = datasets.s3bucket === "live" ? "staging" : "live";
     // 1. re-fetch the manifest
     getDatasets(dispatch, newBucket);

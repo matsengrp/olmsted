@@ -1,14 +1,14 @@
 import { connect } from "react-redux";
 import React from "react";
-import Vega from 'react-vega';
+import Vega from "react-vega";
 import * as _ from "lodash";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import {seqAlignSpec} from './vega/clonalFamilyDetails';
+import { seqAlignSpec } from "./vega/clonalFamilyDetails";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadFasta";
-import {getNaiveVizData} from "./naive";
-import {CollapseHelpTitle} from "../util/collapseHelpTitle";
+import { getNaiveVizData } from "./naive";
+import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 
 // Lineage focus viz
 // =================
@@ -32,7 +32,10 @@ class Lineage extends React.Component {
   render() {
     if (this.props.selectedFamily) {
       const naiveData = getNaiveVizData(this.props.selectedFamily);
-      const cdr3Bounds = [{x: Math.floor(naiveData.source[0].start/3)-0.5}, {x: Math.floor(naiveData.source[0].end/3)+0.5}];
+      const cdr3Bounds = [
+        { x: Math.floor(naiveData.source[0].start / 3) - 0.5 },
+        { x: Math.floor(naiveData.source[0].end / 3) + 0.5 }
+      ];
       return (
         <div>
           <CollapseHelpTitle
@@ -43,9 +46,17 @@ class Lineage extends React.Component {
           />
           <h3>Amino acid sequence:</h3>
           <p>{this.props.selectedSeq.sequence_alignment_aa}</p>
-          <Copy value={this.props.selectedSeq.sequence_alignment ? this.props.selectedSeq.sequence_alignment: "NO NUCLEOTIDE SEQUENCE"} buttonLabel="Copy nucleotide sequence to clipboard"/>
-          <DownloadFasta sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
-            filename={this.props.selectedSeq.sequence_id.concat('-lineage.fasta')}
+          <Copy
+            value={
+              this.props.selectedSeq.sequence_alignment
+                ? this.props.selectedSeq.sequence_alignment
+                : "NO NUCLEOTIDE SEQUENCE"
+            }
+            buttonLabel="Copy nucleotide sequence to clipboard"
+          />
+          <DownloadFasta
+            sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
+            filename={this.props.selectedSeq.sequence_id.concat("-lineage.fasta")}
             label="Download Fasta: Lineage Sequences"
           />
           <h3>Lineage</h3>
@@ -62,8 +73,7 @@ class Lineage extends React.Component {
       );
     }
     return <div>No acestral sequences to show</div>;
-
   }
 }
 
-export {Lineage};
+export { Lineage };

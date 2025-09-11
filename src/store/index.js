@@ -8,17 +8,16 @@ export default function configureStore(initialState) {
   console.log("configure store!");
   const middleware = [
     thunk,
-    changeURLMiddleware, // eslint-disable-line comma-dangle
+    changeURLMiddleware // eslint-disable-line comma-dangle
     // loggingMiddleware
   ];
 
   const actionSanitizer = (action) => {
-    if (action.type === 'CLONAL_FAMILIES_RECEIVED' && action.clonalFamilies) {
-      return { ...action, clonalFamilies: 'LARGE PAYLOAD, total families:' + action.clonalFamilies.length };
+    if (action.type === "CLONAL_FAMILIES_RECEIVED" && action.clonalFamilies) {
+      return { ...action, clonalFamilies: "LARGE PAYLOAD, total families:" + action.clonalFamilies.length };
     }
 
     return action;
-
   };
   const stateSanitizer = (state) => {
     if (state.clonalFamilies.byDatasetId) {
@@ -26,13 +25,17 @@ export default function configureStore(initialState) {
       Object.entries(state.clonalFamilies.byDatasetId).forEach((pair) => {
         sumClonalFamiliesDict[pair[0]] = pair[1].length;
       });
-      return { ...state, clonalFamilies: {...state.clonalFamilies, byDatasetId: sumClonalFamiliesDict}};
+      return { ...state, clonalFamilies: { ...state.clonalFamilies, byDatasetId: sumClonalFamiliesDict } };
     }
     return state;
   };
   let composeEnhancers = compose;
   /* eslint-disable no-underscore-dangle */
-  if (process.env.NODE_ENV !== 'production' && typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    typeof window === "object" &&
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+  ) {
     composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
       // Adding these to redux dev tools to handle huge action payload of clonal families
       actionSanitizer: actionSanitizer,
@@ -40,16 +43,14 @@ export default function configureStore(initialState) {
     });
   }
 
-  const composedEnhancers = composeEnhancers(
-    applyMiddleware(...middleware)
-  );
+  const composedEnhancers = composeEnhancers(applyMiddleware(...middleware));
   /* eslint-enable */
   const store = createStore(rootReducer, initialState, composedEnhancers);
-  if (process.env.NODE_ENV !== 'production' && module.hot) {
+  if (process.env.NODE_ENV !== "production" && module.hot) {
     console.log("hot reducer reload");
 
-    module.hot.accept('../reducers', () => {
-      const nextRootReducer = require('../reducers/index');
+    module.hot.accept("../reducers", () => {
+      const nextRootReducer = require("../reducers/index");
       store.replaceReducer(nextRootReducer);
     });
   }

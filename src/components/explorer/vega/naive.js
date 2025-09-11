@@ -15,17 +15,16 @@ const naiveVegaSpec = {
     {
       name: "layer_0_marks",
       type: "rect",
-      style: [
-        "bar"
-      ],
+      style: ["bar"],
       from: {
         data: "source"
       },
       encode: {
         update: {
-          fill: {scale: "color", field: "region"},
+          fill: { scale: "color", field: "region" },
           tooltip: {
-            signal: "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+            signal:
+              '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
           },
           x: {
             scale: "x",
@@ -45,7 +44,7 @@ const naiveVegaSpec = {
               test: "datum[\"region\"] == 'CDR3'",
               value: 25
             },
-            {value: 12}
+            { value: 12 }
           ]
         }
       }
@@ -56,38 +55,24 @@ const naiveVegaSpec = {
       name: "x",
       type: "linear",
       domain: [0, 400],
-      range: [0, {signal: "width"}],
+      range: [0, { signal: "width" }],
       nice: true,
       zero: false
     },
     {
       name: "y",
       type: "band",
-      domain: {data: "source", field: "family"},
-      range: [0, {signal: "height"}],
+      domain: { data: "source", field: "family" },
+      range: [0, { signal: "height" }],
       paddingInner: 0.1,
       paddingOuter: 0.05
     },
     {
       name: "color",
       type: "ordinal",
-      domain: [
-        "V gene",
-        "5' Insertion",
-        "D gene",
-        "3' Insertion",
-        "J gene",
-        "CDR3"
-      ],
+      domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR3"],
       // COLORS
-      range: [
-        "#762a83",
-        "#af8dc3",
-        "black",
-        "#d9f0d3",
-        "#7fbf7b",
-        "#1b7837"
-      ]
+      range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837"]
     }
   ],
   config: {

@@ -37,7 +37,6 @@ const dbsingle = {};
 
 /* array format = [start time (or false), numIter, totalTime] */
 
-
 const startTwiceError = (name) => {
   console.error("Race condition bug! Perf. timer", name, "started when it was already running.");
 };
@@ -50,7 +49,8 @@ export const timerStart = (name) => {
     dbsingle[name] = [false, 0, 0];
   }
   if (dbsingle[name][0] !== false) {
-    startTwiceError(name); return;
+    startTwiceError(name);
+    return;
   }
   dbsingle[name][0] = performance.now();
 };
@@ -64,7 +64,7 @@ export const timerEnd = (name, action_type, number_of_actions) => {
     let msg = `Timer ${name} (#${dbsingle[name][1]}) took ${thisTook}ms. Average: ${parseInt(dbsingle[name][2] / dbsingle[name][1], 10)}ms.`;
     if (action_type && number_of_actions) {
       msg = `Timer ${name} (#${dbsingle[name][1]}) took ${thisTook}ms. Average: ${parseInt(dbsingle[name][2] / dbsingle[name][1], 10)}ms.
-             rate: ${number_of_actions/(thisTook/1000)} ${action_type}/second`;
+             rate: ${number_of_actions / (thisTook / 1000)} ${action_type}/second`;
     }
     if (thisTook > 20) {
       console.warn(msg);

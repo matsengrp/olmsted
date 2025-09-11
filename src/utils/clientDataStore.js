@@ -10,16 +10,13 @@
  * @module utils/clientDataStore
  */
 
-import olmstedDB from './olmstedDB';
-import {
-  ValidationError, DatabaseError, ErrorLogger, validateRequired, validateType
-} from './errors';
+import olmstedDB from "./olmstedDB";
+import { ValidationError, DatabaseError, ErrorLogger, validateRequired, validateType } from "./errors";
 
 /**
  * Manages client-side storage and retrieval of AIRR data with optimized caching
  */
 class ClientDataStore {
-
   /**
    * Creates a new ClientDataStore instance with memory caching
    * @constructor
@@ -61,28 +58,24 @@ class ClientDataStore {
   async storeProcessedData(processedData) {
     try {
       // Input validation using utility functions
-      validateRequired(processedData, 'processedData');
-      validateType(processedData, 'object', 'processedData');
-      validateRequired(processedData.datasets, 'processedData.datasets');
-      validateType(processedData.datasets, 'object', 'processedData.datasets');
-      validateRequired(processedData.datasetId, 'processedData.datasetId');
-      validateType(processedData.datasetId, 'string', 'processedData.datasetId');
+      validateRequired(processedData, "processedData");
+      validateType(processedData, "object", "processedData");
+      validateRequired(processedData.datasets, "processedData.datasets");
+      validateType(processedData.datasets, "object", "processedData.datasets");
+      validateRequired(processedData.datasetId, "processedData.datasetId");
+      validateType(processedData.datasetId, "string", "processedData.datasetId");
 
-      ErrorLogger.info('ClientDataStore: Storing data with lazy loading...');
+      ErrorLogger.info("ClientDataStore: Storing data with lazy loading...");
 
       const datasetId = await olmstedDB.storeDataset(processedData);
-      ErrorLogger.info('ClientDataStore: Successfully stored data in Dexie');
+      ErrorLogger.info("ClientDataStore: Successfully stored data in Dexie");
       return datasetId;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error; // Re-throw validation errors as-is
       }
 
-      const dbError = new DatabaseError(
-        'Failed to store processed data',
-        'storeDataset',
-        error
-      );
+      const dbError = new DatabaseError("Failed to store processed data", "storeDataset", error);
       ErrorLogger.log(dbError, { datasetId: processedData?.datasetId });
       throw dbError;
     }
@@ -103,7 +96,7 @@ class ClientDataStore {
       console.log(`ClientDataStore: Retrieved ${datasets.length} datasets`);
       return datasets;
     } catch (error) {
-      console.error('ClientDataStore: Failed to get datasets:', error);
+      console.error("ClientDataStore: Failed to get datasets:", error);
       return [];
     }
   }
@@ -122,8 +115,8 @@ class ClientDataStore {
   async getClones(datasetId) {
     try {
       // Input validation
-      validateRequired(datasetId, 'datasetId');
-      validateType(datasetId, 'string', 'datasetId');
+      validateRequired(datasetId, "datasetId");
+      validateType(datasetId, "string", "datasetId");
 
       ErrorLogger.info(`ClientDataStore: Getting clone metadata for ${datasetId}`);
 
@@ -138,25 +131,22 @@ class ClientDataStore {
       const cloneList = cloneMeta.map((clone) => ({
         ...clone,
         // Add tree references in expected format
-        trees: clone.tree_ids ? clone.tree_ids.map((tree_id) => ({
-          ident: tree_id,
-          tree_id: tree_id
-        })) : []
+        trees: clone.tree_ids
+          ? clone.tree_ids.map((tree_id) => ({
+              ident: tree_id,
+              tree_id: tree_id
+            }))
+          : []
       }));
 
       ErrorLogger.info(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);
       return cloneList;
-
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
       }
 
-      const dbError = new DatabaseError(
-        'Failed to get clone metadata',
-        'getCloneMetadata',
-        error
-      );
+      const dbError = new DatabaseError("Failed to get clone metadata", "getCloneMetadata", error);
       ErrorLogger.log(dbError, { datasetId });
       return []; // Return empty array for graceful degradation
     }
@@ -177,8 +167,8 @@ class ClientDataStore {
    */
   async getTree(treeIdent) {
     // Input validation
-    if (!treeIdent || typeof treeIdent !== 'string') {
-      throw new Error('ClientDataStore: treeIdent must be a non-empty string');
+    if (!treeIdent || typeof treeIdent !== "string") {
+      throw new Error("ClientDataStore: treeIdent must be a non-empty string");
     }
 
     console.log(`ClientDataStore: Loading full tree data for ${treeIdent}`);
@@ -198,13 +188,13 @@ class ClientDataStore {
         // Tree idents follow patterns like "tree_clone_0099_ident" → "clone_0099"
         let cloneId = treeIdent;
 
-        if (treeIdent.includes('tree_clone_')) {
+        if (treeIdent.includes("tree_clone_")) {
           // Pattern: "tree_clone_XXXX_ident" → "clone_XXXX"
           const match = treeIdent.match(/tree_(clone_\d+)/);
           if (match) {
             cloneId = match[1]; // Extract "clone_XXXX"
           }
-        } else if (treeIdent.startsWith('tree_') && treeIdent.includes('clone_')) {
+        } else if (treeIdent.startsWith("tree_") && treeIdent.includes("clone_")) {
           // Other variations, try to find clone_XXXX pattern
           const match = treeIdent.match(/(clone_\d+)/);
           if (match) {
@@ -225,9 +215,8 @@ class ClientDataStore {
 
       console.warn(`ClientDataStore: Tree not found: ${treeIdent}`);
       return null;
-
     } catch (error) {
-      console.error('ClientDataStore: Failed to get tree:', error);
+      console.error("ClientDataStore: Failed to get tree:", error);
       return null;
     }
   }
@@ -247,12 +236,12 @@ class ClientDataStore {
    */
   async getFullClone(cloneId, datasetId) {
     // Input validation
-    if (!cloneId || typeof cloneId !== 'string') {
-      throw new Error('ClientDataStore: cloneId must be a non-empty string');
+    if (!cloneId || typeof cloneId !== "string") {
+      throw new Error("ClientDataStore: cloneId must be a non-empty string");
     }
 
-    if (!datasetId || typeof datasetId !== 'string') {
-      throw new Error('ClientDataStore: datasetId must be a non-empty string');
+    if (!datasetId || typeof datasetId !== "string") {
+      throw new Error("ClientDataStore: datasetId must be a non-empty string");
     }
 
     console.log(`ClientDataStore: Loading full clone data for ${cloneId}`);
@@ -292,9 +281,8 @@ class ClientDataStore {
       this.addToCache(this.recentClones, cacheKey, fullClone);
       console.log(`ClientDataStore: Loaded and cached full clone ${cloneId}`);
       return fullClone;
-
     } catch (error) {
-      console.error('ClientDataStore: Failed to get full clone:', error);
+      console.error("ClientDataStore: Failed to get full clone:", error);
       return null;
     }
   }
@@ -329,8 +317,8 @@ class ClientDataStore {
    */
   async removeDataset(datasetId) {
     // Input validation
-    if (!datasetId || typeof datasetId !== 'string') {
-      throw new Error('ClientDataStore: datasetId must be a non-empty string');
+    if (!datasetId || typeof datasetId !== "string") {
+      throw new Error("ClientDataStore: datasetId must be a non-empty string");
     }
 
     try {
@@ -338,7 +326,7 @@ class ClientDataStore {
 
       // Clear memory cache for this dataset
       for (const [key, value] of this.recentClones.entries()) {
-        if (key.startsWith(datasetId + '_')) {
+        if (key.startsWith(datasetId + "_")) {
           this.recentClones.delete(key);
         }
       }
@@ -348,7 +336,7 @@ class ClientDataStore {
 
       console.log(`ClientDataStore: Removed dataset ${datasetId}`);
     } catch (error) {
-      console.error('ClientDataStore: Failed to remove dataset:', error);
+      console.error("ClientDataStore: Failed to remove dataset:", error);
     }
   }
 
@@ -365,9 +353,9 @@ class ClientDataStore {
       await olmstedDB.clearAll();
       this.recentClones.clear();
       this.recentTrees.clear();
-      console.log('ClientDataStore: Cleared all data');
+      console.log("ClientDataStore: Cleared all data");
     } catch (error) {
-      console.error('ClientDataStore: Failed to clear all data:', error);
+      console.error("ClientDataStore: Failed to clear all data:", error);
     }
   }
 
@@ -397,7 +385,7 @@ class ClientDataStore {
         }
       };
     } catch (error) {
-      console.error('ClientDataStore: Failed to get storage summary:', error);
+      console.error("ClientDataStore: Failed to get storage summary:", error);
       return { error: error.message };
     }
   }
@@ -416,7 +404,7 @@ class ClientDataStore {
 
       return clones.length;
     } catch (error) {
-      console.error('ClientDataStore: Failed to preload dataset:', error);
+      console.error("ClientDataStore: Failed to preload dataset:", error);
       return 0;
     }
   }
@@ -427,7 +415,7 @@ class ClientDataStore {
   clearMemoryCache() {
     this.recentClones.clear();
     this.recentTrees.clear();
-    console.log('ClientDataStore: Cleared memory cache');
+    console.log("ClientDataStore: Cleared memory cache");
   }
 }
 

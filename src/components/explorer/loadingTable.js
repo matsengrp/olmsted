@@ -12,11 +12,15 @@ import * as types from "../../actions/types";
 // Component for the citation column
 class CitationCell extends React.Component {
   render() {
-    const {paper} = this.props.datum;
+    const { paper } = this.props.datum;
     if (!paper) return <span>—</span>;
 
     if (paper.url) {
-      return <a href={paper.url} onClick={(e) => e.stopPropagation()}>{paper.authorstring}</a>;
+      return (
+        <a href={paper.url} onClick={(e) => e.stopPropagation()}>
+          {paper.authorstring}
+        </a>
+      );
     }
     return <span>{paper.authorstring}</span>;
   }
@@ -33,13 +37,7 @@ class SizeCell extends React.Component {
     }
 
     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return (
-      <span>
-        {sizeInMB}
-        {' '}
-        MB
-      </span>
-    );
+    return <span>{sizeInMB} MB</span>;
   }
 }
 
@@ -47,10 +45,8 @@ class SizeCell extends React.Component {
 class LoadStatusDisplay extends React.Component {
   render() {
     return (
-      <div style={{ width: '100%', textAlign: 'center' }}>
-        <LoadingStatus
-          loadingStatus={this.props.datum.loading}
-        />
+      <div style={{ width: "100%", textAlign: "center" }}>
+        <LoadingStatus loadingStatus={this.props.datum.loading} />
       </div>
     );
   }
@@ -63,14 +59,14 @@ class SelectionCell extends React.Component {
     const isSelected = selectedDatasets && selectedDatasets.includes(datum.dataset_id);
 
     return (
-      <div style={{ width: '100%', textAlign: 'center' }}>
+      <div style={{ width: "100%", textAlign: "center" }}>
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => {
             dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
         />
       </div>
     );
@@ -150,8 +146,9 @@ export default class LoadingTable extends React.Component {
 
     // Calculate changes pending
     const currentlyLoaded = new Set(allDatasets.filter((d) => d.loading === "DONE").map((d) => d.dataset_id));
-    const pendingChanges = selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length
-                          + Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
+    const pendingChanges =
+      selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length +
+      Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
     // Check if we need citation column
     const showCitation = _.some(allDatasets, (d) => d.paper !== undefined);
@@ -160,14 +157,17 @@ export default class LoadingTable extends React.Component {
     const mappings = [
       ["Select", SelectionCell, { sortable: false }],
       ["Status", LoadStatusDisplay, { sortable: false }],
-      ["Name", (d) => (d.name || d.dataset_id), { sortKey: "name" }],
+      ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
       ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
-      ["Source", (d) => ((d.isClientSide || d.temporary) ? "Local" : "Server"),
-        { style: { fontSize: "12px" }, sortKey: "isClientSide" }],
+      [
+        "Source",
+        (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
+        { style: { fontSize: "12px" }, sortKey: "isClientSide" }
+      ],
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
-      ["Build Time", (d) => (d.build ? d.build.time || '—' : '—'), { sortKey: "build.time" }]
+      ["Build Time", (d) => (d.build ? d.build.time || "—" : "—"), { sortKey: "build.time" }]
     ];
 
     if (showCitation) {
@@ -222,13 +222,11 @@ export default class LoadingTable extends React.Component {
               marginRight: "10px"
             }}
           >
-            Update Visualization
-            {' '}
-            {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+            Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
           </button>
 
           <button
-            onClick={() => window.location.href = "/"}
+            onClick={() => (window.location.href = "/")}
             style={{
               padding: "8px 16px",
               fontSize: "14px",
@@ -244,11 +242,7 @@ export default class LoadingTable extends React.Component {
           </button>
         </div>
 
-        <p style={{ marginTop: "10px" }}>
-          Loaded clonal families:
-          {' '}
-          {this.props.loadedClonalFamilies}
-        </p>
+        <p style={{ marginTop: "10px" }}>Loaded clonal families: {this.props.loadedClonalFamilies}</p>
       </div>
     );
   }

@@ -14,7 +14,10 @@ const parseParams = (path, datasets) => {
   // console.log("parseParams. path in:", path, datasets)
   let params; // split path at '/', if path === "", set params to []
   if (path.length) {
-    params = path.replace(/_/g, "/").split("/").filter((d) => d !== "");
+    params = path
+      .replace(/_/g, "/")
+      .split("/")
+      .filter((d) => d !== "");
   } else {
     params = [];
   }
@@ -57,7 +60,6 @@ const parseParams = (path, datasets) => {
       // mark as "incomplete" so the URL will change
       config.incomplete = true;
     }
-
   }
   // parse any remaining levels of globals.datasets
   // this stops when we encounter 'xx: {}' as Object.keys({}).length==0
@@ -91,8 +93,8 @@ const parseParams = (path, datasets) => {
 };
 
 export const createDatapathForSecondSegment = (newSegment, datapath, availableDatasets) => {
-  const parts = datapath.split('_');
-  let level = availableDatasets['pathogen'];
+  const parts = datapath.split("_");
+  let level = availableDatasets["pathogen"];
   let i = 0;
   let key;
   for (;;) {
@@ -110,7 +112,7 @@ export const createDatapathForSecondSegment = (newSegment, datapath, availableDa
   }
   parts[i] = newSegment;
   // console.log("NEW PARTS:", parts);
-  return parts.join('_');
+  return parts.join("_");
 };
 
 export default parseParams;

@@ -1,10 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
-import * as _ from 'lodash';
+import * as _ from "lodash";
 import * as explorerActions from "../../actions/explorer.js";
-import {getBrushedClonalFamilies} from "../../selectors/clonalFamilies";
-import {NaiveSequence} from './naive';
-
+import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
+import { NaiveSequence } from "./naive";
 
 // Resizable virtual scrolling table component
 class ResizableVirtualTable extends React.Component {
@@ -46,8 +45,8 @@ class ResizableVirtualTable extends React.Component {
   }
 
   componentDidMount() {
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener("mousemove", this.onMouseMove);
+    document.addEventListener("mouseup", this.onMouseUp);
     this.updateScrollbarWidth();
   }
 
@@ -65,8 +64,8 @@ class ResizableVirtualTable extends React.Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
   }
 
   onScroll(e) {
@@ -115,51 +114,55 @@ class ResizableVirtualTable extends React.Component {
       <div
         key={datum.ident}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '1px solid #eee',
+          display: "flex",
+          alignItems: "center",
+          borderBottom: "1px solid #eee",
           fontSize: 12,
-          height: '40px',
-          backgroundColor: isSelected ? 'lightblue' : 'white',
-          minWidth: 'fit-content'
+          height: "40px",
+          backgroundColor: isSelected ? "lightblue" : "white",
+          minWidth: "fit-content"
         }}
       >
         {_.map(this.props.mappings, ([name, AttrOrComponent], colIndex) => {
-          const isAttr = ((typeof AttrOrComponent) === "string");
-          const key = datum.ident + '.' + (isAttr ? AttrOrComponent : name);
+          const isAttr = typeof AttrOrComponent === "string";
+          const key = datum.ident + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
 
           const style = {
             padding: 8,
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
             width: columnWidths[colIndex],
             minWidth: columnWidths[colIndex],
             maxWidth: columnWidths[colIndex],
-            borderRight: '1px solid #eee'
+            borderRight: "1px solid #eee"
           };
 
           // Apply alternating column shading only if row is not selected
           if (!isSelected && isEvenColumn) {
-            style.backgroundColor = '#f8f9fa';
+            style.backgroundColor = "#f8f9fa";
           }
 
           return (
             <div key={key} style={style}>
-              {isAttr
-                ? (
-                  <div style={{
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
+              {isAttr ? (
+                <div
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    width: "100%"
                   }}
-                  >
-                    {_.get(datum, AttrOrComponent) || '—'}
-                  </div>
-                )
-                : <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily}/>}
+                >
+                  {_.get(datum, AttrOrComponent) || "—"}
+                </div>
+              ) : (
+                <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} />
+              )}
             </div>
           );
         })}
@@ -174,59 +177,57 @@ class ResizableVirtualTable extends React.Component {
 
     // Calculate which items are visible
     const startIndex = Math.floor(scrollTop / rowHeight);
-    const endIndex = Math.min(
-      startIndex + Math.ceil(containerHeight / rowHeight) + 1,
-      data.length
-    );
+    const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 1, data.length);
 
     // Only render visible items
     const visibleItems = data.slice(startIndex, endIndex);
 
     return (
-      <div style={{
-        width: '100%',
-        border: '1px solid #dee2e6',
-        overflow: 'hidden', // Prevent container from creating its own scrollbars
-        boxSizing: 'border-box'
-      }}
+      <div
+        style={{
+          width: "100%",
+          border: "1px solid #dee2e6",
+          overflow: "hidden", // Prevent container from creating its own scrollbars
+          boxSizing: "border-box"
+        }}
       >
         {/* Fixed Header */}
         <div
           ref={this.headerRef}
           style={{
-            overflowX: 'hidden',
-            overflowY: 'hidden',
-            borderBottom: '2px solid #dee2e6',
-            backgroundColor: '#f8f9fa',
-            paddingRight: scrollbarWidth + 'px'
+            overflowX: "hidden",
+            overflowY: "hidden",
+            borderBottom: "2px solid #dee2e6",
+            backgroundColor: "#f8f9fa",
+            paddingRight: scrollbarWidth + "px"
           }}
         >
           <div
             style={{
-              display: 'flex',
-              fontWeight: 'bold',
+              display: "flex",
+              fontWeight: "bold",
               fontSize: 13,
-              height: '40px',
-              minWidth: 'fit-content'
+              height: "40px",
+              minWidth: "fit-content"
             }}
           >
             {_.map(this.props.mappings, ([name, AttrOrComponent], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
-              const isAttr = ((typeof AttrOrComponent) === "string");
+              const isAttr = typeof AttrOrComponent === "string";
 
               const style = {
                 fontSize: 13,
                 padding: 8,
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
                 width: columnWidths[colIndex],
                 minWidth: columnWidths[colIndex],
                 maxWidth: columnWidths[colIndex],
-                borderRight: '1px solid #dee2e6',
-                position: 'relative',
-                cursor: isAttr ? 'pointer' : 'default'
+                borderRight: "1px solid #dee2e6",
+                position: "relative",
+                cursor: isAttr ? "pointer" : "default"
               };
 
               const { pagination } = this.props;
@@ -236,29 +237,31 @@ class ResizableVirtualTable extends React.Component {
                 <div
                   key={name}
                   style={style}
-                  onClick={() => {isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent));}}
-                >
-                  <span style={{
-                    flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                  onClick={() => {
+                    isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent));
                   }}
+                >
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
                   >
                     {name}
-                    {isAttr && isCurrentSort && (
-                      <span style={{ marginLeft: 4 }}>
-                        {pagination.desc ? '▼' : '▲'}
-                      </span>
-                    )}
+                    {isAttr && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
                   </span>
                   {/* Resize handle */}
                   <div
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       right: 0,
                       top: 0,
                       bottom: 0,
-                      width: '4px',
-                      cursor: 'col-resize',
-                      backgroundColor: 'transparent'
+                      width: "4px",
+                      cursor: "col-resize",
+                      backgroundColor: "transparent"
                     }}
                     onMouseDown={(e) => this.onMouseDown(e, colIndex)}
                   />
@@ -273,16 +276,16 @@ class ResizableVirtualTable extends React.Component {
           ref={this.bodyRef}
           style={{
             height: containerHeight,
-            overflowY: 'auto',
-            overflowX: 'auto',
-            boxSizing: 'border-box'
+            overflowY: "auto",
+            overflowX: "auto",
+            boxSizing: "border-box"
           }}
           onScroll={this.onScroll}
         >
           {/* Total height spacer */}
-          <div style={{ height: data.length * rowHeight, position: 'relative' }}>
+          <div style={{ height: data.length * rowHeight, position: "relative" }}>
             {/* Visible items positioned absolutely */}
-            <div style={{ position: 'absolute', top: startIndex * rowHeight, width: '100%' }}>
+            <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
               {visibleItems.map((item, index) => (
                 <div key={startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
@@ -292,26 +295,22 @@ class ResizableVirtualTable extends React.Component {
           </div>
         </div>
 
-        <div style={{
-          marginTop: 10,
-          fontSize: 12,
-          color: '#666',
-          padding: '0 8px',
-          boxSizing: 'border-box',
-          overflow: 'hidden'
-        }}
+        <div
+          style={{
+            marginTop: 10,
+            fontSize: 12,
+            color: "#666",
+            padding: "0 8px",
+            boxSizing: "border-box",
+            overflow: "hidden"
+          }}
         >
-          Showing
-          {' '}
-          {data.length}
-          {' '}
-          families
+          Showing {data.length} families
         </div>
       </div>
     );
   }
 }
-
 
 @connect()
 class Table extends React.Component {
@@ -329,7 +328,6 @@ class Table extends React.Component {
   }
 }
 
-
 @connect((state) => ({
   datasets: state.datasets.availableDatasets
 }))
@@ -337,32 +335,32 @@ class DatasetName extends React.Component {
   render() {
     const { datum, datasets } = this.props;
     const dataset = datasets.find((d) => d.dataset_id === datum.dataset_id);
-    const displayName = dataset ? (dataset.name || dataset.dataset_id) : (datum.dataset_id || '—');
+    const displayName = dataset ? dataset.name || dataset.dataset_id : datum.dataset_id || "—";
 
-    return (
-      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {displayName}
-      </div>
-    );
+    return <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</div>;
   }
 }
 
-
-@connect((store) => ({}),
+@connect(
+  (store) => ({}),
   (dispatch) => ({
     dispatchSelect: (family_ident) => {
       dispatch(explorerActions.selectFamily(family_ident));
     }
-  }))
+  })
+)
 class SelectAttribute extends React.Component {
   render() {
     return (
       <input
         type="checkbox"
-        style={{cursor: "pointer"}}
-        checked={this.props.selectedFamily? (
-          (this.props.datum.ident || this.props.datum.clone_id) == (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
-        ): false}
+        style={{ cursor: "pointer" }}
+        checked={
+          this.props.selectedFamily
+            ? (this.props.datum.ident || this.props.datum.clone_id) ==
+              (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
+            : false
+        }
         onChange={() => {
           this.props.dispatchSelect(this.props.datum.ident || this.props.datum.clone_id);
         }}
@@ -371,16 +369,11 @@ class SelectAttribute extends React.Component {
   }
 }
 
-
 const mapStateToProps = (state) => {
   const brushedClonalFamilies = getBrushedClonalFamilies(state);
   // Apply sorting to all families instead of just a page
-  const {pagination} = state.clonalFamilies;
-  const sortedFamilies = _.orderBy(
-    brushedClonalFamilies,
-    [pagination.order_by],
-    [pagination.desc ? "desc" : "asc"]
-  );
+  const { pagination } = state.clonalFamilies;
+  const sortedFamilies = _.orderBy(brushedClonalFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
 
   return {
     visibleClonalFamilies: sortedFamilies,
@@ -390,13 +383,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-
-@connect(mapStateToProps,
-  {
-    selectFamily: explorerActions.selectFamily
-  })
+@connect(mapStateToProps, {
+  selectFamily: explorerActions.selectFamily
+})
 class ClonalFamiliesTable extends React.Component {
-
   componentDidUpdate(prevProps) {
     // Checks:
     // 1. prevProps.selectingStatus: We were previously doing a brush selection
@@ -408,29 +398,29 @@ class ClonalFamiliesTable extends React.Component {
   }
 
   render() {
-    this.selectedFamily = _.find(this.props.visibleClonalFamilies, {ident: this.props.selectedFamily});
+    this.selectedFamily = _.find(this.props.visibleClonalFamilies, { ident: this.props.selectedFamily });
     return (
-      <Table data={this.props.visibleClonalFamilies}
-        mappings={
-          [
-            ["Select", SelectAttribute],
-            ["Naive sequence", NaiveSequence],
-            ["ID", "clone_id"],
-            // TODO decide on language for unique seqs vs rearrangement count
-            ["Unique seqs", "unique_seqs_count"],
-            ["V gene", "v_call"],
-            ["D gene", "d_call"],
-            ["J gene", "j_call"],
-            ["Seed run", "has_seed"],
-            ["Subject", "subject_id"],
-            ["Sample", "sample_id"],
-            ["Timepoint", "sample.timepoint_id"],
-            ["Mut freq", "mean_mut_freq"],
-            // ["Path", 'path'],
-            // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-            ["Dataset", DatasetName],
-            ["Ident", "ident"]
-          ]}
+      <Table
+        data={this.props.visibleClonalFamilies}
+        mappings={[
+          ["Select", SelectAttribute],
+          ["Naive sequence", NaiveSequence],
+          ["ID", "clone_id"],
+          // TODO decide on language for unique seqs vs rearrangement count
+          ["Unique seqs", "unique_seqs_count"],
+          ["V gene", "v_call"],
+          ["D gene", "d_call"],
+          ["J gene", "j_call"],
+          ["Seed run", "has_seed"],
+          ["Subject", "subject_id"],
+          ["Sample", "sample_id"],
+          ["Timepoint", "sample.timepoint_id"],
+          ["Mut freq", "mean_mut_freq"],
+          // ["Path", 'path'],
+          // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
+          ["Dataset", DatasetName],
+          ["Ident", "ident"]
+        ]}
         selectedFamily={this.selectedFamily}
         pagination={this.props.pagination}
       />

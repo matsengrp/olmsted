@@ -1,17 +1,17 @@
 import { connect } from "react-redux";
 import React from "react";
-import Vega from 'react-vega';
+import Vega from "react-vega";
 import * as _ from "lodash";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import {concatTreeWithAlignmentSpec} from './vega/clonalFamilyDetails';
-import {getNaiveVizData} from "./naive";
+import { concatTreeWithAlignmentSpec } from "./vega/clonalFamilyDetails";
+import { getNaiveVizData } from "./naive";
 import * as explorerActions from "../../actions/explorer.js";
 import DownloadFasta from "./downloadFasta";
 import DownloadText from "../util/downloadText";
-import {IncompleteDataWarning} from "../util/incomplete";
-import {CollapseHelpTitle} from "../util/collapseHelpTitle";
-import {SimpleInProgress} from "../util/loading";
+import { IncompleteDataWarning } from "../util/incomplete";
+import { CollapseHelpTitle } from "../util/collapseHelpTitle";
+import { SimpleInProgress } from "../util/loading";
 
 // Tree header component
 // =================================
@@ -26,61 +26,66 @@ class TreeHeader extends React.Component {
     return (
       <div>
         <CollapseHelpTitle
-          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample'} ${this.props.selectedFamily.clone_id}`}
-          helpText={(
+          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || "sample"} ${this.props.selectedFamily.clone_id}`}
+          helpText={
             <div>
-              For a selected clonal family, its phylogenetic tree is visualized below the table in the
-              Clonal family details section. Select among any alternate phylogenies using the
-              Ancestral reconstruction method menu. Note that these ancestral reconstruction methods are according
-              to those specified in the input data according to the phylogenetic inference tool used to produce them -
-              Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
-              <br/>
-              <br/>
-              Alongside the tree is an alignment of the sequences at the tree's tips. Colors indicate amino acid mutations at each
-              position that differs from the sequence at the root of the tree (typically the family's inferred naive
-              antibody sequence). Scroll while hovering over the tree to zoom in and out. Click and drag the zoomed
-              view to pan in a traditional map-style interface. The alignment view on the right zooms in the vertical
-              dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the
+              For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
+              details section. Select among any alternate phylogenies using the Ancestral reconstruction method menu.
+              Note that these ancestral reconstruction methods are according to those specified in the input data
+              according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral
+              reconstruction (or any phylogenetic inference at all).
+              <br />
+              <br />
+              Alongside the tree is an alignment of the sequences at the tree's tips. Colors indicate amino acid
+              mutations at each position that differs from the sequence at the root of the tree (typically the family's
+              inferred naive antibody sequence). Scroll while hovering over the tree to zoom in and out. Click and drag
+              the zoomed view to pan in a traditional map-style interface. The alignment view on the right zooms in the
+              vertical dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the
               multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence,
-              colored according to sampling timepoint. See
-              {' '}
+              colored according to sampling timepoint. See{" "}
+              <a href="http://www.olmstedviz.org/schema.html">the schema</a> for more detailed field descriptions.
+              <br />
+              <br />
+              Note that often in example data the number of sequences in a clonal family has been downsampled to build a
+              tree (see downsampled_count, downsampling_strategy in{" "}
               <a href="http://www.olmstedviz.org/schema.html">the schema</a>
-              {' '}
-              for
-              more detailed field descriptions.
-              <br/>
-              <br/>
-              Note that often in example data the number of sequences in a clonal family has been
-              downsampled to build a tree (see downsampled_count, downsampling_strategy in
-              {' '}
-              <a href="http://www.olmstedviz.org/schema.html">the schema</a>
-              ),
-              which explains why a clonal family might be listed in the table as having a few thousand unique sequences, but upon selecting
-              the clonal family, the corresponding tree visualization only contains 10s or 100s of sequences.
-              <br/>
-              <br/>
+              ), which explains why a clonal family might be listed in the table as having a few thousand unique
+              sequences, but upon selecting the clonal family, the corresponding tree visualization only contains 10s or
+              100s of sequences.
+              <br />
+              <br />
               Use the interface below the tree to configure:
-              <br/>
+              <br />
               <ul>
                 <li>Maximum width of the tree window with respect to the alignment window (Tree width ratio)</li>
                 <li>Field mapped to the size of pie charts at the tree' leaves (leaf_size_by)</li>
                 <li>Maximum size of pie charts at the tree' leaves (max_leaf_size)</li>
                 <li>Tree tip labels toggle on and off (show_labels)</li>
-                <li>Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme, min_color_value)</li>
+                <li>
+                  Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme,
+                  min_color_value)
+                </li>
               </ul>
-              In order to get more details about a particular lineage in the tree, click on a leaf's
-              label (or on the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
-              <br/>
-              <br/>
+              In order to get more details about a particular lineage in the tree, click on a leaf's label (or on the
+              dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
+              <br />
+              <br />
             </div>
-)}
+          }
         />
         <div>
           <label>Ancestral reconstruction method: </label>
-          <select value={this.props.tree.ident}
-            onChange={(event) => this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}
+          <select
+            value={this.props.tree.ident}
+            onChange={(event) =>
+              this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)
+            }
           >
-            {this.props.selectedFamily.trees.map((tree) => <option key={tree.ident} value={tree.ident}>{tree.tree_id}</option>)}
+            {this.props.selectedFamily.trees.map((tree) => (
+              <option key={tree.ident} value={tree.ident}>
+                {tree.tree_id}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -109,11 +114,13 @@ const mapStateToProps = (state) => {
       naiveData,
       tree: treesSelector.getTreeData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
-      cdr3Bounds: [{x: Math.floor(naiveData.source[0].start/3)-0.5}, {x: Math.floor(naiveData.source[0].end/3)+0.5}]
+      cdr3Bounds: [
+        { x: Math.floor(naiveData.source[0].start / 3) - 0.5 },
+        { x: Math.floor(naiveData.source[0].end / 3) + 0.5 }
+      ]
     };
   }
-  return {selectedFamily, selectedTree};
-
+  return { selectedFamily, selectedTree };
 };
 
 // now for the actual component definition
@@ -135,7 +142,7 @@ class TreeViz extends React.Component {
       source_0: [],
       source_1: [],
       naive_data: [],
-      cdr3_bounds: [{x: 0}, {x: 100}],
+      cdr3_bounds: [{ x: 0 }, { x: 100 }],
       leaves_count_incl_naive: 42,
       pts_tuple: [],
       seed: []
@@ -164,7 +171,7 @@ class TreeViz extends React.Component {
       // Here we create a separate dataset only containing the id of the
       // seed sequence so as to check quickly for this id within the
       // viz to color the seed blue
-      seed: this.props.selectedFamily.seed_id == null ? [] : [{id: this.props.selectedFamily.seed_id}]
+      seed: this.props.selectedFamily.seed_id == null ? [] : [{ id: this.props.selectedFamily.seed_id }]
     };
   }
 
@@ -184,26 +191,30 @@ class TreeViz extends React.Component {
     return (
       <div>
         {/* Tree still loading aka undefined */}
-        {!incompleteFamily && treeLoading
-            && (
-            <div>
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <SimpleInProgress />
-                Loading data for clonal family:
-                {' '}
-                {this.props.selectedFamily.clone_id}
-              </h2>
-            </div>
-            )
-          }
+        {!incompleteFamily && treeLoading && (
+          <div>
+            <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <SimpleInProgress />
+              Loading data for clonal family: {this.props.selectedFamily.clone_id}
+            </h2>
+          </div>
+        )}
         {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-        {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={this.props.selectedFamily}/>}
-        {incompleteTree && <IncompleteDataWarning data_type="tree" datum={this.props.selectedTree}/>}
+        {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={this.props.selectedFamily} />}
+        {incompleteTree && <IncompleteDataWarning data_type="tree" datum={this.props.selectedTree} />}
         {/* Show tree header if complete family, tree */}
-        {completeData && <TreeHeader selectedFamily={this.props.selectedFamily} selectedTree={this.props.selectedTree} selectedSeq={this.props.selectedSeq} tree={this.props.tree}/>}
+        {completeData && (
+          <TreeHeader
+            selectedFamily={this.props.selectedFamily}
+            selectedTree={this.props.selectedTree}
+            selectedSeq={this.props.selectedSeq}
+            tree={this.props.tree}
+          />
+        )}
         {/* Vega component always gets rendered, its data are faked if necessary;
               this allows us to not reset its UI controls between selecting trees */}
-        <Vega onParseError={(...args) => console.error("parse error:", args)}
+        <Vega
+          onParseError={(...args) => console.error("parse error:", args)}
           onSignalPts_tuple={(...args) => {
             const node = args.slice(1)[0];
             if (node.parent) {
@@ -212,19 +223,29 @@ class TreeViz extends React.Component {
             }
           }}
           debug
-            // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
           data={completeData ? this.treeDataFromProps() : this.tempVegaData}
           spec={this.spec}
         />
         {/* Show downloads if complete family, tree */}
         {completeData && (
           <div>
-            <DownloadFasta sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
-              filename={(this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample').concat('-', this.props.selectedFamily.clone_id, '.fasta')}
+            <DownloadFasta
+              sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
+              filename={(
+                this.props.selectedFamily.sample_id ||
+                this.props.selectedFamily.subject_id ||
+                "sample"
+              ).concat("-", this.props.selectedFamily.clone_id, ".fasta")}
               label="Download Fasta: Unique Sequences In This Tree"
             />
-            <DownloadText text={this.props.selectedTree.newick}
-              filename={(this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || 'sample').concat('-', this.props.selectedFamily.clone_id, '-newick', '.txt')}
+            <DownloadText
+              text={this.props.selectedTree.newick}
+              filename={(
+                this.props.selectedFamily.sample_id ||
+                this.props.selectedFamily.subject_id ||
+                "sample"
+              ).concat("-", this.props.selectedFamily.clone_id, "-newick", ".txt")}
               label="Download Clonal Family Tree Newick String"
             />
           </div>
@@ -234,4 +255,4 @@ class TreeViz extends React.Component {
   }
 }
 
-export {TreeViz};
+export { TreeViz };
