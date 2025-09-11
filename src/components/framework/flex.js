@@ -38,8 +38,9 @@ class Flex extends React.Component {
     ]),
     styleOverrides: PropTypes.object,
     children: PropTypes.node,
-    clickHandler: PropTypes.func,
+    clickHandler: PropTypes.func
   }
+
   static defaultProps = {
     direction: "row",
     wrap: "nowrap",
@@ -53,6 +54,7 @@ class Flex extends React.Component {
     order: 0,
     style: {}
   }
+
   getStyles() {
     return {
       base: {

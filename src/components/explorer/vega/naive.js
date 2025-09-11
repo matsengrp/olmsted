@@ -1,77 +1,77 @@
 const naiveVegaSpec = {
-  "$schema": "https://vega.github.io/schema/vega/v4.json",
-  "autosize": "pad",
-  "padding": 5,
-  "width": 250,
-  "height": 25,
-  // Remove style: cell to get rid of border 
-  "style": "cell",
-  "data": [
+  $schema: "https://vega.github.io/schema/vega/v5.json",
+  autosize: "pad",
+  padding: 5,
+  width: 250,
+  height: 25,
+  // Remove style: cell to get rid of border
+  style: "cell",
+  data: [
     {
-      "name": "source"
+      name: "source"
     }
   ],
-  "marks": [
+  marks: [
     {
-      "name": "layer_0_marks",
-      "type": "rect",
-      "style": [
+      name: "layer_0_marks",
+      type: "rect",
+      style: [
         "bar"
       ],
-      "from": {
-        "data": "source"
+      from: {
+        data: "source"
       },
-      "encode": {
-        "update": {
-          "fill": {"scale": "color", "field": "region"},
-          "tooltip": {
-            "signal": "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
+      encode: {
+        update: {
+          fill: {scale: "color", field: "region"},
+          tooltip: {
+            signal: "{\"region\": ''+datum[\"region\"], \"start\": format(datum[\"start\"], \"\"), \"end\": format(datum[\"end\"], \"\"),  \"gene\": ''+datum[\"gene\"]}"
           },
-          "x": {
-            "scale": "x",
-            "field": "start"
+          x: {
+            scale: "x",
+            field: "start"
           },
-          "x2": {
-            "scale": "x",
-            "field": "end"
+          x2: {
+            scale: "x",
+            field: "end"
           },
-          "yc": {
-            "scale": "y",
-            "field": "family",
-            "band": 0.5
+          yc: {
+            scale: "y",
+            field: "family",
+            band: 0.5
           },
-          "height": [
+          height: [
             {
-              "test": "datum[\"region\"] == 'CDR3'",
-              "value": 25
+              test: "datum[\"region\"] == 'CDR3'",
+              value: 25
             },
-            {"value": 12}      
-        ],
+            {value: 12}
+          ]
         }
       }
     }
   ],
-  "scales": [
+  scales: [
     {
-      "name": "x",
-      "type": "linear",
-      "domain": [0,400],
-      "range": [0,{"signal": "width"}],
-      "nice": true,
-      "zero": false
+      name: "x",
+      type: "linear",
+      domain: [0, 400],
+      range: [0, {signal: "width"}],
+      nice: true,
+      zero: false
     },
     {
-      "name": "y",
-      "type": "band",
-      "domain": {"data": "source", "field": "family"},
-      "range": [0,{"signal": "height"}],
-      "paddingInner": 0.1,
-      "paddingOuter": 0.05
+      name: "y",
+      type: "band",
+      domain: {data: "source", field: "family"},
+      range: [0, {signal: "height"}],
+      paddingInner: 0.1,
+      paddingOuter: 0.05
     },
     {
-      "name": "color",
-      "type": "ordinal",
-      "domain": [
+      name: "color",
+      type: "ordinal",
+      domain: [
         "V gene",
         "5' Insertion",
         "D gene",
@@ -80,7 +80,7 @@ const naiveVegaSpec = {
         "CDR3"
       ],
       // COLORS
-      "range": [
+      range: [
         "#762a83",
         "#af8dc3",
         "black",
@@ -89,12 +89,12 @@ const naiveVegaSpec = {
         "#1b7837"
       ]
     }
-  ], 
-  "config": {
-    "axisY": {
-      "minExtent": 30
+  ],
+  config: {
+    axisY: {
+      minExtent: 30
     }
   }
-}
+};
 
 export default naiveVegaSpec;

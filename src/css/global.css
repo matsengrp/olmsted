@@ -15,7 +15,7 @@ html {
   font-family: sans-serif; /* 1 */
   -ms-text-size-adjust: 100%; /* 2 */
   -webkit-text-size-adjust: 100%; /* 2 */
-  -webkit-overflow-scrolling: touch;  
+  -webkit-overflow-scrolling: touch;
 }
 /**
  * Remove default margin.
@@ -27,25 +27,60 @@ html, body, #root, [data-reactid=".0"] {
   font-size: 11pt;
 }
 
+/* Global margin-left for all form controls */
+input, button, select, textarea {
+  margin-left: 10px !important;
+}
+
 
 div.vega-bindings {
   font-size: 10pt;
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+div.vega-bindings div.vega-bind,
+.vega-bind {
+  display: inline-flex;
+  flex-direction: row;
+  padding: 8px 12px !important;
+  margin: 5px !important;
+  flex: 0 1 auto;
+  min-width: 350px;
+  align-items: center;
+}
+
+div.vega-bindings div.vega-bind:has(input[type="checkbox"]) {
+  min-width: 150px;
+}
+div.vega-bindings div.vega-bind > *:first-child {
+  margin-right: 12px;
+  font-weight: 500;
+  padding-right: 10px !important;
+  min-width: 80px;
+  display: inline-block;
 }
 
 div.vega-bindings div.vega-bind {
-  display: flex;
-  flex-direction: row;
-  padding: 10px;
-  width: 330px;
-  align-items: center;
+  padding: 10px !important;
 }
-div.vega-bindings div.vega-bind .vega-bind-name {
-  margin-right: 8px;
-}
-div.vega-bindings div.vega-bind input {
+div.vega-bindings div.vega-bind input,
+div.vega-bindings div.vega-bind select {
   margin-right: 6px;
+}
+
+div.vega-bindings div.vega-bind select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: white;
+  font-size: 10pt;
+  width: auto;
+  min-width: fit-content;
 }
 
 div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-thumb {
@@ -172,7 +207,7 @@ button:focus {outline:0;}
   display: grid;
   /*grid-template-columns: [start] 50px [one] 70px [two] 70px [three] 100px [four] 70px [five] 70px [six] auto [end];*/
   grid-template-columns: auto;
-  grid-template-rows: auto; 
+  grid-template-rows: auto;
   justify-items: left;
 }
 
@@ -195,7 +230,7 @@ button:focus {outline:0;}
 }
 
 .non-selectable-text{
-  -webkit-user-select: none; /* Safari */        
+  -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */

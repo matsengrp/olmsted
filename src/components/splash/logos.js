@@ -10,5 +10,5 @@ export const logos = [
   </a>,
   <a key={3} href="https://www.nih.gov/" target="_blank" rel="noreferrer noopener">
     <img alt="logo" width="58" src={require("../../images/nih-logo-small.png")}/>
-  </a>,
+  </a>
 ];

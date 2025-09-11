@@ -21,7 +21,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
 
   /* starting URL values & flags */
   let query = queryString.parse(window.location.search);
-  let pathname = window.location.pathname;
+  let {pathname} = window.location;
 
   /* first switch: query change */
 
@@ -62,8 +62,8 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       break;
   }
 
-  if(query){
-    // Format url string 
+  if (query) {
+    // Format url string
 
     // Get rid of keys with no values
     Object.keys(query).filter((k) => !query[k]).forEach((k) => delete query[k]);

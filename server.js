@@ -21,25 +21,6 @@ globals.setGlobals({localData, localDataPath})
 const app = express();
 app.set('port', process.env.PORT || port);
 
-// gzip all files matching *.clones.json in the data dir
-execFile('find', [global.LOCAL_DATA_PATH, '-name', 'clones.*.json',  '-exec', 'gzip', '-k9f', '{}', ';'], function(err, stdout, stderr) {
-  if (err) {
-    console.error('Error gzipping clone files:', err);
-    return;
-  }
-  if (stderr) process.stderr.write(stderr);
-  if (stdout) process.stdout.write(stdout);
-});
-
-// gzip data/datasets.json
-execFile('gzip', ['-k9f', path.join(global.LOCAL_DATA_PATH,'datasets.json')], function(err, stdout, stderr) {
-  if (err) {
-    console.error('Error gzipping datasets.json:', err);
-    return;
-  }
-  if (stderr) process.stderr.write(stderr);
-  if (stdout) process.stdout.write(stdout);
-});
 
 
 var options = {
@@ -71,7 +52,9 @@ if (devServer) {
   }));
 
   // Change this to zip data instead of dist
-  app.use("/data", expressStaticGzip(global.LOCAL_DATA_PATH, options));
+  if (global.LOCAL_DATA_PATH) {
+    app.use("/data", expressStaticGzip(global.LOCAL_DATA_PATH, options));
+  }
   app.use(express.static(path.join(__dirname, "dist")));
 
 } else {
@@ -97,5 +80,5 @@ const server = app.listen(app.get('port'), () => {
   console.log("Olmsted server started on port " + server.address().port);
   console.log(devServer ? "Serving dev bundle with hot-reloading enabled" : "Serving compiled bundle from /dist");
   console.log(global.LOCAL_DATA ? "Data is being sourced from " + global.LOCAL_DATA_PATH : "Dataset JSONs are being sourced from S3, narratives via the static github repo");
-  console.log("-----------------------------------\n\n"); 
+  console.log("-----------------------------------\n\n");
 });

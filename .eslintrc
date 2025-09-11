@@ -1,6 +1,6 @@
 ---
 extends: "airbnb"
-parser: "babel-eslint"
+parser: "@babel/eslint-parser"
 rules:
   camelcase: off # require camel case names
   prefer-template: off

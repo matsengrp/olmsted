@@ -27,66 +27,182 @@ This will enable lab-based researchers to more quickly and intuitively identify 
 
 ## Quickstart
 
-The best way to run Olmsted is inside a Docker container.
-If you're new to Docker, [this](http://erick.matsen.org/2018/04/19/docker.html) is a great place to start.
-You'll first need to clone the repo (since at the moment some files in the repo are required outside of Docker, i.e. in addition to the copy of the repo that's in the container):
+### 1. Clone the repositories
 
-```
+First, clone the main Olmsted repository:
+
+```bash
 git clone https://github.com/matsengrp/olmsted.git
+cd olmsted
 git submodule update --init
 ```
-Then cd to the example directory (or another directory that contains one or more valid AIRR-format input datasets), and run `bin/convert-airr-data.sh`.
-This script contains a Docker command to convert the AIRR-format dataset into an Olmsted-style summary:
-```
-cd olmsted/example_data/
-sudo ../bin/convert-airr-data.sh full_schema_dataset.json  # you may not need the sudo
-```
-Next cd to the resulting output directory and run `bin/olmsted-server.sh`, which contains another Docker command that starts the Olmsted server:
-```
-cd build_data/
-sudo ../../bin/olmsted-server.sh latest  # you may not need the sudo
-```
-Then point a web browser to `localhost:3999`, which should show the Olmsted logo and a list of available data sets.
-**Note** that you must add a dataset (by clicking `+`) before clicking the "Explore!" button, otherwise it will serve an empty display without warning what's wrong.
-For explanations of how to navigate the visualization, you can either use the [guide below](#using-the-visualization), or click on the question mark help icons.
 
-### Installation without Docker
-If you'd prefer to install the dependencies by hand, first clone the repository and then run each command in the [Dockerfile](Dockerfile) that's on a line starting with RUN (treat WORKDIR as cd).
+Then clone the olmsted-cli data processing tool:
 
-## Preparing input data
+```bash
+git clone https://github.com/matsengrp/olmsted-cli.git
+```
 
-### Data processing dependencies
-The necessary python depencies for processing input data are installed in the Docker image using conda.
-You may also install them directly on your machine by running the `conda install` command from the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile).
+### 2. Install olmsted-cli
+
+Create a conda environment and install olmsted-cli:
+
+```bash
+conda create -n olmsted python=3.9
+conda activate olmsted
+cd olmsted-cli
+pip install .
+```
+
+### 3. Build and run Olmsted server
+
+#### Option A: Using Docker (Recommended)
+
+Navigate to the main olmsted directory, build the container, and start the server:
+
+```bash
+cd olmsted
+docker build -t olmsted:latest .
+./bin/olmsted-server.sh olmsted:latest 3999
+```
+
+#### Option B: Local installation
+
+For local installation, you'll need to install Node.js dependencies, create a data directory, and start the server:
+
+```bash
+cd olmsted
+npm install --legacy-peer-deps --ignore-scripts
+mkdir -p _data
+./bin/olmsted-server-local.sh _data/ 3999
+```
+
+### 4. Process your data with olmsted-cli
+
+Use olmsted-cli to convert your data into Olmsted format. Here are examples using the provided sample data in the olmsted-cli directory:
+
+**Processing PCP format data:**
+```bash
+olmsted process -i olmsted-cli/example_data/pcp/pcp.csv -t olmsted-cli/example_data/pcp/trees.csv -o processed_data.json -f pcp -n "pcp-example"
+```
+
+**Processing AIRR format data:**
+```bash
+olmsted process -i olmsted-cli/example_data/airr/full_schema_dataset.json -o processed_data.json -f airr -n "airr-example"
+```
+
+**Note**: The `--format` flag is optional as `olmsted process` can automatically infer the input file format from the file extension and contents.
+
+### 5. Access the web application
+
+Open your browser and navigate to `localhost:3999` to see the Olmsted interface.
+
+### 6. Upload and explore your data
+
+Once in the web application:
+- **Upload data**: Use the file explorer to browse and upload your processed JSON files, or simply drag and drop them onto the upload area
+- **Select datasets**: Choose the desired datasets from the database table by clicking the checkbox next to each dataset
+- **Start exploring**: Click the "Explore!" button to begin visualizing your B cell lineage data
+
+**Note**: You must select at least one dataset before clicking "Explore!" or you'll see an empty display.  You can also select dataset from the Dataset table on the visualization page.
+
+## Data Processing with olmsted-cli
+
+### Overview
+
+We now use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to format data into a single unified file format that can be uploaded to the Olmsted web application. The olmsted-cli package provides a streamlined command-line interface for converting various data formats (AIRR, PCP, etc.) into the standardized format required by Olmsted.
+
+### Basic API Usage
+
+The olmsted-cli tool provides a simple `process` command:
+
+```bash
+olmsted process [OPTIONS]
+```
+
+**Note**: Use `olmsted process -h` for more options.
+
+**Common options:**
+- `--input, -i`: Input file path (PCP CSV or AIRR json)
+- `--output, -o`: Output file path (defaults to `olmsted_output.json`)
+- `--format, -f`: Input format (`airr`, `pcp`) (optional, olmsted-cli can infer input file type in most situations)
+- `--name, -n`: Dataset name (optional, but recommended for olmsted database navigation)
+
+**PCP options:**
+- `--input-trees, -t`: Tree data CSV file path
+
+**AIRR options:**
+- `--naive-name`: Name of naive/root node for tree rooting
+- `--root-trees, -r`: Root trees
+
+**Examples:**
+
+Process a PCP CSV file with separate tree data file:
+```bash
+olmsted process -i data.csv -t trees.csv -o processed.json -f pcp -n "PCP Dataset"
+```
+
+Process an AIRR format file:
+```bash
+olmsted process -i data.json -o processed.json -f airr -n "AIRR Dataset"
+```
 
 ### Input format
 
-Olmsted takes input files in the [AIRR JSON format](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
+Olmsted supports two primary input formats:
+
+#### PCP Format
+
+The PCP (Parent Child Pair) format consists of two CSV files:
+
+1. **Parent Child Pair CSV**: Contains data for each parent-child pair with columns:
+   - `sample_id`: Sample identifier
+   - `family`: Family identifier
+   - `parent_name`: Parent node name
+   - `parent_heavy`: Parent heavy chain sequence
+   - `child_name`: Child node name
+   - `child_heavy`: Child heavy chain sequence
+   - `branch_length`: Branch length between parent and child
+   - `depth`: Depth in tree structure
+   - `distance`: Distance from root
+   - `v_gene_heavy`: V gene assignment for heavy chain
+   - `j_gene_heavy`: J gene assignment for heavy chain
+   - `cdr1_codon_start_heavy`: CDR1 start position in heavy chain
+   - `cdr1_codon_end_heavy`: CDR1 end position in heavy chain
+   - `cdr2_codon_start_heavy`: CDR2 start position in heavy chain
+   - `cdr2_codon_end_heavy`: CDR2 end position in heavy chain
+   - `cdr3_codon_start_heavy`: CDR3 start position in heavy chain
+   - `cdr3_codon_end_heavy`: CDR3 end position in heavy chain
+   - `parent_is_naive`: Boolean indicating if parent is naive/root
+   - `child_is_leaf`: Boolean indicating if child is leaf node
+
+2. **Tree Data CSV**: Contains Newick data with columns:
+   - `family_name`: Family identifier matching the family column above
+   - `sample_id`: Sample identifier
+   - `newick_tree`: Newick format phylogenetic tree string
+
+Example PCP data can be found in the `olmsted-cli/example_data/` directory, demonstrating the expected structure and column formats.
+
+#### AIRR Format
+
+The AIRR JSON format is described [here](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
 A list of tools that output this format can be found [here](https://docs.airr-community.org/en/stable/resources/rearrangement_support.html).
 For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
 
-TODO what happens if it's not clustered? Maybe put partis example here?
-
 ### Validation
-Input data is processed using the script `bin/process_data.py` to ensure required fields required by the schema are valid.
-The script takes any number of JSON files, each one containing one complete dataset.
-It breaks this apart into files summarizing individual records in the dataset (e.g. clonal families, trees) which can be served to the Olmsted client and visualized.
 
-Here is an example of how to parse input JSON files using `bin/process_data.py` in Docker:
+#### Using olmsted-cli for Validation
 
-1. Change to the directory where you have your input JSON file(s) (this example uses the data from this repository - omit the `git clone` if you have already cloned the repo and are in the olmsted directory):
-```
-git clone https://github.com/matsengrp/olmsted.git && cd olmsted/example_data
-```
+The olmsted-cli package provides built-in validation capabilities to ensure data meets the required schema standards for processing by Olmsted webapp:
 
-2. Run `bin/process_data.py` in Docker using `-v` to mount the current directory to `/data` in the container: 
-```
-docker run --rm -v $(pwd):/data quay.io/matsengrp/olmsted bin/process_data.py -i /data/full_schema_dataset.json -o /data/build_data -n inferred_naive
+**Validation-only mode:**
+```bash
+olmsted validate --input your_data.json
 ```
 
-For more on how to run that Python script to parse your data according to the schema, run:
-```
- docker run --rm quay.io/matsengrp/olmsted bin/process_data.py --help 
+**Validation during processing:**
+```bash
+olmsted process --input your_data.json --output processed.json --validate
 ```
 
 ## Deployment with Docker
@@ -105,26 +221,11 @@ To run an interactive session in the container:
 docker run -it quay.io/matsengrp/olmsted /bin/bash
 ```
 
-### Specifying input data
-The command that starts the Olmsted local server is `npm start localData`, followed by the location of your input JSON(s) (which should be the output, i.e. `-o`, from `bin/process_data.py` above).
-To run on your own data instead of the example data, you need to point Docker to your data.
-To access files on your machine from within the Docker container, or to persist output beyond the container, you must [use volumes by specifying -v](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container). 
-
-If the repository has already been cloned, and you're using docker, you can use this command on an example dataset found in the repo.
-```
-cd olmsted/example_data/build_data
-docker run -p 8080:3999 -v $(pwd):/data quay.io/matsengrp/olmsted npm start localData /data
-```
-
-## Deploying without Docker
-
-Run `npm start localData /local/data/path 8080` (after installing the necessary dependencies specified in the [Dockerfile](https://github.com/matsengrp/olmsted/blob/master/Dockerfile)) and navigate to `localhost:8080` in your browser to see the application.
-
 ## Static Build
 
 Olmsted is designed to statically compile as a single page app, which can then be deployed using a simple CDN setup.
 
-To create a static deployment, run `npm run build` from within the project directory (the path to your clone of this repository or `/usr/src/app` in the Docker image). 
+To create a static deployment, run `npm run build` from within the project directory (the path to your clone of this repository or `/usr/src/app` in the Docker image).
 This will generate most of a deployment in a `deploy` directory.
 To complete the static deployment, you simply have to place the data you want to deploy at `deploy/data`.
 
@@ -143,12 +244,17 @@ To see what you need to do on the S3 side to acitvate website hosting for a buck
 
 ## Using the visualization
 
+### Dataset Selection and Management
+
 Upon launching Olmsted and navigating in a browser to the appropriate address (or using the example at http://olmstedviz.org), you will find the home page with a table of the available datasets:
 
-![splash](docs/datasets-section.png)
+![splash](docs/splash-page-dataset-manager.png)
 
-Click on a row to load the dataset into the browser's memory.
-Click *Explore!* to visually explore loaded datasets (if nothing is displayed on the resulting page, press back and make sure you selected a data set).
+Olmsted uses a client-side database to manage your datasets within the browser. This database is managed from the splash page, where you can load new datasets and delete existing ones.  You can upload datasets by clicking the "Upload Data" and navigating file explorer, or via the drag-n-drop box below.  This will add the dataset to the Available Datasets table.  When you check the load icon for the row in the datasets table, it queues the dataset for visualization and adds it to the query string. Click *Explore!* visually explore selected datasets.
+
+![dataset_selector](docs/visualization-dataset-manager.png)
+
+Once you're in the visualization interface, you can change your dataset selection on demand. Simply select the desired datasets in the dataset table on the visualization page, then click the "Update Visualization" button to refresh the view with your new selection. "Manage Datasets" will return you to the splash page.
 
 ### Clonal Families Section (AKA "scatterplot")
 
@@ -184,7 +290,7 @@ For a selected clonal family, its phylogenetic tree is visualized below the tabl
 
 
 Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
-Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all). 
+Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
 Alongside the tree is an alignment of the sequences at the tree's tips.
 Colors indicate amino acid mutations at each position that differs from the sequence at the root of the tree (typically the family's inferred naive antibody sequence).
 Scroll while hovering over the tree to zoom in and out.

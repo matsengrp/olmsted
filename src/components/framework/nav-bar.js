@@ -16,6 +16,7 @@ class NavBar extends React.Component {
   constructor(props) {
     super(props);
   }
+
   getStyles() {
     return {
       main: {
@@ -84,22 +85,25 @@ class NavBar extends React.Component {
   getLogo(styles) {
     return (
       <a style={styles.logo}
-        onClick={(e) => this.props.dispatch(changePage({path: "splash"})) }>
+        onClick={(e) => this.props.dispatch(changePage({path: "splash"}))}
+      >
         <img alt="" width="50" src={require("../../images/olmsted_logo.png")}/>
       </a>
     );
   }
 
   getLogoType(styles) {
-    const title = <span style={{color: "#05337f" }}>{"Olmsted"}</span>;
+    const title = <span style={{color: "#05337f" }}>Olmsted</span>;
     return (
-      this.props.minified ?
-        <div/>
-        :
-        <a style={styles.title}
-          onClick={(e) => this.props.dispatch(changePage({path: "splash"})) }>
-          {title}
-        </a>
+      this.props.minified
+        ? <div/>
+        : (
+          <a style={styles.title}
+            onClick={(e) => this.props.dispatch(changePage({path: "splash"}))}
+          >
+            {title}
+          </a>
+        )
     );
   }
 
@@ -107,7 +111,8 @@ class NavBar extends React.Component {
     const linkCol = this.props.minified ? "#000" : darkGrey;
     return (
       <a style={{ ...{color: linkCol}, ...styles.link }}
-        onClick={(e) => this.props.dispatch(changePage({path: path})) }>
+        onClick={(e) => this.props.dispatch(changePage({path: path}))}
+      >
         {name}
       </a>
     );
@@ -115,13 +120,14 @@ class NavBar extends React.Component {
 
   getChevron() {
     return (
-      this.props.minified ?
-        <SidebarChevron
-          mobileDisplay={this.props.mobileDisplay}
-          handler={this.props.toggleHandler}
-        />
-        :
-        <div/>
+      this.props.minified
+        ? (
+          <SidebarChevron
+            mobileDisplay={this.props.mobileDisplay}
+            handler={this.props.toggleHandler}
+          />
+        )
+        : <div/>
     );
   }
 

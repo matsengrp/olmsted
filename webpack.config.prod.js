@@ -2,7 +2,8 @@ const path = require("path");
 const webpack = require("webpack");
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const WebpackShellPlugin = require('webpack-shell-plugin');
+const fs = require('fs');
+const { execSync } = require('child_process');
 
 module.exports = {
   entry: [
@@ -14,6 +15,11 @@ module.exports = {
     filename: "bundle.js",
     publicPath: "dist/"
   },
+  resolve: {
+    alias: {
+      'vega-lib': 'vega'
+    }
+  },
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
@@ -24,16 +30,33 @@ module.exports = {
     /* Note: console.log statements are not stripped out */
     new webpack.optimize.AggressiveMergingPlugin(), // merge chunks - https://github.com/webpack/docs/wiki/list-of-plugins#aggressivemergingplugin
     new CompressionPlugin({ // gzip everything - https://github.com/webpack-contrib/compression-webpack-plugin
-      asset: "[path].gz[query]",
+      filename: "[path][base].gz",
       algorithm: "gzip",
       test: /\.js$|\.css$|\.html$/,
       threshold: 10240,
       minRatio: 0.8
     }),
-    new WebpackShellPlugin({
-      onBuildStart: ['mkdir -p deploy/dist deploy/data'],
-      onBuildEnd: ["./bin/postbuild.sh"]
-      })
+    {
+      // Custom plugin to replace WebpackShellPlugin functionality
+      apply: (compiler) => {
+        // Create directories before build
+        if (!fs.existsSync('deploy/dist')) {
+          fs.mkdirSync('deploy/dist', { recursive: true });
+        }
+        if (!fs.existsSync('deploy/data')) {
+          fs.mkdirSync('deploy/data', { recursive: true });
+        }
+        
+        // Run postbuild script after compilation
+        compiler.hooks.done.tap('CustomPostBuildPlugin', () => {
+          try {
+            execSync('./bin/postbuild.sh', { stdio: 'inherit' });
+          } catch (error) {
+            console.warn('Postbuild script failed:', error.message);
+          }
+        });
+      }
+    }
   ],
   optimization: {
     minimizer: [new TerserPlugin()]},
@@ -50,7 +73,7 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: "file-loader",
+        type: "asset/resource",
         include: path.join(__dirname, "src")
       }
     ]
