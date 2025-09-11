@@ -305,7 +305,11 @@ class ResizableVirtualTable extends React.Component {
             overflow: "hidden"
           }}
         >
-          Showing {data.length} families
+          Showing
+          {' '}
+          {data.length}
+          {' '}
+          families
         </div>
       </div>
     );
@@ -357,8 +361,8 @@ class SelectAttribute extends React.Component {
         style={{ cursor: "pointer" }}
         checked={
           this.props.selectedFamily
-            ? (this.props.datum.ident || this.props.datum.clone_id) ==
-              (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
+            ? (this.props.datum.ident || this.props.datum.clone_id)
+              == (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
             : false
         }
         onChange={() => {

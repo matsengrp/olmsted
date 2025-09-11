@@ -51,9 +51,9 @@ class SelectedFamiliesSummary extends React.Component {
   }
 }
 
-const Overlay = ({ styles, mobileDisplay, handler }) => {
+function Overlay({ styles, mobileDisplay, handler }) {
   return mobileDisplay ? <div style={styles} onClick={handler} onTouchStart={handler} /> : <div />;
-};
+}
 
 @connect(
   (state) => ({
@@ -110,10 +110,10 @@ class App extends React.Component {
   componentDidUpdate(prevProps) {
     // Check if datasets were just loaded and we have pending dataset loads from URL
     if (
-      prevProps.availableDatasets.length === 0 &&
-      this.props.availableDatasets.length > 0 &&
-      this.props.pendingDatasetLoads &&
-      this.props.pendingDatasetLoads.length > 0
+      prevProps.availableDatasets.length === 0
+      && this.props.availableDatasets.length > 0
+      && this.props.pendingDatasetLoads
+      && this.props.pendingDatasetLoads.length > 0
     ) {
       // Process each pending dataset load
       this.props.pendingDatasetLoads.forEach((dataset_id) => {
@@ -192,7 +192,7 @@ class App extends React.Component {
               <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
-                  helpText={
+                  helpText={(
                     <div>
                       The Clonal Families section represents each clonal family as a point in a scatterplot. Choose an
                       immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the
@@ -203,7 +203,9 @@ class App extends React.Component {
                       mean_mut_freq, to the y-axis. However, you may configure both axes as well as the color and shape
                       of the points to map to a range of fields, including sequence sampling time (sample.timepoint_id).
                       See
-                      <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
+                      <a href="http://www.olmstedviz.org/schema.html">the schema</a>
+                      {' '}
+                      for field descriptions.
                       <br />
                       <br />
                       For comparison of subsets, you may facet the plot into separated panels according to data values
@@ -211,7 +213,7 @@ class App extends React.Component {
                       or clicking individual points to filter the resulting clonal families in the Selected clonal
                       families table below.
                     </div>
-                  }
+                  )}
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
                 <label

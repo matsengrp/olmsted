@@ -1,5 +1,7 @@
 import React from "react";
-import { FiCheck, FiPlus, FiX, FiLoader } from "react-icons/fi";
+import {
+  FiCheck, FiPlus, FiX, FiLoader
+} from "react-icons/fi";
 
 class SimpleInProgress extends React.Component {
   constructor(props) {
@@ -137,4 +139,6 @@ class LoadingStatus extends React.Component {
   }
 }
 
-export { LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon };
+export {
+  LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon
+};

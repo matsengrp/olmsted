@@ -217,7 +217,9 @@ export class ResizableTable extends React.Component {
 
   render() {
     const { containerHeight = 400, mappings, showFooter = true } = this.props;
-    const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
+    const {
+      scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
+    } = this.state;
     const rowHeight = 40;
 
     const sortedData = this.getSortedData();
@@ -349,7 +351,11 @@ export class ResizableTable extends React.Component {
               overflow: "hidden"
             }}
           >
-            Showing {sortedData.length} {this.props.itemName || "items"}
+            Showing
+            {' '}
+            {sortedData.length}
+            {' '}
+            {this.props.itemName || "items"}
           </div>
         )}
       </div>

@@ -24,17 +24,16 @@ const datasets = (
 ) => {
   switch (action.type) {
     case types.LOADING_DATASET: {
-      const updatedAvailableDatasets = state.availableDatasets.map((dataset) =>
-        dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset
-      );
-      return Object.assign({}, state, { availableDatasets: updatedAvailableDatasets });
+      const updatedAvailableDatasets = state.availableDatasets.map((dataset) => dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset);
+      return { ...state, availableDatasets: updatedAvailableDatasets};
     }
     case types.PAGE_CHANGE: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         displayComponent: action.displayComponent,
         datapath: action.datapath,
         errorMessage: action.errorMessage
-      });
+      };
     }
     case types.DATASETS_RECEIVED: {
       let { availableDatasets } = action;
@@ -48,50 +47,48 @@ const datasets = (
         });
       }
 
-      return Object.assign({}, state, {
+      return {
+        ...state,
         s3bucket: action.s3bucket,
         splash: action.splash,
         availableDatasets,
         user: action.user,
         datapath: action.datapath
-      });
+      };
 
       // I guess its ok to keep this, but not sure that what its doing here will make any sense or be necessary once all reorg is said and done
     }
     case types.PROCEED_SANS_MANIFEST: {
-      return Object.assign({}, state, { datapath: action.datapath });
+      return { ...state, datapath: action.datapath};
     }
     case types.REMOVE_DATASET: {
       // Filter out the removed dataset from availableDatasets
       const filteredDatasets = state.availableDatasets.filter((dataset) => dataset.dataset_id !== action.dataset_id);
-      return Object.assign({}, state, {
-        availableDatasets: filteredDatasets
-      });
+      return { ...state, availableDatasets: filteredDatasets};
 
       // Not sure what this is...
     }
     case types.URL: {
-      return Object.assign({}, state, {
+      return {
+        ...state,
         urlPath: action.path,
         urlSearch: action.query
-      });
+      };
     }
     case types.TOGGLE_DATASET_SELECTION: {
       const selectedDatasets = state.selectedDatasets.includes(action.dataset_id)
         ? state.selectedDatasets.filter((id) => id !== action.dataset_id) // Remove if already selected
         : [...state.selectedDatasets, action.dataset_id]; // Add if not selected
-      return Object.assign({}, state, { selectedDatasets });
+      return { ...state, selectedDatasets};
     }
     case types.CLEAR_DATASET_SELECTIONS: {
-      return Object.assign({}, state, { selectedDatasets: [] });
+      return { ...state, selectedDatasets: []};
     }
     case types.CLEAR_PENDING_DATASET_LOADS: {
-      return Object.assign({}, state, { pendingDatasetLoads: [] });
+      return { ...state, pendingDatasetLoads: []};
     }
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: {
-      return Object.assign({}, state, {
-        pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads
-      });
+      return { ...state, pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads};
     }
     default: {
       return state;

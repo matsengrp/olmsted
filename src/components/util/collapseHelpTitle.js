@@ -6,13 +6,15 @@ class CollapseHelpTitle extends React.Component {
   render() {
     return (
       <Collapsible
-        trigger={
+        trigger={(
           <div>
             <h2>
-              {this.props.titleText} <FiHelpCircle style={{ cursor: "pointer" }} />
+              {this.props.titleText}
+              {' '}
+              <FiHelpCircle style={{ cursor: "pointer" }} />
             </h2>
           </div>
-        }
+        )}
       >
         {this.props.helpText}
       </Collapsible>

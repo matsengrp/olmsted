@@ -30,41 +30,39 @@ Because the datasets reducer has changed, the <App> (or whichever display compon
 In <App>, this causes a call to loadJSONs, which will, as part of it's dispatch, use the URL state of query.
 In this way, the URL query is "used".
 */
-export const changePage =
-  ({ path, query = undefined, push = true }) =>
-  (dispatch, getState) => {
-    if (!path) {
-      console.error("changePage called without a path");
-      return;
-    }
-    const { datasets } = getState();
-    const d = {
-      type: types.PAGE_CHANGE,
-      displayComponent: chooseDisplayComponentFromPathname(path),
-      errorMessage: undefined,
-      datapath: undefined
-    };
-
-    // Set the new datapath if we are changing to the app page
-    if (d.displayComponent === "app") {
-      d.datapath = getDatapath(path, datasets.availableDatasets);
-    }
-
-    // If we were PREVIOUSLY on the app page and change to a different dataset or go
-    // back to splash, we want to reset the clonal families state
-    if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath) {
-      dispatch({ type: types.RESET_CLONAL_FAMILIES_STATE });
-    }
-
-    if (query !== undefined) {
-      d.query = query;
-    }
-    if (push) {
-      d.pushState = true;
-    }
-    /* check if this is "valid" - we can change it here before it is dispatched */
-    dispatch(d);
+export const changePage = ({ path, query = undefined, push = true }) => (dispatch, getState) => {
+  if (!path) {
+    console.error("changePage called without a path");
+    return;
+  }
+  const { datasets } = getState();
+  const d = {
+    type: types.PAGE_CHANGE,
+    displayComponent: chooseDisplayComponentFromPathname(path),
+    errorMessage: undefined,
+    datapath: undefined
   };
+
+  // Set the new datapath if we are changing to the app page
+  if (d.displayComponent === "app") {
+    d.datapath = getDatapath(path, datasets.availableDatasets);
+  }
+
+  // If we were PREVIOUSLY on the app page and change to a different dataset or go
+  // back to splash, we want to reset the clonal families state
+  if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath) {
+    dispatch({ type: types.RESET_CLONAL_FAMILIES_STATE });
+  }
+
+  if (query !== undefined) {
+    d.query = query;
+  }
+  if (push) {
+    d.pushState = true;
+  }
+  /* check if this is "valid" - we can change it here before it is dispatched */
+  dispatch(d);
+};
 
 /* a 404 uses the same machinery as changePage, but it's not a thunk */
 export const goTo404 = (errorMessage) => ({
@@ -80,33 +78,33 @@ ARGUMENTS:
 (1) query - REQUIRED - {object}
 (2) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
 */
-export const changePageQuery =
-  ({ path, queryToUse, queryToDisplay = false, push = true }) =>
-  (dispatch, getState) => {
-    const state = getState();
-    if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
-      const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
+export const changePageQuery = ({
+  path, queryToUse, queryToDisplay = false, push = true
+}) => (dispatch, getState) => {
+  const state = getState();
+  if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
+    const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
 
-      // Don't immediately load datasets - wait for datasets to be available first
-      // This will be handled by a componentDidUpdate when datasets are loaded
+    // Don't immediately load datasets - wait for datasets to be available first
+    // This will be handled by a componentDidUpdate when datasets are loaded
 
-      // Store the requested datasets in Redux state so we can load them later
-      dispatch({
-        type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
-        ...state,
-        pushState: push,
-        query: queryToDisplay ? queryToDisplay : queryToUse,
-        pendingDatasetLoads: Array.from(queryStringDatasets) // Store for later processing
-      });
-      return;
-    }
+    // Store the requested datasets in Redux state so we can load them later
     dispatch({
       type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
       ...state,
       pushState: push,
-      query: queryToDisplay ? queryToDisplay : queryToUse
+      query: queryToDisplay ? queryToDisplay : queryToUse,
+      pendingDatasetLoads: Array.from(queryStringDatasets) // Store for later processing
     });
-  };
+    return;
+  }
+  dispatch({
+    type: types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE,
+    ...state,
+    pushState: push,
+    query: queryToDisplay ? queryToDisplay : queryToUse
+  });
+};
 
 export const browserBackForward = () => (dispatch, getState) => {
   const { datasets } = getState();

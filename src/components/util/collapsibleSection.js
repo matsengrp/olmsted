@@ -15,12 +15,14 @@ class CollapsibleSection extends React.Component {
   };
 
   render() {
-    const { titleText, helpText, children, ...otherProps } = this.props;
+    const {
+      titleText, helpText, children, ...otherProps
+    } = this.props;
     const { isOpen } = this.state;
 
     return (
       <Collapsible
-        trigger={
+        trigger={(
           <div
             style={{
               display: "flex",
@@ -46,7 +48,7 @@ class CollapsibleSection extends React.Component {
               {titleText}
             </h2>
           </div>
-        }
+        )}
         onTriggerOpening={() => this.handleToggle(true)}
         onTriggerClosing={() => this.handleToggle(false)}
         open={isOpen}

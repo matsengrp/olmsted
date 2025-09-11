@@ -6,12 +6,11 @@ import * as clonalFamiliesSelectors from "./clonalFamilies";
 const getSelectedTreeIdent = (state) => state.trees.selectedTreeIdent;
 
 export const getTreeFromCache = (cache, family, selectedIdent) => {
-  const ident =
-    selectedIdent ||
-    (
-      _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" }) ||
-      _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" }) ||
-      _.values(family.trees)[0]
+  const ident = selectedIdent
+    || (
+      _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" })
+      || _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" })
+      || _.values(family.trees)[0]
     ).ident;
   return cache[ident];
 };
@@ -26,9 +25,7 @@ export const getSelectedTree = createSelector(
 
 const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq;
 
-export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) =>
-  _.find(tree.nodes, { sequence_id: seq_id })
-);
+export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) => _.find(tree.nodes, { sequence_id: seq_id }));
 
 // computing mutations for tree node records relative to naive_seq
 
@@ -146,9 +143,7 @@ const dissoc = (d, key) => {
 export const computeTreeData = (tree) => {
   tree = _.clone(tree); // clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  tree.nodes = _.map(tree.nodes, (x) =>
-    x.parent == "inferred_naive" || x.sequence_id == "inferred_naive" ? dissoc(x, "lbr") : x
-  );
+  tree.nodes = _.map(tree.nodes, (x) => x.parent == "inferred_naive" || x.sequence_id == "inferred_naive" ? dissoc(x, "lbr") : x);
 
   if (tree["nodes"] && tree["nodes"].length > 0) {
     let data = tree["nodes"].slice(0);

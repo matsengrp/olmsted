@@ -23,9 +23,9 @@ class Splash extends React.Component {
 
   handleClearAll = async () => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete ALL datasets from the database?\n\n" +
-        "This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n" +
-        "Click OK to confirm deletion, or Cancel to keep your data."
+      "Are you sure you want to delete ALL datasets from the database?\n\n"
+        + "This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n"
+        + "Click OK to confirm deletion, or Cancel to keep your data."
     );
 
     if (confirmed) {
@@ -59,7 +59,8 @@ class Splash extends React.Component {
           <div className="row">
             <h1 style={{ textAlign: "center", marginTop: "-10px", fontSize: "29px" }}>
               {" "}
-              B-cell repertoire and clonal family tree explorer{" "}
+              B-cell repertoire and clonal family tree explorer
+              {" "}
             </h1>
           </div>
           {/* First: either display the error message or the intro-paragraph */}
@@ -127,18 +128,16 @@ class Splash extends React.Component {
                   fontSize: 18,
                   outline: 0
                 }}
-                onClick={(e) =>
-                  this.props.dispatch(
-                    changePage({
-                      path: "/app",
-                      query: {
-                        selectedDatasets: getSelectedDatasets(this.props.availableDatasets).map(
-                          (dataset) => dataset.dataset_id
-                        )
-                      }
-                    })
-                  )
-                }
+                onClick={(e) => this.props.dispatch(
+                  changePage({
+                    path: "/app",
+                    query: {
+                      selectedDatasets: getSelectedDatasets(this.props.availableDatasets).map(
+                        (dataset) => dataset.dataset_id
+                      )
+                    }
+                  })
+                )}
               >
                 Explore!
               </button>

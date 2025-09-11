@@ -27,40 +27,38 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       // Want to reset the clonal families state without
       // getting rid of our raw clonal families data
       const reset_state = _.omit(_.clone(initialState), ["byDatasetId", "byIdent"]);
-      return Object.assign({}, state, reset_state);
+      return { ...state, ...reset_state};
     }
     case types.CLONAL_FAMILIES_RECEIVED: {
       // have to update both indices here
       const newClonalFamiliesDictEntry = {};
       newClonalFamiliesDictEntry[action.dataset_id] = action.clonalFamilies;
-      const updatedClonalFamiliesDict = Object.assign({}, state.byDatasetId, newClonalFamiliesDictEntry);
-      const updatedByIdent = Object.assign(
-        {},
-        state.byIdent,
-        _.fromPairs(_.map(action.clonalFamilies, (x) => [x.ident, x]))
-      );
-      return Object.assign({}, state, {
+      const updatedClonalFamiliesDict = { ...state.byDatasetId, ...newClonalFamiliesDictEntry};
+      const updatedByIdent = {
+
+        ...state.byIdent,
+        ..._.fromPairs(_.map(action.clonalFamilies, (x) => [x.ident, x]))
+      };
+      return {
+        ...state,
         byDatasetId: updatedClonalFamiliesDict,
         byIdent: updatedByIdent
-      });
+      };
     }
     case types.SELECTING_STATUS: {
-      return Object.assign({}, state, {
-        brushSelecting: !state.brushSelecting
-      });
+      return { ...state, brushSelecting: !state.brushSelecting};
     }
     case types.FILTER_BRUSH_SELECTION: {
       const brushDelta = { filter: { fieldName: action.key, range: action.value } };
-      const new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
+      const new_brushSelection = { ...state.brushSelection, ...brushDelta};
 
-      const new_pagination = Object.assign({}, state.pagination, {
-        page: 0
-      });
+      const new_pagination = { ...state.pagination, page: 0};
       // console.log("adding filter", new_brushSelection)
-      return Object.assign({}, state, {
+      return {
+        ...state,
         brushSelection: new_brushSelection,
         pagination: new_pagination
-      });
+      };
     }
     case types.UPDATE_BRUSH_SELECTION: {
       // the updatedBrushData is an array of [<axis>, brush_<attr-name>, [range_x0, range_x1]]
@@ -84,52 +82,42 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       // we have clicked to select that family instead of doing a brush selection
       // Set it false here so we can have default brush selection filtering
       brushDelta.clicked = false;
-      const new_brushSelection = Object.assign({}, state.brushSelection, brushDelta);
+      const new_brushSelection = { ...state.brushSelection, ...brushDelta};
 
       // Send it back to page 0
-      const new_pagination = Object.assign({}, state.pagination, {
-        page: 0
-      });
+      const new_pagination = { ...state.pagination, page: 0};
       // console.log("adding brush", new_brushSelection)
-      return Object.assign({}, state, {
+      return {
+        ...state,
         brushSelection: new_brushSelection,
         pagination: new_pagination
-      });
+      };
     }
     case types.PAGE_DOWN: {
       // Note that this DOES NOT check that this page down operation is legal
       // We check that whether it is a legal page down inside the table
       // because the last page is derived from a selector that updates the props of the table
-      const new_pagination = Object.assign({}, state.pagination, {
-        page: state.pagination.page + 1
-      });
-      return Object.assign({}, state, {
-        pagination: new_pagination
-      });
+      const new_pagination = { ...state.pagination, page: state.pagination.page + 1};
+      return { ...state, pagination: new_pagination};
     }
     case types.PAGE_UP: {
       // We could move check this into the table to be consistent. Otherwise we can leave it as is.
       if (state.pagination.page - 1 >= 0) {
-        const new_pagination = Object.assign({}, state.pagination, {
-          page: state.pagination.page - 1
-        });
-        return Object.assign({}, state, {
-          pagination: new_pagination
-        });
+        const new_pagination = { ...state.pagination, page: state.pagination.page - 1};
+        return { ...state, pagination: new_pagination};
       }
       return state;
     }
     case types.TOGGLE_SORT: {
       // We default to descending order when sorting by a new column
       const same_column = action.column == state.pagination.order_by;
-      const new_pagination = Object.assign({}, state.pagination, {
+      const new_pagination = {
+        ...state.pagination,
         page: 0,
         order_by: action.column,
         desc: same_column ? !state.pagination.desc : true
-      });
-      return Object.assign({}, state, {
-        pagination: new_pagination
-      });
+      };
+      return { ...state, pagination: new_pagination};
     }
     case types.TOGGLE_FAMILY: {
       const updates = {
@@ -141,24 +129,18 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       // and therefore in the table since we have clicked it
       if (action.updateBrushSelection) {
         updates.brushSelection = { clicked: action.family_id };
-        updates.pagination = Object.assign({}, state.pagination, { page: 0 });
+        updates.pagination = { ...state.pagination, page: 0};
       }
-      return Object.assign({}, state, updates);
+      return { ...state, ...updates};
     }
     case types.UPDATE_SELECTED_SEQ: {
-      return Object.assign({}, state, {
-        selectedSeq: action.seq
-      });
+      return { ...state, selectedSeq: action.seq};
     }
     case types.UPDATE_FACET: {
-      return Object.assign({}, state, {
-        facetByField: action.facetByField
-      });
+      return { ...state, facetByField: action.facetByField};
     }
     case types.FILTER_LOCUS: {
-      return Object.assign({}, state, {
-        locus: action.locus
-      });
+      return { ...state, locus: action.locus};
     }
     default: {
       return state;

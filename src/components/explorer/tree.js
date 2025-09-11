@@ -27,7 +27,7 @@ class TreeHeader extends React.Component {
       <div>
         <CollapseHelpTitle
           titleText={`Clonal family details for ${this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || "sample"} ${this.props.selectedFamily.clone_id}`}
-          helpText={
+          helpText={(
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
               details section. Select among any alternate phylogenies using the Ancestral reconstruction method menu.
@@ -42,12 +42,16 @@ class TreeHeader extends React.Component {
               the zoomed view to pan in a traditional map-style interface. The alignment view on the right zooms in the
               vertical dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the
               multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence,
-              colored according to sampling timepoint. See{" "}
-              <a href="http://www.olmstedviz.org/schema.html">the schema</a> for more detailed field descriptions.
+              colored according to sampling timepoint. See
+              {" "}
+              <a href="http://www.olmstedviz.org/schema.html">the schema</a>
+              {' '}
+              for more detailed field descriptions.
               <br />
               <br />
               Note that often in example data the number of sequences in a clonal family has been downsampled to build a
-              tree (see downsampled_count, downsampling_strategy in{" "}
+              tree (see downsampled_count, downsampling_strategy in
+              {" "}
               <a href="http://www.olmstedviz.org/schema.html">the schema</a>
               ), which explains why a clonal family might be listed in the table as having a few thousand unique
               sequences, but upon selecting the clonal family, the corresponding tree visualization only contains 10s or
@@ -71,15 +75,13 @@ class TreeHeader extends React.Component {
               <br />
               <br />
             </div>
-          }
+          )}
         />
         <div>
           <label>Ancestral reconstruction method: </label>
           <select
             value={this.props.tree.ident}
-            onChange={(event) =>
-              this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)
-            }
+            onChange={(event) => this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}
           >
             {this.props.selectedFamily.trees.map((tree) => (
               <option key={tree.ident} value={tree.ident}>
@@ -195,7 +197,9 @@ class TreeViz extends React.Component {
           <div>
             <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <SimpleInProgress />
-              Loading data for clonal family: {this.props.selectedFamily.clone_id}
+              Loading data for clonal family:
+              {' '}
+              {this.props.selectedFamily.clone_id}
             </h2>
           </div>
         )}
@@ -233,18 +237,18 @@ class TreeViz extends React.Component {
             <DownloadFasta
               sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
               filename={(
-                this.props.selectedFamily.sample_id ||
-                this.props.selectedFamily.subject_id ||
-                "sample"
+                this.props.selectedFamily.sample_id
+                || this.props.selectedFamily.subject_id
+                || "sample"
               ).concat("-", this.props.selectedFamily.clone_id, ".fasta")}
               label="Download Fasta: Unique Sequences In This Tree"
             />
             <DownloadText
               text={this.props.selectedTree.newick}
               filename={(
-                this.props.selectedFamily.sample_id ||
-                this.props.selectedFamily.subject_id ||
-                "sample"
+                this.props.selectedFamily.sample_id
+                || this.props.selectedFamily.subject_id
+                || "sample"
               ).concat("-", this.props.selectedFamily.clone_id, "-newick", ".txt")}
               label="Download Clonal Family Tree Newick String"
             />

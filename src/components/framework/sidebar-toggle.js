@@ -8,7 +8,7 @@ sidebarOpen and mobileDisplay: green button with "close" icon
 !sidebarOpen and mobileDisplay: green button with "sliders" icon
 */
 
-const SidebarToggle = ({ sidebarOpen, mobileDisplay, handler }) => {
+function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
   const containerStyle = {
     visibility: mobileDisplay ? "visible" : sidebarOpen ? "hidden" : "visible",
     width: mobileDisplay ? 60 : 14,
@@ -61,6 +61,6 @@ const SidebarToggle = ({ sidebarOpen, mobileDisplay, handler }) => {
       </div>
     </div>
   );
-};
+}
 
 export default SidebarToggle;

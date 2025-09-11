@@ -9,7 +9,9 @@ import React from "react";
  */
 export const prettyString = (
   x,
-  { multiplier = false, trim = 0, camelCase = true, removeComma = false, stripEtAl = false } = {}
+  {
+    multiplier = false, trim = 0, camelCase = true, removeComma = false, stripEtAl = false
+  } = {}
 ) => {
   if (!x && x !== 0) {
     return "";

@@ -94,7 +94,13 @@ class SizeCell extends React.Component {
     }
 
     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return <span>{sizeInMB} MB</span>;
+    return (
+      <span>
+        {sizeInMB}
+        {' '}
+        MB
+      </span>
+    );
   }
 }
 

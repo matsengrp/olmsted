@@ -37,7 +37,13 @@ class SizeCell extends React.Component {
     }
 
     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return <span>{sizeInMB} MB</span>;
+    return (
+      <span>
+        {sizeInMB}
+        {' '}
+        MB
+      </span>
+    );
   }
 }
 
@@ -146,9 +152,8 @@ export default class LoadingTable extends React.Component {
 
     // Calculate changes pending
     const currentlyLoaded = new Set(allDatasets.filter((d) => d.loading === "DONE").map((d) => d.dataset_id));
-    const pendingChanges =
-      selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length +
-      Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
+    const pendingChanges = selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length
+      + Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
     // Check if we need citation column
     const showCitation = _.some(allDatasets, (d) => d.paper !== undefined);
@@ -222,7 +227,9 @@ export default class LoadingTable extends React.Component {
               marginRight: "10px"
             }}
           >
-            Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+            Update Visualization
+            {' '}
+            {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
           </button>
 
           <button
@@ -242,7 +249,10 @@ export default class LoadingTable extends React.Component {
           </button>
         </div>
 
-        <p style={{ marginTop: "10px" }}>Loaded clonal families: {this.props.loadedClonalFamilies}</p>
+        <p style={{ marginTop: "10px" }}>
+          Loaded clonal families:
+          {this.props.loadedClonalFamilies}
+        </p>
       </div>
     );
   }

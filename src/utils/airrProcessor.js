@@ -303,11 +303,11 @@ class AIRRProcessor {
    */
   static isValidAIRRFormat(data) {
     return (
-      data &&
-      typeof data === "object" &&
-      Array.isArray(data.clones) &&
-      Array.isArray(data.samples) &&
-      data.clones.length > 0
+      data
+      && typeof data === "object"
+      && Array.isArray(data.clones)
+      && Array.isArray(data.samples)
+      && data.clones.length > 0
     );
   }
 }

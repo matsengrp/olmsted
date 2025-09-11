@@ -55,6 +55,8 @@ const getNaiveVizData = (datum) => {
 
 const NaiveViz = createClassFromSpec(naiveVegaSpec);
 
-const NaiveSequence = ({ datum }) => <NaiveViz data={getNaiveVizData(datum)} />;
+function NaiveSequence({ datum }) {
+  return <NaiveViz data={getNaiveVizData(datum)} />;
+}
 
 export { NaiveSequence, getNaiveVizData };

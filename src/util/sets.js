@@ -33,4 +33,6 @@ function difference(setA, setB) {
   return _difference;
 }
 
-export { isSuperset, union, intersection, difference };
+export {
+  isSuperset, union, intersection, difference
+};

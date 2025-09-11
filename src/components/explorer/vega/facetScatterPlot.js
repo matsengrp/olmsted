@@ -647,18 +647,18 @@ const createSymbolEncoding = () => ({
   opacity: [{ test: "indata('selected', 'ident', datum.ident)", value: 1 }, { signal: "symbolOpacity" }],
   tooltip: {
     signal:
-      "{" +
-      "'Clone ID': datum.clone_id, " +
-      "'Dataset': datum.dataset_name || '', " +
-      "'Subject': datum.subject_id, " +
-      "'Locus': datum.sample ? datum.sample.locus : '', " +
-      "'Unique Sequences': datum.unique_seqs_count, " +
-      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
-      "'Junction Length': datum.junction_length, " +
-      "'V Gene': datum.v_call, " +
-      "'J Gene': datum.j_call, " +
-      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
-      "}"
+      "{"
+      + "'Clone ID': datum.clone_id, "
+      + "'Dataset': datum.dataset_name || '', "
+      + "'Subject': datum.subject_id, "
+      + "'Locus': datum.sample ? datum.sample.locus : '', "
+      + "'Unique Sequences': datum.unique_seqs_count, "
+      + "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), "
+      + "'Junction Length': datum.junction_length, "
+      + "'V Gene': datum.v_call, "
+      + "'J Gene': datum.j_call, "
+      + "'Has Seed': datum.has_seed ? 'Yes' : 'No'"
+      + "}"
   },
   fill: [
     { test: "!filledShapes", value: "transparent" },
