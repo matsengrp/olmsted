@@ -64,30 +64,31 @@ const tableau20plusColors = [
 // As seen in cft web, colors from http://www.imgt.org/IMGTScientificChart/RepresentationRules/colormenu.php#h1_0
 // again, with transparent added for gaps and X (any) see https://github.com/matsengrp/olmsted/issues/48
 // (EH) these are pretty vibrant and hard to look at
-const IMGTScientificChartColors = [
-  "transparent", // '-' Gap (insertion / deletion)
-  "transparent", //  X - (Any amino acid)
-  "#CCFFFF", //	 A - Ala - Alanine
-  "#00FFFF", //	 C - Cys - Cysteine
-  "#FFCC99", //  D - Asp - Aspartic Acid
-  "#FFCC00", //  E - Glu - Glutamic Acid
-  "#00CCFF", //	 F - Phe - Phenylalanine
-  "#00FF00", //	 G - Gly - Glycine
-  "#FFFF99", //  H - His - Histidine
-  "#000080", //	 I - Ile - Isoleucine
-  "#C64200", //  K - Lys - Lysine
-  "#3366FF", //	 L - Leu - Leucine
-  "#99CCFF", //	 M - Met - Methionine
-  "#FF9900", //  N - Asn - Asparagine
-  "#FFFF00", //	 P - Pro - Proline
-  "#FF6600", //  Q - Gln - Glutamine
-  "#E60606", //  R - Arg - Arginine
-  "#CCFF99", //	 S - Ser - Serine
-  "#00FF99", //	 T - Thr - Threonine
-  "#0000FF", //	 V - Val - Valine
-  "#CC99FF", //	 W - Trp - Tryptophan
-  "#CCFFCC" //	 Y - Tyr - Tyrosine
-];
+// Keeping for reference but not currently used due to being too vibrant
+// const IMGTScientificChartColors = [
+//   "transparent", // '-' Gap (insertion / deletion)
+//   "transparent", //  X - (Any amino acid)
+//   "#CCFFFF", //	 A - Ala - Alanine
+//   "#00FFFF", //	 C - Cys - Cysteine
+//   "#FFCC99", //  D - Asp - Aspartic Acid
+//   "#FFCC00", //  E - Glu - Glutamic Acid
+//   "#00CCFF", //	 F - Phe - Phenylalanine
+//   "#00FF00", //	 G - Gly - Glycine
+//   "#FFFF99", //  H - His - Histidine
+//   "#000080", //	 I - Ile - Isoleucine
+//   "#C64200", //  K - Lys - Lysine
+//   "#3366FF", //	 L - Leu - Leucine
+//   "#99CCFF", //	 M - Met - Methionine
+//   "#FF9900", //  N - Asn - Asparagine
+//   "#FFFF00", //	 P - Pro - Proline
+//   "#FF6600", //  Q - Gln - Glutamine
+//   "#E60606", //  R - Arg - Arginine
+//   "#CCFF99", //	 S - Ser - Serine
+//   "#00FF99", //	 T - Thr - Threonine
+//   "#0000FF", //	 V - Val - Valine
+//   "#CC99FF", //	 W - Trp - Tryptophan
+//   "#CCFFCC" //	 Y - Tyr - Tyrosine
+// ];
 
 const concatTreeWithAlignmentSpec = () => {
   return {

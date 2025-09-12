@@ -83,7 +83,7 @@ class NavBar extends React.Component {
 
   getLogo(styles) {
     return (
-      <a style={styles.logo} onClick={(e) => this.props.dispatch(changePage({ path: "splash" }))}>
+      <a style={styles.logo} onClick={(_e) => this.props.dispatch(changePage({ path: "splash" }))}>
         <img alt="" width="50" src={require("../../images/olmsted_logo.png")} />
       </a>
     );
@@ -94,7 +94,7 @@ class NavBar extends React.Component {
     return this.props.minified ? (
       <div />
     ) : (
-      <a style={styles.title} onClick={(e) => this.props.dispatch(changePage({ path: "splash" }))}>
+      <a style={styles.title} onClick={(_e) => this.props.dispatch(changePage({ path: "splash" }))}>
         {title}
       </a>
     );
@@ -105,7 +105,7 @@ class NavBar extends React.Component {
     return (
       <a
         style={{ ...{ color: linkCol }, ...styles.link }}
-        onClick={(e) => this.props.dispatch(changePage({ path: path }))}
+        onClick={(_e) => this.props.dispatch(changePage({ path: path }))}
       >
         {name}
       </a>

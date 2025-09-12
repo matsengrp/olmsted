@@ -128,7 +128,7 @@ class Splash extends React.Component {
                   fontSize: 18,
                   outline: 0
                 }}
-                onClick={(e) => this.props.dispatch(
+                onClick={(_e) => this.props.dispatch(
                   changePage({
                     path: "/app",
                     query: {

@@ -5,7 +5,7 @@ import { getClonalFamilies } from "../../actions/loadData";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
-import { LoadingStatus, SimpleInProgress } from "../util/loading";
+import { LoadingStatus } from "../util/loading";
 import { ResizableTable } from "../util/resizableTable";
 
 // Component for the load status column

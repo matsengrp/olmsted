@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { titleColors } from "../../util/globals";
 import { titleFont, medGrey } from "../../globalStyles";
 
 @connect((state) => {
