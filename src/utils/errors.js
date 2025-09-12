@@ -2,6 +2,10 @@
  * Custom error classes for consistent error handling across the application
  */
 
+/* eslint-disable local/max-exported-classes-per-file */
+// This utility module exports multiple related error classes and functions
+// All exports are part of the cohesive error handling system
+
 /**
  * Base error class for all application errors
  */
