@@ -252,7 +252,7 @@ class FileUpload extends React.Component {
 
   render() {
     const {
-      uploadedFiles, isProcessing, error, loadingStage, loadingProgress
+      uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress
     } = this.state;
 
     return (

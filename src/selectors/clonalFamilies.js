@@ -1,7 +1,6 @@
 import { createSelector, defaultMemoize, createSelectorCreator } from "reselect";
 import * as _ from "lodash";
 import * as fun from "../components/framework/fun";
-import { timerEnd, timerStart } from "../util/perf";
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(defaultMemoize, _.isEqual);
 
@@ -122,7 +121,7 @@ export const getClonalFamiliesPage = createDeepEqualSelector(
 );
 
 // selector for selected family ident
-const getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily;
+const _getSelectedFamilyIdent = (state) => state.clonalFamilies.selectedFamily;
 
 // selector for clonal family record
 export const getSelectedFamily = createSelector(

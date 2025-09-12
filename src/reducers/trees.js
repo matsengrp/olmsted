@@ -1,5 +1,4 @@
 import * as types from "../actions/types";
-import { chooseDisplayComponentFromPathname } from "../actions/navigation";
 
 const trees = (
   state = {

@@ -89,7 +89,7 @@ class AIRRProcessor {
     };
 
     // First process trees - just add dataset_id, keep existing idents
-    const processedTrees = (data.trees || []).map((tree, index) => {
+    const processedTrees = (data.trees || []).map((tree, _index) => {
       // CRITICAL: Convert nodes array to object indexed by sequence_id if needed
       let processedNodes = tree.nodes;
       if (tree.nodes && Array.isArray(tree.nodes)) {
@@ -228,7 +228,7 @@ class AIRRProcessor {
 
         // Keep only tree metadata in clone object (remove nodes for size)
         processedClone.trees = processedClone.trees.map((tree) => {
-          const { nodes, ...treeMetadata } = tree;
+          const { nodes: _nodes, ...treeMetadata } = tree;
           return {
             ...treeMetadata,
             ident: tree.ident || this.generateUUID()

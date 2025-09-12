@@ -327,7 +327,7 @@ class ClientDataStore {
       await olmstedDB.removeDataset(datasetId);
 
       // Clear memory cache for this dataset
-      for (const [key, value] of this.recentClones.entries()) {
+      for (const [key, _value] of this.recentClones.entries()) {
         if (key.startsWith(datasetId + "_")) {
           this.recentClones.delete(key);
         }

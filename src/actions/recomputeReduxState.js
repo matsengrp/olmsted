@@ -153,7 +153,7 @@ export const createStateFromQueryOrJSONs = ({
   oldState = false /* existing redux state (instead of jsons) */,
   query = {}
 }) => {
-  let entropy, controls, metadata, tree;
+  let entropy, controls, metadata, _tree;
   /* first task is to create metadata, entropy, controls & tree partial state */
   if (JSONs) {
     /* ceate metadata state */

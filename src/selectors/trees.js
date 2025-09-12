@@ -1,4 +1,4 @@
-import { createSelector, createSelectorCreator, defaultMemoize } from "reselect";
+import { createSelector } from "reselect";
 import * as _ from "lodash";
 import * as clonalFamiliesSelectors from "./clonalFamilies";
 

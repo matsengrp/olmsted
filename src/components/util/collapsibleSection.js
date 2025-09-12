@@ -16,7 +16,7 @@ class CollapsibleSection extends React.Component {
 
   render() {
     const {
-      titleText, helpText, children, ...otherProps
+      titleText, _helpText, children, ...otherProps
     } = this.props;
     const { isOpen } = this.state;
 

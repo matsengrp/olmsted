@@ -79,7 +79,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
     });
   };
 
-  const query = queryString.parse(window.location.search);
+  // const query = queryString.parse(window.location.search); // Currently unused
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {

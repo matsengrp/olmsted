@@ -1,9 +1,8 @@
 import React from "react";
-import { connect, Provider } from "react-redux";
+import { connect } from "react-redux";
 import Title from "../framework/title";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
-import { logos } from "./logos";
 import { DatasetsTable } from "./availableDatasets";
 import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";

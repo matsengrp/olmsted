@@ -106,7 +106,7 @@ class ResizableVirtualTable extends React.Component {
     });
   }
 
-  renderTableRow(datum, index) {
+  renderTableRow(datum, _index) {
     const isSelected = this.props.selectedFamily && datum.ident === this.props.selectedFamily.ident;
     const { columnWidths } = this.state;
 
@@ -346,7 +346,7 @@ class DatasetName extends React.Component {
 }
 
 @connect(
-  (store) => ({}),
+  (_store) => ({}),
   (dispatch) => ({
     dispatchSelect: (family_ident) => {
       dispatch(explorerActions.selectFamily(family_ident));

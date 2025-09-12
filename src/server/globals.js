@@ -1,4 +1,4 @@
-const path = require("path");
+// const path = require("path"); // Currently unused
 
 const setGlobals = ({ localData = false, localDataPath = undefined } = {}) => {
   global.LOCAL_DATA = localData;
