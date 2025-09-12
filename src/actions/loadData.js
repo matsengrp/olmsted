@@ -2,11 +2,12 @@ import queryString from "query-string";
 import * as types from "./types";
 import { charonAPIAddress } from "../util/globals";
 import {
-  getDatapath, goTo404, chooseDisplayComponentFromPathname, browserBackForward
+  goTo404, chooseDisplayComponentFromPathname, browserBackForward
 } from "./navigation";
 import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
-import { timerStart, timerEnd } from "../util/perf";
+// Performance monitoring imports - uncomment to enable performance tracking
+// import { timerStart, timerEnd } from "../util/perf";
 
 const charonErrorHandler = () => {
   console.warn("Failed to get manifest JSON from server");
@@ -79,7 +80,6 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
   };
 
   const query = queryString.parse(window.location.search);
-  const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
@@ -121,7 +121,6 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   };
 
   const query = queryString.parse(window.location.search);
-  const user = Object.keys(query).indexOf("user") === -1 ? "guest" : query.user;
 
   const request = new XMLHttpRequest();
   request.onload = () => {

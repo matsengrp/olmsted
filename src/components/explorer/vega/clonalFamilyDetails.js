@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [

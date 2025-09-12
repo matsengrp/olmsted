@@ -17,7 +17,7 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (ident, updateBrushSelection = false) => {
   return (dispatch, getState) => {
     dispatch({ type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection });
-    const { trees, clonalFamilies, datasets } = getState();
+    const { clonalFamilies, datasets } = getState();
     const clonalFamily = clonalFamilies.byIdent[ident];
     const clonalFamilyTrees = clonalFamily ? clonalFamily.trees || [] : [];
 

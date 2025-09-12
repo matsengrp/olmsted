@@ -95,9 +95,10 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
 /**
  * Get datasets list from client storage (replaces server getDatasets)
  * @param {Function} dispatch - Redux dispatch function
- * @param {string} s3bucket - Legacy parameter for server compatibility (ignored)
+ * @param {string} _s3bucket - Legacy parameter for server compatibility (ignored)
  */
-export const getClientDatasets = async (dispatch, s3bucket = "live") => {
+// eslint-disable-next-line no-unused-vars
+export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
   try {
     const clientDatasets = await clientDataStore.getAllDatasets();
 

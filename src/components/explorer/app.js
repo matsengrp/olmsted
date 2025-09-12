@@ -42,10 +42,11 @@ const mapStateToProps = (state) => {
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
   render() {
+    const { nClonalFamiliesBrushed } = this.props;
     return (
       <p>
         Number of families currently selected:
-        {this.props.nClonalFamiliesBrushed}
+        {nClonalFamiliesBrushed}
       </p>
     );
   }
@@ -81,6 +82,7 @@ class App extends React.Component {
   //   dispatch: PropTypes.func.isRequired
   // }
   async componentDidMount() {
+    const { availableDatasets, dispatch } = this.props;
     document.addEventListener(
       "dragover",
       (e) => {
@@ -91,41 +93,42 @@ class App extends React.Component {
 
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
-    if (this.props.availableDatasets.length === 0 && !this._datasetsLoading) {
+    if (availableDatasets.length === 0 && !this._datasetsLoading) {
       this._datasetsLoading = true; // Prevent multiple simultaneous calls
       // Wait for IndexedDB to be ready before loading datasets
       try {
         const olmstedDB = (await import("../../utils/olmstedDB")).default;
         await olmstedDB.ready; // Wait for database to be ready
-        await getClientDatasets(this.props.dispatch);
+        await getClientDatasets(dispatch);
       } catch (error) {
         console.error("Error waiting for database to be ready:", error);
         // Fallback to immediate loading (for cases where DB isn't available)
-        await getClientDatasets(this.props.dispatch);
+        await getClientDatasets(dispatch);
       }
       this._datasetsLoading = false;
     }
   }
 
   componentDidUpdate(prevProps) {
+    const { availableDatasets, pendingDatasetLoads, dispatch } = this.props;
     // Check if datasets were just loaded and we have pending dataset loads from URL
     if (
       prevProps.availableDatasets.length === 0
-      && this.props.availableDatasets.length > 0
-      && this.props.pendingDatasetLoads
-      && this.props.pendingDatasetLoads.length > 0
+      && availableDatasets.length > 0
+      && pendingDatasetLoads
+      && pendingDatasetLoads.length > 0
     ) {
       // Process each pending dataset load
-      this.props.pendingDatasetLoads.forEach((dataset_id) => {
-        const dataset = this.props.availableDatasets.find((d) => d.dataset_id === dataset_id);
+      pendingDatasetLoads.forEach((dataset_id) => {
+        const dataset = availableDatasets.find((d) => d.dataset_id === dataset_id);
         if (dataset) {
-          this.props.dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
+          dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
 
           // Use appropriate loader based on dataset type
           if (dataset.isClientSide) {
-            getClientClonalFamilies(this.props.dispatch, dataset_id);
+            getClientClonalFamilies(dispatch, dataset_id);
           } else {
-            loadData.getClonalFamilies(this.props.dispatch, dataset_id);
+            loadData.getClonalFamilies(dispatch, dataset_id);
           }
         } else {
           console.warn(`App: Dataset ${dataset_id} not found in available datasets`);
@@ -133,14 +136,25 @@ class App extends React.Component {
       });
 
       // Clear pending dataset loads
-      this.props.dispatch({ type: types.CLEAR_PENDING_DATASET_LOADS });
+      dispatch({ type: types.CLEAR_PENDING_DATASET_LOADS });
     }
   }
 
   render() {
+    const {
+      browserDimensions,
+      availableDatasets,
+      dispatch,
+      locus,
+      resetState,
+      filterLocus,
+      selectedFamily,
+      selectedSeq
+    } = this.props;
+    
     /* D I M E N S I O N S */
-    const availableWidth = this.props.browserDimensions.width;
-    const availableHeight = this.props.browserDimensions.height;
+    const availableWidth = browserDimensions.width;
+    const availableHeight = browserDimensions.height;
 
     // let sidebarWidth = 0;
 
@@ -185,7 +199,7 @@ class App extends React.Component {
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
-                <LoadingTable datasets={this.props.availableDatasets} dispatch={this.props.dispatch} />
+                <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
             </div>
             <div style={sectionStyle}>
@@ -227,10 +241,10 @@ class App extends React.Component {
                   Filter by locus:
                 </label>
                 <select
-                  value={this.props.locus}
+                  value={locus}
                   onChange={(event) => {
-                    this.props.resetState();
-                    this.props.filterLocus(event.target.value);
+                    resetState();
+                    filterLocus(event.target.value);
                   }}
                 >
                   {["igh", "igk", "igl", "ALL"].map((locus) => (
@@ -261,14 +275,14 @@ class App extends React.Component {
                 </div>
               </CollapsibleSection>
             </div>
-            {this.props.selectedFamily && (
+            {selectedFamily && (
               <div style={sectionStyle}>
                 <CollapsibleSection titleText="Clonal family details">
                   <TreeViz availableHeight={availableHeight} />
                 </CollapsibleSection>
               </div>
             )}
-            {!_.isEmpty(this.props.selectedSeq) && (
+            {!_.isEmpty(selectedSeq) && (
               <div style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral sequences">
                   <Lineage />

@@ -1,7 +1,5 @@
 import queryString from "query-string";
 import * as types from "./types";
-import { getClonalFamilies } from "./loadData";
-import * as sets from "../util/sets";
 // This should be more clearly marked as part of the routing logic
 export const chooseDisplayComponentFromPathname = (pathname) => {
   // if (pathname === "/" || pathname === "/all") return "splash";

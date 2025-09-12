@@ -1,7 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
 import Vega from "react-vega";
-import * as _ from "lodash";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import { seqAlignSpec } from "./vega/clonalFamilyDetails";

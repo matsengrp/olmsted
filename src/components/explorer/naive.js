@@ -1,6 +1,5 @@
 import React from "react";
 import { createClassFromSpec } from "react-vega";
-import * as _ from "lodash";
 import naiveVegaSpec from "./vega/naive.js";
 
 // Naive gene reassortment viz component

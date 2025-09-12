@@ -1,8 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
 import Vega from "react-vega";
-import * as _ from "lodash";
-import * as vega from "vega";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot.js";
 import * as explorerActions from "../../actions/explorer.js";
