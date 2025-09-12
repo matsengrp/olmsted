@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+// import * as _ from "lodash"; // Only used in example comments below
 
 // Threading macros let you thread data through a series of transformations more elegantly.
 //

@@ -7,6 +7,8 @@ export const chooseDisplayComponentFromPathname = (pathname) => {
   return "splash"; // fallthrough
 };
 
+// Second parameter is legacy server compatibility - not used in client-side version
+// eslint-disable-next-line no-unused-vars
 export const getDatapath = (path, _) => {
   return path;
 };

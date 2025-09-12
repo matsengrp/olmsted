@@ -2,11 +2,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import _throttle from "lodash/throttle";
-import { BROWSER_DIMENSIONS, CHANGE_PANEL_LAYOUT } from "../../actions/types";
+import { BROWSER_DIMENSIONS } from "../../actions/types";
 import { browserBackForward } from "../../actions/navigation";
-import { getDatasets } from "../../actions/loadData";
 import { getClientDatasets } from "../../actions/clientDataLoader";
-import { twoColumnBreakpoint } from "../../util/globals";
 
 @connect((state) => ({
   datapath: state.datasets.datapath
@@ -64,7 +62,7 @@ class Monitor extends React.Component {
       /* here we decide whether we should change panel layout from full <-> grid
       when crossing the twoColumnBreakpoint */
       const { browserDimensions } = getState();
-      const oldBrowserDimensions = browserDimensions.browserDimensions;
+      // const oldBrowserDimensions = browserDimensions.browserDimensions; // unused variable
       const newBrowserDimensions = {
         width: window.innerWidth,
         height: window.innerHeight,

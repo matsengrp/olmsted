@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
-import { LoadingStatus, SimpleInProgress } from "../util/loading";
+import { LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
