@@ -362,7 +362,7 @@ class SelectAttribute extends React.Component {
         checked={
           this.props.selectedFamily
             ? (this.props.datum.ident || this.props.datum.clone_id)
-              == (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
+              === (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
             : false
         }
         onChange={() => {

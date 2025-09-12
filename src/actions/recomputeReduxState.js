@@ -140,8 +140,10 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
   }
 
   /* if colorBy is a genotype then we need to set mutType */
-  const maybeMutType = determineColorByGenotypeType(state.colorBy);
-  if (maybeMutType) state.mutType = maybeMutType;
+  // TODO: Legacy code from Auspice - determineColorByGenotypeType not implemented in Olmsted
+  // Determine if this functionality is needed for Olmsted's use case
+  // const maybeMutType = determineColorByGenotypeType(state.colorBy);
+  // if (maybeMutType) state.mutType = maybeMutType;
 
   return state;
 };
@@ -163,11 +165,17 @@ export const createStateFromQueryOrJSONs = ({
     delete metadata.color_options;
     metadata.loaded = true;
     /* entropy state */
-    entropy = entropyCreateStateFromJsons(JSONs.meta);
+    // TODO: Legacy code from Auspice - entropyCreateStateFromJsons not implemented in Olmsted
+    // Determine if entropy calculations are needed for B cell lineage analysis
+    // entropy = entropyCreateStateFromJsons(JSONs.meta);
+    entropy = {}; // Placeholder - implement if needed
 
     /* new controls state - don't apply query yet (or error check!) */
-    controls = getDefaultControlsState();
-    controls = modifyStateViaTree(controls, tree, treeToo);
+    // TODO: Legacy code from Auspice - these functions not implemented in Olmsted
+    // getDefaultControlsState, modifyStateViaTree, and treeToo are from original Auspice
+    // controls = getDefaultControlsState();
+    // controls = modifyStateViaTree(controls, tree, treeToo);
+    controls = {}; // Placeholder - implement Olmsted-specific controls initialization if needed
     controls = modifyStateViaMetadata(controls, metadata);
   } else if (oldState) {
     /* revisit this - but it helps prevent bugs */

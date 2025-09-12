@@ -1,4 +1,8 @@
 
+/* eslint-disable eqeqeq */
+// Note: Vega expressions use == for comparison within expression strings
+// These are not JavaScript expressions but Vega's domain-specific language
+
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [
   "-",

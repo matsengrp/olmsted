@@ -1,3 +1,7 @@
+/* eslint-disable eqeqeq */
+// Note: Vega expressions use == for comparison within expression strings
+// These are not JavaScript expressions but Vega's domain-specific language
+
 const naiveVegaSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   autosize: "pad",

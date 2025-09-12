@@ -9,7 +9,7 @@ import parseParams, { createDatapathForSecondSegment } from "../util/parseParams
 // Performance monitoring imports - uncomment to enable performance tracking
 // import { timerStart, timerEnd } from "../util/perf";
 
-const charonErrorHandler = () => {
+const charonErrorHandler = (dispatch) => {
   console.warn("Failed to get manifest JSON from server");
   const datapath = window.location.pathname.replace(/^\//, "").replace(/\/$/, "").replace("/", "_");
   dispatch({ type: types.PROCEED_SANS_MANIFEST, datapath });
@@ -42,11 +42,11 @@ export const getTree = (dispatch, tree_id) => {
     if (request.readyState === 4 && request.status === 200) {
       processData(request.responseText, tree_id);
     } else {
-      charonErrorHandler();
+      charonErrorHandler(dispatch);
     }
   };
 
-  request.onerror = charonErrorHandler;
+  request.onerror = () => charonErrorHandler(dispatch);
   request.open("get", `${charonAPIAddress}/tree.${tree_id}.json`, true); // true for asynchronous
 
   request.send(null);
@@ -85,11 +85,11 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
     if (request.readyState === 4 && request.status === 200) {
       processData(request.responseText, dataset_id);
     } else {
-      charonErrorHandler();
+      charonErrorHandler(dispatch);
     }
   };
 
-  request.onerror = charonErrorHandler;
+  request.onerror = () => charonErrorHandler(dispatch);
   request.open("get", `${charonAPIAddress}/clones.${dataset_id}.json`, true); // true for asynchronous
 
   request.send(null);
@@ -127,10 +127,10 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     if (request.readyState === 4 && request.status === 200) {
       processData(request.responseText, query);
     } else {
-      charonErrorHandler();
+      charonErrorHandler(dispatch);
     }
   };
-  request.onerror = charonErrorHandler;
+  request.onerror = () => charonErrorHandler(dispatch);
   request.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
   request.send(null);
 };

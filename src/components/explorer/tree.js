@@ -173,7 +173,7 @@ class TreeViz extends React.Component {
       // Here we create a separate dataset only containing the id of the
       // seed sequence so as to check quickly for this id within the
       // viz to color the seed blue
-      seed: this.props.selectedFamily.seed_id == null ? [] : [{ id: this.props.selectedFamily.seed_id }]
+      seed: this.props.selectedFamily.seed_id === null ? [] : [{ id: this.props.selectedFamily.seed_id }]
     };
   }
 

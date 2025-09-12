@@ -282,7 +282,7 @@ class App extends React.Component {
                 </CollapsibleSection>
               </div>
             )}
-            {!_.isEmpty(selectedSeq) && (
+            {selectedSeq && Object.keys(selectedSeq).length > 0 && (
               <div style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral sequences">
                   <Lineage />

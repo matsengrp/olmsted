@@ -110,7 +110,7 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.TOGGLE_SORT: {
       // We default to descending order when sorting by a new column
-      const same_column = action.column == state.pagination.order_by;
+      const same_column = action.column === state.pagination.order_by;
       const new_pagination = {
         ...state.pagination,
         page: 0,
