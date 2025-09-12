@@ -1,4 +1,3 @@
-
 /* eslint-disable eqeqeq */
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
@@ -39,25 +38,25 @@ const tableau20plusColors = [
   "transparent", // '-' Gap (insertion / deletion)
   "transparent", //  X - (Any amino acid)
   "#1f77b4", //  A - Ala - Alanine
-  "#aec7e8", //	 C - Cys - Cysteine
+  "#aec7e8", //   C - Cys - Cysteine
   "#ff7f0e", //  D - Asp - Aspartic Acid
   "#ffbb78", //  E - Glu - Glutamic Acid
-  "#2ca02c", //	 F - Phe - Phenylalanine
-  "#98df8a", //	 G - Gly - Glycine
+  "#2ca02c", //   F - Phe - Phenylalanine
+  "#98df8a", //   G - Gly - Glycine
   "#d62728", //  H - His - Histidine
-  "#ff9896", //	 I - Ile - Isoleucine
+  "#ff9896", //   I - Ile - Isoleucine
   "#9467bd", //  K - Lys - Lysine
-  "#c5b0d5", //	 L - Leu - Leucine
-  "#8c564b", //	 M - Met - Methionine
+  "#c5b0d5", //   L - Leu - Leucine
+  "#8c564b", //   M - Met - Methionine
   "#c49c94", //  N - Asn - Asparagine
-  "#e377c2", //	 P - Pro - Proline
+  "#e377c2", //   P - Pro - Proline
   "#f7b6d2", //  Q - Gln - Glutamine
   "#7f7f7f", //  R - Arg - Arginine
-  "#c7c7c7", //	 S - Ser - Serine
-  "#bcbd22", //	 T - Thr - Threonine
-  "#dbdb8d", //	 V - Val - Valine
-  "#17becf", //	 W - Trp - Tryptophan
-  "#9edae5" //	 Y - Tyr - Tyrosine
+  "#c7c7c7", //   S - Ser - Serine
+  "#bcbd22", //   T - Thr - Threonine
+  "#dbdb8d", //   V - Val - Valine
+  "#17becf", //   W - Trp - Tryptophan
+  "#9edae5" //   Y - Tyr - Tyrosine
 ];
 
 // Alternatively:
@@ -68,26 +67,26 @@ const tableau20plusColors = [
 // const IMGTScientificChartColors = [
 //   "transparent", // '-' Gap (insertion / deletion)
 //   "transparent", //  X - (Any amino acid)
-//   "#CCFFFF", //	 A - Ala - Alanine
-//   "#00FFFF", //	 C - Cys - Cysteine
+//   "#CCFFFF", //   A - Ala - Alanine
+//   "#00FFFF", //   C - Cys - Cysteine
 //   "#FFCC99", //  D - Asp - Aspartic Acid
 //   "#FFCC00", //  E - Glu - Glutamic Acid
-//   "#00CCFF", //	 F - Phe - Phenylalanine
-//   "#00FF00", //	 G - Gly - Glycine
+//   "#00CCFF", //   F - Phe - Phenylalanine
+//   "#00FF00", //   G - Gly - Glycine
 //   "#FFFF99", //  H - His - Histidine
-//   "#000080", //	 I - Ile - Isoleucine
+//   "#000080", //   I - Ile - Isoleucine
 //   "#C64200", //  K - Lys - Lysine
-//   "#3366FF", //	 L - Leu - Leucine
-//   "#99CCFF", //	 M - Met - Methionine
+//   "#3366FF", //   L - Leu - Leucine
+//   "#99CCFF", //   M - Met - Methionine
 //   "#FF9900", //  N - Asn - Asparagine
-//   "#FFFF00", //	 P - Pro - Proline
+//   "#FFFF00", //   P - Pro - Proline
 //   "#FF6600", //  Q - Gln - Glutamine
 //   "#E60606", //  R - Arg - Arginine
-//   "#CCFF99", //	 S - Ser - Serine
-//   "#00FF99", //	 T - Thr - Threonine
-//   "#0000FF", //	 V - Val - Valine
-//   "#CC99FF", //	 W - Trp - Tryptophan
-//   "#CCFFCC" //	 Y - Tyr - Tyrosine
+//   "#CCFF99", //   S - Ser - Serine
+//   "#00FF99", //   T - Thr - Threonine
+//   "#0000FF", //   V - Val - Valine
+//   "#CC99FF", //   W - Trp - Tryptophan
+//   "#CCFFCC" //   Y - Tyr - Tyrosine
 // ];
 
 const concatTreeWithAlignmentSpec = () => {

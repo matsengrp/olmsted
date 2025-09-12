@@ -25,7 +25,7 @@ const datasets = (
   switch (action.type) {
     case types.LOADING_DATASET: {
       const updatedAvailableDatasets = state.availableDatasets.map((dataset) => dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset);
-      return { ...state, availableDatasets: updatedAvailableDatasets};
+      return { ...state, availableDatasets: updatedAvailableDatasets };
     }
     case types.PAGE_CHANGE: {
       return {
@@ -59,12 +59,12 @@ const datasets = (
       // I guess its ok to keep this, but not sure that what its doing here will make any sense or be necessary once all reorg is said and done
     }
     case types.PROCEED_SANS_MANIFEST: {
-      return { ...state, datapath: action.datapath};
+      return { ...state, datapath: action.datapath };
     }
     case types.REMOVE_DATASET: {
       // Filter out the removed dataset from availableDatasets
       const filteredDatasets = state.availableDatasets.filter((dataset) => dataset.dataset_id !== action.dataset_id);
-      return { ...state, availableDatasets: filteredDatasets};
+      return { ...state, availableDatasets: filteredDatasets };
 
       // Not sure what this is...
     }
@@ -79,16 +79,16 @@ const datasets = (
       const selectedDatasets = state.selectedDatasets.includes(action.dataset_id)
         ? state.selectedDatasets.filter((id) => id !== action.dataset_id) // Remove if already selected
         : [...state.selectedDatasets, action.dataset_id]; // Add if not selected
-      return { ...state, selectedDatasets};
+      return { ...state, selectedDatasets };
     }
     case types.CLEAR_DATASET_SELECTIONS: {
-      return { ...state, selectedDatasets: []};
+      return { ...state, selectedDatasets: [] };
     }
     case types.CLEAR_PENDING_DATASET_LOADS: {
-      return { ...state, pendingDatasetLoads: []};
+      return { ...state, pendingDatasetLoads: [] };
     }
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: {
-      return { ...state, pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads};
+      return { ...state, pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads };
     }
     default: {
       return state;

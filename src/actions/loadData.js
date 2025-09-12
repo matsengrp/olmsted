@@ -1,9 +1,7 @@
 import queryString from "query-string";
 import * as types from "./types";
 import { charonAPIAddress } from "../util/globals";
-import {
-  goTo404, chooseDisplayComponentFromPathname, browserBackForward
-} from "./navigation";
+import { goTo404, chooseDisplayComponentFromPathname, browserBackForward } from "./navigation";
 import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
 import parseParams, { createDatapathForSecondSegment } from "../util/parseParams";
 // Performance monitoring imports - uncomment to enable performance tracking
@@ -102,7 +100,10 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     let availableDatasets = JSON.parse(data);
     const selectedDatasets = [].concat(query.selectedDatasets);
 
-    availableDatasets = availableDatasets.map((dataset) => ({...dataset, selected: selectedDatasets.includes(dataset.dataset_id)}));
+    availableDatasets = availableDatasets.map((dataset) => ({
+      ...dataset,
+      selected: selectedDatasets.includes(dataset.dataset_id)
+    }));
 
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app"
       ? // getDatapath(window.location.pathname, availableDatasets) :

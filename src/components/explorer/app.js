@@ -151,7 +151,7 @@ class App extends React.Component {
       selectedFamily,
       selectedSeq
     } = this.props;
-    
+
     /* D I M E N S I O N S */
     const availableWidth = browserDimensions.width;
     const availableHeight = browserDimensions.height;
