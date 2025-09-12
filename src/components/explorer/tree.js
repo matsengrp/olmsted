@@ -6,7 +6,7 @@ import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import { concatTreeWithAlignmentSpec } from "./vega/clonalFamilyDetails";
 import { getNaiveVizData } from "./naive";
-import * as explorerActions from "../../actions/explorer.js";
+import * as explorerActions from "../../actions/explorer";
 import DownloadFasta from "./downloadFasta";
 import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";

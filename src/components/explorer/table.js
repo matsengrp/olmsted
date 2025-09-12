@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
-import * as explorerActions from "../../actions/explorer.js";
+import * as explorerActions from "../../actions/explorer";
 import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 

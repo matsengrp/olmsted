@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import * as types from "./types";
-import * as loadData from "./loadData.js";
+import * as loadData from "./loadData";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
 
