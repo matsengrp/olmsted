@@ -1,6 +1,8 @@
 ---
 extends: "airbnb"
 parser: "@babel/eslint-parser"
+plugins:
+  - "local"
 rules:
   camelcase: off # require camel case names
   prefer-template: off
@@ -44,6 +46,8 @@ rules:
   no-unneeded-ternary: ["error", { "defaultAssignment": true }]
   quote-props: ["error", "as-needed"]
   prefer-const: ["error", {"destructuring": "all"}]
+  max-classes-per-file: off # Replaced with custom rule
+  local/max-exported-classes-per-file: ["error", 1] # Allow private helper classes, limit exports to 1
 parserOptions:
   ecmaVersion: 6
   sourceType: module
