@@ -89,13 +89,12 @@ class ResizableVirtualTable extends React.Component {
   }
 
   onMouseMove(e) {
-    if (!this.state.isResizing) return;
-
-    const { startX, startWidth, resizingColumn } = this.state;
+    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
+    if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
 
-    const newWidths = [...this.state.columnWidths];
+    const newWidths = [...columnWidths];
     newWidths[resizingColumn] = newWidth;
 
     this.setState({ columnWidths: newWidths });
@@ -174,7 +173,7 @@ class ResizableVirtualTable extends React.Component {
   }
 
   render() {
-    const { data, containerHeight = 500 } = this.props;
+    const { data, containerHeight = 500, mappings, dispatch } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
 
@@ -214,7 +213,7 @@ class ResizableVirtualTable extends React.Component {
               minWidth: "fit-content"
             }}
           >
-            {_.map(this.props.mappings, ([name, AttrOrComponent], colIndex) => {
+            {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
               const isAttr = typeof AttrOrComponent === "string";
 
@@ -241,7 +240,7 @@ class ResizableVirtualTable extends React.Component {
                   key={name}
                   style={style}
                   onClick={() => {
-                    isAttr && this.props.dispatch(explorerActions.toggleSort(AttrOrComponent));
+                    isAttr && dispatch(explorerActions.toggleSort(AttrOrComponent));
                   }}
                 >
                   <span

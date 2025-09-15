@@ -2,10 +2,14 @@ import React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 class CopyButton extends React.Component {
-  state = {
-    value: this.props.value,
-    copied: false
-  };
+  constructor(props) {
+    super(props);
+    const { value } = props;
+    this.state = {
+      value,
+      copied: false
+    };
+  }
 
   componentDidUpdate(prevProps) {
     const { value } = this.props;

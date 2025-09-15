@@ -150,16 +150,16 @@ export default class LoadingTable extends React.Component {
 
   render() {
     // Use all datasets (including loaded ones)
-    const allDatasets = this.props.allDatasets || this.props.datasets || [];
-    const { selectedDatasets } = this.props;
+    const { allDatasets, datasets, selectedDatasets, dispatch, loadedClonalFamilies } = this.props;
+    const allDatasetsToUse = allDatasets || datasets || [];
 
     // Calculate changes pending
-    const currentlyLoaded = new Set(allDatasets.filter((d) => d.loading === "DONE").map((d) => d.dataset_id));
+    const currentlyLoaded = new Set(allDatasetsToUse.filter((d) => d.loading === "DONE").map((d) => d.dataset_id));
     const pendingChanges = selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length
       + Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
     // Check if we need citation column
-    const showCitation = _.some(allDatasets, (d) => d.paper !== undefined);
+    const showCitation = _.some(allDatasetsToUse, (d) => d.paper !== undefined);
 
     // Build mappings for the table - same as Available Datasets but with selection checkboxes
     const mappings = [
@@ -204,14 +204,14 @@ export default class LoadingTable extends React.Component {
         </div>
 
         <ResizableTable
-          data={allDatasets}
+          data={allDatasetsToUse}
           mappings={mappings}
           columnWidths={columnWidths}
           containerHeight={200}
           itemName="available datasets"
           componentProps={{
-            dispatch: this.props.dispatch,
-            selectedDatasets: this.props.selectedDatasets
+            dispatch,
+            selectedDatasets
           }}
         />
 
@@ -257,7 +257,7 @@ export default class LoadingTable extends React.Component {
 
         <p style={{ marginTop: "10px" }}>
           Loaded clonal families:
-          {this.props.loadedClonalFamilies}
+          {loadedClonalFamilies}
         </p>
       </div>
     );

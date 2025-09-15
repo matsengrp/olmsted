@@ -73,13 +73,12 @@ export class ResizableTable extends React.Component {
   }
 
   onMouseMove(e) {
-    if (!this.state.isResizing) return;
-
-    const { startX, startWidth, resizingColumn } = this.state;
+    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
+    if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
 
-    const newWidths = [...this.state.columnWidths];
+    const newWidths = [...columnWidths];
     newWidths[resizingColumn] = newWidth;
 
     this.setState({ columnWidths: newWidths });
@@ -122,7 +121,7 @@ export class ResizableTable extends React.Component {
 
   renderTableRow(datum, index) {
     const { columnWidths } = this.state;
-    const { onRowClick, getRowStyle, mappings } = this.props;
+    const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
 
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
 
@@ -187,7 +186,7 @@ export class ResizableTable extends React.Component {
             // Check if it's a React component or a simple function
             if (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) {
               // It's a React component
-              content = <AttrOrComponent datum={datum} {...(this.props.componentProps || {})} />;
+              content = <AttrOrComponent datum={datum} {...(componentProps || {})} />;
             } else {
               // It's a simple function that returns a value
               const value = AttrOrComponent(datum);
@@ -219,7 +218,7 @@ export class ResizableTable extends React.Component {
   }
 
   render() {
-    const { containerHeight = 400, mappings, showFooter = true } = this.props;
+    const { containerHeight = 400, mappings, showFooter = true, componentProps, itemName } = this.props;
     const {
       scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
     } = this.state;
@@ -358,7 +357,7 @@ export class ResizableTable extends React.Component {
             {' '}
             {sortedData.length}
             {' '}
-            {this.props.itemName || "items"}
+            {itemName || "items"}
           </div>
         )}
       </div>

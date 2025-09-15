@@ -255,7 +255,7 @@ class FileUpload extends React.Component {
 
   render() {
     const {
-      uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress
+      uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress, loadingProgress, loadingStage
     } = this.state;
 
     return (
@@ -325,7 +325,7 @@ class FileUpload extends React.Component {
                 >
                   <div
                     style={{
-                      width: `${this.state.loadingProgress}%`,
+                      width: `${loadingProgress}%`,
                       height: "100%",
                       backgroundColor: "#007bff",
                       transition: "width 0.3s ease",
@@ -343,7 +343,7 @@ class FileUpload extends React.Component {
                     minHeight: 20
                   }}
                 >
-                  {this.state.loadingStage || "Initializing..."}
+                  {loadingStage || "Initializing..."}
                 </div>
 
                 {/* Progress Percentage */}
@@ -354,7 +354,7 @@ class FileUpload extends React.Component {
                     fontWeight: "bold"
                   }}
                 >
-                  {this.state.loadingProgress}
+                  {loadingProgress}
                   % Complete
                 </div>
               </div>

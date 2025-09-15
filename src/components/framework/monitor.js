@@ -57,7 +57,10 @@ class Monitor extends React.Component {
     }
   }
 
-  onURLChanged = () => this.props.dispatch(browserBackForward());
+  onURLChanged = () => {
+    const { dispatch } = this.props;
+    dispatch(browserBackForward());
+  }
 
   handleResizeByDispatching() {
     const { dispatch } = this.props;
