@@ -89,7 +89,9 @@ class ResizableVirtualTable extends React.Component {
   }
 
   onMouseMove(e) {
-    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
+    const {
+      isResizing, startX, startWidth, resizingColumn, columnWidths
+    } = this.state;
     if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
@@ -173,7 +175,9 @@ class ResizableVirtualTable extends React.Component {
   }
 
   render() {
-    const { data, containerHeight = 500, mappings, dispatch } = this.props;
+    const {
+      data, containerHeight = 500, mappings, dispatch
+    } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
 

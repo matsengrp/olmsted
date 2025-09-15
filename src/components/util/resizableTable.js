@@ -73,7 +73,9 @@ export class ResizableTable extends React.Component {
   }
 
   onMouseMove(e) {
-    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
+    const {
+      isResizing, startX, startWidth, resizingColumn, columnWidths
+    } = this.state;
     if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
@@ -121,7 +123,9 @@ export class ResizableTable extends React.Component {
 
   renderTableRow(datum, index) {
     const { columnWidths } = this.state;
-    const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
+    const {
+      onRowClick, getRowStyle, mappings, componentProps
+    } = this.props;
 
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
 
@@ -218,7 +222,9 @@ export class ResizableTable extends React.Component {
   }
 
   render() {
-    const { containerHeight = 400, mappings, showFooter = true, componentProps, itemName } = this.props;
+    const {
+      containerHeight = 400, mappings, showFooter = true, componentProps, itemName
+    } = this.props;
     const {
       scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
     } = this.state;

@@ -150,7 +150,9 @@ export default class LoadingTable extends React.Component {
 
   render() {
     // Use all datasets (including loaded ones)
-    const { allDatasets, datasets, selectedDatasets, dispatch, loadedClonalFamilies } = this.props;
+    const {
+      allDatasets, datasets, selectedDatasets, dispatch, loadedClonalFamilies
+    } = this.props;
     const allDatasetsToUse = allDatasets || datasets || [];
 
     // Calculate changes pending
