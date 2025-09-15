@@ -53,7 +53,36 @@ class SelectedFamiliesSummary extends React.Component {
 }
 
 function Overlay({ styles, mobileDisplay, handler }) {
-  return mobileDisplay ? <div style={styles} onClick={handler} onTouchStart={handler} /> : <div />;
+  /**
+   * Keyboard event handler for accessibility (WCAG 2.1 Level A compliance)
+   *
+   * WCAG Success Criterion 2.1.1 - Keyboard:
+   * All functionality must be operable through a keyboard interface.
+   *
+   * Standard keys for activation (per ARIA Authoring Practices Guide):
+   * - Enter: Universal activation key for buttons and links
+   * - Space: Activation key specifically for buttons
+   *
+   * @param {KeyboardEvent} e - The keyboard event
+   */
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); // Prevent default Space key scrolling behavior
+      handler(e);
+    }
+  };
+
+  return mobileDisplay ? (
+    <div
+      style={styles}
+      onClick={handler}
+      onKeyDown={handleKeyDown}
+      onTouchStart={handler}
+      role="button" // ARIA role: Identifies div as a button for screen readers
+      tabIndex={0} // Makes element keyboard focusable (0 = normal tab order)
+      aria-label="Close overlay" // Provides accessible name for screen readers
+    />
+  ) : <div />;
 }
 
 @connect(

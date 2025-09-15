@@ -60,8 +60,28 @@ class LoadStatusCell extends React.Component {
 
   render() {
     const { datum } = this.props;
+
+    /**
+     * Keyboard handler for dataset selection
+     * WCAG 2.1.1: Interactive table cells must be keyboard accessible
+     * Allows dataset selection via keyboard navigation
+     */
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.selectDataset();
+      }
+    };
+
     return (
-      <div onClick={this.selectDataset} style={{ cursor: "pointer", width: "100%", textAlign: "center" }}>
+      <div
+        onClick={this.selectDataset}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`Select dataset ${datum.dataset_id}`}
+        style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
+      >
         <LoadingStatus loadingStatus={datum.loading} />
       </div>
     );

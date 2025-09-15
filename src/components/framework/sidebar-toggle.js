@@ -54,8 +54,28 @@ function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
     iconClass = "fa fa-sliders";
   }
 
+  /**
+   * Keyboard handler for sidebar content toggle
+   * WCAG 2.1.1: Toggle controls must be keyboard accessible
+   * This expands/collapses sidebar content sections
+   */
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handler(e);
+    }
+  };
+
   return (
-    <div style={containerStyle} onClick={handler}>
+    <div
+      style={containerStyle}
+      onClick={handler}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`${selected ? 'Collapse' : 'Expand'} sidebar section`}
+      aria-expanded={selected}
+    >
       <div style={iconStyle}>
         <i className={iconClass} aria-hidden="true" />
       </div>

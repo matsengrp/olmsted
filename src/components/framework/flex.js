@@ -69,8 +69,31 @@ class Flex extends React.Component {
     const { clickHandler, children } = this.props;
     const styles = this.getStyles();
 
+    /**
+     * Keyboard handler for clickable Flex containers
+     * WCAG 2.1.1: All interactive elements must be keyboard accessible
+     * Only applies when clickHandler prop is provided
+     */
+    const handleKeyDown = clickHandler ? (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        clickHandler(e);
+      }
+    } : undefined;
+
+    // Only add interactive attributes if there's a click handler
+    const interactiveProps = clickHandler ? {
+      onClick: clickHandler,
+      onKeyDown: handleKeyDown,
+      role: "button",
+      tabIndex: 0,
+      style: { ...styles.base, ...styles.style, cursor: 'pointer' }
+    } : {
+      style: { ...styles.base, ...styles.style }
+    };
+
     return (
-      <div onClick={clickHandler} style={{ ...styles.base, ...styles.style }}>
+      <div {...interactiveProps}>
         {children}
       </div>
     );

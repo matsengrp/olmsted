@@ -84,8 +84,29 @@ class NavBar extends React.Component {
 
   getLogo(styles) {
     const { dispatch } = this.props;
+    /**
+     * Logo link keyboard handler
+     * WCAG 2.1.1: Navigation elements must be keyboard accessible
+     * Using href="#" with preventDefault for proper link semantics
+     */
+    const handleLogoClick = (e) => {
+      e.preventDefault();
+      dispatch(changePage({ path: "splash" }));
+    };
+    const handleLogoKeyDown = (e) => {
+      if (e.key === 'Enter') { // Links naturally respond to Enter, not Space
+        e.preventDefault();
+        dispatch(changePage({ path: "splash" }));
+      }
+    };
     return (
-      <a style={styles.logo} onClick={(_e) => dispatch(changePage({ path: "splash" }))}>
+      <a
+        href="#"
+        style={styles.logo}
+        onClick={handleLogoClick}
+        onKeyDown={handleLogoKeyDown}
+        aria-label="Olmsted home"
+      >
         <img alt="" width="50" src={require("../../images/olmsted_logo.png")} />
       </a>
     );
@@ -97,7 +118,21 @@ class NavBar extends React.Component {
     return minified ? (
       <div />
     ) : (
-      <a style={styles.title} onClick={(_e) => dispatch(changePage({ path: "splash" }))}>
+      <a
+        href="#"
+        style={styles.title}
+        onClick={(e) => {
+          e.preventDefault();
+          dispatch(changePage({ path: "splash" }));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            dispatch(changePage({ path: "splash" }));
+          }
+        }}
+        aria-label="Olmsted home"
+      >
         {title}
       </a>
     );
@@ -107,7 +142,20 @@ class NavBar extends React.Component {
     const { minified, dispatch } = this.props;
     const linkCol = minified ? "#000" : darkGrey;
     return (
-      <a style={{ ...{ color: linkCol }, ...styles.link }} onClick={(_e) => dispatch(changePage({ path: path }))}>
+      <a
+        href="#"
+        style={{ ...{ color: linkCol }, ...styles.link }}
+        onClick={(e) => {
+          e.preventDefault();
+          dispatch(changePage({ path: path }));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            dispatch(changePage({ path: path }));
+          }
+        }}
+      >
         {name}
       </a>
     );

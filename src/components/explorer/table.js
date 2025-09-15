@@ -238,6 +238,19 @@ class ResizableVirtualTable extends React.Component {
 
               const { pagination } = this.props;
               const isCurrentSort = isAttr && pagination && pagination.order_by === AttrOrComponent;
+              const sortDesc = pagination && pagination.desc;
+
+              /**
+               * Handle keyboard activation for sortable column headers
+               * WCAG 2.1.1: Sortable headers must be keyboard accessible
+               * Using button role as this performs an action (sorting)
+               */
+              const handleHeaderKeyDown = (e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && isAttr) {
+                  e.preventDefault();
+                  dispatch(explorerActions.toggleSort(AttrOrComponent));
+                }
+              };
 
               return (
                 <div
@@ -246,6 +259,11 @@ class ResizableVirtualTable extends React.Component {
                   onClick={() => {
                     isAttr && dispatch(explorerActions.toggleSort(AttrOrComponent));
                   }}
+                  onKeyDown={handleHeaderKeyDown}
+                  role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
+                  tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
+                  aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
+                  aria-label={isAttr ? `Sort by ${name}` : undefined}
                 >
                   <span
                     style={{

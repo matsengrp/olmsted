@@ -129,6 +129,17 @@ export class ResizableTable extends React.Component {
 
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
 
+    /**
+     * Keyboard handler for clickable table rows
+     * WCAG 2.1.1: Interactive table rows must support keyboard navigation
+     */
+    const handleRowKeyDown = onRowClick ? (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onRowClick(datum);
+      }
+    } : undefined;
+
     return (
       <div
         key={datum.id || datum.ident || datum.dataset_id || index}
@@ -144,6 +155,10 @@ export class ResizableTable extends React.Component {
           ...rowStyle
         }}
         onClick={() => onRowClick && onRowClick(datum)}
+        onKeyDown={handleRowKeyDown}
+        role={onRowClick ? "button" : undefined}
+        tabIndex={onRowClick ? 0 : undefined}
+        aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
@@ -274,6 +289,9 @@ export class ResizableTable extends React.Component {
               const isAttr = typeof AttrOrComponent === "string";
               const isSortable = options.sortable !== false && (isAttr || options.sortKey);
               const columnKey = isAttr ? AttrOrComponent : options.sortKey;
+              // Explicitly capture sort state from parent scope for accessibility attributes
+              const currentSortColumn = sortColumn;
+              const currentSortDesc = sortDesc;
 
               const style = {
                 fontSize: 13,
@@ -290,8 +308,28 @@ export class ResizableTable extends React.Component {
                 cursor: isSortable ? "pointer" : "default"
               };
 
+              /**
+               * Keyboard handler for sortable column headers
+               * WCAG 2.1.1: Column headers must be keyboard accessible for sorting
+               */
+              const handleHeaderKeyDown = isSortable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  this.handleSort(columnKey);
+                }
+              } : undefined;
+
               return (
-                <div key={name} style={style} onClick={() => isSortable && this.handleSort(columnKey)}>
+                <div
+                  key={name}
+                  style={style}
+                  onClick={() => isSortable && this.handleSort(columnKey)}
+                  onKeyDown={handleHeaderKeyDown}
+                  role={isSortable ? "button" : "columnheader"}
+                  tabIndex={isSortable ? 0 : undefined}
+                  aria-label={isSortable ? `Sort by ${name}` : undefined}
+                  aria-sort={isSortable && currentSortColumn === columnKey ? (currentSortDesc ? "descending" : "ascending") : "none"}
+                >
                   <span
                     style={{
                       flex: 1,
@@ -301,8 +339,8 @@ export class ResizableTable extends React.Component {
                     }}
                   >
                     {name}
-                    {isSortable && sortColumn === columnKey && (
-                      <span style={{ marginLeft: 4 }}>{sortDesc ? "▼" : "▲"}</span>
+                    {isSortable && currentSortColumn === columnKey && (
+                      <span style={{ marginLeft: 4 }}>{currentSortDesc ? "▼" : "▲"}</span>
                     )}
                   </span>
                   {/* Resize handle */}
