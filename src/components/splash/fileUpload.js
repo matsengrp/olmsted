@@ -430,6 +430,7 @@ class FileUpload extends React.Component {
                       )}
                     </div>
                     <button
+                      type="button"
                       onClick={() => this.removeFile(file.datasetId)}
                       style={{
                         padding: "5px 10px",

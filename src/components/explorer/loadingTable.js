@@ -213,6 +213,7 @@ export default class LoadingTable extends React.Component {
 
         <div style={{ marginTop: "15px", marginBottom: "15px", textAlign: "center" }}>
           <button
+            type="button"
             onClick={this.handleBatchUpdate}
             disabled={pendingChanges === 0}
             style={{
@@ -233,6 +234,7 @@ export default class LoadingTable extends React.Component {
           </button>
 
           <button
+            type="button"
             onClick={() => (window.location.href = "/")}
             style={{
               padding: "8px 16px",

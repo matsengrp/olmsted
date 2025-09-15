@@ -18,7 +18,7 @@ class CopyButton extends React.Component {
     return (
       <div>
         <CopyToClipboard text={this.state.value} onCopy={() => this.setState({ copied: true })}>
-          <button>{this.props.buttonLabel}</button>
+          <button type="button">{this.props.buttonLabel}</button>
         </CopyToClipboard>
 
         {this.state.copied ? <span style={{ color: "red" }}>Copied!</span> : null}

@@ -115,6 +115,7 @@ class Splash extends React.Component {
               }}
             >
               <button
+                type="button"
                 style={{
                   border: "0px",
                   backgroundColor: "#05337f",
@@ -141,6 +142,7 @@ class Splash extends React.Component {
                 Explore!
               </button>
               <button
+                type="button"
                 style={{
                   border: "2px solid #05337f",
                   backgroundColor: "transparent",
@@ -163,6 +165,7 @@ class Splash extends React.Component {
                 Upload Data
               </button>
               <button
+                type="button"
                 style={{
                   border: "2px solid #dc3545",
                   backgroundColor: "transparent",

@@ -29,7 +29,7 @@ class DownloadText extends React.Component {
         download={this.props.filename ? this.props.filename : this.defaultFilename}
         id="downloadlink"
       >
-        <button id="create">{this.props.label ? this.props.label : this.defaultLabel}</button>
+        <button type="button" id="create">{this.props.label ? this.props.label : this.defaultLabel}</button>
       </a>
     );
   }

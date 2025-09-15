@@ -135,6 +135,7 @@ class DeleteButtonCell extends React.Component {
 
     return (
       <button
+        type="button"
         onClick={this.deleteDataset}
         style={{
           padding: "2px 8px",
