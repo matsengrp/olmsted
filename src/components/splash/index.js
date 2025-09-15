@@ -98,7 +98,7 @@ class Splash extends React.Component {
               lineHeight: 1.42857143
             }}
           >
-            Select datasets below and click "Explore!" to visualize clonal families.
+            Select datasets below and click &quot;Explore!&quot; to visualize clonal families.
           </p>
 
           {/* Full width table section */}

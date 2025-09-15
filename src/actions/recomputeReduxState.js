@@ -118,8 +118,9 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
       "). Setting to",
       availableNonGenotypeColorBys[0]
     );
-    state.colorBy = availableNonGenotypeColorBys[0];
-    state.defaults.colorBy = availableNonGenotypeColorBys[0];
+    const [firstAvailableColorBy] = availableNonGenotypeColorBys;
+    state.colorBy = firstAvailableColorBy;
+    state.defaults.colorBy = firstAvailableColorBy;
   }
 
   /* distanceMeasure */

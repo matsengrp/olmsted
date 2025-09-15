@@ -194,13 +194,13 @@ class ClientDataStore {
           // Pattern: "tree_clone_XXXX_ident" → "clone_XXXX"
           const match = treeIdent.match(/tree_(clone_\d+)/);
           if (match) {
-            cloneId = match[1]; // Extract "clone_XXXX"
+            [_, cloneId] = match; // Extract "clone_XXXX"
           }
         } else if (treeIdent.startsWith("tree_") && treeIdent.includes("clone_")) {
           // Other variations, try to find clone_XXXX pattern
           const match = treeIdent.match(/(clone_\d+)/);
           if (match) {
-            cloneId = match[1];
+            [_, cloneId] = match;
           }
         }
 

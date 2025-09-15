@@ -38,11 +38,11 @@ class TreeHeader extends React.Component {
               reconstruction (or any phylogenetic inference at all).
               <br />
               <br />
-              Alongside the tree is an alignment of the sequences at the tree's tips. Colors indicate amino acid
-              mutations at each position that differs from the sequence at the root of the tree (typically the family's
+              Alongside the tree is an alignment of the sequences at the tree&apos;s tips. Colors indicate amino acid
+              mutations at each position that differs from the sequence at the root of the tree (typically the family&apos;s
               inferred naive antibody sequence). Scroll while hovering over the tree to zoom in and out. Click and drag
               the zoomed view to pan in a traditional map-style interface. The alignment view on the right zooms in the
-              vertical dimension according to the zoom status of the tree. The tree's leaves use pie charts to show the
+              vertical dimension according to the zoom status of the tree. The tree&apos;s leaves use pie charts to show the
               multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence,
               colored according to sampling timepoint. See
               {" "}
@@ -64,15 +64,15 @@ class TreeHeader extends React.Component {
               <br />
               <ul>
                 <li>Maximum width of the tree window with respect to the alignment window (Tree width ratio)</li>
-                <li>Field mapped to the size of pie charts at the tree' leaves (leaf_size_by)</li>
-                <li>Maximum size of pie charts at the tree' leaves (max_leaf_size)</li>
+                <li>Field mapped to the size of pie charts at the tree&apos; leaves (leaf_size_by)</li>
+                <li>Maximum size of pie charts at the tree&apos; leaves (max_leaf_size)</li>
                 <li>Tree tip labels toggle on and off (show_labels)</li>
                 <li>
                   Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme,
                   min_color_value)
                 </li>
               </ul>
-              In order to get more details about a particular lineage in the tree, click on a leaf's label (or on the
+              In order to get more details about a particular lineage in the tree, click on a leaf&apos;s label (or on the
               dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
               <br />
               <br />

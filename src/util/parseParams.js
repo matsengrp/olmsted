@@ -36,7 +36,7 @@ const parseParams = (path, datasets) => {
   for (idx = 0; idx < params.length; idx++) {
     elem = params[idx];
     if (typeof datasetSlice !== "string" && Object.keys(datasetSlice).length) {
-      elemType = Object.keys(datasetSlice)[0];
+      [elemType] = Object.keys(datasetSlice);
       // elemType will be "pathogen", "lineage" or "segment"
       if (typeof datasetSlice[elemType][elem] === "undefined") {
         // the elem (the param requested) is NOT available in the dataset. BAIL.
@@ -66,7 +66,7 @@ const parseParams = (path, datasets) => {
   // this both populates the dataset property, and sets defaults,
   // else the URL wouldn't be valid so the data request would 404
   while (typeof datasetSlice !== "string" && Object.keys(datasetSlice).length) {
-    elemType = Object.keys(datasetSlice)[0];
+    [elemType] = Object.keys(datasetSlice);
     elem = datasetSlice[elemType]["default"];
     // console.log("filling default ", elemType," as ", elem);
     config.dataset[elemType] = [idx, elem];
