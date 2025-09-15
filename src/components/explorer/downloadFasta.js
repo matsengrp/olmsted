@@ -16,13 +16,8 @@ class DownloadFasta extends React.Component {
   }
 
   render() {
-    return (
-      <DownloadText
-        text={this.createFastaDownload(this.props.sequencesSet)}
-        filename={this.props.filename}
-        label={this.props.label}
-      />
-    );
+    const { sequencesSet, filename, label } = this.props;
+    return <DownloadText text={this.createFastaDownload(sequencesSet)} filename={filename} label={label} />;
   }
 }
 

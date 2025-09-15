@@ -12,7 +12,8 @@ import * as types from "../../actions/types";
 // Component for the citation column
 class CitationCell extends React.Component {
   render() {
-    const { paper } = this.props.datum;
+    const { datum } = this.props;
+    const { paper } = datum;
     if (!paper) return <span>—</span>;
 
     if (paper.url) {
@@ -29,7 +30,8 @@ class CitationCell extends React.Component {
 // Component for the size column
 class SizeCell extends React.Component {
   render() {
-    const dataset = this.props.datum;
+    const { datum } = this.props;
+    const dataset = datum;
     const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
 
     if (sizeInBytes === 0) {
@@ -50,9 +52,10 @@ class SizeCell extends React.Component {
 // Component for non-selectable load status
 class LoadStatusDisplay extends React.Component {
   render() {
+    const { datum } = this.props;
     return (
       <div style={{ width: "100%", textAlign: "center" }}>
-        <LoadingStatus loadingStatus={this.props.datum.loading} />
+        <LoadingStatus loadingStatus={datum.loading} />
       </div>
     );
   }
@@ -169,6 +172,7 @@ export default class LoadingTable extends React.Component {
         (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
         { style: { fontSize: "12px" }, sortKey: "isClientSide" }
       ],
+
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],

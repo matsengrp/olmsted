@@ -44,6 +44,7 @@ class Splash extends React.Component {
   };
 
   render() {
+    const { errorMessage, availableDatasets, dispatch } = this.props;
     return (
       <div style={{ justifyContent: "space-around", display: "flex", marginRight: 50 }}>
         <div className="static container">
@@ -63,8 +64,8 @@ class Splash extends React.Component {
             </h1>
           </div>
           {/* First: either display the error message or the intro-paragraph */}
-          {this.props.errorMessage ? (
-            <CenterContent>{displayError(this.props.errorMessage)}</CenterContent>
+          {errorMessage ? (
+            <CenterContent>{displayError(errorMessage)}</CenterContent>
           ) : (
             <p
               style={{
@@ -102,7 +103,7 @@ class Splash extends React.Component {
 
           {/* Full width table section */}
           <div style={{ marginLeft: "-15px", marginRight: "-15px", marginBottom: 20 }}>
-            <DatasetsTable availableDatasets={this.props.availableDatasets} dispatch={this.props.dispatch} />
+            <DatasetsTable availableDatasets={availableDatasets} dispatch={dispatch} />
           </div>
 
           <CenterContent>
@@ -128,13 +129,11 @@ class Splash extends React.Component {
                   fontSize: 18,
                   outline: 0
                 }}
-                onClick={(_e) => this.props.dispatch(
+                onClick={(_e) => dispatch(
                   changePage({
                     path: "/app",
                     query: {
-                      selectedDatasets: getSelectedDatasets(this.props.availableDatasets).map(
-                        (dataset) => dataset.dataset_id
-                      )
+                      selectedDatasets: getSelectedDatasets(availableDatasets).map((dataset) => dataset.dataset_id)
                     }
                   })
                 )}
@@ -187,7 +186,7 @@ class Splash extends React.Component {
           {/* File Upload Section */}
           <FileUpload
             ref={this.fileUploadRef}
-            dispatch={this.props.dispatch}
+            dispatch={dispatch}
             onFileUpload={(result) => {
               // Reload datasets after successful upload
               // TODO: Add the uploaded dataset to availableDatasets

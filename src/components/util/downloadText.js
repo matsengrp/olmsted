@@ -23,13 +23,12 @@ class DownloadText extends React.Component {
   }
 
   render() {
+    const { text, filename, label } = this.props;
     return (
-      <a
-        href={this.createTextDownload(this.props.text)}
-        download={this.props.filename ? this.props.filename : this.defaultFilename}
-        id="downloadlink"
-      >
-        <button type="button" id="create">{this.props.label ? this.props.label : this.defaultLabel}</button>
+      <a href={this.createTextDownload(text)} download={filename ? filename : this.defaultFilename} id="downloadlink">
+        <button type="button" id="create">
+          {label ? label : this.defaultLabel}
+        </button>
       </a>
     );
   }

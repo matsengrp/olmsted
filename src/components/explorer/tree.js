@@ -22,10 +22,13 @@ import { SimpleInProgress } from "../util/loading";
 }))
 class TreeHeader extends React.Component {
   render() {
+    const {
+      selectedFamily, tree, dispatchSelectedTree, selectedSeq
+    } = this.props;
     return (
       <div>
         <CollapseHelpTitle
-          titleText={`Clonal family details for ${this.props.selectedFamily.sample_id || this.props.selectedFamily.subject_id || "sample"} ${this.props.selectedFamily.clone_id}`}
+          titleText={`Clonal family details for ${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}`}
           helpText={(
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
@@ -76,13 +79,14 @@ class TreeHeader extends React.Component {
             </div>
           )}
         />
+
         <div>
           <label>Ancestral reconstruction method: </label>
           <select
-            value={this.props.tree.ident}
-            onChange={(event) => this.props.dispatchSelectedTree(event.target.value, this.props.selectedFamily, this.props.selectedSeq)}
+            value={tree.ident}
+            onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
           >
-            {this.props.selectedFamily.trees.map((tree) => (
+            {selectedFamily.trees.map((tree) => (
               <option key={tree.ident} value={tree.ident}>
                 {tree.tree_id}
               </option>
@@ -151,44 +155,51 @@ class TreeViz extends React.Component {
   }
 
   componentDidMount() {
+    const { selectedFamily, dispatchSelectFamily } = this.props;
     // Automatically request a tree for the selected family
     // when the component is first inserted into the DOM tree.
-    const familyId = this.props.selectedFamily?.ident || this.props.selectedFamily?.clone_id;
+    const familyId = selectedFamily?.ident || selectedFamily?.clone_id;
     if (familyId) {
-      this.props.dispatchSelectFamily(familyId);
+      dispatchSelectFamily(familyId);
     }
   }
 
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor
   treeDataFromProps() {
+    const {
+      tree, naiveData, cdr3Bounds, selectedFamily
+    } = this.props;
     return {
-      source_0: this.props.tree.nodes,
-      source_1: this.props.tree.tips_alignment,
-      naive_data: this.props.naiveData.source,
-      cdr3_bounds: this.props.cdr3Bounds,
-      leaves_count_incl_naive: this.props.tree.leaves_count_incl_naive,
-      pts_tuple: this.props.selectedFamily,
+      source_0: tree.nodes,
+      source_1: tree.tips_alignment,
+      naive_data: naiveData.source,
+      cdr3_bounds: cdr3Bounds,
+      leaves_count_incl_naive: tree.leaves_count_incl_naive,
+      pts_tuple: selectedFamily,
       // Here we create a separate dataset only containing the id of the
       // seed sequence so as to check quickly for this id within the
       // viz to color the seed blue
-      seed: this.props.selectedFamily.seed_id === null ? [] : [{ id: this.props.selectedFamily.seed_id }]
+      seed: selectedFamily.seed_id === null ? [] : [{ id: selectedFamily.seed_id }]
     };
   }
 
   render() {
+    const {
+      selectedFamily, selectedTree, selectedSeq, tree, dispatchSelectedSeq
+    } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
     // minimum bit of information saying the error that occured and/or the field that was not built.
-    const incompleteFamily = !this.props.selectedFamily.unique_seqs_count || !this.props.selectedFamily.trees;
+    const incompleteFamily = !selectedFamily.unique_seqs_count || !selectedFamily.trees;
 
     // Being explicit about the fact that we are relying on the tree being
     // defined vs undefined instead of keeping track of its true loading state
-    const treeLoading = !this.props.selectedTree;
+    const treeLoading = !selectedTree;
 
-    const incompleteTree = !treeLoading && !isTreeComplete(this.props.selectedTree);
-    const completeData = !incompleteFamily && !treeLoading && isTreeComplete(this.props.selectedTree);
+    const incompleteTree = !treeLoading && !isTreeComplete(selectedTree);
+    const completeData = !incompleteFamily && !treeLoading && isTreeComplete(selectedTree);
     return (
       <div>
         {/* Tree still loading aka undefined */}
@@ -198,31 +209,31 @@ class TreeViz extends React.Component {
               <SimpleInProgress />
               Loading data for clonal family:
               {' '}
-              {this.props.selectedFamily.clone_id}
+              {selectedFamily.clone_id}
             </h2>
           </div>
         )}
         {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-        {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={this.props.selectedFamily} />}
-        {incompleteTree && <IncompleteDataWarning data_type="tree" datum={this.props.selectedTree} />}
+        {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
+        {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
         {/* Show tree header if complete family, tree */}
         {completeData && (
           <TreeHeader
-            selectedFamily={this.props.selectedFamily}
-            selectedTree={this.props.selectedTree}
-            selectedSeq={this.props.selectedSeq}
-            tree={this.props.tree}
+            selectedFamily={selectedFamily}
+            selectedTree={selectedTree}
+            selectedSeq={selectedSeq}
+            tree={tree}
           />
         )}
         {/* Vega component always gets rendered, its data are faked if necessary;
-              this allows us to not reset its UI controls between selecting trees */}
+               this allows us to not reset its UI controls between selecting trees */}
         <Vega
           onParseError={(...args) => console.error("parse error:", args)}
           onSignalPts_tuple={(...args) => {
             const node = args.slice(1)[0];
             if (node.parent) {
               // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-              this.props.dispatchSelectedSeq(node.sequence_id);
+              dispatchSelectedSeq(node.sequence_id);
             }
           }}
           debug
@@ -230,25 +241,28 @@ class TreeViz extends React.Component {
           data={completeData ? this.treeDataFromProps() : this.tempVegaData}
           spec={this.spec}
         />
+
         {/* Show downloads if complete family, tree */}
         {completeData && (
           <div>
             <DownloadFasta
-              sequencesSet={this.props.tree.download_unique_family_seqs.slice()}
-              filename={(
-                this.props.selectedFamily.sample_id
-                || this.props.selectedFamily.subject_id
-                || "sample"
-              ).concat("-", this.props.selectedFamily.clone_id, ".fasta")}
+              sequencesSet={tree.download_unique_family_seqs.slice()}
+              filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                "-",
+                selectedFamily.clone_id,
+                ".fasta"
+              )}
               label="Download Fasta: Unique Sequences In This Tree"
             />
+
             <DownloadText
-              text={this.props.selectedTree.newick}
-              filename={(
-                this.props.selectedFamily.sample_id
-                || this.props.selectedFamily.subject_id
-                || "sample"
-              ).concat("-", this.props.selectedFamily.clone_id, "-newick", ".txt")}
+              text={selectedTree.newick}
+              filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                "-",
+                selectedFamily.clone_id,
+                "-newick",
+                ".txt"
+              )}
               label="Download Clonal Family Tree Newick String"
             />
           </div>

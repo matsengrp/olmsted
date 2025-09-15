@@ -39,9 +39,10 @@ export class ResizableTable extends React.Component {
   }
 
   updateScrollbarWidth() {
+    const { scrollbarWidth } = this.state;
     if (this.bodyRef.current) {
       const scrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (scrollbarWidth !== this.state.scrollbarWidth) {
+      if (scrollbarWidth !== scrollbarWidth) {
         this.setState({ scrollbarWidth });
       }
     }
@@ -61,12 +62,13 @@ export class ResizableTable extends React.Component {
   }
 
   onMouseDown(e, columnIndex) {
+    const { columnWidths } = this.state;
     e.preventDefault();
     this.setState({
       isResizing: true,
       resizingColumn: columnIndex,
       startX: e.clientX,
-      startWidth: this.state.columnWidths[columnIndex]
+      startWidth: columnWidths[columnIndex]
     });
   }
 
@@ -91,6 +93,7 @@ export class ResizableTable extends React.Component {
   }
 
   handleSort(columnKey) {
+    const { onSort } = this.props;
     const { sortColumn, sortDesc } = this.state;
 
     // Toggle sort direction if clicking the same column
@@ -101,8 +104,8 @@ export class ResizableTable extends React.Component {
     }
 
     // Call parent's onSort handler if provided
-    if (this.props.onSort) {
-      this.props.onSort(columnKey, sortColumn === columnKey ? !sortDesc : false);
+    if (onSort) {
+      onSort(columnKey, sortColumn === columnKey ? !sortDesc : false);
     }
   }
 

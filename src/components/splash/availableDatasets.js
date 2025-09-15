@@ -16,15 +16,16 @@ class LoadStatusCell extends React.Component {
   }
 
   selectDataset(e) {
+    const { datum, dispatch } = this.props;
     e.stopPropagation();
-    const dataset = this.props.datum;
+    const dataset = datum;
 
     switch (dataset.loading) {
       case "LOADING": {
         break;
       }
       case "DONE": {
-        this.props.dispatch({
+        dispatch({
           type: types.LOADING_DATASET,
           dataset_id: dataset.dataset_id,
           loading: false
@@ -32,7 +33,7 @@ class LoadStatusCell extends React.Component {
         break;
       }
       case "ERROR": {
-        this.props.dispatch({
+        dispatch({
           type: types.LOADING_DATASET,
           dataset_id: dataset.dataset_id,
           loading: false
@@ -40,7 +41,7 @@ class LoadStatusCell extends React.Component {
         break;
       }
       default: {
-        this.props.dispatch({
+        dispatch({
           type: types.LOADING_DATASET,
           dataset_id: dataset.dataset_id,
           loading: "LOADING"
@@ -48,9 +49,9 @@ class LoadStatusCell extends React.Component {
 
         // Try client-side data first, fallback to server
         if (dataset.isClientSide) {
-          getClientClonalFamilies(this.props.dispatch, dataset.dataset_id);
+          getClientClonalFamilies(dispatch, dataset.dataset_id);
         } else {
-          getClonalFamilies(this.props.dispatch, dataset.dataset_id);
+          getClonalFamilies(dispatch, dataset.dataset_id);
         }
         break;
       }
@@ -58,9 +59,10 @@ class LoadStatusCell extends React.Component {
   }
 
   render() {
+    const { datum } = this.props;
     return (
       <div onClick={this.selectDataset} style={{ cursor: "pointer", width: "100%", textAlign: "center" }}>
-        <LoadingStatus loadingStatus={this.props.datum.loading} />
+        <LoadingStatus loadingStatus={datum.loading} />
       </div>
     );
   }
@@ -69,7 +71,8 @@ class LoadStatusCell extends React.Component {
 // Component for the citation column
 class CitationCell extends React.Component {
   render() {
-    const { paper } = this.props.datum;
+    const { datum } = this.props;
+    const { paper } = datum;
     if (!paper) return <span>—</span>;
 
     if (paper.url) {
@@ -86,7 +89,8 @@ class CitationCell extends React.Component {
 // Component for the size column
 class SizeCell extends React.Component {
   render() {
-    const dataset = this.props.datum;
+    const { datum } = this.props;
+    const dataset = datum;
     const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
 
     if (sizeInBytes === 0) {
@@ -112,13 +116,14 @@ class DeleteButtonCell extends React.Component {
   }
 
   deleteDataset(e) {
+    const { datum, dispatch } = this.props;
     e.stopPropagation();
-    const dataset = this.props.datum;
+    const dataset = datum;
     const datasetName = dataset.name || dataset.dataset_id;
 
     if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
       clientDataStore.removeDataset(dataset.dataset_id);
-      this.props.dispatch({
+      dispatch({
         type: types.REMOVE_DATASET,
         dataset_id: dataset.dataset_id
       });
@@ -127,7 +132,8 @@ class DeleteButtonCell extends React.Component {
   }
 
   render() {
-    const isClientSide = this.props.datum.isClientSide || this.props.datum.temporary;
+    const { datum } = this.props;
+    const isClientSide = datum.isClientSide || datum.temporary;
 
     if (!isClientSide) {
       return <span>—</span>;
@@ -155,16 +161,17 @@ class DeleteButtonCell extends React.Component {
 
 export class DatasetsTable extends React.Component {
   render() {
-    if (!this.props.availableDatasets) {
+    const { availableDatasets, dispatch } = this.props;
+    if (!availableDatasets) {
       return (
         <div style={{ fontSize: "20px", fontWeight: 400, color: red }}>There was an error fetching the datasets</div>
       );
     }
 
     // Check if we need citation column
-    const showCitation = _.some(this.props.availableDatasets, (d) => d.paper !== undefined);
+    const showCitation = _.some(availableDatasets, (d) => d.paper !== undefined);
     // Check if we need delete button column
-    const hasClientDatasets = _.some(this.props.availableDatasets, (d) => d.isClientSide || d.temporary);
+    const hasClientDatasets = _.some(availableDatasets, (d) => d.isClientSide || d.temporary);
 
     // Build mappings for the table
     const mappings = [
@@ -176,6 +183,7 @@ export class DatasetsTable extends React.Component {
         (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
         { style: { fontSize: "12px" }, sortKey: "isClientSide" }
       ],
+
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
@@ -208,12 +216,12 @@ export class DatasetsTable extends React.Component {
       <div style={{ width: "100%" }}>
         <div style={{ fontSize: "26px", marginBottom: "10px" }}>Available Datasets:</div>
         <ResizableTable
-          data={this.props.availableDatasets}
+          data={availableDatasets}
           mappings={mappings}
           columnWidths={columnWidths}
           containerHeight={200}
           itemName="datasets"
-          componentProps={{ dispatch: this.props.dispatch }}
+          componentProps={{ dispatch: dispatch }}
           getRowStyle={(dataset) => ({
             backgroundColor: dataset.loading ? "lightblue" : "white"
           })}

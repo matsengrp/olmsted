@@ -55,9 +55,10 @@ class ResizableVirtualTable extends React.Component {
   }
 
   updateScrollbarWidth() {
+    const { scrollbarWidth } = this.state;
     if (this.bodyRef.current) {
       const scrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (scrollbarWidth !== this.state.scrollbarWidth) {
+      if (scrollbarWidth !== scrollbarWidth) {
         this.setState({ scrollbarWidth });
       }
     }
@@ -77,12 +78,13 @@ class ResizableVirtualTable extends React.Component {
   }
 
   onMouseDown(e, columnIndex) {
+    const { columnWidths } = this.state;
     e.preventDefault();
     this.setState({
       isResizing: true,
       resizingColumn: columnIndex,
       startX: e.clientX,
-      startWidth: this.state.columnWidths[columnIndex]
+      startWidth: columnWidths[columnIndex]
     });
   }
 
@@ -107,7 +109,8 @@ class ResizableVirtualTable extends React.Component {
   }
 
   renderTableRow(datum, _index) {
-    const isSelected = this.props.selectedFamily && datum.ident === this.props.selectedFamily.ident;
+    const { selectedFamily, mappings } = this.props;
+    const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
     const { columnWidths } = this.state;
 
     return (
@@ -123,7 +126,7 @@ class ResizableVirtualTable extends React.Component {
           minWidth: "fit-content"
         }}
       >
-        {_.map(this.props.mappings, ([name, AttrOrComponent], colIndex) => {
+        {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
           const key = datum.ident + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
@@ -161,7 +164,7 @@ class ResizableVirtualTable extends React.Component {
                   {_.get(datum, AttrOrComponent) || "—"}
                 </div>
               ) : (
-                <AttrOrComponent datum={datum} selectedFamily={this.props.selectedFamily} />
+                <AttrOrComponent datum={datum} selectedFamily={selectedFamily} />
               )}
             </div>
           );
@@ -319,13 +322,16 @@ class ResizableVirtualTable extends React.Component {
 @connect()
 class Table extends React.Component {
   render() {
+    const {
+      data, mappings, selectedFamily, dispatch, pagination
+    } = this.props;
     return (
       <ResizableVirtualTable
-        data={this.props.data}
-        mappings={this.props.mappings}
-        selectedFamily={this.props.selectedFamily}
-        dispatch={this.props.dispatch}
-        pagination={this.props.pagination}
+        data={data}
+        mappings={mappings}
+        selectedFamily={selectedFamily}
+        dispatch={dispatch}
+        pagination={pagination}
         containerHeight={500}
       />
     );
@@ -355,18 +361,16 @@ class DatasetName extends React.Component {
 )
 class SelectAttribute extends React.Component {
   render() {
+    const { selectedFamily, datum, dispatchSelect } = this.props;
     return (
       <input
         type="checkbox"
         style={{ cursor: "pointer" }}
         checked={
-          this.props.selectedFamily
-            ? (this.props.datum.ident || this.props.datum.clone_id)
-              === (this.props.selectedFamily.ident || this.props.selectedFamily.clone_id)
-            : false
+          selectedFamily ? (datum.ident || datum.clone_id) === (selectedFamily.ident || selectedFamily.clone_id) : false
         }
         onChange={() => {
-          this.props.dispatchSelect(this.props.datum.ident || this.props.datum.clone_id);
+          dispatchSelect(datum.ident || datum.clone_id);
         }}
       />
     );
@@ -392,20 +396,22 @@ const mapStateToProps = (state) => {
 })
 class ClonalFamiliesTable extends React.Component {
   componentDidUpdate(prevProps) {
+    const { selectingStatus, visibleClonalFamilies, selectFamily } = this.props;
     // Checks:
     // 1. prevProps.selectingStatus: We were previously doing a brush selection
     // 2. !this.props.selectingStatus: We are done doing the brush selection
     // 3. this.props.visibleClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
-    if (prevProps.selectingStatus && !this.props.selectingStatus && this.props.visibleClonalFamilies.length > 0) {
-      this.props.selectFamily(this.props.visibleClonalFamilies[0].ident);
+    if (prevProps.selectingStatus && !selectingStatus && visibleClonalFamilies.length > 0) {
+      selectFamily(visibleClonalFamilies[0].ident);
     }
   }
 
   render() {
-    this.selectedFamily = _.find(this.props.visibleClonalFamilies, { ident: this.props.selectedFamily });
+    const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
+    this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
     return (
       <Table
-        data={this.props.visibleClonalFamilies}
+        data={visibleClonalFamilies}
         mappings={[
           ["Select", SelectAttribute],
           ["Naive sequence", NaiveSequence],
@@ -426,7 +432,7 @@ class ClonalFamiliesTable extends React.Component {
           ["Ident", "ident"]
         ]}
         selectedFamily={this.selectedFamily}
-        pagination={this.props.pagination}
+        pagination={pagination}
       />
     );
   }

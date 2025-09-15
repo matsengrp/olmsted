@@ -17,6 +17,7 @@ class NavBar extends React.Component {
   }
 
   getStyles() {
+    const { minified } = this.props;
     return {
       main: {
         marginTop: "10px",
@@ -39,7 +40,7 @@ class NavBar extends React.Component {
         color: "#000",
         cursor: "pointer",
         textDecoration: "none",
-        fontSize: this.props.minified ? 12 : 16
+        fontSize: minified ? 12 : 16
       },
       title: {
         padding: "5px",
@@ -51,24 +52,24 @@ class NavBar extends React.Component {
         cursor: "pointer"
       },
       link: {
-        paddingLeft: this.props.minified ? "6px" : "12px",
-        paddingRight: this.props.minified ? "6px" : "12px",
+        paddingLeft: minified ? "6px" : "12px",
+        paddingRight: minified ? "6px" : "12px",
         paddingTop: "20px",
         paddingBottom: "20px",
         textDecoration: "none",
         cursor: "pointer",
-        fontSize: this.props.minified ? 12 : 16,
+        fontSize: minified ? 12 : 16,
         fontWeight: 400,
         textTransform: "uppercase"
       },
       inactive: {
-        paddingLeft: this.props.minified ? "6px" : "12px",
-        paddingRight: this.props.minified ? "6px" : "12px",
+        paddingLeft: minified ? "6px" : "12px",
+        paddingRight: minified ? "6px" : "12px",
         paddingTop: "20px",
         paddingBottom: "20px",
         color: "#5097BA",
         textDecoration: "none",
-        fontSize: this.props.minified ? 12 : 16,
+        fontSize: minified ? 12 : 16,
         fontWeight: 400,
         textTransform: "uppercase"
       },
@@ -82,45 +83,43 @@ class NavBar extends React.Component {
   }
 
   getLogo(styles) {
+    const { dispatch } = this.props;
     return (
-      <a style={styles.logo} onClick={(_e) => this.props.dispatch(changePage({ path: "splash" }))}>
+      <a style={styles.logo} onClick={(_e) => dispatch(changePage({ path: "splash" }))}>
         <img alt="" width="50" src={require("../../images/olmsted_logo.png")} />
       </a>
     );
   }
 
   getLogoType(styles) {
+    const { minified, dispatch } = this.props;
     const title = <span style={{ color: "#05337f" }}>Olmsted</span>;
-    return this.props.minified ? (
+    return minified ? (
       <div />
     ) : (
-      <a style={styles.title} onClick={(_e) => this.props.dispatch(changePage({ path: "splash" }))}>
+      <a style={styles.title} onClick={(_e) => dispatch(changePage({ path: "splash" }))}>
         {title}
       </a>
     );
   }
 
   getLink(name, path, styles) {
-    const linkCol = this.props.minified ? "#000" : darkGrey;
+    const { minified, dispatch } = this.props;
+    const linkCol = minified ? "#000" : darkGrey;
     return (
-      <a
-        style={{ ...{ color: linkCol }, ...styles.link }}
-        onClick={(_e) => this.props.dispatch(changePage({ path: path }))}
-      >
+      <a style={{ ...{ color: linkCol }, ...styles.link }} onClick={(_e) => dispatch(changePage({ path: path }))}>
         {name}
       </a>
     );
   }
 
   getChevron() {
-    return this.props.minified ? (
-      <SidebarChevron mobileDisplay={this.props.mobileDisplay} handler={this.props.toggleHandler} />
-    ) : (
-      <div />
-    );
+    const { minified, mobileDisplay, toggleHandler } = this.props;
+    return minified ? <SidebarChevron mobileDisplay={mobileDisplay} handler={toggleHandler} /> : <div />;
   }
 
   render() {
+    const { minified } = this.props;
     const styles = this.getStyles();
     return (
       <Flex style={styles.main}>
@@ -128,7 +127,7 @@ class NavBar extends React.Component {
         {this.getLogoType(styles)}
         <div style={{ flex: 5 }} />
         {this.getChevron()}
-        <div style={{ width: this.props.minified ? 8 : 0 }} />
+        <div style={{ width: minified ? 8 : 0 }} />
       </Flex>
     );
   }

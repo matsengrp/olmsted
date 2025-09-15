@@ -26,8 +26,9 @@ class Monitor extends React.Component {
   }
 
   componentDidMount() {
+    const { dispatch } = this.props;
     /* Load datasets from client storage first, then server (needed to load the splash page) */
-    getClientDatasets(this.props.dispatch);
+    getClientDatasets(dispatch);
     this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener(
@@ -49,8 +50,9 @@ class Monitor extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const { datapath } = this.props;
     // Typical usage (don't forget to compare props):
-    if (prevProps.datapath && this.props.datapath !== prevProps.datapath) {
+    if (prevProps.datapath && datapath !== prevProps.datapath) {
       this.onURLChanged();
     }
   }
@@ -58,7 +60,8 @@ class Monitor extends React.Component {
   onURLChanged = () => this.props.dispatch(browserBackForward());
 
   handleResizeByDispatching() {
-    this.props.dispatch((dispatch, getState) => {
+    const { dispatch } = this.props;
+    dispatch((dispatch, getState) => {
       /* here we decide whether we should change panel layout from full <-> grid
       when crossing the twoColumnBreakpoint */
       const { browserDimensions: _browserDimensions } = getState();

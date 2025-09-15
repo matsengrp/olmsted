@@ -24,9 +24,11 @@ class SimpleInProgress extends React.Component {
   }
 
   render() {
+    const { small, style } = this.props;
+    const { counter } = this.state;
     // Use text fallback if small prop is set
-    if (this.props.small) {
-      return "Loading" + "...".substring(0, (this.state.counter % 4) + 1);
+    if (small) {
+      return "Loading" + "...".substring(0, (counter % 4) + 1);
     }
 
     // Animated spinning loader icon
@@ -45,7 +47,7 @@ class SimpleInProgress extends React.Component {
             animation: "spin 1s linear infinite",
             color: "#007bff",
             fontSize: "16px",
-            ...this.props.style
+            ...style
           }}
         />
       </div>
@@ -56,6 +58,7 @@ class SimpleInProgress extends React.Component {
 // Green checkmark icon component
 class GreenCheckmark extends React.Component {
   render() {
+    const { style } = this.props;
     return (
       <div
         style={{
@@ -66,7 +69,7 @@ class GreenCheckmark extends React.Component {
           height: "16px",
           backgroundColor: "#28a745",
           borderRadius: "50%",
-          ...this.props.style
+          ...style
         }}
       >
         <FiCheck style={{ color: "white", fontSize: "12px" }} />
@@ -78,6 +81,7 @@ class GreenCheckmark extends React.Component {
 // Red X icon for error state
 class RedXIcon extends React.Component {
   render() {
+    const { style } = this.props;
     return (
       <div
         style={{
@@ -88,7 +92,7 @@ class RedXIcon extends React.Component {
           height: "16px",
           backgroundColor: "#dc3545",
           borderRadius: "50%",
-          ...this.props.style
+          ...style
         }}
       >
         <FiX style={{ color: "white", fontSize: "12px" }} />
@@ -100,6 +104,7 @@ class RedXIcon extends React.Component {
 // Plus icon for default state
 class PlusIcon extends React.Component {
   render() {
+    const { style } = this.props;
     return (
       <div
         style={{
@@ -111,7 +116,7 @@ class PlusIcon extends React.Component {
           backgroundColor: "#6c757d",
           borderRadius: "50%",
           cursor: "pointer",
-          ...this.props.style
+          ...style
         }}
       >
         <FiPlus style={{ color: "white", fontSize: "12px" }} />
@@ -122,18 +127,21 @@ class PlusIcon extends React.Component {
 
 class LoadingStatus extends React.Component {
   render() {
-    switch (this.props.loadingStatus) {
+    const {
+      loadingStatus, loading, done, error, default: defaultIcon
+    } = this.props;
+    switch (loadingStatus) {
       case "LOADING": {
-        return this.props.loading || <SimpleInProgress />;
+        return loading || <SimpleInProgress />;
       }
       case "DONE": {
-        return this.props.done || <GreenCheckmark />;
+        return done || <GreenCheckmark />;
       }
       case "ERROR": {
-        return this.props.error || <RedXIcon />;
+        return error || <RedXIcon />;
       }
       default: {
-        return this.props.default || <PlusIcon />;
+        return defaultIcon || <PlusIcon />;
       }
     }
   }

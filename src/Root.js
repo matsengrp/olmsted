@@ -12,15 +12,16 @@ import { CenterContent } from "./components/splash/centerContent";
 @connect((state) => ({ displayComponent: state.datasets.displayComponent }))
 class MainComponentSwitch extends React.Component {
   render() {
+    const { displayComponent } = this.props;
     // console.log("MainComponentSwitch running (should be infrequent!)", this.props.displayComponent)
-    switch (this.props.displayComponent) {
+    switch (displayComponent) {
       // splash & dataset selector
       case "splash":
         return <Splash />;
       case "app":
         return <App />;
       default:
-        console.error(`reduxStore.datasets.displayComponent is invalid (${this.props.displayComponent})`);
+        console.error(`reduxStore.datasets.displayComponent is invalid (${displayComponent})`);
         return <Splash />;
     }
   }

@@ -49,6 +49,7 @@ class FileUpload extends React.Component {
   }
 
   async processFile(file) {
+    const { onFileUpload, dispatch } = this.props;
     this.setState({ error: null, isProcessing: true });
     this.updateLoadingStatus("Initializing...", 0);
 
@@ -104,8 +105,8 @@ class FileUpload extends React.Component {
       }));
 
       // Notify parent component with processed data
-      if (this.props.onFileUpload) {
-        this.props.onFileUpload({
+      if (onFileUpload) {
+        onFileUpload({
           datasetId: datasetId,
           dataset: result.datasets[0],
           success: true
@@ -114,8 +115,8 @@ class FileUpload extends React.Component {
 
       // Trigger datasets reload by refreshing the datasets list
       this.updateLoadingStatus("Upload complete! Refreshing datasets list...", 100);
-      if (this.props.dispatch) {
-        await getClientDatasets(this.props.dispatch);
+      if (dispatch) {
+        await getClientDatasets(dispatch);
       }
 
       // Clear loading status after a brief delay
@@ -146,6 +147,7 @@ class FileUpload extends React.Component {
   }
 
   async onDrop(acceptedFiles) {
+    const { onFileUpload } = this.props;
     this.setState({ error: null, isProcessing: true });
     this.updateLoadingStatus("Initializing...", 0);
 
@@ -197,12 +199,13 @@ class FileUpload extends React.Component {
                 originalFiles: splitResult.originalFiles
               }
             ],
+
             isProcessing: false
           }));
 
           // Notify parent
-          if (this.props.onFileUpload) {
-            this.props.onFileUpload({
+          if (onFileUpload) {
+            onFileUpload({
               datasetId: datasetId,
               dataset: consolidatedResult.datasets[0],
               success: true
@@ -267,6 +270,7 @@ class FileUpload extends React.Component {
             style={{ display: "none" }}
             onChange={this.handleFileInputChange.bind(this)}
           />
+
           <Dropzone
             onDrop={this.onDrop}
             accept="application/json, application/gzip, .json, .gz"

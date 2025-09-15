@@ -29,35 +29,36 @@ const mapStateToProps = (state) => {
 @connect(mapStateToProps)
 class Lineage extends React.Component {
   render() {
-    if (this.props.selectedFamily) {
-      const naiveData = getNaiveVizData(this.props.selectedFamily);
+    const { selectedFamily, selectedSeq, lineageData } = this.props;
+    if (selectedFamily) {
+      const naiveData = getNaiveVizData(selectedFamily);
       const cdr3Bounds = [
         { x: Math.floor(naiveData.source[0].start / 3) - 0.5 },
         { x: Math.floor(naiveData.source[0].end / 3) + 0.5 }
       ];
+
       return (
         <div>
           <CollapseHelpTitle
-            titleText={`Ancestral sequences for ${this.props.selectedSeq.sequence_id} lineage`}
+            titleText={`Ancestral sequences for ${selectedSeq.sequence_id} lineage`}
             helpText={`The Ancestral Sequences section displays an alignment of the selected sequence
           with its ancestral lineage starting from the naive sequence. Mutations from the naive sequence
           are shown as in the Clonal Family Details section.`}
           />
+
           <h3>Amino acid sequence:</h3>
-          <p>{this.props.selectedSeq.sequence_alignment_aa}</p>
+          <p>{selectedSeq.sequence_alignment_aa}</p>
           <Copy
-            value={
-              this.props.selectedSeq.sequence_alignment
-                ? this.props.selectedSeq.sequence_alignment
-                : "NO NUCLEOTIDE SEQUENCE"
-            }
+            value={selectedSeq.sequence_alignment ? selectedSeq.sequence_alignment : "NO NUCLEOTIDE SEQUENCE"}
             buttonLabel="Copy nucleotide sequence to clipboard"
           />
+
           <DownloadFasta
-            sequencesSet={this.props.lineageData.download_lineage_seqs.slice()}
-            filename={this.props.selectedSeq.sequence_id.concat("-lineage.fasta")}
+            sequencesSet={lineageData.download_lineage_seqs.slice()}
+            filename={selectedSeq.sequence_id.concat("-lineage.fasta")}
             label="Download Fasta: Lineage Sequences"
           />
+
           <h3>Lineage</h3>
           <Vega
             onParseError={(...args) => console.error("parse error:", args)}
@@ -66,7 +67,7 @@ class Lineage extends React.Component {
               naive_data: naiveData.source,
               cdr3_bounds: cdr3Bounds
             }}
-            spec={seqAlignSpec(this.props.lineageData)}
+            spec={seqAlignSpec(lineageData)}
           />
         </div>
       );

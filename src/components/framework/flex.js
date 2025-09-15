@@ -44,30 +44,34 @@ class Flex extends React.Component {
   };
 
   getStyles() {
+    const {
+      direction, wrap, justifyContent, alignItems, alignContent, order, grow, shrink, basis, alignSelf, style
+    } = this.props;
     return {
       base: {
         display: "flex",
-        flexDirection: this.props.direction,
-        flexWrap: this.props.wrap,
-        justifyContent: this.props.justifyContent,
-        alignItems: this.props.alignItems,
-        alignContent: this.props.alignContent,
-        order: this.props.order,
-        flexGrow: this.props.grow,
-        flexShrink: this.props.shrink,
-        flexBasis: this.props.basis,
-        alignSelf: this.props.alignSelf
+        flexDirection: direction,
+        flexWrap: wrap,
+        justifyContent: justifyContent,
+        alignItems: alignItems,
+        alignContent: alignContent,
+        order: order,
+        flexGrow: grow,
+        flexShrink: shrink,
+        flexBasis: basis,
+        alignSelf: alignSelf
       },
-      style: this.props.style
+      style: style
     };
   }
 
   render() {
+    const { clickHandler, children } = this.props;
     const styles = this.getStyles();
 
     return (
-      <div onClick={this.props.clickHandler} style={{ ...styles.base, ...styles.style }}>
-        {this.props.children}
+      <div onClick={clickHandler} style={{ ...styles.base, ...styles.style }}>
+        {children}
       </div>
     );
   }
