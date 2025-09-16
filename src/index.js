@@ -15,19 +15,15 @@ import "./css/static.css";
 const store = configureStore();
 
 /*
-Using React Hot Loader 4
-https://github.com/gaearon/react-hot-loader
+Using React Fast Refresh
+React 18 with Fast Refresh for hot reloading
 */
 
-let root;
+const container = document.getElementById("root");
+const root = createRoot(container);
 
 const renderApp = () => {
   const Root = require("./Root").default;
-  const container = document.getElementById("root");
-
-  if (!root) {
-    root = createRoot(container);
-  }
 
   root.render(
     <Provider store={store}>
@@ -35,12 +31,5 @@ const renderApp = () => {
     </Provider>
   );
 };
-
-if (process.env.NODE_ENV !== "production" && module.hot) {
-  console.log("hot component reload");
-  module.hot.accept("./Root", () => {
-    renderApp();
-  });
-}
 
 renderApp();

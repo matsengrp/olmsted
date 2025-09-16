@@ -1,6 +1,5 @@
 import { connect } from "react-redux";
 import React from "react";
-import { hot } from "react-hot-loader";
 import App from "./components/explorer/app";
 import Splash from "./components/splash/index";
 import Monitor from "./components/framework/monitor";
@@ -42,4 +41,4 @@ class Root extends React.Component {
   }
 }
 
-export default hot(module)(Root);
+export default Root;

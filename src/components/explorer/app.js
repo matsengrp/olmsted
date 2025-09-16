@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { hot } from "react-hot-loader";
 import ClonalFamiliesTable from "./table";
 import LoadingTable from "./loadingTable";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
@@ -331,4 +330,4 @@ class App extends React.Component {
   }
 }
 
-export default hot(module)(App);
+export default App;
