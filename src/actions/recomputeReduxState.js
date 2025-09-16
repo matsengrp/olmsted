@@ -56,8 +56,8 @@ const modifyStateViaMetadata = (state, metadata) => {
 
     for (let i = 0; i < keysToCheckFor.length; i += 1) {
       if (metadata.defaults[keysToCheckFor[i]]) {
+        // eslint-disable-next-line valid-typeof
         if (typeof metadata.defaults[keysToCheckFor[i]] === expectedTypes[i]) {
-          // eslint-disable-line valid-typeof
           /* e.g. if key=geoResoltion, set both state.geoResolution and state.defaults.geoResolution */
           state[keysToCheckFor[i]] = metadata.defaults[keysToCheckFor[i]];
           state.defaults[keysToCheckFor[i]] = metadata.defaults[keysToCheckFor[i]];

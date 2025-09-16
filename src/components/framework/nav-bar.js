@@ -100,15 +100,16 @@ class NavBar extends React.Component {
       }
     };
     return (
-      <a
-        href="#"
-        style={styles.logo}
+      <button
+        type="button"
+        style={{ ...styles.logo, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
         onClick={handleLogoClick}
         onKeyDown={handleLogoKeyDown}
         aria-label="Olmsted home"
       >
+        {/* eslint-disable-next-line global-require */}
         <img alt="" width="50" src={require("../../images/olmsted_logo.png")} />
-      </a>
+      </button>
     );
   }
 
@@ -118,9 +119,9 @@ class NavBar extends React.Component {
     return minified ? (
       <div />
     ) : (
-      <a
-        href="#"
-        style={styles.title}
+      <button
+        type="button"
+        style={{ ...styles.title, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
         onClick={(e) => {
           e.preventDefault();
           dispatch(changePage({ path: "splash" }));
@@ -134,7 +135,7 @@ class NavBar extends React.Component {
         aria-label="Olmsted home"
       >
         {title}
-      </a>
+      </button>
     );
   }
 
@@ -142,9 +143,9 @@ class NavBar extends React.Component {
     const { minified, dispatch } = this.props;
     const linkCol = minified ? "#000" : darkGrey;
     return (
-      <a
-        href="#"
-        style={{ ...{ color: linkCol }, ...styles.link }}
+      <button
+        type="button"
+        style={{ ...{ color: linkCol }, ...styles.link, border: 'none', background: 'none', cursor: 'pointer' }}
         onClick={(e) => {
           e.preventDefault();
           dispatch(changePage({ path: path }));
@@ -157,7 +158,7 @@ class NavBar extends React.Component {
         }}
       >
         {name}
-      </a>
+      </button>
     );
   }
 

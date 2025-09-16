@@ -55,11 +55,11 @@ class ResizableVirtualTable extends React.Component {
   }
 
   updateScrollbarWidth() {
-    const { scrollbarWidth } = this.state;
+    const { scrollbarWidth: currentScrollbarWidth } = this.state;
     if (this.bodyRef.current) {
-      const scrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (scrollbarWidth !== scrollbarWidth) {
-        this.setState({ scrollbarWidth });
+      const newScrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
+      if (newScrollbarWidth !== currentScrollbarWidth) {
+        this.setState({ scrollbarWidth: newScrollbarWidth });
       }
     }
   }
@@ -262,6 +262,7 @@ class ResizableVirtualTable extends React.Component {
                   onKeyDown={handleHeaderKeyDown}
                   role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
                   tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                   aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
                   aria-label={isAttr ? `Sort by ${name}` : undefined}
                 >

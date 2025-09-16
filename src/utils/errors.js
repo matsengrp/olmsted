@@ -129,6 +129,7 @@ export function validateRequired(value, fieldName) {
 }
 
 export function validateType(value, expectedType, fieldName) {
+  // eslint-disable-next-line valid-typeof
   if (typeof value !== expectedType) {
     throw new ValidationError(`${fieldName} must be of type ${expectedType}, got ${typeof value}`, fieldName);
   }

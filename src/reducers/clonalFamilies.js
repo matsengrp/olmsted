@@ -21,6 +21,7 @@ const initialState = {
   locus: "ALL"
 };
 
+// eslint-disable-next-line default-param-last
 const clonalFamilies = (state = _.clone(initialState), action) => {
   switch (action.type) {
     case types.RESET_CLONAL_FAMILIES_STATE: {

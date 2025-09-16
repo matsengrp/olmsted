@@ -23,6 +23,7 @@ const container = document.getElementById("root");
 const root = createRoot(container);
 
 const renderApp = () => {
+  // eslint-disable-next-line global-require
   const Root = require("./Root").default;
 
   root.render(

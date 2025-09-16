@@ -81,8 +81,9 @@ class TreeHeader extends React.Component {
         />
 
         <div>
-          <label>Ancestral reconstruction method: </label>
+          <label htmlFor="tree-select">Ancestral reconstruction method: </label>
           <select
+            id="tree-select"
             value={tree.ident}
             onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
           >

@@ -5,6 +5,7 @@
 
 import * as types from "./types";
 import clientDataStore from "../utils/clientDataStore";
+import { charonAPIAddress } from "../util/globals";
 
 /**
  * Get tree data from client storage (replaces server getTree)
@@ -210,7 +211,6 @@ const loadServerDatasets = async (dispatch) => {
     };
 
     // Load from server API (original endpoint)
-    const { charonAPIAddress } = require("../util/globals");
     request.open("get", `${charonAPIAddress}/datasets.json`, true);
     request.send(null);
   } catch (error) {

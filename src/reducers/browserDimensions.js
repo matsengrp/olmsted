@@ -6,6 +6,7 @@ export const calcBrowserDimensionsInitialState = () => ({
   docHeight: window.document.body.clientHeight
 });
 
+// eslint-disable-next-line default-param-last
 const BrowserDimensions = (
   state = {
     browserDimensions: calcBrowserDimensionsInitialState()

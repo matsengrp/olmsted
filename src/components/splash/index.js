@@ -50,6 +50,7 @@ class Splash extends React.Component {
         <div className="static container">
           <div style={{ marginBottom: 35 }}>
             <Flex justifyContent="center">
+              {/* eslint-disable-next-line global-require */}
               <img alt="logo" src={require("../../images/olmsted.svg")} />
             </Flex>
           </div>

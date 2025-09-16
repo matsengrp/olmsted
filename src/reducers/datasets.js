@@ -5,6 +5,7 @@ export const getSelectedDatasets = (datasets) => {
   return datasets.filter((dataset) => dataset.loading);
 };
 
+// eslint-disable-next-line default-param-last
 const datasets = (
   state = {
     // TODO: remove

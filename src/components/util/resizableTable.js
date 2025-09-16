@@ -39,11 +39,11 @@ export class ResizableTable extends React.Component {
   }
 
   updateScrollbarWidth() {
-    const { scrollbarWidth } = this.state;
+    const { scrollbarWidth: currentScrollbarWidth } = this.state;
     if (this.bodyRef.current) {
-      const scrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (scrollbarWidth !== scrollbarWidth) {
-        this.setState({ scrollbarWidth });
+      const newScrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
+      if (newScrollbarWidth !== currentScrollbarWidth) {
+        this.setState({ scrollbarWidth: newScrollbarWidth });
       }
     }
   }
@@ -158,6 +158,7 @@ export class ResizableTable extends React.Component {
         onKeyDown={handleRowKeyDown}
         role={onRowClick ? "button" : undefined}
         tabIndex={onRowClick ? 0 : undefined}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
@@ -327,6 +328,7 @@ export class ResizableTable extends React.Component {
                   onKeyDown={handleHeaderKeyDown}
                   role={isSortable ? "button" : "columnheader"}
                   tabIndex={isSortable ? 0 : undefined}
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                   aria-label={isSortable ? `Sort by ${name}` : undefined}
                   aria-sort={isSortable && currentSortColumn === columnKey ? (currentSortDesc ? "descending" : "ascending") : "none"}
                 >

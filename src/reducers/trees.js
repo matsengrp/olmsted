@@ -1,5 +1,6 @@
 import * as types from "../actions/types";
 
+// eslint-disable-next-line default-param-last
 const trees = (
   state = {
     selectedTreeIdent: undefined,

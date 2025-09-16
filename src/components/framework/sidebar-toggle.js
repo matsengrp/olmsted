@@ -73,8 +73,8 @@ function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label={`${selected ? 'Collapse' : 'Expand'} sidebar section`}
-      aria-expanded={selected}
+      aria-label={`${sidebarOpen ? 'Collapse' : 'Expand'} sidebar section`}
+      aria-expanded={sidebarOpen}
     >
       <div style={iconStyle}>
         <i className={iconClass} aria-hidden="true" />

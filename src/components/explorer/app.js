@@ -259,6 +259,7 @@ class App extends React.Component {
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
                 <label
+                  htmlFor="locus-select"
                   style={{
                     display: "block",
                     marginBottom: 5,
@@ -269,6 +270,7 @@ class App extends React.Component {
                   Filter by locus:
                 </label>
                 <select
+                  id="locus-select"
                   value={locus}
                   onChange={(event) => {
                     resetState();
