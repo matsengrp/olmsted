@@ -17,23 +17,24 @@ export const prettyString = (
     return "";
   }
   if (typeof x === "string") {
-    if (trim > 0 && x.length > trim) {
-      x = x.slice(0, trim) + "...";
+    let result = x;
+    if (trim > 0 && result.length > trim) {
+      result = result.slice(0, trim) + "...";
     }
-    if (["usvi", "usa", "uk"].indexOf(x.toLowerCase()) !== -1) {
-      return x.toUpperCase();
+    if (["usvi", "usa", "uk"].indexOf(result.toLowerCase()) !== -1) {
+      return result.toUpperCase();
     }
-    x = x.replace(/_/g, " ");
+    result = result.replace(/_/g, " ");
     if (camelCase) {
-      x = x.replace(/\w\S*/g, (y) => y.charAt(0).toUpperCase() + y.substr(1).toLowerCase());
+      result = result.replace(/\w\S*/g, (y) => y.charAt(0).toUpperCase() + y.substr(1).toLowerCase());
     }
     if (removeComma) {
-      x = x.replace(/,/g, "");
+      result = result.replace(/,/g, "");
     }
     if (stripEtAl) {
-      x = x.replace("et al.", "").replace("Et Al.", "").replace("et al", "").replace("Et Al", "");
+      result = result.replace("et al.", "").replace("Et Al.", "").replace("et al", "").replace("Et Al", "");
     }
-    return x;
+    return result;
   }
   if (typeof x === "number") {
     const val = parseFloat(x);

@@ -141,41 +141,41 @@ const dissoc = (d, key) => {
 };
 
 export const computeTreeData = (tree) => {
-  tree = _.clone(tree); // clone for assign by value
+  const treeData = _.clone(tree); // clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  tree.nodes = _.map(tree.nodes, (x) => x.parent == "inferred_naive" || x.sequence_id == "inferred_naive" ? dissoc(x, "lbr") : x);
+  treeData.nodes = _.map(treeData.nodes, (x) => x.parent == "inferred_naive" || x.sequence_id == "inferred_naive" ? dissoc(x, "lbr") : x);
 
-  if (tree["nodes"] && tree["nodes"].length > 0) {
-    let data = tree["nodes"].slice(0);
+  if (treeData["nodes"] && treeData["nodes"].length > 0) {
+    let data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
     data = _.filter(data, (o) => o.type == "root" || o.type == "leaf");
-    tree["leaves_count_incl_naive"] = data.length;
+    treeData["leaves_count_incl_naive"] = data.length;
     const alignment = createAlignment(naive.sequence_alignment_aa, data);
-    tree["tips_alignment"] = alignment;
-    tree["download_unique_family_seqs"] = uniqueSeqs(tree.nodes);
-    return tree;
+    treeData["tips_alignment"] = alignment;
+    treeData["download_unique_family_seqs"] = uniqueSeqs(treeData.nodes);
+    return treeData;
   }
 
-  return tree;
+  return treeData;
 };
 
 // Create an alignment for the lineage of a particular sequence from naive
 // and find lineage sequences, removing repeat sequences but preserving back mutations.
 const computeLineageData = (tree, seq) => {
-  tree = _.clone(tree); // clone for assign by value
-  if (tree["nodes"] && tree["nodes"].length > 0 && !_.isEmpty(seq)) {
-    const data = tree["nodes"].slice(0);
+  const treeData = _.clone(tree); // clone for assign by value
+  if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {
+    const data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
     const lineage = followLineage(data, seq, naive);
-    tree["download_lineage_seqs"] = lineage;
+    treeData["download_lineage_seqs"] = lineage;
     // Count unique aa sequences to set the height of the lineage viz accordingly
-    tree["lineage_seq_counter"] = _.uniqBy(lineage, "sequence_alignment_aa").length;
+    treeData["lineage_seq_counter"] = _.uniqBy(lineage, "sequence_alignment_aa").length;
     const alignment = createAlignment(naive.sequence_alignment_aa, lineage);
-    tree["lineage_alignment"] = alignment;
-    return tree;
+    treeData["lineage_alignment"] = alignment;
+    return treeData;
   }
 
-  return tree;
+  return treeData;
 };
 
 export const getTreeData = createSelector([getSelectedTree], computeTreeData);

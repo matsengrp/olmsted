@@ -102,7 +102,9 @@ class NavBar extends React.Component {
     return (
       <button
         type="button"
-        style={{ ...styles.logo, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+        style={{
+          ...styles.logo, border: 'none', background: 'none', padding: 0, cursor: 'pointer'
+        }}
         onClick={handleLogoClick}
         onKeyDown={handleLogoKeyDown}
         aria-label="Olmsted home"
@@ -121,7 +123,9 @@ class NavBar extends React.Component {
     ) : (
       <button
         type="button"
-        style={{ ...styles.title, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+        style={{
+          ...styles.title, border: 'none', background: 'none', padding: 0, cursor: 'pointer'
+        }}
         onClick={(e) => {
           e.preventDefault();
           dispatch(changePage({ path: "splash" }));
@@ -145,7 +149,9 @@ class NavBar extends React.Component {
     return (
       <button
         type="button"
-        style={{ ...{ color: linkCol }, ...styles.link, border: 'none', background: 'none', cursor: 'pointer' }}
+        style={{
+          ...{ color: linkCol }, ...styles.link, border: 'none', background: 'none', cursor: 'pointer'
+        }}
         onClick={(e) => {
           e.preventDefault();
           dispatch(changePage({ path: path }));
