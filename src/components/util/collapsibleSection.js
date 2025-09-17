@@ -52,6 +52,7 @@ class CollapsibleSection extends React.Component {
         onTriggerOpening={() => this.handleToggle(true)}
         onTriggerClosing={() => this.handleToggle(false)}
         open={isOpen}
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...otherProps}
       >
         {children}

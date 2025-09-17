@@ -6,26 +6,17 @@ import { BROWSER_DIMENSIONS } from "../../actions/types";
 import { browserBackForward } from "../../actions/navigation";
 import { getClientDatasets } from "../../actions/clientDataLoader";
 
-@connect((state) => ({
-  datapath: state.datasets.datapath
-}))
 class Monitor extends React.Component {
   constructor(props) {
     super(props);
   }
 
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired
-  };
-
-  componentWillMount() {
+  componentDidMount() {
     const script = document.createElement("script");
     script.src = "https://platform.twitter.com/widgets.js";
     script.async = true;
     document.body.appendChild(script);
-  }
 
-  componentDidMount() {
     const { dispatch } = this.props;
     /* Load datasets from client storage first, then server (needed to load the splash page) */
     getClientDatasets(dispatch);
@@ -85,4 +76,11 @@ class Monitor extends React.Component {
   }
 }
 
-export default Monitor;
+Monitor.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  datapath: PropTypes.string
+};
+
+export default connect((state) => ({
+  datapath: state.datasets.datapath
+}))(Monitor);

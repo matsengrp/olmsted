@@ -314,7 +314,7 @@ class ResizableVirtualTable extends React.Component {
             {/* Visible items positioned absolutely */}
             <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
               {visibleItems.map((item, index) => (
-                <div key={startIndex + index} style={{ height: rowHeight }}>
+                <div key={item.ident} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
               ))}

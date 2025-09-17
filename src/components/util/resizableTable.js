@@ -206,6 +206,7 @@ export class ResizableTable extends React.Component {
             // Check if it's a React component or a simple function
             if (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) {
               // It's a React component
+              // eslint-disable-next-line react/jsx-props-no-spreading
               content = <AttrOrComponent datum={datum} {...(componentProps || {})} />;
             } else {
               // It's a simple function that returns a value
@@ -380,7 +381,7 @@ export class ResizableTable extends React.Component {
             {/* Visible items positioned absolutely */}
             <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
               {visibleItems.map((item, index) => (
-                <div key={startIndex + index} style={{ height: rowHeight }}>
+                <div key={item.id || item.ident || item.dataset_id || (startIndex + index)} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
               ))}
