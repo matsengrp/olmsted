@@ -25,13 +25,6 @@ class FileUpload extends React.Component {
     this.fileInputRef = React.createRef();
   }
 
-  // Method to trigger file selection
-  triggerFileSelect() {
-    if (this.fileInputRef.current) {
-      this.fileInputRef.current.click();
-    }
-  }
-
   // Handle file input change
   handleFileInputChange(event) {
     const files = Array.from(event.target.files);
@@ -122,9 +115,7 @@ class FileUpload extends React.Component {
       // Clear loading status after a brief delay
       setTimeout(() => {
         this.setState({
-          loadingMessage: "",
-          loadingProgress: 0,
-          isLoading: false
+          loadingProgress: 0
         });
       }, 500);
 

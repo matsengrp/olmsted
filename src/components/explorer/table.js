@@ -257,7 +257,9 @@ class ResizableVirtualTable extends React.Component {
                   key={name}
                   style={style}
                   onClick={() => {
-                    isAttr && dispatch(explorerActions.toggleSort(AttrOrComponent));
+                    if (isAttr) {
+                      dispatch(explorerActions.toggleSort(AttrOrComponent));
+                    }
                   }}
                   onKeyDown={handleHeaderKeyDown}
                   role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable

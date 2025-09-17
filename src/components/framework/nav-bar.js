@@ -143,31 +143,6 @@ class NavBar extends React.Component {
     );
   }
 
-  getLink(name, path, styles) {
-    const { minified, dispatch } = this.props;
-    const linkCol = minified ? "#000" : darkGrey;
-    return (
-      <button
-        type="button"
-        style={{
-          ...{ color: linkCol }, ...styles.link, border: 'none', background: 'none', cursor: 'pointer'
-        }}
-        onClick={(e) => {
-          e.preventDefault();
-          dispatch(changePage({ path: path }));
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            dispatch(changePage({ path: path }));
-          }
-        }}
-      >
-        {name}
-      </button>
-    );
-  }
-
   getChevron() {
     const { minified, mobileDisplay, toggleHandler } = this.props;
     return minified ? <SidebarChevron mobileDisplay={mobileDisplay} handler={toggleHandler} /> : <div />;

@@ -110,9 +110,7 @@ const uniqueSeqs = (nodes) => {
   const internal_nodes = seq_records;
 
   const taken_seqs = new Set([
-    _.map(leaves, (leaf) => {
-      leaf.sequence_alignment;
-    }).concat([naive.sequence_alignment])
+    _.map(leaves, (leaf) => leaf.sequence_alignment).concat([naive.sequence_alignment])
   ]);
   let download_seqs = [];
   const uniq_int_nodes = _.filter(_.uniqBy(_.reverse(internal_nodes), "sequence_alignment"), (node) => {

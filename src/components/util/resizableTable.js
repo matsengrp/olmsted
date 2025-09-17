@@ -239,7 +239,7 @@ export class ResizableTable extends React.Component {
 
   render() {
     const {
-      containerHeight = 400, mappings, showFooter = true, componentProps, itemName
+      containerHeight = 400, mappings, showFooter = true, componentProps: _componentProps, itemName
     } = this.props;
     const {
       scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
