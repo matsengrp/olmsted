@@ -157,8 +157,8 @@ export class ResizableTable extends React.Component {
         onClick={() => onRowClick && onRowClick(datum)}
         onKeyDown={handleRowKeyDown}
         role={onRowClick ? "button" : undefined}
-        tabIndex={onRowClick ? 0 : undefined}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={onRowClick ? 0 : undefined}
         aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
@@ -330,8 +330,8 @@ export class ResizableTable extends React.Component {
                   onClick={() => isSortable && this.handleSort(columnKey)}
                   onKeyDown={handleHeaderKeyDown}
                   role={isSortable ? "button" : "columnheader"}
-                  tabIndex={isSortable ? 0 : undefined}
                   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                  tabIndex={isSortable ? 0 : undefined}
                   aria-label={isSortable ? `Sort by ${name}` : undefined}
                   aria-sort={isSortable && currentSortColumn === columnKey ? (currentSortDesc ? "descending" : "ascending") : "none"}
                 >

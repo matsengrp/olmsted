@@ -263,8 +263,8 @@ class ResizableVirtualTable extends React.Component {
                   }}
                   onKeyDown={handleHeaderKeyDown}
                   role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
-                  tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
                   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                  tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
                   aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
                   aria-label={isAttr ? `Sort by ${name}` : undefined}
                 >
