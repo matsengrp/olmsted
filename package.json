@@ -9,7 +9,8 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "postinstall": "npm run create-data-dir",
+    "postinstall": "npm run create-data-dir && npm run setup-eslint-plugin",
+    "setup-eslint-plugin": "node scripts/setup-eslint-plugin.js",
     "clean": "rimraf deploy/dist",
     "server": "node server.dist.js",
     "build:client": "NODE_ENV=production BABEL_ENV=production webpack --config webpack.config.prod.js",
