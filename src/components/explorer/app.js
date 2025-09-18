@@ -258,31 +258,26 @@ class App extends React.Component {
                   )}
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
-                <label
-                  htmlFor="locus-select"
-                  style={{
-                    display: "block",
-                    marginBottom: 5,
-                    fontSize: 14,
-                    fontWeight: "bold"
-                  }}
-                >
-                  Filter by locus:
-                </label>
-                <select
-                  id="locus-select"
-                  value={locus}
-                  onChange={(event) => {
-                    resetState();
-                    filterLocus(event.target.value);
-                  }}
-                >
-                  {["igh", "igk", "igl", "ALL"].map((locus_option) => (
-                    <option key={locus_option} value={locus_option}>
-                      {locus_option}
-                    </option>
-                  ))}
-                </select>
+                <div style={{ marginBottom: 5 }}>
+                  <span style={{ fontSize: 14, fontWeight: "bold", marginRight: 8 }}>
+                    Filter by locus:
+                  </span>
+                  <select
+                    id="locus-select"
+                    value={locus}
+                    onChange={(event) => {
+                      resetState();
+                      filterLocus(event.target.value);
+                    }}
+                    aria-label="Filter by locus"
+                  >
+                    {["igh", "igk", "igl", "ALL"].map((locus_option) => (
+                      <option key={locus_option} value={locus_option}>
+                        {locus_option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <SelectedFamiliesSummary />
                 <ClonalFamiliesViz />
               </CollapsibleSection>
