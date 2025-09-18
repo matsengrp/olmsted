@@ -94,7 +94,8 @@ class NavBar extends React.Component {
       dispatch(changePage({ path: "splash" }));
     };
     const handleLogoKeyDown = (e) => {
-      if (e.key === 'Enter') { // Links naturally respond to Enter, not Space
+      if (e.key === "Enter") {
+        // Links naturally respond to Enter, not Space
         e.preventDefault();
         dispatch(changePage({ path: "splash" }));
       }
@@ -103,7 +104,11 @@ class NavBar extends React.Component {
       <button
         type="button"
         style={{
-          ...styles.logo, border: 'none', background: 'none', padding: 0, cursor: 'pointer'
+          ...styles.logo,
+          border: "none",
+          background: "none",
+          padding: 0,
+          cursor: "pointer"
         }}
         onClick={handleLogoClick}
         onKeyDown={handleLogoKeyDown}
@@ -124,14 +129,18 @@ class NavBar extends React.Component {
       <button
         type="button"
         style={{
-          ...styles.title, border: 'none', background: 'none', padding: 0, cursor: 'pointer'
+          ...styles.title,
+          border: "none",
+          background: "none",
+          padding: 0,
+          cursor: "pointer"
         }}
         onClick={(e) => {
           e.preventDefault();
           dispatch(changePage({ path: "splash" }));
         }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === "Enter") {
             e.preventDefault();
             dispatch(changePage({ path: "splash" }));
           }

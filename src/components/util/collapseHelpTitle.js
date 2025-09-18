@@ -5,15 +5,13 @@ import { FiHelpCircle } from "react-icons/fi";
 function CollapseHelpTitle({ titleText, helpText }) {
   return (
     <Collapsible
-      trigger={(
+      trigger={
         <div>
           <h2>
-            {titleText}
-            {' '}
-            <FiHelpCircle style={{ cursor: "pointer" }} />
+            {titleText} <FiHelpCircle style={{ cursor: "pointer" }} />
           </h2>
         </div>
-      )}
+      }
     >
       {helpText}
     </Collapsible>

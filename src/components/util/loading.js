@@ -1,7 +1,5 @@
 import React from "react";
-import {
-  FiCheck, FiPlus, FiX, FiLoader
-} from "react-icons/fi";
+import { FiCheck, FiPlus, FiX, FiLoader } from "react-icons/fi";
 
 class SimpleInProgress extends React.Component {
   constructor(props) {
@@ -116,9 +114,7 @@ function PlusIcon({ style }) {
   );
 }
 
-function LoadingStatus({
-  loadingStatus, loading, done, error, default: defaultIcon
-}) {
+function LoadingStatus({ loadingStatus, loading, done, error, default: defaultIcon }) {
   switch (loadingStatus) {
     case "LOADING": {
       return loading || <SimpleInProgress />;
@@ -135,6 +131,4 @@ function LoadingStatus({
   }
 }
 
-export {
-  LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon
-};
+export { LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon };

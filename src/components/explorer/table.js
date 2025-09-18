@@ -89,9 +89,7 @@ class ResizableVirtualTable extends React.Component {
   }
 
   onMouseMove(e) {
-    const {
-      isResizing, startX, startWidth, resizingColumn, columnWidths
-    } = this.state;
+    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
     if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
@@ -175,9 +173,7 @@ class ResizableVirtualTable extends React.Component {
   }
 
   render() {
-    const {
-      data, containerHeight = 500, mappings, dispatch
-    } = this.props;
+    const { data, containerHeight = 500, mappings, dispatch } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
 
@@ -246,7 +242,7 @@ class ResizableVirtualTable extends React.Component {
                * Using button role as this performs an action (sorting)
                */
               const handleHeaderKeyDown = (e) => {
-                if ((e.key === 'Enter' || e.key === ' ') && isAttr) {
+                if ((e.key === "Enter" || e.key === " ") && isAttr) {
                   e.preventDefault();
                   dispatch(explorerActions.toggleSort(AttrOrComponent));
                 }
@@ -332,11 +328,7 @@ class ResizableVirtualTable extends React.Component {
             overflow: "hidden"
           }}
         >
-          Showing
-          {' '}
-          {data.length}
-          {' '}
-          families
+          Showing {data.length} families
         </div>
       </div>
     );
@@ -346,9 +338,7 @@ class ResizableVirtualTable extends React.Component {
 @connect()
 class Table extends React.Component {
   render() {
-    const {
-      data, mappings, selectedFamily, dispatch, pagination
-    } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination } = this.props;
     return (
       <ResizableVirtualTable
         data={data}

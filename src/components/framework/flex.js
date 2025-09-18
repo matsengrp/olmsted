@@ -13,11 +13,9 @@ import PropTypes from "prop-types";
 */
 
 class Flex extends React.Component {
-
   getStyles() {
-    const {
-      direction, wrap, justifyContent, alignItems, alignContent, order, grow, shrink, basis, alignSelf, style
-    } = this.props;
+    const { direction, wrap, justifyContent, alignItems, alignContent, order, grow, shrink, basis, alignSelf, style } =
+      this.props;
     return {
       base: {
         display: "flex",
@@ -45,29 +43,31 @@ class Flex extends React.Component {
      * WCAG 2.1.1: All interactive elements must be keyboard accessible
      * Only applies when clickHandler prop is provided
      */
-    const handleKeyDown = clickHandler ? (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        clickHandler(e);
-      }
-    } : undefined;
+    const handleKeyDown = clickHandler
+      ? (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            clickHandler(e);
+          }
+        }
+      : undefined;
 
     // Only add interactive attributes if there's a click handler
-    const interactiveProps = clickHandler ? {
-      onClick: clickHandler,
-      onKeyDown: handleKeyDown,
-      role: "button",
-      tabIndex: 0,
-      style: { ...styles.base, ...styles.style, cursor: 'pointer' }
-    } : {
-      style: { ...styles.base, ...styles.style }
-    };
+    const interactiveProps = clickHandler
+      ? {
+          onClick: clickHandler,
+          onKeyDown: handleKeyDown,
+          role: "button",
+          tabIndex: 0,
+          style: { ...styles.base, ...styles.style, cursor: "pointer" }
+        }
+      : {
+          style: { ...styles.base, ...styles.style }
+        };
 
     return (
       // eslint-disable-next-line react/jsx-props-no-spreading
-      <div {...interactiveProps}>
-        {children}
-      </div>
+      <div {...interactiveProps}>{children}</div>
     );
   }
 }

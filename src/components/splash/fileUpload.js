@@ -232,7 +232,7 @@ class FileUpload extends React.Component {
         const results = await Promise.allSettled(fileProcessingPromises);
 
         // Check for any failures
-        const failures = results.filter((result) => result.status === 'rejected');
+        const failures = results.filter((result) => result.status === "rejected");
         if (failures.length > 0) {
           throw new Error(`Failed to process ${failures.length} of ${acceptedFiles.length} files`);
         }
@@ -259,9 +259,8 @@ class FileUpload extends React.Component {
   }
 
   render() {
-    const {
-      uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress, loadingProgress, loadingStage
-    } = this.state;
+    const { uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress, loadingProgress, loadingStage } =
+      this.state;
 
     return (
       <CenterContent>
@@ -359,8 +358,7 @@ class FileUpload extends React.Component {
                     fontWeight: "bold"
                   }}
                 >
-                  {loadingProgress}
-                  % Complete
+                  {loadingProgress}% Complete
                 </div>
               </div>
             ) : (
@@ -368,13 +366,10 @@ class FileUpload extends React.Component {
                 <div style={{ fontSize: 20, marginBottom: 10 }}>Drag & drop files here</div>
                 <div style={{ fontSize: 14, color: "#666", marginBottom: 10 }}>or click to browse</div>
                 <div style={{ fontSize: 12, color: "#999" }}>
-                  <strong>Supported formats:</strong>
-                  {' '}
-                  AIRR JSON (.json only)
+                  <strong>Supported formats:</strong> AIRR JSON (.json only)
                   <br />
                   • Single consolidated file from olmsted-cli (recommended)
-                  <br />
-                  • Multiple split files together (datasets.json, clones.*.json, tree.*.json)
+                  <br />• Multiple split files together (datasets.json, clones.*.json, tree.*.json)
                 </div>
               </div>
             )}
@@ -416,25 +411,16 @@ class FileUpload extends React.Component {
                     <div>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: "#666" }}>
-                        (
-                        {file.fileType === "airr-split" ? "AIRR Split" : file.fileType.toUpperCase()}
-                        {' '}
-                        format)
+                        ({file.fileType === "airr-split" ? "AIRR Split" : file.fileType.toUpperCase()} format)
                       </span>
                       {file.dataset && file.dataset.clone_count && (
                         <span style={{ marginLeft: 10, color: "#666" }}>
-                          -
-                          {' '}
-                          {file.dataset.clone_count}
-                          {' '}
-                          clonal families
+                          - {file.dataset.clone_count} clonal families
                         </span>
                       )}
                       {file.fileCount && (
                         <div style={{ fontSize: 11, color: "#888", marginTop: 3 }}>
-                          Files:
-                          {' '}
-                          {file.originalFiles ? file.originalFiles.join(", ") : `${file.fileCount} files`}
+                          Files: {file.originalFiles ? file.originalFiles.join(", ") : `${file.fileCount} files`}
                         </div>
                       )}
                     </div>

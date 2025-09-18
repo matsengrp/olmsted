@@ -21,9 +21,9 @@ export const getTree = (dispatch, tree_id) => {
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch (err) {
       alert(
-        "Failed parsing json for "
-          + requested_tree_id
-          + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
+        "Failed parsing json for " +
+          requested_tree_id +
+          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
       );
       console.log(data.substring(0, 100));
     }
@@ -59,9 +59,9 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
       // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
     } catch (err) {
       alert(
-        "Failed parsing json for "
-          + requested_dataset_id
-          + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
+        "Failed parsing json for " +
+          requested_dataset_id +
+          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
       );
       console.log(data.substring(0, 100));
     }
@@ -105,10 +105,11 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
       selected: selectedDatasets.includes(dataset.dataset_id)
     }));
 
-    const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app"
-      // getDatapath(window.location.pathname, availableDatasets) :
-      ? window.location.pathname + window.location.search
-      : undefined;
+    const datapath =
+      chooseDisplayComponentFromPathname(window.location.pathname) === "app"
+        ? // getDatapath(window.location.pathname, availableDatasets) :
+          window.location.pathname + window.location.search
+        : undefined;
     dispatch({
       type: types.DATASETS_RECEIVED,
       s3bucket,
@@ -155,7 +156,8 @@ const getSegmentName = (datapath, availableDatasets) => {
 };
 
 const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
-  const apiPath = (jsonType) => `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
+  const apiPath = (jsonType) =>
+    `${charonAPIAddress}request=json&path=${datasets.datapath}_${jsonType}.json&s3=${s3bucket}`;
 
   const promisesOrder = ["meta", "tree", "frequencies"];
   const treeName = getSegmentName(datasets.datapath, datasets.availableDatasets);

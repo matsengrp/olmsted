@@ -6,11 +6,12 @@ import * as clonalFamiliesSelectors from "./clonalFamilies";
 const getSelectedTreeIdent = (state) => state.trees.selectedTreeIdent;
 
 export const getTreeFromCache = (cache, family, selectedIdent) => {
-  const ident = selectedIdent
-    || (
-      _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" })
-      || _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" })
-      || _.values(family.trees)[0]
+  const ident =
+    selectedIdent ||
+    (
+      _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" }) ||
+      _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" }) ||
+      _.values(family.trees)[0]
     ).ident;
   return cache[ident];
 };
@@ -25,7 +26,9 @@ export const getSelectedTree = createSelector(
 
 const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq;
 
-export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) => _.find(tree.nodes, { sequence_id: seq_id }));
+export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) =>
+  _.find(tree.nodes, { sequence_id: seq_id })
+);
 
 // computing mutations for tree node records relative to naive_seq
 
@@ -109,9 +112,7 @@ const uniqueSeqs = (nodes) => {
   // seq_records should now just have internal nodes, reassign for readability
   const internal_nodes = seq_records;
 
-  const taken_seqs = new Set([
-    _.map(leaves, (leaf) => leaf.sequence_alignment).concat([naive.sequence_alignment])
-  ]);
+  const taken_seqs = new Set([_.map(leaves, (leaf) => leaf.sequence_alignment).concat([naive.sequence_alignment])]);
   let download_seqs = [];
   const uniq_int_nodes = _.filter(_.uniqBy(_.reverse(internal_nodes), "sequence_alignment"), (node) => {
     return !taken_seqs.has(node.sequence_alignment);
@@ -141,7 +142,9 @@ const dissoc = (d, key) => {
 export const computeTreeData = (tree) => {
   const treeData = _.clone(tree); // clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  treeData.nodes = _.map(treeData.nodes, (x) => x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x);
+  treeData.nodes = _.map(treeData.nodes, (x) =>
+    x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
+  );
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);

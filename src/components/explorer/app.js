@@ -65,7 +65,7 @@ function Overlay({ styles, mobileDisplay, handler }) {
    * @param {KeyboardEvent} e - The keyboard event
    */
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault(); // Prevent default Space key scrolling behavior
       handler(e);
     }
@@ -81,7 +81,9 @@ function Overlay({ styles, mobileDisplay, handler }) {
       tabIndex={0} // Makes element keyboard focusable (0 = normal tab order)
       aria-label="Close overlay" // Provides accessible name for screen readers
     />
-  ) : <div />;
+  ) : (
+    <div />
+  );
 }
 
 @connect(
@@ -141,10 +143,10 @@ class App extends React.Component {
     const { availableDatasets, pendingDatasetLoads, dispatch } = this.props;
     // Check if datasets were just loaded and we have pending dataset loads from URL
     if (
-      prevProps.availableDatasets.length === 0
-      && availableDatasets.length > 0
-      && pendingDatasetLoads
-      && pendingDatasetLoads.length > 0
+      prevProps.availableDatasets.length === 0 &&
+      availableDatasets.length > 0 &&
+      pendingDatasetLoads &&
+      pendingDatasetLoads.length > 0
     ) {
       // Process each pending dataset load
       pendingDatasetLoads.forEach((dataset_id) => {
@@ -234,20 +236,18 @@ class App extends React.Component {
               <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
-                  helpText={(
+                  helpText={
                     <div>
                       The Clonal Families section represents each clonal family as a point in a scatterplot. Choose an
                       immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the
                       default is immunoglobulin gamma, or igh (where h stands for heavy chain). In order to visualize
-                      all clonal families from all loci in the dataset at once, choose &quot;ALL&quot; in the locus selector. By
-                      default, the scatterplot maps the number of unique members in a clonal family, unique_seqs_count,
-                      to the x-axis, and the average mutation frequency among members of that clonal family,
-                      mean_mut_freq, to the y-axis. However, you may configure both axes as well as the color and shape
-                      of the points to map to a range of fields, including sequence sampling time (sample.timepoint_id).
-                      See
-                      <a href="http://www.olmstedviz.org/schema.html">the schema</a>
-                      {' '}
-                      for field descriptions.
+                      all clonal families from all loci in the dataset at once, choose &quot;ALL&quot; in the locus
+                      selector. By default, the scatterplot maps the number of unique members in a clonal family,
+                      unique_seqs_count, to the x-axis, and the average mutation frequency among members of that clonal
+                      family, mean_mut_freq, to the y-axis. However, you may configure both axes as well as the color
+                      and shape of the points to map to a range of fields, including sequence sampling time
+                      (sample.timepoint_id). See
+                      <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
                       <br />
                       <br />
                       For comparison of subsets, you may facet the plot into separated panels according to data values
@@ -255,13 +255,11 @@ class App extends React.Component {
                       or clicking individual points to filter the resulting clonal families in the Selected clonal
                       families table below.
                     </div>
-                  )}
+                  }
                 />
                 <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
                 <div style={{ marginBottom: 5 }}>
-                  <span style={{ fontSize: 14, fontWeight: "bold", marginRight: 8 }}>
-                    Filter by locus:
-                  </span>
+                  <span style={{ fontSize: 14, fontWeight: "bold", marginRight: 8 }}>Filter by locus:</span>
                   <select
                     id="locus-select"
                     value={locus}

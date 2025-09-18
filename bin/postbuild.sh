@@ -15,5 +15,3 @@ mkdir -p deploy/dist deploy/data
 cp index.html deploy
 cp -r src/images/ deploy
 cp -r src/css/ deploy
-
-

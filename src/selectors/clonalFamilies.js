@@ -46,8 +46,8 @@ const getBrushSelection = (state) => state.clonalFamilies.brushSelection;
 
 const checkInRange = (axis, datum, brushSelection) => {
   return (
-    brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]]
-    && datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1]
+    brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]] &&
+    datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1]
   );
 };
 
@@ -109,12 +109,13 @@ export const getLastPage = createDeepEqualSelector(
   }
 );
 
-const computeClonalFamiliesPage = (data, pagination) => fun.threadf(
-  data,
-  [_.orderBy, [pagination.order_by], [pagination.desc ? "desc" : "asc"]],
-  [_.drop, pagination.page * pagination.per_page],
-  [_.take, pagination.per_page]
-);
+const computeClonalFamiliesPage = (data, pagination) =>
+  fun.threadf(
+    data,
+    [_.orderBy, [pagination.order_by], [pagination.desc ? "desc" : "asc"]],
+    [_.drop, pagination.page * pagination.per_page],
+    [_.take, pagination.per_page]
+  );
 
 export const getClonalFamiliesPage = createDeepEqualSelector(
   [getBrushedClonalFamilies, getPagination],

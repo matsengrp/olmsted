@@ -10,11 +10,7 @@ function IncompleteDataWarning({ datum, data_type }) {
         {data_type}
         {id_of_broken_data && ": " + id_of_broken_data}
       </h2>
-      <p>
-        {data_type}
-        {' '}
-        object has been logged to the console for inspection:
-      </p>
+      <p>{data_type} object has been logged to the console for inspection:</p>
       <div>
         <pre>
           <code>{JSON.stringify(datum, null, 2)}</code>

@@ -23,10 +23,12 @@ const datasets = (
   },
   action
 ) => {
-/* eslint-enable default-param-last */
+  /* eslint-enable default-param-last */
   switch (action.type) {
     case types.LOADING_DATASET: {
-      const updatedAvailableDatasets = state.availableDatasets.map((dataset) => dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset);
+      const updatedAvailableDatasets = state.availableDatasets.map((dataset) =>
+        dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset
+      );
       return { ...state, availableDatasets: updatedAvailableDatasets };
     }
     case types.PAGE_CHANGE: {

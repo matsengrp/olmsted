@@ -22,14 +22,12 @@ import { SimpleInProgress } from "../util/loading";
 }))
 class TreeHeader extends React.Component {
   render() {
-    const {
-      selectedFamily, tree, dispatchSelectedTree, selectedSeq
-    } = this.props;
+    const { selectedFamily, tree, dispatchSelectedTree, selectedSeq } = this.props;
     return (
       <div>
         <CollapseHelpTitle
           titleText={`Clonal family details for ${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}`}
-          helpText={(
+          helpText={
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
               details section. Select among any alternate phylogenies using the Ancestral reconstruction method menu.
@@ -39,21 +37,17 @@ class TreeHeader extends React.Component {
               <br />
               <br />
               Alongside the tree is an alignment of the sequences at the tree&apos;s tips. Colors indicate amino acid
-              mutations at each position that differs from the sequence at the root of the tree (typically the family&apos;s
-              inferred naive antibody sequence). Scroll while hovering over the tree to zoom in and out. Click and drag
-              the zoomed view to pan in a traditional map-style interface. The alignment view on the right zooms in the
-              vertical dimension according to the zoom status of the tree. The tree&apos;s leaves use pie charts to show the
-              multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given sequence,
-              colored according to sampling timepoint. See
-              {" "}
-              <a href="http://www.olmstedviz.org/schema.html">the schema</a>
-              {' '}
-              for more detailed field descriptions.
+              mutations at each position that differs from the sequence at the root of the tree (typically the
+              family&apos;s inferred naive antibody sequence). Scroll while hovering over the tree to zoom in and out.
+              Click and drag the zoomed view to pan in a traditional map-style interface. The alignment view on the
+              right zooms in the vertical dimension according to the zoom status of the tree. The tree&apos;s leaves use
+              pie charts to show the multiplicity (i.e. the number of downsampled and deduplicated sequences)
+              represented by a given sequence, colored according to sampling timepoint. See{" "}
+              <a href="http://www.olmstedviz.org/schema.html">the schema</a> for more detailed field descriptions.
               <br />
               <br />
               Note that often in example data the number of sequences in a clonal family has been downsampled to build a
-              tree (see downsampled_count, downsampling_strategy in
-              {" "}
+              tree (see downsampled_count, downsampling_strategy in{" "}
               <a href="http://www.olmstedviz.org/schema.html">the schema</a>
               ), which explains why a clonal family might be listed in the table as having a few thousand unique
               sequences, but upon selecting the clonal family, the corresponding tree visualization only contains 10s or
@@ -72,12 +66,12 @@ class TreeHeader extends React.Component {
                   min_color_value)
                 </li>
               </ul>
-              In order to get more details about a particular lineage in the tree, click on a leaf&apos;s label (or on the
-              dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
+              In order to get more details about a particular lineage in the tree, click on a leaf&apos;s label (or on
+              the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
               <br />
               <br />
             </div>
-          )}
+          }
         />
 
         <div>
@@ -171,9 +165,7 @@ class TreeViz extends React.Component {
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor
   treeDataFromProps() {
-    const {
-      tree, naiveData, cdr3Bounds, selectedFamily
-    } = this.props;
+    const { tree, naiveData, cdr3Bounds, selectedFamily } = this.props;
     return {
       source_0: tree.nodes,
       source_1: tree.tips_alignment,
@@ -189,9 +181,7 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const {
-      selectedFamily, selectedTree, selectedSeq, tree, dispatchSelectedSeq
-    } = this.props;
+    const { selectedFamily, selectedTree, selectedSeq, tree, dispatchSelectedSeq } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -211,9 +201,7 @@ class TreeViz extends React.Component {
           <div>
             <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <SimpleInProgress />
-              Loading data for clonal family:
-              {' '}
-              {selectedFamily.clone_id}
+              Loading data for clonal family: {selectedFamily.clone_id}
             </h2>
           </div>
         )}

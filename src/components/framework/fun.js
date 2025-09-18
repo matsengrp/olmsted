@@ -24,14 +24,15 @@
 //
 // Think of pushing the data here through a series of transformations,
 
-const _thread = (isThreadFirst, init, ...forms) => forms.reduce((prev, next) => {
-  if (Array.isArray(next)) {
-    const [head, ...tail] = next;
-    return isThreadFirst ? head.apply(this, [prev, ...tail]) : head.apply(this, tail.concat(prev));
-  }
-  console.log("next is:", next, "prev is:", prev);
-  return next.call(this, prev);
-}, init);
+const _thread = (isThreadFirst, init, ...forms) =>
+  forms.reduce((prev, next) => {
+    if (Array.isArray(next)) {
+      const [head, ...tail] = next;
+      return isThreadFirst ? head.apply(this, [prev, ...tail]) : head.apply(this, tail.concat(prev));
+    }
+    console.log("next is:", next, "prev is:", prev);
+    return next.call(this, prev);
+  }, init);
 
 // Thread first
 export const threadf = (init, ...forms) => _thread(true, init, ...forms);

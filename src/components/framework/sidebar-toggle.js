@@ -60,7 +60,7 @@ function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
    * This expands/collapses sidebar content sections
    */
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handler(e);
     }
@@ -73,7 +73,7 @@ function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label={`${sidebarOpen ? 'Collapse' : 'Expand'} sidebar section`}
+      aria-label={`${sidebarOpen ? "Collapse" : "Expand"} sidebar section`}
       aria-expanded={sidebarOpen}
     >
       <div style={iconStyle}>

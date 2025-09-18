@@ -73,9 +73,7 @@ export class ResizableTable extends React.Component {
   }
 
   onMouseMove(e) {
-    const {
-      isResizing, startX, startWidth, resizingColumn, columnWidths
-    } = this.state;
+    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
     if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
@@ -123,9 +121,7 @@ export class ResizableTable extends React.Component {
 
   renderTableRow(datum, index) {
     const { columnWidths } = this.state;
-    const {
-      onRowClick, getRowStyle, mappings, componentProps
-    } = this.props;
+    const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
 
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
 
@@ -133,12 +129,14 @@ export class ResizableTable extends React.Component {
      * Keyboard handler for clickable table rows
      * WCAG 2.1.1: Interactive table rows must support keyboard navigation
      */
-    const handleRowKeyDown = onRowClick ? (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onRowClick(datum);
-      }
-    } : undefined;
+    const handleRowKeyDown = onRowClick
+      ? (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onRowClick(datum);
+          }
+        }
+      : undefined;
 
     return (
       <div
@@ -204,9 +202,10 @@ export class ResizableTable extends React.Component {
             );
           } else if (typeof AttrOrComponent === "function") {
             // Check if it's a React component (class or functional) or a simple function
-            if ((AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent)
-                || (typeof AttrOrComponent === "function" && AttrOrComponent.name
-                 && AttrOrComponent.name.match(/^[A-Z]/))) {
+            if (
+              (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) ||
+              (typeof AttrOrComponent === "function" && AttrOrComponent.name && AttrOrComponent.name.match(/^[A-Z]/))
+            ) {
               // It's a React component (class component or functional component starting with capital letter)
               // eslint-disable-next-line react/jsx-props-no-spreading
               content = <AttrOrComponent datum={datum} {...(componentProps || {})} />;
@@ -242,11 +241,13 @@ export class ResizableTable extends React.Component {
 
   render() {
     const {
-      containerHeight = 400, mappings, showFooter = true, componentProps: _componentProps, itemName
+      containerHeight = 400,
+      mappings,
+      showFooter = true,
+      componentProps: _componentProps,
+      itemName
     } = this.props;
-    const {
-      scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
-    } = this.state;
+    const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
     const rowHeight = 40;
 
     const sortedData = this.getSortedData();
@@ -316,12 +317,14 @@ export class ResizableTable extends React.Component {
                * Keyboard handler for sortable column headers
                * WCAG 2.1.1: Column headers must be keyboard accessible for sorting
                */
-              const handleHeaderKeyDown = isSortable ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  this.handleSort(columnKey);
-                }
-              } : undefined;
+              const handleHeaderKeyDown = isSortable
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      this.handleSort(columnKey);
+                    }
+                  }
+                : undefined;
 
               return (
                 <div
@@ -333,7 +336,13 @@ export class ResizableTable extends React.Component {
                   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                   tabIndex={isSortable ? 0 : undefined}
                   aria-label={isSortable ? `Sort by ${name}` : undefined}
-                  aria-sort={isSortable && currentSortColumn === columnKey ? (currentSortDesc ? "descending" : "ascending") : "none"}
+                  aria-sort={
+                    isSortable && currentSortColumn === columnKey
+                      ? currentSortDesc
+                        ? "descending"
+                        : "ascending"
+                      : "none"
+                  }
                 >
                   <span
                     style={{
@@ -383,7 +392,7 @@ export class ResizableTable extends React.Component {
             {/* Visible items positioned absolutely */}
             <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
               {visibleItems.map((item, index) => (
-                <div key={item.id || item.ident || item.dataset_id || (startIndex + index)} style={{ height: rowHeight }}>
+                <div key={item.id || item.ident || item.dataset_id || startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
               ))}
@@ -402,11 +411,7 @@ export class ResizableTable extends React.Component {
               overflow: "hidden"
             }}
           >
-            Showing
-            {' '}
-            {sortedData.length}
-            {' '}
-            {itemName || "items"}
+            Showing {sortedData.length} {itemName || "items"}
           </div>
         )}
       </div>

@@ -11,9 +11,7 @@
  */
 
 import olmstedDB from "./olmstedDB";
-import {
-  ValidationError, DatabaseError, ErrorLogger, validateRequired, validateType
-} from "./errors";
+import { ValidationError, DatabaseError, ErrorLogger, validateRequired, validateType } from "./errors";
 
 /**
  * Manages client-side storage and retrieval of AIRR data with optimized caching
@@ -135,9 +133,9 @@ class ClientDataStore {
         // Add tree references in expected format
         trees: clone.tree_ids
           ? clone.tree_ids.map((tree_id) => ({
-            ident: tree_id,
-            tree_id: tree_id
-          }))
+              ident: tree_id,
+              tree_id: tree_id
+            }))
           : []
       }));
 

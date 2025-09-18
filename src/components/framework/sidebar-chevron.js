@@ -22,7 +22,7 @@ function SidebarChevron({ mobileDisplay, handler }) {
    * This control toggles the sidebar visibility
    */
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handler(e);
     }

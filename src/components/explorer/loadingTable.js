@@ -42,13 +42,7 @@ function SizeCell({ datum }) {
   }
 
   const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-  return (
-    <span>
-      {sizeInMB}
-      {' '}
-      MB
-    </span>
-  );
+  return <span>{sizeInMB} MB</span>;
 }
 
 // Component for non-selectable load status
@@ -162,15 +156,14 @@ export default class LoadingTable extends React.Component {
 
   render() {
     // Use all datasets (including loaded ones)
-    const {
-      allDatasets, datasets, selectedDatasets, dispatch, loadedClonalFamilies
-    } = this.props;
+    const { allDatasets, datasets, selectedDatasets, dispatch, loadedClonalFamilies } = this.props;
     const allDatasetsToUse = allDatasets || datasets || [];
 
     // Calculate changes pending
     const currentlyLoaded = new Set(allDatasetsToUse.filter((d) => d.loading === "DONE").map((d) => d.dataset_id));
-    const pendingChanges = selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length
-      + Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
+    const pendingChanges =
+      selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length +
+      Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
     // Check if we need citation column
     const showCitation = _.some(allDatasetsToUse, (d) => d.paper !== undefined);
@@ -246,14 +239,14 @@ export default class LoadingTable extends React.Component {
               marginRight: "10px"
             }}
           >
-            Update Visualization
-            {' '}
-            {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+            Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
           </button>
 
           <button
             type="button"
-            onClick={() => { window.location.href = "/"; }}
+            onClick={() => {
+              window.location.href = "/";
+            }}
             style={{
               padding: "8px 16px",
               fontSize: "14px",

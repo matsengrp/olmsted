@@ -42,17 +42,18 @@ class OlmstedDB extends Dexie {
     try {
       // Check if old database exists
       const databases = await Dexie.getDatabaseNames();
-      const hasOldDatabase = databases.includes("OlmstedClientStorage") || databases.includes("OlmstedClientStorage_v2");
+      const hasOldDatabase =
+        databases.includes("OlmstedClientStorage") || databases.includes("OlmstedClientStorage_v2");
 
       if (hasOldDatabase) {
         console.log("OlmstedDB: Found old database format");
 
         // Prompt user about database upgrade
         const userConfirmed = window.confirm(
-          "Olmsted has been upgraded with improved performance for large datasets.\n\n"
-            + "This requires clearing your previously uploaded datasets and starting fresh.\n\n"
-            + "Click OK to proceed with the upgrade and clear old data, or Cancel to continue with potential compatibility issues.\n\n"
-            + "Note: Server datasets and bookmarks are not affected."
+          "Olmsted has been upgraded with improved performance for large datasets.\n\n" +
+            "This requires clearing your previously uploaded datasets and starting fresh.\n\n" +
+            "Click OK to proceed with the upgrade and clear old data, or Cancel to continue with potential compatibility issues.\n\n" +
+            "Note: Server datasets and bookmarks are not affected."
         );
 
         if (userConfirmed) {
@@ -86,9 +87,7 @@ class OlmstedDB extends Dexie {
    * Store complete dataset with lazy loading structure
    */
   async storeDataset(processedData) {
-    const {
-      datasets, clones, trees, datasetId
-    } = processedData;
+    const { datasets, clones, trees, datasetId } = processedData;
 
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
@@ -251,10 +250,11 @@ class OlmstedDB extends Dexie {
         // Try partial matching - sometimes tree ident contains clone_id
         const allTrees = await this.trees.toArray();
         completeTree = allTrees.find(
-          (tree) => tree.clone_id === cloneId
-            || tree.ident === cloneId
-            || tree.ident.includes(cloneId)
-            || tree.tree_id.includes(cloneId)
+          (tree) =>
+            tree.clone_id === cloneId ||
+            tree.ident === cloneId ||
+            tree.ident.includes(cloneId) ||
+            tree.tree_id.includes(cloneId)
         );
       }
 

@@ -13,7 +13,7 @@ const BrowserDimensions = (
   },
   action
 ) => {
-/* eslint-enable default-param-last */
+  /* eslint-enable default-param-last */
   switch (action.type) {
     case types.BROWSER_DIMENSIONS:
       return { ...state, browserDimensions: action.data };

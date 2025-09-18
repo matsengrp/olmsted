@@ -67,7 +67,7 @@ class LoadStatusCell extends React.Component {
      * Allows dataset selection via keyboard navigation
      */
     const handleKeyDown = (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         this.selectDataset();
       }
@@ -121,13 +121,7 @@ function SizeCell({ datum }) {
   }
 
   const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-  return (
-    <span>
-      {sizeInMB}
-      {' '}
-      MB
-    </span>
-  );
+  return <span>{sizeInMB} MB</span>;
 }
 
 // Component for the delete button

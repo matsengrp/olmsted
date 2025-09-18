@@ -8,7 +8,7 @@ const trees = (
   },
   action
 ) => {
-/* eslint-enable default-param-last */
+  /* eslint-enable default-param-last */
   switch (action.type) {
     case types.TREE_RECEIVED: {
       const updates = {};

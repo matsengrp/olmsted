@@ -3,9 +3,7 @@
  * Combines split datasets, clones, and trees files back into a unified structure
  */
 
-import {
-  FileProcessingError, ValidationError, ErrorLogger, validateRequired
-} from "./errors";
+import { FileProcessingError, ValidationError, ErrorLogger, validateRequired } from "./errors";
 
 class SplitFileProcessor {
   /**
@@ -62,16 +60,18 @@ class SplitFileProcessor {
 
         // Find clones for this dataset
         const datasetClones = clones.filter(
-          (clone) => clone.dataset_id === datasetId
-            || clone.sample_id === datasetId
+          (clone) =>
+            clone.dataset_id === datasetId ||
+            clone.sample_id === datasetId ||
             // If no explicit dataset_id, assume they belong together
-            || (!clone.dataset_id && datasets.length === 1)
+            (!clone.dataset_id && datasets.length === 1)
         );
 
         // Find trees for this dataset
         const datasetTrees = trees.filter(
-          (tree) => tree.clone_id
-            && datasetClones.some((clone) => clone.clone_id === tree.clone_id || clone.ident === tree.clone_id)
+          (tree) =>
+            tree.clone_id &&
+            datasetClones.some((clone) => clone.clone_id === tree.clone_id || clone.ident === tree.clone_id)
         );
 
         // Create consolidated dataset structure
@@ -144,8 +144,8 @@ class SplitFileProcessor {
     // 1. Characteristic naming patterns, OR
     // 2. Mixed array/object content structure
     return (
-      fileContents.length > 1
-      && ((hasDatasetFile && (hasClonesFiles || hasTreeFiles)) || (hasArrayContent && hasDatasetContent))
+      fileContents.length > 1 &&
+      ((hasDatasetFile && (hasClonesFiles || hasTreeFiles)) || (hasArrayContent && hasDatasetContent))
     );
   }
 
@@ -233,20 +233,21 @@ class SplitFileProcessor {
   static isDatasetContent(content) {
     if (Array.isArray(content)) {
       return (
-        content.length > 0
-        && content.every(
-          (item) => item && typeof item === "object" && (item.dataset_id || item.ident) && !item.clone_id && !item.newick
+        content.length > 0 &&
+        content.every(
+          (item) =>
+            item && typeof item === "object" && (item.dataset_id || item.ident) && !item.clone_id && !item.newick
         )
       );
     }
 
     return (
-      content
-      && typeof content === "object"
-      && (content.dataset_id || content.ident)
-      && !content.clone_id
-      && !content.newick
-      && !Array.isArray(content)
+      content &&
+      typeof content === "object" &&
+      (content.dataset_id || content.ident) &&
+      !content.clone_id &&
+      !content.newick &&
+      !Array.isArray(content)
     );
   }
 
@@ -258,20 +259,21 @@ class SplitFileProcessor {
   static isClonesContent(content) {
     if (Array.isArray(content)) {
       return (
-        content.length > 0
-        && content.every(
-          (item) => item && typeof item === "object" && (item.clone_id || item.ident) && !item.newick && !item.dataset_id
+        content.length > 0 &&
+        content.every(
+          (item) =>
+            item && typeof item === "object" && (item.clone_id || item.ident) && !item.newick && !item.dataset_id
         )
       );
     }
 
     return (
-      content
-      && typeof content === "object"
-      && (content.clone_id || content.ident)
-      && !content.dataset_id
-      && !content.newick
-      && !Array.isArray(content)
+      content &&
+      typeof content === "object" &&
+      (content.clone_id || content.ident) &&
+      !content.dataset_id &&
+      !content.newick &&
+      !Array.isArray(content)
     );
   }
 
