@@ -224,12 +224,18 @@ class FileUpload extends React.Component {
       // Process as individual consolidated files
       if (acceptedFiles.length === 1) {
         this.updateLoadingStatus("Processing single file...", 30);
+        await this.processFile(acceptedFiles[0]);
       } else {
         this.updateLoadingStatus(`Processing ${acceptedFiles.length} individual files...`, 30);
-      }
+        // Process files in parallel for better performance
+        const fileProcessingPromises = acceptedFiles.map((file) => this.processFile(file));
+        const results = await Promise.allSettled(fileProcessingPromises);
 
-      for (const file of acceptedFiles) {
-        await this.processFile(file);
+        // Check for any failures
+        const failures = results.filter((result) => result.status === 'rejected');
+        if (failures.length > 0) {
+          throw new Error(`Failed to process ${failures.length} of ${acceptedFiles.length} files`);
+        }
       }
     } catch (error) {
       console.error("Error processing files:", error);

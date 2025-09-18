@@ -55,7 +55,7 @@ class Monitor extends React.Component {
 
   handleResizeByDispatching() {
     const { dispatch } = this.props;
-    dispatch((dispatch, getState) => {
+    dispatch((thunk_dispatch, getState) => {
       /* here we decide whether we should change panel layout from full <-> grid
       when crossing the twoColumnBreakpoint */
       const { browserDimensions: _browserDimensions } = getState();

@@ -87,9 +87,9 @@ class TreeHeader extends React.Component {
             value={tree.ident}
             onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
           >
-            {selectedFamily.trees.map((tree) => (
-              <option key={tree.ident} value={tree.ident}>
-                {tree.tree_id}
+            {selectedFamily.trees.map((tree_option) => (
+              <option key={tree_option.ident} value={tree_option.ident}>
+                {tree_option.tree_id}
               </option>
             ))}
           </select>

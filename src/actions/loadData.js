@@ -14,7 +14,7 @@ const charonErrorHandler = (dispatch) => {
 };
 
 export const getTree = (dispatch, tree_id) => {
-  const processData = (data, tree_id) => {
+  const processData = (data, requested_tree_id) => {
     let tree;
     try {
       tree = JSON.parse(data);
@@ -22,7 +22,7 @@ export const getTree = (dispatch, tree_id) => {
     } catch (err) {
       alert(
         "Failed parsing json for "
-          + tree_id
+          + requested_tree_id
           + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
       );
       console.log(data.substring(0, 100));
@@ -52,7 +52,7 @@ export const getTree = (dispatch, tree_id) => {
 };
 
 export const getClonalFamilies = (dispatch, dataset_id) => {
-  const processData = (data, dataset_id) => {
+  const processData = (data, requested_dataset_id) => {
     let clonalFamilies = [];
     try {
       clonalFamilies = JSON.parse(data);
@@ -60,7 +60,7 @@ export const getClonalFamilies = (dispatch, dataset_id) => {
     } catch (err) {
       alert(
         "Failed parsing json for "
-          + dataset_id
+          + requested_dataset_id
           + ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
       );
       console.log(data.substring(0, 100));

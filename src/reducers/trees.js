@@ -35,8 +35,8 @@ const trees = (
   }
 };
 
-export const getSelectedTree = (trees) => {
-  return trees.cache[trees.selectedTree];
+export const getSelectedTree = (trees_state) => {
+  return trees_state.cache[trees_state.selectedTree];
 };
 
 export default trees;

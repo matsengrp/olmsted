@@ -277,9 +277,9 @@ class App extends React.Component {
                     filterLocus(event.target.value);
                   }}
                 >
-                  {["igh", "igk", "igl", "ALL"].map((locus) => (
-                    <option key={locus} value={locus}>
-                      {locus}
+                  {["igh", "igk", "igl", "ALL"].map((locus_option) => (
+                    <option key={locus_option} value={locus_option}>
+                      {locus_option}
                     </option>
                   ))}
                 </select>

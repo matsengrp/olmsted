@@ -92,12 +92,13 @@ class OlmstedDB extends Dexie {
 
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
-        // Store dataset metadata
-        for (const dataset of datasets) {
-          await this.datasets.put(dataset);
+        // Store dataset metadata using bulk operation
+        if (datasets.length > 0) {
+          await this.datasets.bulkPut(datasets);
         }
 
-        // Store clone metadata and separate heavy data
+        // Store clone metadata and separate heavy data using bulk operation
+        const allCloneMeta = [];
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
             // Lightweight clone metadata (no embedded trees)
@@ -128,26 +129,27 @@ class OlmstedDB extends Dexie {
               tree_ids: clone.trees ? clone.trees.map((t) => t.ident || t.tree_id) : []
             };
 
-            await this.clones.put(cloneMeta);
+            allCloneMeta.push(cloneMeta);
           }
         }
+        if (allCloneMeta.length > 0) {
+          await this.clones.bulkPut(allCloneMeta);
+        }
 
-        // Store complete tree data (like SessionStorage did)
-        for (const tree of trees) {
-          // Store the complete tree object with all nodes intact
-          const completeTreeData = {
-            tree_id: tree.tree_id,
-            ident: tree.ident,
-            clone_id: tree.clone_id,
-            newick: tree.newick,
-            root_node: tree.root_node,
-            nodes: tree.nodes, // Store complete nodes object as-is
-            // Add any other tree properties that might be needed
-            downsampling_strategy: tree.downsampling_strategy,
-            tree_type: tree.tree_type
-          };
-
-          await this.trees.put(completeTreeData);
+        // Store complete tree data (like SessionStorage did) using bulk operation
+        const allTreeData = trees.map((tree) => ({
+          tree_id: tree.tree_id,
+          ident: tree.ident,
+          clone_id: tree.clone_id,
+          newick: tree.newick,
+          root_node: tree.root_node,
+          nodes: tree.nodes, // Store complete nodes object as-is
+          // Add any other tree properties that might be needed
+          downsampling_strategy: tree.downsampling_strategy,
+          tree_type: tree.tree_type
+        }));
+        if (allTreeData.length > 0) {
+          await this.trees.bulkPut(allTreeData);
         }
       });
 
@@ -312,9 +314,9 @@ class OlmstedDB extends Dexie {
         // Remove clones
         await this.clones.where("dataset_id").equals(datasetId).delete();
 
-        // Remove trees for these clones
-        for (const cloneId of cloneIds) {
-          await this.trees.where("clone_id").equals(cloneId).delete();
+        // Remove trees for these clones using bulk operation
+        if (cloneIds.length > 0) {
+          await this.trees.where("clone_id").anyOf(cloneIds).delete();
         }
       });
     } catch (error) {
