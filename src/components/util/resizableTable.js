@@ -203,9 +203,11 @@ export class ResizableTable extends React.Component {
               </div>
             );
           } else if (typeof AttrOrComponent === "function") {
-            // Check if it's a React component or a simple function
-            if (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) {
-              // It's a React component
+            // Check if it's a React component (class or functional) or a simple function
+            if ((AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent)
+                || (typeof AttrOrComponent === "function" && AttrOrComponent.name
+                 && AttrOrComponent.name.match(/^[A-Z]/))) {
+              // It's a React component (class component or functional component starting with capital letter)
               // eslint-disable-next-line react/jsx-props-no-spreading
               content = <AttrOrComponent datum={datum} {...(componentProps || {})} />;
             } else {

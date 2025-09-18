@@ -26,19 +26,17 @@ class MainComponentSwitch extends React.Component {
   }
 }
 
-class Root extends React.Component {
-  render() {
-    return (
-      <div>
-        <Monitor />
-        <NavBar />
-        <MainComponentSwitch />
-        <div className="static" style={{ marginTop: 50 }}>
-          <CenterContent>{logos}</CenterContent>
-        </div>
+function Root() {
+  return (
+    <div>
+      <Monitor />
+      <NavBar />
+      <MainComponentSwitch />
+      <div className="static" style={{ marginTop: 50 }}>
+        <CenterContent>{logos}</CenterContent>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default Root;

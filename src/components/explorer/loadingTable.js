@@ -10,76 +10,88 @@ import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
 
 // Component for the citation column
-class CitationCell extends React.Component {
-  render() {
-    const { datum } = this.props;
-    const { paper } = datum;
-    if (!paper) return <span>—</span>;
-
-    if (paper.url) {
-      return (
-        <a href={paper.url} onClick={(e) => e.stopPropagation()}>
-          {paper.authorstring}
-        </a>
-      );
-    }
-    return <span>{paper.authorstring}</span>;
+function CitationCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
   }
+
+  const { paper } = datum;
+  if (!paper) return <span>—</span>;
+
+  if (paper.url) {
+    return (
+      <a href={paper.url} onClick={(e) => e.stopPropagation()}>
+        {paper.authorstring}
+      </a>
+    );
+  }
+  return <span>{paper.authorstring}</span>;
 }
 
 // Component for the size column
-class SizeCell extends React.Component {
-  render() {
-    const { datum } = this.props;
-    const dataset = datum;
-    const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
-
-    if (sizeInBytes === 0) {
-      return <span>—</span>;
-    }
-
-    const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-    return (
-      <span>
-        {sizeInMB}
-        {' '}
-        MB
-      </span>
-    );
+function SizeCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
   }
+
+  const dataset = datum;
+  const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
+
+  if (sizeInBytes === 0) {
+    return <span>—</span>;
+  }
+
+  const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
+  return (
+    <span>
+      {sizeInMB}
+      {' '}
+      MB
+    </span>
+  );
 }
 
 // Component for non-selectable load status
-class LoadStatusDisplay extends React.Component {
-  render() {
-    const { datum } = this.props;
+function LoadStatusDisplay({ datum }) {
+  if (!datum) {
     return (
       <div style={{ width: "100%", textAlign: "center" }}>
-        <LoadingStatus loadingStatus={datum.loading} />
+        <LoadingStatus loadingStatus="ERROR" />
       </div>
     );
   }
+
+  return (
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <LoadingStatus loadingStatus={datum.loading} />
+    </div>
+  );
 }
 
 // Component for dataset selection checkbox
-class SelectionCell extends React.Component {
-  render() {
-    const { datum, selectedDatasets, dispatch } = this.props;
-    const isSelected = selectedDatasets && selectedDatasets.includes(datum.dataset_id);
-
+function SelectionCell({ datum, selectedDatasets, dispatch }) {
+  if (!datum) {
     return (
       <div style={{ width: "100%", textAlign: "center" }}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => {
-            dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
-          }}
-          style={{ cursor: "pointer" }}
-        />
+        <input type="checkbox" disabled style={{ cursor: "not-allowed" }} />
       </div>
     );
   }
+
+  const isSelected = selectedDatasets && selectedDatasets.includes(datum.dataset_id);
+
+  return (
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => {
+          dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
+        }}
+        style={{ cursor: "pointer" }}
+      />
+    </div>
+  );
 }
 
 @connect((state) => ({
