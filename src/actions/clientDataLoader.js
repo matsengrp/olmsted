@@ -120,10 +120,12 @@ export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
 
     // Always attempt to load server datasets in parallel
     // This allows mixing client-side uploaded data with server-side data
+    // eslint-disable-next-line no-use-before-define
     loadServerDatasets(dispatch);
   } catch (error) {
     console.error("Error loading client datasets:", error);
     // Fallback to server-only loading
+    // eslint-disable-next-line no-use-before-define
     loadServerDatasets(dispatch);
   }
 };

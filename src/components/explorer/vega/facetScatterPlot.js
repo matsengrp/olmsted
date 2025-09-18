@@ -24,6 +24,7 @@ const createDataConfiguration = () => [
       parse: { unique_seqs_count: "number", mean_mut_freq: "number" },
       copy: true
     },
+    // eslint-disable-next-line no-use-before-define
     transform: createDataTransforms()
   },
   {
@@ -457,6 +458,7 @@ const createCellSignals = () => [
       { events: "@cell:mouseup", update: "!span(brush_x) && !span(brush_y) ? null : cell" }
     ]
   },
+  // eslint-disable-next-line no-use-before-define
   ...createBrushSignals()
 ];
 
@@ -530,6 +532,7 @@ const createBrushSignals = () => [
       }
     ]
   },
+  // eslint-disable-next-line no-use-before-define
   ...createBrushTranslateSignals()
 ];
 
@@ -624,6 +627,7 @@ const createBrushMarks = () => [
     style: ["point"],
     from: { data: "facet" },
     encode: {
+      // eslint-disable-next-line no-use-before-define
       update: createSymbolEncoding()
     }
   },
