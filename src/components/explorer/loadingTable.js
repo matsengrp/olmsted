@@ -241,7 +241,7 @@ export default class LoadingTable extends React.Component {
 
           <button
             type="button"
-            onClick={() => (window.location.href = "/")}
+            onClick={() => { window.location.href = "/"; }}
             style={{
               padding: "8px 16px",
               fontSize: "14px",

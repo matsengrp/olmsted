@@ -106,9 +106,8 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
     }));
 
     const datapath = chooseDisplayComponentFromPathname(window.location.pathname) === "app"
-      ? // getDatapath(window.location.pathname, availableDatasets) :
-
-      window.location.pathname + window.location.search
+      // getDatapath(window.location.pathname, availableDatasets) :
+      ? window.location.pathname + window.location.search
       : undefined;
     dispatch({
       type: types.DATASETS_RECEIVED,

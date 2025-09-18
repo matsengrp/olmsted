@@ -3,7 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Flex from "./flex";
 import SidebarChevron from "./sidebar-chevron";
-import { darkGrey, brandColor } from "../../globalStyles";
+import { brandColor } from "../../globalStyles";
 import { changePage } from "../../actions/navigation";
 
 @connect((state) => {

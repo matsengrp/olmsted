@@ -25,6 +25,14 @@ class FileUpload extends React.Component {
     this.fileInputRef = React.createRef();
   }
 
+  // Trigger file selection programmatically (called from parent via ref)
+  // eslint-disable-next-line react/no-unused-class-component-methods
+  triggerFileSelect() {
+    if (this.fileInputRef.current) {
+      this.fileInputRef.current.click();
+    }
+  }
+
   // Handle file input change
   handleFileInputChange(event) {
     const files = Array.from(event.target.files);

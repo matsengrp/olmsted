@@ -1,6 +1,6 @@
 import * as types from "../actions/types";
 
-// eslint-disable-next-line default-param-last
+/* eslint-disable default-param-last */
 const trees = (
   state = {
     selectedTreeIdent: undefined,
@@ -8,6 +8,7 @@ const trees = (
   },
   action
 ) => {
+/* eslint-enable default-param-last */
   switch (action.type) {
     case types.TREE_RECEIVED: {
       const updates = {};

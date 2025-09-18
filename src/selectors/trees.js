@@ -36,13 +36,13 @@ const createAlignment = (naive_seq, tree) => {
     const mutations = [];
     const seq = node.sequence_alignment_aa;
     const seq_id = node.sequence_id;
-    const is_naive = node.type == "root";
+    const is_naive = node.type === "root";
     const pairs = _.toPairs(seq);
     // add mutation for each position deviating from the naive sequence_alignment_aa
     _.forEach(pairs, (pair) => {
       const i = pair[0];
       const aa = pair[1];
-      if (aa != naive_seq[i]) {
+      if (aa !== naive_seq[i]) {
         // add a mutation for a sequence deviating from the naive
         mutations.push({
           type: node.type,
@@ -101,10 +101,10 @@ const uniqueSeqs = (nodes) => {
   const seq_records = nodes.slice();
   // remove from a copy so that we dont loop through the whole thing several times filtering
   const naive = _.remove(seq_records, (o) => {
-    return o.type == "root";
+    return o.type === "root";
   })[0];
   const leaves = _.remove(seq_records, (o) => {
-    return o.type == "leaf";
+    return o.type === "leaf";
   });
   // seq_records should now just have internal nodes, reassign for readability
   const internal_nodes = seq_records;
@@ -141,12 +141,12 @@ const dissoc = (d, key) => {
 export const computeTreeData = (tree) => {
   const treeData = _.clone(tree); // clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  treeData.nodes = _.map(treeData.nodes, (x) => x.parent == "inferred_naive" || x.sequence_id == "inferred_naive" ? dissoc(x, "lbr") : x);
+  treeData.nodes = _.map(treeData.nodes, (x) => x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x);
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
-    data = _.filter(data, (o) => o.type == "root" || o.type == "leaf");
+    data = _.filter(data, (o) => o.type === "root" || o.type === "leaf");
     treeData["leaves_count_incl_naive"] = data.length;
     const alignment = createAlignment(naive.sequence_alignment_aa, data);
     treeData["tips_alignment"] = alignment;

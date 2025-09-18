@@ -81,6 +81,10 @@ Monitor.propTypes = {
   datapath: PropTypes.string
 };
 
+Monitor.defaultProps = {
+  datapath: null
+};
+
 export default connect((state) => ({
   datapath: state.datasets.datapath
 }))(Monitor);

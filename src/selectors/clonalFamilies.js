@@ -15,7 +15,7 @@ const getLocusFilter = (state) => state.clonalFamilies.locus;
 export const countLoadedClonalFamilies = (datasets) => {
   let clones = 0;
   if (datasets.length > 0) {
-    clones += _.filter(datasets, (dataset) => dataset.loading && dataset.loading == "DONE").reduce(
+    clones += _.filter(datasets, (dataset) => dataset.loading && dataset.loading === "DONE").reduce(
       (count, dataset) => count + dataset.clone_count,
       0
     );
@@ -27,12 +27,12 @@ const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
   let availableClonalFamilies = [];
   if (datasets.length > 0) {
     _.forEach(datasets, (dataset) => {
-      if (dataset.loading && dataset.loading == "DONE") {
+      if (dataset.loading && dataset.loading === "DONE") {
         availableClonalFamilies = availableClonalFamilies.concat(byDatasetId[dataset.dataset_id]);
       }
     });
   }
-  return locus == "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, { sample: { locus: locus } });
+  return locus === "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, { sample: { locus: locus } });
 };
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(

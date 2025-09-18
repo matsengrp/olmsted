@@ -254,9 +254,6 @@ class OlmstedDB extends Dexie {
             || tree.ident.includes(cloneId)
             || tree.tree_id.includes(cloneId)
         );
-
-        if (completeTree) {
-        }
       }
 
       if (!completeTree) {

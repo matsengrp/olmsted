@@ -5,7 +5,7 @@ export const getSelectedDatasets = (datasets) => {
   return datasets.filter((dataset) => dataset.loading);
 };
 
-// eslint-disable-next-line default-param-last
+/* eslint-disable default-param-last */
 const datasets = (
   state = {
     // TODO: remove
@@ -23,6 +23,7 @@ const datasets = (
   },
   action
 ) => {
+/* eslint-enable default-param-last */
   switch (action.type) {
     case types.LOADING_DATASET: {
       const updatedAvailableDatasets = state.availableDatasets.map((dataset) => dataset.dataset_id === action.dataset_id ? { ...dataset, loading: action.loading } : dataset);

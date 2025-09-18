@@ -239,14 +239,15 @@ export const loadDataSmart = (dispatch, dataType, identifier = null) => {
       if (identifier) {
         return getClientClonalFamilies(dispatch, identifier);
       }
-      break;
+      return null;
     case "tree":
       if (identifier) {
         return getClientTree(dispatch, identifier);
       }
-      break;
+      return null;
     default:
       console.warn("Unknown data type for smart loading:", dataType);
+      return null;
   }
 };
 

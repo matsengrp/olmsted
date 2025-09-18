@@ -81,7 +81,7 @@ export const changePageQuery = ({
   path, queryToUse, queryToDisplay = false, push = true
 }) => (dispatch, getState) => {
   const state = getState();
-  if (chooseDisplayComponentFromPathname(path) == "app" && queryToUse.selectedDatasets) {
+  if (chooseDisplayComponentFromPathname(path) === "app" && queryToUse.selectedDatasets) {
     const queryStringDatasets = new Set([].concat(queryToUse.selectedDatasets));
 
     // Don't immediately load datasets - wait for datasets to be available first

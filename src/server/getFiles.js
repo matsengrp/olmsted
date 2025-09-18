@@ -2,7 +2,8 @@
 // const fs = require('fs');
 const path = require("path");
 // const fetch = require('node-fetch'); // not needed for local data
-const request = require("request");
+// eslint-disable-next-line import/no-unresolved
+const request = require("request"); // deprecated package, server code not actively maintained
 // const prettyjson = require('prettyjson');
 
 // const validUsers = ['guest', 'mumps', 'lassa'];
