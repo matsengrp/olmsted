@@ -39,7 +39,9 @@ var options = {
 if (devServer) {
 
   let webpack = require("webpack"); // eslint-disable-line
-  let webpackConfig = require(process.env.WEBPACK_CONFIG ? process.env.WEBPACK_CONFIG : './webpack.config.dev');
+  // Use dynamic require to avoid webpack bundling dev config in production
+  const configPath = process.env.WEBPACK_CONFIG || './webpack.config.dev';
+  let webpackConfig = require(configPath);
 
   const compiler = webpack(webpackConfig);
 
@@ -59,8 +61,8 @@ if (devServer) {
 
 } else {
   // zip up the source code for production
-  app.use("/dist", expressStaticGzip("dist"));
-  app.use(express.static(path.join(__dirname, "dist")));
+  app.use("/dist", expressStaticGzip("deploy/dist"));
+  app.use(express.static(path.join(__dirname, "deploy/dist")));
 }
 
 /* redirect www.nextstrain.org to nextstrain.org */

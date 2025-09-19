@@ -15,6 +15,10 @@ fs.readdirSync('node_modules')
     nodeModules[mod] = 'commonjs ' + mod;
   });
 
+// Exclude webpack config files from server build to avoid dev dependencies
+nodeModules['./webpack.config.dev'] = 'commonjs ./webpack.config.dev';
+nodeModules['./webpack.config.prod'] = 'commonjs ./webpack.config.prod';
+
 module.exports = {
   entry: [
     "./server"
