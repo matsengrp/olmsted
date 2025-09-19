@@ -1,3 +1,11 @@
+## version 2.2.5 - 2025/09/19
+[PR225](https://github.com/matsengrp/olmsted/pull/225) Changed:
+* Resolved all ESLint errors
+* Migrated React Hot Loader to React Fast Refresh
+* Integrated Prettier with ESLint for consistent formatting
+* Fixes to GitHub actions CI/CD pipeline
+* Updated multer to v2.0.2 for security
+
 ## version 2.2.4 - 2025/09/11
 [PR220](https://github.com/matsengrp/olmsted/pull/220) Added:
 * Client-side data upload with drag-and-drop interface
