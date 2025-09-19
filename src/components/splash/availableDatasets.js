@@ -124,6 +124,10 @@ function SizeCell({ datum }) {
   return <span>{sizeInMB} MB</span>;
 }
 
+// Mark these as React components for production builds where names are minified
+CitationCell.isReactComponent = true;
+SizeCell.isReactComponent = true;
+
 // Component for the delete button
 class DeleteButtonCell extends React.Component {
   constructor(props) {

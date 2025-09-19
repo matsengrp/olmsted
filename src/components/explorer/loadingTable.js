@@ -88,6 +88,12 @@ function SelectionCell({ datum, selectedDatasets, dispatch }) {
   );
 }
 
+// Mark these as React components for production builds where names are minified
+SelectionCell.isReactComponent = true;
+LoadStatusDisplay.isReactComponent = true;
+CitationCell.isReactComponent = true;
+SizeCell.isReactComponent = true;
+
 @connect((state) => ({
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
   selectedDatasets: state.datasets.selectedDatasets,
