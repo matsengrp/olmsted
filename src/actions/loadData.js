@@ -192,7 +192,7 @@ const fetchDataAndDispatch = (dispatch, datasets, query, s3bucket) => {
         console.error("Tree & Meta JSONs could not be loaded.");
         dispatch(
           goTo404(`
-          Auspice attempted to load JSONs for the dataset "${datasets.datapath.replace(/_/, "/")}", but they couldn't be found.
+          Olmsted attempted to load JSONs for the dataset "${datasets.datapath.replace(/_/, "/")}", but they couldn't be found.
         `)
         );
         return;

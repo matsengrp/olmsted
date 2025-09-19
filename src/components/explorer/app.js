@@ -104,8 +104,6 @@ function Overlay({ styles, mobileDisplay, handler }) {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // For resize media query listener see this link (helps resize for mobile etc):
-    // https://github.com/nextstrain/auspice/blob/master/src/components/app.js#L112-L122
   }
 
   // static propTypes = {
