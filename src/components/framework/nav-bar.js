@@ -3,8 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Flex from "./flex";
 import SidebarChevron from "./sidebar-chevron";
-import { titleColors } from "../../util/globals";
-import { darkGrey, brandColor, materialButton } from "../../globalStyles";
+import { brandColor } from "../../globalStyles";
 import { changePage } from "../../actions/navigation";
 
 @connect((state) => {
@@ -18,6 +17,7 @@ class NavBar extends React.Component {
   }
 
   getStyles() {
+    const { minified } = this.props;
     return {
       main: {
         marginTop: "10px",
@@ -40,7 +40,7 @@ class NavBar extends React.Component {
         color: "#000",
         cursor: "pointer",
         textDecoration: "none",
-        fontSize: this.props.minified ? 12 : 16
+        fontSize: minified ? 12 : 16
       },
       title: {
         padding: "5px",
@@ -52,24 +52,24 @@ class NavBar extends React.Component {
         cursor: "pointer"
       },
       link: {
-        paddingLeft: this.props.minified ? "6px" : "12px",
-        paddingRight: this.props.minified ? "6px" : "12px",
+        paddingLeft: minified ? "6px" : "12px",
+        paddingRight: minified ? "6px" : "12px",
         paddingTop: "20px",
         paddingBottom: "20px",
         textDecoration: "none",
         cursor: "pointer",
-        fontSize: this.props.minified ? 12 : 16,
+        fontSize: minified ? 12 : 16,
         fontWeight: 400,
         textTransform: "uppercase"
       },
       inactive: {
-        paddingLeft: this.props.minified ? "6px" : "12px",
-        paddingRight: this.props.minified ? "6px" : "12px",
+        paddingLeft: minified ? "6px" : "12px",
+        paddingRight: minified ? "6px" : "12px",
         paddingTop: "20px",
         paddingBottom: "20px",
         color: "#5097BA",
         textDecoration: "none",
-        fontSize: this.props.minified ? 12 : 16,
+        fontSize: minified ? 12 : 16,
         fontWeight: 400,
         textTransform: "uppercase"
       },
@@ -83,63 +83,90 @@ class NavBar extends React.Component {
   }
 
   getLogo(styles) {
+    const { dispatch } = this.props;
+    /**
+     * Logo link keyboard handler
+     * WCAG 2.1.1: Navigation elements must be keyboard accessible
+     * Using href="#" with preventDefault for proper link semantics
+     */
+    const handleLogoClick = (e) => {
+      e.preventDefault();
+      dispatch(changePage({ path: "splash" }));
+    };
+    const handleLogoKeyDown = (e) => {
+      if (e.key === "Enter") {
+        // Links naturally respond to Enter, not Space
+        e.preventDefault();
+        dispatch(changePage({ path: "splash" }));
+      }
+    };
     return (
-      <a style={styles.logo}
-        onClick={(e) => this.props.dispatch(changePage({path: "splash"}))}
+      <button
+        type="button"
+        style={{
+          ...styles.logo,
+          border: "none",
+          background: "none",
+          padding: 0,
+          cursor: "pointer"
+        }}
+        onClick={handleLogoClick}
+        onKeyDown={handleLogoKeyDown}
+        aria-label="Olmsted home"
       >
-        <img alt="" width="50" src={require("../../images/olmsted_logo.png")}/>
-      </a>
+        {/* eslint-disable-next-line global-require */}
+        <img alt="" width="50" src={require("../../images/olmsted_logo.png")} />
+      </button>
     );
   }
 
   getLogoType(styles) {
-    const title = <span style={{color: "#05337f" }}>Olmsted</span>;
-    return (
-      this.props.minified
-        ? <div/>
-        : (
-          <a style={styles.title}
-            onClick={(e) => this.props.dispatch(changePage({path: "splash"}))}
-          >
-            {title}
-          </a>
-        )
-    );
-  }
-
-  getLink(name, path, styles) {
-    const linkCol = this.props.minified ? "#000" : darkGrey;
-    return (
-      <a style={{ ...{color: linkCol}, ...styles.link }}
-        onClick={(e) => this.props.dispatch(changePage({path: path}))}
+    const { minified, dispatch } = this.props;
+    const title = <span style={{ color: "#05337f" }}>Olmsted</span>;
+    return minified ? (
+      <div />
+    ) : (
+      <button
+        type="button"
+        style={{
+          ...styles.title,
+          border: "none",
+          background: "none",
+          padding: 0,
+          cursor: "pointer"
+        }}
+        onClick={(e) => {
+          e.preventDefault();
+          dispatch(changePage({ path: "splash" }));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            dispatch(changePage({ path: "splash" }));
+          }
+        }}
+        aria-label="Olmsted home"
       >
-        {name}
-      </a>
+        {title}
+      </button>
     );
   }
 
   getChevron() {
-    return (
-      this.props.minified
-        ? (
-          <SidebarChevron
-            mobileDisplay={this.props.mobileDisplay}
-            handler={this.props.toggleHandler}
-          />
-        )
-        : <div/>
-    );
+    const { minified, mobileDisplay, toggleHandler } = this.props;
+    return minified ? <SidebarChevron mobileDisplay={mobileDisplay} handler={toggleHandler} /> : <div />;
   }
 
   render() {
+    const { minified } = this.props;
     const styles = this.getStyles();
     return (
       <Flex style={styles.main}>
         {this.getLogo(styles)}
         {this.getLogoType(styles)}
-        <div style={{flex: 5}}/>
+        <div style={{ flex: 5 }} />
         {this.getChevron()}
-        <div style={{width: this.props.minified ? 8 : 0 }}/>
+        <div style={{ width: minified ? 8 : 0 }} />
       </Flex>
     );
   }

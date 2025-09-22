@@ -9,16 +9,16 @@ class DownloadFasta extends React.Component {
   }
 
   createFastaDownload(seqRecords) {
-    return _.reduce(seqRecords, (fastaString, seqRecord) => fastaString.concat('>', seqRecord.sequence_id, '\n', seqRecord.sequence_alignment, '\n'), '');
+    return seqRecords.reduce(
+      (fastaString, seqRecord) =>
+        fastaString.concat(">", seqRecord.sequence_id, "\n", seqRecord.sequence_alignment, "\n"),
+      ""
+    );
   }
 
   render() {
-    return (
-      <DownloadText text={this.createFastaDownload(this.props.sequencesSet)}
-        filename={this.props.filename}
-        label={this.props.label}
-      />
-    );
+    const { sequencesSet, filename, label } = this.props;
+    return <DownloadText text={this.createFastaDownload(sequencesSet)} filename={filename} label={label} />;
   }
 }
 

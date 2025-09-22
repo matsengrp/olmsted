@@ -6,14 +6,17 @@ export const calcBrowserDimensionsInitialState = () => ({
   docHeight: window.document.body.clientHeight
 });
 
-const BrowserDimensions = (state = {
-  browserDimensions: calcBrowserDimensionsInitialState()
-}, action) => {
+/* eslint-disable default-param-last */
+const BrowserDimensions = (
+  state = {
+    browserDimensions: calcBrowserDimensionsInitialState()
+  },
+  action
+) => {
+  /* eslint-enable default-param-last */
   switch (action.type) {
     case types.BROWSER_DIMENSIONS:
-      return Object.assign({}, state, {
-        browserDimensions: action.data
-      });
+      return { ...state, browserDimensions: action.data };
     default:
       return state;
   }

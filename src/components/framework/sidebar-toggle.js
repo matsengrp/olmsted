@@ -8,8 +8,7 @@ sidebarOpen and mobileDisplay: green button with "close" icon
 !sidebarOpen and mobileDisplay: green button with "sliders" icon
 */
 
-const SidebarToggle = ({sidebarOpen, mobileDisplay, handler}) => {
-
+function SidebarToggle({ sidebarOpen, mobileDisplay, handler }) {
   const containerStyle = {
     visibility: mobileDisplay ? "visible" : sidebarOpen ? "hidden" : "visible",
     width: mobileDisplay ? 60 : 14,
@@ -36,7 +35,7 @@ const SidebarToggle = ({sidebarOpen, mobileDisplay, handler}) => {
     left: "50%",
     lineHeight: "30px",
     textAlign: "center",
-    transform: 'translate(-50%,-50%)',
+    transform: "translate(-50%,-50%)",
     marginLeft: "auto",
     marginRight: "auto",
     verticalAlign: "middle",
@@ -55,11 +54,33 @@ const SidebarToggle = ({sidebarOpen, mobileDisplay, handler}) => {
     iconClass = "fa fa-sliders";
   }
 
+  /**
+   * Keyboard handler for sidebar content toggle
+   * WCAG 2.1.1: Toggle controls must be keyboard accessible
+   * This expands/collapses sidebar content sections
+   */
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handler(e);
+    }
+  };
+
   return (
-    <div style={containerStyle} onClick={handler}>
-      <div style={iconStyle}><i className={iconClass} aria-hidden="true"/></div>
+    <div
+      style={containerStyle}
+      onClick={handler}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`${sidebarOpen ? "Collapse" : "Expand"} sidebar section`}
+      aria-expanded={sidebarOpen}
+    >
+      <div style={iconStyle}>
+        <i className={iconClass} aria-hidden="true" />
+      </div>
     </div>
   );
-};
+}
 
 export default SidebarToggle;

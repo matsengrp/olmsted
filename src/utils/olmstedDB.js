@@ -2,32 +2,34 @@
  * Dexie database for Olmsted client-side storage with lazy loading
  */
 
-import Dexie from 'dexie';
+import Dexie from "dexie";
 
 class OlmstedDB extends Dexie {
   constructor() {
-    super('OlmstedClientStorage_v3'); // Bump version for compound key fix
+    super("OlmstedClientStorage_v3"); // Bump version for compound key fix
 
     // Define database schema with separate stores for lazy loading
     this.version(1).stores({
       // Dataset metadata (always loaded)
-      datasets: 'dataset_id, name, clone_count',
+      datasets: "dataset_id, name, clone_count",
 
       // Clone family metadata (lightweight, loaded for lists)
-      clones: '[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq',
+      clones: "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
 
       // Complete tree data (heavy, loaded on demand per family)
-      trees: 'tree_id, clone_id, ident'
+      trees: "tree_id, clone_id, ident"
     });
 
     // Create a ready promise that resolves when database is open
-    this.ready = this.open().then(() => {
-      console.log('OlmstedDB: Database ready');
-      return this;
-    }).catch((error) => {
-      console.error('Failed to open OlmstedDB:', error);
-      throw error;
-    });
+    this.ready = this.open()
+      .then(() => {
+        console.log("OlmstedDB: Database ready");
+        return this;
+      })
+      .catch((error) => {
+        console.error("Failed to open OlmstedDB:", error);
+        throw error;
+      });
 
     // Check for old database and prompt user if needed
     this.checkAndPromptForOldDatabase();
@@ -40,41 +42,44 @@ class OlmstedDB extends Dexie {
     try {
       // Check if old database exists
       const databases = await Dexie.getDatabaseNames();
-      const hasOldDatabase = databases.includes('OlmstedClientStorage') || databases.includes('OlmstedClientStorage_v2');
+      const hasOldDatabase =
+        databases.includes("OlmstedClientStorage") || databases.includes("OlmstedClientStorage_v2");
 
       if (hasOldDatabase) {
-        console.log('OlmstedDB: Found old database format');
+        console.log("OlmstedDB: Found old database format");
 
         // Prompt user about database upgrade
         const userConfirmed = window.confirm(
-          'Olmsted has been upgraded with improved performance for large datasets.\n\n'
-          + 'This requires clearing your previously uploaded datasets and starting fresh.\n\n'
-          + 'Click OK to proceed with the upgrade and clear old data, or Cancel to continue with potential compatibility issues.\n\n'
-          + 'Note: Server datasets and bookmarks are not affected.'
+          "Olmsted has been upgraded with improved performance for large datasets.\n\n" +
+            "This requires clearing your previously uploaded datasets and starting fresh.\n\n" +
+            "Click OK to proceed with the upgrade and clear old data, or Cancel to continue with potential compatibility issues.\n\n" +
+            "Note: Server datasets and bookmarks are not affected."
         );
 
         if (userConfirmed) {
-          await Dexie.delete('OlmstedClientStorage');
-          await Dexie.delete('OlmstedClientStorage_v2');
-          console.log('OlmstedDB: User approved - cleared old databases');
+          await Dexie.delete("OlmstedClientStorage");
+          await Dexie.delete("OlmstedClientStorage_v2");
+          console.log("OlmstedDB: User approved - cleared old databases");
 
           // Show success message
           setTimeout(() => {
-            alert('Database upgrade completed! You can now upload datasets with improved performance.');
+            alert("Database upgrade completed! You can now upload datasets with improved performance.");
           }, 100);
         } else {
-          console.warn('OlmstedDB: User declined database upgrade - potential compatibility issues may occur');
+          console.warn("OlmstedDB: User declined database upgrade - potential compatibility issues may occur");
 
           // Show warning message
           setTimeout(() => {
-            alert('Database upgrade declined. You may experience issues with client-side dataset storage. Please refresh and accept the upgrade for best performance.');
+            alert(
+              "Database upgrade declined. You may experience issues with client-side dataset storage. Please refresh and accept the upgrade for best performance."
+            );
           }, 100);
         }
       } else {
-        console.log('OlmstedDB: No old database found - fresh installation');
+        console.log("OlmstedDB: No old database found - fresh installation");
       }
     } catch (error) {
-      console.error('OlmstedDB: Failed to check for old database:', error);
+      console.error("OlmstedDB: Failed to check for old database:", error);
     }
   }
 
@@ -82,18 +87,17 @@ class OlmstedDB extends Dexie {
    * Store complete dataset with lazy loading structure
    */
   async storeDataset(processedData) {
-    const {
-      datasets, clones, trees, datasetId
-    } = processedData;
+    const { datasets, clones, trees, datasetId } = processedData;
 
     try {
-      await this.transaction('rw', this.datasets, this.clones, this.trees, async () => {
-        // Store dataset metadata
-        for (const dataset of datasets) {
-          await this.datasets.put(dataset);
+      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
+        // Store dataset metadata using bulk operation
+        if (datasets.length > 0) {
+          await this.datasets.bulkPut(datasets);
         }
 
-        // Store clone metadata and separate heavy data
+        // Store clone metadata and separate heavy data using bulk operation
+        const allCloneMeta = [];
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
             // Lightweight clone metadata (no embedded trees)
@@ -124,37 +128,33 @@ class OlmstedDB extends Dexie {
               tree_ids: clone.trees ? clone.trees.map((t) => t.ident || t.tree_id) : []
             };
 
-            await this.clones.put(cloneMeta);
+            allCloneMeta.push(cloneMeta);
           }
-
+        }
+        if (allCloneMeta.length > 0) {
+          await this.clones.bulkPut(allCloneMeta);
         }
 
-        // Store complete tree data (like SessionStorage did)
-        for (const tree of trees) {
-
-          // Store the complete tree object with all nodes intact
-          const completeTreeData = {
-            tree_id: tree.tree_id,
-            ident: tree.ident,
-            clone_id: tree.clone_id,
-            newick: tree.newick,
-            root_node: tree.root_node,
-            nodes: tree.nodes, // Store complete nodes object as-is
-            // Add any other tree properties that might be needed
-            downsampling_strategy: tree.downsampling_strategy,
-            tree_type: tree.tree_type
-          };
-
-          await this.trees.put(completeTreeData);
+        // Store complete tree data (like SessionStorage did) using bulk operation
+        const allTreeData = trees.map((tree) => ({
+          tree_id: tree.tree_id,
+          ident: tree.ident,
+          clone_id: tree.clone_id,
+          newick: tree.newick,
+          root_node: tree.root_node,
+          nodes: tree.nodes, // Store complete nodes object as-is
+          // Add any other tree properties that might be needed
+          downsampling_strategy: tree.downsampling_strategy,
+          tree_type: tree.tree_type
+        }));
+        if (allTreeData.length > 0) {
+          await this.trees.bulkPut(allTreeData);
         }
-
       });
 
-
       return datasetId;
-
     } catch (error) {
-      console.error('OlmstedDB: Failed to store dataset:', error);
+      console.error("OlmstedDB: Failed to store dataset:", error);
       throw error;
     }
   }
@@ -164,10 +164,10 @@ class OlmstedDB extends Dexie {
    */
   async getAllDatasets() {
     try {
-      const datasets = await this.datasets.orderBy('name').toArray();
+      const datasets = await this.datasets.orderBy("name").toArray();
       return datasets;
     } catch (error) {
-      console.error('OlmstedDB: Failed to get datasets:', error);
+      console.error("OlmstedDB: Failed to get datasets:", error);
       return [];
     }
   }
@@ -177,14 +177,11 @@ class OlmstedDB extends Dexie {
    */
   async getCloneMetadata(datasetId) {
     try {
-      const clones = await this.clones
-        .where('dataset_id')
-        .equals(datasetId)
-        .toArray();
+      const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
 
       return clones;
     } catch (error) {
-      console.error('OlmstedDB: Failed to get clone metadata:', error);
+      console.error("OlmstedDB: Failed to get clone metadata:", error);
       return [];
     }
   }
@@ -194,9 +191,8 @@ class OlmstedDB extends Dexie {
    */
   async getTreeByIdent(treeIdent) {
     try {
-
       // Get complete tree by ident (now stored as complete object)
-      const completeTree = await this.trees.where('ident').equals(treeIdent).first();
+      const completeTree = await this.trees.where("ident").equals(treeIdent).first();
 
       if (!completeTree) {
         return null;
@@ -231,9 +227,8 @@ class OlmstedDB extends Dexie {
       };
 
       return treeForSelectors;
-
     } catch (error) {
-      console.error('OlmstedDB: Failed to get tree by ident:', error);
+      console.error("OlmstedDB: Failed to get tree by ident:", error);
       return null;
     }
   }
@@ -243,25 +238,24 @@ class OlmstedDB extends Dexie {
    */
   async getTreeForClone(cloneId) {
     try {
-
       // Get complete tree - try both by clone_id and by ident
-      let completeTree = await this.trees.where('clone_id').equals(cloneId).first();
+      let completeTree = await this.trees.where("clone_id").equals(cloneId).first();
 
       if (!completeTree) {
         // Try searching by ident field (tree identifier)
-        completeTree = await this.trees.where('ident').equals(cloneId).first();
+        completeTree = await this.trees.where("ident").equals(cloneId).first();
       }
 
       if (!completeTree) {
         // Try partial matching - sometimes tree ident contains clone_id
         const allTrees = await this.trees.toArray();
-        completeTree = allTrees.find((tree) => tree.clone_id === cloneId
-          || tree.ident === cloneId
-          || tree.ident.includes(cloneId)
-          || tree.tree_id.includes(cloneId));
-
-        if (completeTree) {
-        }
+        completeTree = allTrees.find(
+          (tree) =>
+            tree.clone_id === cloneId ||
+            tree.ident === cloneId ||
+            tree.ident.includes(cloneId) ||
+            tree.tree_id.includes(cloneId)
+        );
       }
 
       if (!completeTree) {
@@ -298,9 +292,8 @@ class OlmstedDB extends Dexie {
       };
 
       return treeForSelectors;
-
     } catch (error) {
-      console.error('OlmstedDB: Failed to get tree for clone:', error);
+      console.error("OlmstedDB: Failed to get tree for clone:", error);
       return null;
     }
   }
@@ -310,25 +303,24 @@ class OlmstedDB extends Dexie {
    */
   async removeDataset(datasetId) {
     try {
-      await this.transaction('rw', this.datasets, this.clones, this.trees, async () => {
+      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
         // Get all clones for this dataset
-        const clones = await this.clones.where('dataset_id').equals(datasetId).toArray();
+        const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
         const cloneIds = clones.map((c) => c.clone_id);
 
         // Remove dataset
         await this.datasets.delete(datasetId);
 
         // Remove clones
-        await this.clones.where('dataset_id').equals(datasetId).delete();
+        await this.clones.where("dataset_id").equals(datasetId).delete();
 
-        // Remove trees for these clones
-        for (const cloneId of cloneIds) {
-          await this.trees.where('clone_id').equals(cloneId).delete();
+        // Remove trees for these clones using bulk operation
+        if (cloneIds.length > 0) {
+          await this.trees.where("clone_id").anyOf(cloneIds).delete();
         }
       });
-
     } catch (error) {
-      console.error('OlmstedDB: Failed to remove dataset:', error);
+      console.error("OlmstedDB: Failed to remove dataset:", error);
     }
   }
 
@@ -337,14 +329,13 @@ class OlmstedDB extends Dexie {
    */
   async clearAll() {
     try {
-      await this.transaction('rw', this.datasets, this.clones, this.trees, async () => {
+      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
         await this.datasets.clear();
         await this.clones.clear();
         await this.trees.clear();
       });
-
     } catch (error) {
-      console.error('OlmstedDB: Failed to clear all data:', error);
+      console.error("OlmstedDB: Failed to clear all data:", error);
     }
   }
 
@@ -363,7 +354,7 @@ class OlmstedDB extends Dexie {
         availableMB: (((estimate.quota || 0) - (estimate.usage || 0)) / (1024 * 1024)).toFixed(2)
       };
     }
-    return { message: 'Storage estimation not supported' };
+    return { message: "Storage estimation not supported" };
   }
 
   /**
@@ -371,7 +362,7 @@ class OlmstedDB extends Dexie {
    */
   async getStats() {
     try {
-      const stats = await this.transaction('r', this.datasets, this.clones, this.trees, async () => {
+      const stats = await this.transaction("r", this.datasets, this.clones, this.trees, async () => {
         const datasetCount = await this.datasets.count();
         const cloneCount = await this.clones.count();
         const treeCount = await this.trees.count();
@@ -385,7 +376,7 @@ class OlmstedDB extends Dexie {
 
       return stats;
     } catch (error) {
-      console.error('OlmstedDB: Failed to get stats:', error);
+      console.error("OlmstedDB: Failed to get stats:", error);
       return { error: error.message };
     }
   }

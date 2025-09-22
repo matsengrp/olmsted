@@ -7,31 +7,34 @@ import React from "react";
  * @param {int} trim (default: 0) should strings get trimmed? Applies only to strings. 0: no trimming.
  * @returns {string|float} to display
  */
-export const prettyString = (x, {
-  multiplier = false, trim = 0, camelCase = true, removeComma = false, stripEtAl = false
-} = {}) => {
-  if (!x && x!== 0) {
+export const prettyString = (
+  x,
+  { multiplier = false, trim = 0, camelCase = true, removeComma = false, stripEtAl = false } = {}
+) => {
+  if (!x && x !== 0) {
     return "";
   }
   if (typeof x === "string") {
-    if (trim > 0 && x.length > trim) {
-      x = x.slice(0, trim) + "...";
+    let result = x;
+    if (trim > 0 && result.length > trim) {
+      result = result.slice(0, trim) + "...";
     }
-    if (["usvi", "usa", "uk"].indexOf(x.toLowerCase()) !== -1) {
-      return x.toUpperCase();
+    if (["usvi", "usa", "uk"].indexOf(result.toLowerCase()) !== -1) {
+      return result.toUpperCase();
     }
-    x = x.replace(/_/g, " ");
+    result = result.replace(/_/g, " ");
     if (camelCase) {
-      x = x.replace(/\w\S*/g, (y) => y.charAt(0).toUpperCase() + y.substr(1).toLowerCase());
+      result = result.replace(/\w\S*/g, (y) => y.charAt(0).toUpperCase() + y.substr(1).toLowerCase());
     }
     if (removeComma) {
-      x = x.replace(/,/g, "");
+      result = result.replace(/,/g, "");
     }
     if (stripEtAl) {
-      x = x.replace('et al.', '').replace('Et Al.', '').replace('et al', '').replace('Et Al', '');
+      result = result.replace("et al.", "").replace("Et Al.", "").replace("et al", "").replace("Et Al", "");
     }
-    return x;
-  } if (typeof x === "number") {
+    return result;
+  }
+  if (typeof x === "number") {
     const val = parseFloat(x);
     const magnitude = Math.ceil(Math.log10(Math.abs(val) + 1e-10));
     return multiplier ? val.toFixed(5 - magnitude) + "\u00D7" : val.toFixed(5 - magnitude);

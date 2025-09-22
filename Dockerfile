@@ -39,5 +39,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Run postinstall script after all dependencies are ready
 RUN npm run postinstall
 
+# Create the data directory
+RUN mkdir -p data
+
 EXPOSE 3999
-CMD ["npm", "start", "localData"]
+CMD ["npm", "start", "localData", "data"]

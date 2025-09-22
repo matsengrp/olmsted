@@ -17,7 +17,8 @@ const restoreQueryableStateToDefaults = (state) => {
         state[key] = state.defaults[key];
         break;
       }
-      case "object": { /* can't use Object.assign, must deep clone instead */
+      case "object": {
+        /* can't use Object.assign, must deep clone instead */
         state[key] = JSON.parse(JSON.stringify(state.defaults[key]));
         break;
       }
@@ -27,14 +28,13 @@ const restoreQueryableStateToDefaults = (state) => {
     }
   }
 
-
   // console.log("state now", state);
   return state;
 };
 
 const modifyStateViaMetadata = (state, metadata) => {
   if (metadata.analysisSlider) {
-    state["analysisSlider"] = {key: metadata.analysisSlider, valid: false};
+    state["analysisSlider"] = { key: metadata.analysisSlider, valid: false };
   }
   if (metadata.author_info) {
     // need authors in metadata.filters to include as filter
@@ -56,22 +56,29 @@ const modifyStateViaMetadata = (state, metadata) => {
 
     for (let i = 0; i < keysToCheckFor.length; i += 1) {
       if (metadata.defaults[keysToCheckFor[i]]) {
-        if (typeof metadata.defaults[keysToCheckFor[i]] === expectedTypes[i]) { // eslint-disable-line valid-typeof
+        // eslint-disable-next-line valid-typeof
+        if (typeof metadata.defaults[keysToCheckFor[i]] === expectedTypes[i]) {
           /* e.g. if key=geoResoltion, set both state.geoResolution and state.defaults.geoResolution */
           state[keysToCheckFor[i]] = metadata.defaults[keysToCheckFor[i]];
           state.defaults[keysToCheckFor[i]] = metadata.defaults[keysToCheckFor[i]];
         } else {
-          console.error("Skipping (meta.json) default for ", keysToCheckFor[i], "as it is not of type ", expectedTypes[i]);
+          console.error(
+            "Skipping (meta.json) default for ",
+            keysToCheckFor[i],
+            "as it is not of type ",
+            expectedTypes[i]
+          );
         }
       }
     }
     // TODO: why are these false / False
     if (metadata.defaults.mapTriplicate) {
       // convert string to boolean; default is true; turned off with either false (js) or False (python)
-      state["mapTriplicate"] = !((metadata.defaults.mapTriplicate === 'false' || metadata.defaults.mapTriplicate === 'False'));
+      state["mapTriplicate"] = !(
+        metadata.defaults.mapTriplicate === "false" || metadata.defaults.mapTriplicate === "False"
+      );
     }
   }
-
 
   /* if only map or only tree, then panelLayout must be full */
   /* note - this will be overwritten by the URL query */
@@ -80,7 +87,9 @@ const modifyStateViaMetadata = (state, metadata) => {
     state.canTogglePanelLayout = false;
   }
   /* annotations in metadata */
-  if (!metadata.annotations) {console.error("Metadata needs updating with annotations field. Rerun augur. FATAL.");}
+  if (!metadata.annotations) {
+    console.error("Metadata needs updating with annotations field. Rerun augur. FATAL.");
+  }
   for (const gene of Object.keys(metadata.annotations)) {
     state.geneLength[gene] = metadata.annotations[gene].end - metadata.annotations[gene].start;
     if (gene !== "nuc") {
@@ -101,18 +110,24 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
     if (availableNonGenotypeColorBys.indexOf("gt") > -1) {
       availableNonGenotypeColorBys.splice(availableNonGenotypeColorBys.indexOf("gt"), 1);
     }
-    console.error("Error detected trying to set colorBy to", state.colorBy, "(valid options are", Object.keys(metadata.colorOptions).join(", "), "). Setting to", availableNonGenotypeColorBys[0]);
-    state.colorBy = availableNonGenotypeColorBys[0];
-    state.defaults.colorBy = availableNonGenotypeColorBys[0];
+    console.error(
+      "Error detected trying to set colorBy to",
+      state.colorBy,
+      "(valid options are",
+      Object.keys(metadata.colorOptions).join(", "),
+      "). Setting to",
+      availableNonGenotypeColorBys[0]
+    );
+    const [firstAvailableColorBy] = availableNonGenotypeColorBys;
+    state.colorBy = firstAvailableColorBy;
+    state.defaults.colorBy = firstAvailableColorBy;
   }
-
 
   /* distanceMeasure */
   if (["div", "num_date"].indexOf(state["distanceMeasure"]) === -1) {
     state["distanceMeasure"] = "num_date";
     console.error("Error detected. Setting distanceMeasure to ", state["distanceMeasure"]);
   }
-
 
   /* temporalConfidence */
   if (state.temporalConfidence.exists) {
@@ -125,52 +140,48 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
     }
   }
 
-  /* if colorBy is a genotype then we need to set mutType */
-  const maybeMutType = determineColorByGenotypeType(state.colorBy);
-  if (maybeMutType) state.mutType = maybeMutType;
 
   return state;
 };
 
-
 export const createStateFromQueryOrJSONs = ({
-  JSONs = false, /* raw json data - completely nuke existing redux state */
-  oldState = false, /* existing redux state (instead of jsons) */
+  JSONs = false /* raw json data - completely nuke existing redux state */,
+  oldState = false /* existing redux state (instead of jsons) */,
   query = {}
 }) => {
-  let entropy, controls, metadata, tree;
+  let entropy, controls, metadata, _tree;
   /* first task is to create metadata, entropy, controls & tree partial state */
   if (JSONs) {
     /* ceate metadata state */
     metadata = JSONs.meta;
     if (Object.prototype.hasOwnProperty.call(metadata, "loaded")) {
-      console.error("Metadata JSON must not contain the key \"loaded\". Ignoring.");
+      console.error('Metadata JSON must not contain the key "loaded". Ignoring.');
     }
     metadata.colorOptions = metadata.color_options;
     delete metadata.color_options;
     metadata.loaded = true;
-    /* entropy state */
-    entropy = entropyCreateStateFromJsons(JSONs.meta);
-
+    /* entropy state - not used in Olmsted */
+    entropy = {};
 
     /* new controls state - don't apply query yet (or error check!) */
-    controls = getDefaultControlsState();
-    controls = modifyStateViaTree(controls, tree, treeToo);
+    controls = {};
     controls = modifyStateViaMetadata(controls, metadata);
   } else if (oldState) {
     /* revisit this - but it helps prevent bugs */
-    controls = {...oldState.controls};
-    entropy = {...oldState.entropy};
+    controls = { ...oldState.controls };
+    entropy = { ...oldState.entropy };
 
-    metadata = {...oldState.metadata};
+    metadata = { ...oldState.metadata };
 
     controls = restoreQueryableStateToDefaults(controls);
   }
 
   controls = checkAndCorrectErrorsInState(controls, metadata); /* must run last */
 
-
   return {
-    metadata, entropy, controls, query
+    metadata,
+    entropy,
+    controls,
+    query
   };
 };

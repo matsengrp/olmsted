@@ -3,17 +3,14 @@
  * Combines split datasets, clones, and trees files back into a unified structure
  */
 
-import {
-  FileProcessingError, ValidationError, ErrorLogger, validateRequired
-} from './errors';
+import { FileProcessingError, ValidationError, ErrorLogger, validateRequired } from "./errors";
 
 class SplitFileProcessor {
-
   /**
-     * Process multiple uploaded files that may represent split AIRR data
-     * @param {File[]} files - Array of uploaded files
-     * @returns {Promise<Object>} Processed data structure or null if not split format
-     */
+   * Process multiple uploaded files that may represent split AIRR data
+   * @param {File[]} files - Array of uploaded files
+   * @returns {Promise<Object>} Processed data structure or null if not split format
+   */
   static async processFiles(files) {
     try {
       // Read all files with proper error handling for each file
@@ -36,11 +33,7 @@ class SplitFileProcessor {
             };
           } catch (error) {
             // Include file name in error for better debugging
-            throw new FileProcessingError(
-              `Error processing file: ${error.message}`,
-              file.name,
-              error
-            );
+            throw new FileProcessingError(`Error processing file: ${error.message}`, file.name, error);
           }
         })
       );
@@ -50,7 +43,7 @@ class SplitFileProcessor {
         return null; // Not split format, let single file processor handle it
       }
 
-      console.log('Detected split AIRR format, combining files...');
+      console.log("Detected split AIRR format, combining files...");
 
       // Categorize files
       const datasets = this.extractDatasets(fileContents);
@@ -58,7 +51,7 @@ class SplitFileProcessor {
       const trees = this.extractTrees(fileContents);
 
       if (datasets.length === 0) {
-        throw new ValidationError('No dataset files found. Expected at least one datasets.json file.');
+        throw new ValidationError("No dataset files found. Expected at least one datasets.json file.");
       }
 
       // Combine into unified structure for each dataset
@@ -66,14 +59,20 @@ class SplitFileProcessor {
         const datasetId = dataset.dataset_id || dataset.ident;
 
         // Find clones for this dataset
-        const datasetClones = clones.filter((clone) => clone.dataset_id === datasetId
-                    || clone.sample_id === datasetId
-                    // If no explicit dataset_id, assume they belong together
-                    || (!clone.dataset_id && datasets.length === 1));
+        const datasetClones = clones.filter(
+          (clone) =>
+            clone.dataset_id === datasetId ||
+            clone.sample_id === datasetId ||
+            // If no explicit dataset_id, assume they belong together
+            (!clone.dataset_id && datasets.length === 1)
+        );
 
         // Find trees for this dataset
-        const datasetTrees = trees.filter((tree) => tree.clone_id && datasetClones.some((clone) => clone.clone_id === tree.clone_id
-                        || clone.ident === tree.clone_id));
+        const datasetTrees = trees.filter(
+          (tree) =>
+            tree.clone_id &&
+            datasetClones.some((clone) => clone.clone_id === tree.clone_id || clone.ident === tree.clone_id)
+        );
 
         // Create consolidated dataset structure
         const consolidatedDataset = {
@@ -93,12 +92,12 @@ class SplitFileProcessor {
       // For now, handle only single dataset uploads
       // Could be extended to handle multiple datasets
       if (processedResults.length > 1) {
-        throw new ValidationError('Multiple datasets found. Please upload one dataset at a time.');
+        throw new ValidationError("Multiple datasets found. Please upload one dataset at a time.");
       }
 
       const result = processedResults[0];
 
-      console.log('Split file processing complete:', {
+      console.log("Split file processing complete:", {
         datasets: 1,
         clones: result.dataset.clones.length,
         trees: result.trees.length,
@@ -111,59 +110,55 @@ class SplitFileProcessor {
         fileCount: files.length,
         originalFiles: result.originalFiles
       };
-
     } catch (error) {
       if (error instanceof ValidationError || error instanceof FileProcessingError) {
         throw error; // Re-throw specific errors as-is
       }
 
-      const processingError = new FileProcessingError(
-        `Failed to process split files: ${error.message}`,
-        null,
-        error
-      );
+      const processingError = new FileProcessingError(`Failed to process split files: ${error.message}`, null, error);
       ErrorLogger.log(processingError, { fileCount: files?.length });
       throw processingError;
     }
   }
 
   /**
-     * Check if the uploaded files represent split format
-     * @param {Array} fileContents - Array of {name, content} objects
-     * @returns {boolean} Whether this appears to be split format
-     */
+   * Check if the uploaded files represent split format
+   * @param {Array} fileContents - Array of {name, content} objects
+   * @returns {boolean} Whether this appears to be split format
+   */
   static isSplitFormat(fileContents) {
     const fileNames = fileContents.map((f) => f.name.toLowerCase());
 
     // Look for characteristic split file patterns
-    const hasDatasetFile = fileNames.some((name) => name.includes('dataset'));
-    const hasClonesFiles = fileNames.some((name) => name.includes('clones.'));
-    const hasTreeFiles = fileNames.some((name) => name.includes('tree.'));
+    const hasDatasetFile = fileNames.some((name) => name.includes("dataset"));
+    const hasClonesFiles = fileNames.some((name) => name.includes("clones."));
+    const hasTreeFiles = fileNames.some((name) => name.includes("tree."));
 
     // Also check file contents
     const hasArrayContent = fileContents.some((f) => Array.isArray(f.content));
-    const hasDatasetContent = fileContents.some((f) => f.content && typeof f.content === 'object'
-            && f.content.dataset_id && !Array.isArray(f.content));
+    const hasDatasetContent = fileContents.some(
+      (f) => f.content && typeof f.content === "object" && f.content.dataset_id && !Array.isArray(f.content)
+    );
 
     // Consider it split format if we have multiple files with either:
     // 1. Characteristic naming patterns, OR
     // 2. Mixed array/object content structure
-    return fileContents.length > 1 && (
-      (hasDatasetFile && (hasClonesFiles || hasTreeFiles))
-            || (hasArrayContent && hasDatasetContent)
+    return (
+      fileContents.length > 1 &&
+      ((hasDatasetFile && (hasClonesFiles || hasTreeFiles)) || (hasArrayContent && hasDatasetContent))
     );
   }
 
   /**
-     * Extract dataset objects from file contents
-     * @param {Array} fileContents - Array of {name, content} objects
-     * @returns {Array} Array of dataset objects
-     */
+   * Extract dataset objects from file contents
+   * @param {Array} fileContents - Array of {name, content} objects
+   * @returns {Array} Array of dataset objects
+   */
   static extractDatasets(fileContents) {
     const datasets = [];
 
     for (const file of fileContents) {
-      const {content} = file;
+      const { content } = file;
 
       // Check if this is a dataset file
       if (this.isDatasetContent(content)) {
@@ -181,15 +176,15 @@ class SplitFileProcessor {
   }
 
   /**
-     * Extract clone objects from file contents
-     * @param {Array} fileContents - Array of {name, content} objects
-     * @returns {Array} Array of clone objects
-     */
+   * Extract clone objects from file contents
+   * @param {Array} fileContents - Array of {name, content} objects
+   * @returns {Array} Array of clone objects
+   */
   static extractClones(fileContents) {
     const allClones = [];
 
     for (const file of fileContents) {
-      const {content} = file;
+      const { content } = file;
 
       // Check if this is a clones file
       if (this.isClonesContent(content)) {
@@ -206,15 +201,15 @@ class SplitFileProcessor {
   }
 
   /**
-     * Extract tree objects from file contents
-     * @param {Array} fileContents - Array of {name, content} objects
-     * @returns {Array} Array of tree objects
-     */
+   * Extract tree objects from file contents
+   * @param {Array} fileContents - Array of {name, content} objects
+   * @returns {Array} Array of tree objects
+   */
   static extractTrees(fileContents) {
     const allTrees = [];
 
     for (const file of fileContents) {
-      const {content} = file;
+      const { content } = file;
 
       // Check if this is a tree file
       if (this.isTreeContent(content)) {
@@ -231,71 +226,89 @@ class SplitFileProcessor {
   }
 
   /**
-     * Check if content represents a dataset
-     * @param {*} content - File content to check
-     * @returns {boolean} Whether this is dataset content
-     */
+   * Check if content represents a dataset
+   * @param {*} content - File content to check
+   * @returns {boolean} Whether this is dataset content
+   */
   static isDatasetContent(content) {
     if (Array.isArray(content)) {
-      return content.length > 0 && content.every((item) => item && typeof item === 'object'
-                && (item.dataset_id || item.ident)
-                && !item.clone_id && !item.newick);
+      return (
+        content.length > 0 &&
+        content.every(
+          (item) =>
+            item && typeof item === "object" && (item.dataset_id || item.ident) && !item.clone_id && !item.newick
+        )
+      );
     }
 
-    return content && typeof content === 'object'
-            && (content.dataset_id || content.ident)
-            && !content.clone_id && !content.newick && !Array.isArray(content);
+    return (
+      content &&
+      typeof content === "object" &&
+      (content.dataset_id || content.ident) &&
+      !content.clone_id &&
+      !content.newick &&
+      !Array.isArray(content)
+    );
   }
 
   /**
-     * Check if content represents clones
-     * @param {*} content - File content to check
-     * @returns {boolean} Whether this is clones content
-     */
+   * Check if content represents clones
+   * @param {*} content - File content to check
+   * @returns {boolean} Whether this is clones content
+   */
   static isClonesContent(content) {
     if (Array.isArray(content)) {
-      return content.length > 0 && content.every((item) => item && typeof item === 'object'
-                && (item.clone_id || item.ident)
-                && !item.newick && !item.dataset_id);
+      return (
+        content.length > 0 &&
+        content.every(
+          (item) =>
+            item && typeof item === "object" && (item.clone_id || item.ident) && !item.newick && !item.dataset_id
+        )
+      );
     }
 
-    return content && typeof content === 'object'
-            && (content.clone_id || content.ident)
-            && !content.dataset_id && !content.newick && !Array.isArray(content);
+    return (
+      content &&
+      typeof content === "object" &&
+      (content.clone_id || content.ident) &&
+      !content.dataset_id &&
+      !content.newick &&
+      !Array.isArray(content)
+    );
   }
 
   /**
-     * Check if content represents trees
-     * @param {*} content - File content to check
-     * @returns {boolean} Whether this is tree content
-     */
+   * Check if content represents trees
+   * @param {*} content - File content to check
+   * @returns {boolean} Whether this is tree content
+   */
   static isTreeContent(content) {
     if (Array.isArray(content)) {
-      return content.length > 0 && content.every((item) => item && typeof item === 'object'
-                && (item.newick || item.tree_id));
+      return (
+        content.length > 0 && content.every((item) => item && typeof item === "object" && (item.newick || item.tree_id))
+      );
     }
 
-    return content && typeof content === 'object'
-            && (content.newick || content.tree_id) && !Array.isArray(content);
+    return content && typeof content === "object" && (content.newick || content.tree_id) && !Array.isArray(content);
   }
 
   /**
-     * Infer samples array from clones if not present in dataset
-     * @param {Array} clones - Array of clone objects
-     * @returns {Array} Inferred samples array
-     */
+   * Infer samples array from clones if not present in dataset
+   * @param {Array} clones - Array of clone objects
+   * @returns {Array} Inferred samples array
+   */
   static inferSamplesFromClones(clones) {
     const sampleIds = new Set();
     const samples = [];
 
     for (const clone of clones) {
-      const sampleId = clone.sample_id || clone.subject_id || 'unknown';
+      const sampleId = clone.sample_id || clone.subject_id || "unknown";
       if (!sampleIds.has(sampleId)) {
         sampleIds.add(sampleId);
         samples.push({
           sample_id: sampleId,
-          timepoint_id: clone.timepoint_id || 'unknown',
-          locus: clone.locus || 'IGH', // Default to IGH
+          timepoint_id: clone.timepoint_id || "unknown",
+          locus: clone.locus || "IGH", // Default to IGH
           // Add other sample metadata if available in clones
           subject_id: clone.subject_id
         });
@@ -306,23 +319,19 @@ class SplitFileProcessor {
   }
 
   /**
-     * Read file content using FileReader API
-     * @param {File} file - File to read
-     * @returns {Promise<string>} File content as string
-     */
+   * Read file content using FileReader API
+   * @param {File} file - File to read
+   * @returns {Promise<string>} File content as string
+   */
   static readFile(file) {
     return new Promise((resolve, reject) => {
       try {
-        validateRequired(file, 'file');
+        validateRequired(file, "file");
 
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target.result);
         reader.onerror = (error) => {
-          reject(new FileProcessingError(
-            `Failed to read file: ${error.message || 'Unknown error'}`,
-            file.name,
-            error
-          ));
+          reject(new FileProcessingError(`Failed to read file: ${error.message || "Unknown error"}`, file.name, error));
         };
 
         reader.readAsText(file);
@@ -330,11 +339,7 @@ class SplitFileProcessor {
         if (error instanceof ValidationError) {
           reject(error);
         } else {
-          reject(new FileProcessingError(
-            `Failed to initiate file read: ${error.message}`,
-            file?.name,
-            error
-          ));
+          reject(new FileProcessingError(`Failed to initiate file read: ${error.message}`, file?.name, error));
         }
       }
     });

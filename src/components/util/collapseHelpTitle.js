@@ -1,25 +1,21 @@
-import React from 'react';
+import React from "react";
 import Collapsible from "react-collapsible";
 import { FiHelpCircle } from "react-icons/fi";
 
-
-class CollapseHelpTitle extends React.Component {
-  render() {
-    return (
-      <Collapsible trigger={(
+function CollapseHelpTitle({ titleText, helpText }) {
+  return (
+    <Collapsible
+      trigger={
         <div>
           <h2>
-            {this.props.titleText}
-            {' '}
-            <FiHelpCircle style={{cursor: "pointer"}}/>
+            {titleText} <FiHelpCircle style={{ cursor: "pointer" }} />
           </h2>
         </div>
-)}
-      >
-        {this.props.helpText}
-      </Collapsible>
-    );
-  }
+      }
+    >
+      {helpText}
+    </Collapsible>
+  );
 }
 
-export {CollapseHelpTitle};
+export { CollapseHelpTitle };

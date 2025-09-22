@@ -1,7 +1,6 @@
 import React from "react";
-import {createClassFromSpec} from 'react-vega';
-import * as _ from "lodash";
-import naiveVegaSpec from './vega/naive.js';
+import { createClassFromSpec } from "react-vega";
+import naiveVegaSpec from "./vega/naive";
 
 // Naive gene reassortment viz component
 // =====================================
@@ -13,7 +12,7 @@ const getNaiveVizData = (datum) => {
         family: "5p",
         region: "CDR3",
         start: datum.junction_start,
-        end: datum.junction_start+ datum.junction_length
+        end: datum.junction_start + datum.junction_length
       },
       {
         family: "5p",
@@ -55,6 +54,8 @@ const getNaiveVizData = (datum) => {
 
 const NaiveViz = createClassFromSpec(naiveVegaSpec);
 
-const NaiveSequence = ({datum}) => <NaiveViz data={getNaiveVizData(datum)}/>;
+function NaiveSequence({ datum }) {
+  return <NaiveViz data={getNaiveVizData(datum)} />;
+}
 
-export {NaiveSequence, getNaiveVizData};
+export { NaiveSequence, getNaiveVizData };

@@ -1,19 +1,14 @@
 import React from "react";
-import {
-  FiCheck, FiPlus, FiX, FiLoader
-} from "react-icons/fi";
+import { FiCheck, FiPlus, FiX, FiLoader } from "react-icons/fi";
 
 class SimpleInProgress extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {counter: 0};
+    this.state = { counter: 0 };
   }
 
   componentDidMount() {
-    this.timerID = setInterval(
-      () => this.increment(),
-      400
-    );
+    this.timerID = setInterval(() => this.increment(), 400);
   }
 
   componentWillUnmount() {
@@ -22,19 +17,21 @@ class SimpleInProgress extends React.Component {
 
   increment() {
     this.setState((state) => ({
-      counter: state.counter+1
+      counter: state.counter + 1
     }));
   }
 
   render() {
+    const { small, style } = this.props;
+    const { counter } = this.state;
     // Use text fallback if small prop is set
-    if (this.props.small) {
-      return "Loading"+"...".substring(0, this.state.counter%4+1);
+    if (small) {
+      return "Loading" + "...".substring(0, (counter % 4) + 1);
     }
 
     // Animated spinning loader icon
     return (
-      <div style={{ display: 'inline-block' }}>
+      <div style={{ display: "inline-block" }}>
         <style>
           {`
           @keyframes spin {
@@ -45,10 +42,10 @@ class SimpleInProgress extends React.Component {
         </style>
         <FiLoader
           style={{
-            animation: 'spin 1s linear infinite',
-            color: '#007bff',
-            fontSize: '16px',
-            ...this.props.style
+            animation: "spin 1s linear infinite",
+            color: "#007bff",
+            fontSize: "16px",
+            ...style
           }}
         />
       </div>
@@ -57,88 +54,81 @@ class SimpleInProgress extends React.Component {
 }
 
 // Green checkmark icon component
-class GreenCheckmark extends React.Component {
-  render() {
-    return (
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '16px',
-        height: '16px',
-        backgroundColor: '#28a745',
-        borderRadius: '50%',
-        ...this.props.style
+function GreenCheckmark({ style }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "16px",
+        height: "16px",
+        backgroundColor: "#28a745",
+        borderRadius: "50%",
+        ...style
       }}
-      >
-        <FiCheck style={{ color: 'white', fontSize: '12px' }} />
-      </div>
-    );
-  }
+    >
+      <FiCheck style={{ color: "white", fontSize: "12px" }} />
+    </div>
+  );
 }
 
 // Red X icon for error state
-class RedXIcon extends React.Component {
-  render() {
-    return (
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '16px',
-        height: '16px',
-        backgroundColor: '#dc3545',
-        borderRadius: '50%',
-        ...this.props.style
+function RedXIcon({ style }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "16px",
+        height: "16px",
+        backgroundColor: "#dc3545",
+        borderRadius: "50%",
+        ...style
       }}
-      >
-        <FiX style={{ color: 'white', fontSize: '12px' }} />
-      </div>
-    );
-  }
+    >
+      <FiX style={{ color: "white", fontSize: "12px" }} />
+    </div>
+  );
 }
 
 // Plus icon for default state
-class PlusIcon extends React.Component {
-  render() {
-    return (
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '16px',
-        height: '16px',
-        backgroundColor: '#6c757d',
-        borderRadius: '50%',
-        cursor: 'pointer',
-        ...this.props.style
+function PlusIcon({ style }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "16px",
+        height: "16px",
+        backgroundColor: "#6c757d",
+        borderRadius: "50%",
+        cursor: "pointer",
+        ...style
       }}
-      >
-        <FiPlus style={{ color: 'white', fontSize: '12px' }} />
-      </div>
-    );
-  }
+    >
+      <FiPlus style={{ color: "white", fontSize: "12px" }} />
+    </div>
+  );
 }
 
-class LoadingStatus extends React.Component {
-  render() {
-    switch (this.props.loadingStatus) {
-      case "LOADING": {
-        return this.props.loading || <SimpleInProgress />;
-      }
-      case "DONE": {
-        return this.props.done || <GreenCheckmark />;
-      }
-      case "ERROR": {
-        return this.props.error || <RedXIcon />;
-      }
-      default: {
-        return this.props.default || <PlusIcon />;
-      }
+function LoadingStatus({ loadingStatus, loading, done, error, default: defaultIcon }) {
+  switch (loadingStatus) {
+    case "LOADING": {
+      return loading || <SimpleInProgress />;
+    }
+    case "DONE": {
+      return done || <GreenCheckmark />;
+    }
+    case "ERROR": {
+      return error || <RedXIcon />;
+    }
+    default: {
+      return defaultIcon || <PlusIcon />;
     }
   }
 }
 
-export {
-  LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon
-};
+export { LoadingStatus, SimpleInProgress, GreenCheckmark, PlusIcon, RedXIcon };

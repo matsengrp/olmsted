@@ -1,5 +1,8 @@
-
-html, p, div, input, button {
+html,
+p,
+div,
+input,
+button {
   font-family: "Lato", "Helvetica Neue", "Helvetica", "sans-serif";
   font-weight: 400;
   color: "#333";
@@ -20,7 +23,10 @@ html {
 /**
  * Remove default margin.
  */
-html, body, #root, [data-reactid=".0"] {
+html,
+body,
+#root,
+[data-reactid=".0"] {
   margin: 0;
   height: 100%;
   position: relative;
@@ -28,10 +34,12 @@ html, body, #root, [data-reactid=".0"] {
 }
 
 /* Global margin-left for all form controls */
-input, button, select, textarea {
+input,
+button,
+select,
+textarea {
   margin-left: 10px !important;
 }
-
 
 div.vega-bindings {
   font-size: 10pt;
@@ -83,10 +91,10 @@ div.vega-bindings div.vega-bind select {
   min-width: fit-content;
 }
 
-div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-thumb {
+div.vega-bindings div.vega-bind input[type="range"]::-webkit-slider-thumb {
   margin-top: -5px;
 }
-div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-runnable-track {
+div.vega-bindings div.vega-bind input[type="range"]::-webkit-slider-runnable-track {
   height: 5px;
   cursor: pointer;
   animate: 0.2s;
@@ -95,7 +103,7 @@ div.vega-bindings div.vega-bind input[type=range]::-webkit-slider-runnable-track
   border-radius: 1px;
   border: 0px solid #000000;
 }
-input[type=range]::-moz-range-track {
+input[type="range"]::-moz-range-track {
   height: 5px;
   cursor: pointer;
   animate: 0.2s;
@@ -104,13 +112,13 @@ input[type=range]::-moz-range-track {
   border-radius: 1px;
   border: 0px solid #000000;
 }
-
 
 /*
 links
 */
-a, .link {
-  color: #5097BA;
+a,
+.link {
+  color: #5097ba;
   text-decoration: none;
   cursor: pointer;
   font-family: "Lato";
@@ -148,7 +156,9 @@ th {
 }
 
 /* Hide default HTML checkbox */
-.switch input {display:none;}
+.switch input {
+  display: none;
+}
 
 /* The slider */
 .slider {
@@ -159,8 +169,8 @@ th {
   right: 0;
   bottom: 0;
   background-color: #888;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
 }
 
 .slider:before {
@@ -170,17 +180,17 @@ th {
   width: 15px;
   left: 4px;
   bottom: 3px;
-  background-color: #FFF;
-  -webkit-transition: .4s;
-  transition: .4s;
+  background-color: #fff;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
-  background-color: #5097BA;
+  background-color: #5097ba;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px #2196f3;
 }
 
 input:checked + .slider:before {
@@ -198,9 +208,9 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-button:focus {outline:0;}
-
-
+button:focus {
+  outline: 0;
+}
 
 /* GRID */
 .grid-container {
@@ -213,23 +223,23 @@ button:focus {outline:0;}
 
 .grid-item {
   /* options: <number> | <name> | span <number> | span <name> | auto */
-    padding: 5px;
-    grid-column-start:  auto;
-    grid-column-end: auto;
-    grid-row-start: auto;
-    grid-row-end: auto;
-    place-self: center stretch;
+  padding: 5px;
+  grid-column-start: auto;
+  grid-column-end: auto;
+  grid-row-start: auto;
+  grid-row-end: auto;
+  place-self: center stretch;
 }
 
-.item-filler{
+.item-filler {
   grid-column: two / end;
 }
 
-.pagination-controls{
+.pagination-controls {
   padding-bottom: 5px;
 }
 
-.non-selectable-text{
+.non-selectable-text {
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */

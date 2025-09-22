@@ -1,5 +1,5 @@
 import React from "react";
-import * as _ from 'lodash';
+import * as _ from "lodash";
 
 // Generic resizable virtual scrolling table component
 export class ResizableTable extends React.Component {
@@ -29,8 +29,8 @@ export class ResizableTable extends React.Component {
   }
 
   componentDidMount() {
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener("mousemove", this.onMouseMove);
+    document.addEventListener("mouseup", this.onMouseUp);
     this.updateScrollbarWidth();
   }
 
@@ -39,17 +39,18 @@ export class ResizableTable extends React.Component {
   }
 
   updateScrollbarWidth() {
+    const { scrollbarWidth: currentScrollbarWidth } = this.state;
     if (this.bodyRef.current) {
-      const scrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (scrollbarWidth !== this.state.scrollbarWidth) {
-        this.setState({ scrollbarWidth });
+      const newScrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
+      if (newScrollbarWidth !== currentScrollbarWidth) {
+        this.setState({ scrollbarWidth: newScrollbarWidth });
       }
     }
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("mouseup", this.onMouseUp);
   }
 
   onScroll(e) {
@@ -61,23 +62,23 @@ export class ResizableTable extends React.Component {
   }
 
   onMouseDown(e, columnIndex) {
+    const { columnWidths } = this.state;
     e.preventDefault();
     this.setState({
       isResizing: true,
       resizingColumn: columnIndex,
       startX: e.clientX,
-      startWidth: this.state.columnWidths[columnIndex]
+      startWidth: columnWidths[columnIndex]
     });
   }
 
   onMouseMove(e) {
-    if (!this.state.isResizing) return;
-
-    const { startX, startWidth, resizingColumn } = this.state;
+    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
+    if (!isResizing) return;
     const deltaX = e.clientX - startX;
     const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
 
-    const newWidths = [...this.state.columnWidths];
+    const newWidths = [...columnWidths];
     newWidths[resizingColumn] = newWidth;
 
     this.setState({ columnWidths: newWidths });
@@ -91,6 +92,7 @@ export class ResizableTable extends React.Component {
   }
 
   handleSort(columnKey) {
+    const { onSort } = this.props;
     const { sortColumn, sortDesc } = this.state;
 
     // Toggle sort direction if clicking the same column
@@ -101,8 +103,8 @@ export class ResizableTable extends React.Component {
     }
 
     // Call parent's onSort handler if provided
-    if (this.props.onSort) {
-      this.props.onSort(columnKey, sortColumn === columnKey ? !sortDesc : false);
+    if (onSort) {
+      onSort(columnKey, sortColumn === columnKey ? !sortDesc : false);
     }
   }
 
@@ -113,55 +115,73 @@ export class ResizableTable extends React.Component {
     if (!sortColumn) return data;
 
     // Sort the data
-    const sorted = _.orderBy(data, [sortColumn], [sortDesc ? 'desc' : 'asc']);
+    const sorted = _.orderBy(data, [sortColumn], [sortDesc ? "desc" : "asc"]);
     return sorted;
   }
 
   renderTableRow(datum, index) {
     const { columnWidths } = this.state;
-    const { onRowClick, getRowStyle, mappings } = this.props;
+    const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
 
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
+
+    /**
+     * Keyboard handler for clickable table rows
+     * WCAG 2.1.1: Interactive table rows must support keyboard navigation
+     */
+    const handleRowKeyDown = onRowClick
+      ? (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onRowClick(datum);
+          }
+        }
+      : undefined;
 
     return (
       <div
         key={datum.id || datum.ident || datum.dataset_id || index}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          borderBottom: '1px solid #eee',
+          display: "flex",
+          alignItems: "center",
+          borderBottom: "1px solid #eee",
           fontSize: 12,
-          height: '40px',
-          backgroundColor: rowStyle.backgroundColor || 'white',
-          minWidth: 'fit-content',
-          cursor: onRowClick ? 'pointer' : 'default',
+          height: "40px",
+          backgroundColor: rowStyle.backgroundColor || "white",
+          minWidth: "fit-content",
+          cursor: onRowClick ? "pointer" : "default",
           ...rowStyle
         }}
         onClick={() => onRowClick && onRowClick(datum)}
+        onKeyDown={handleRowKeyDown}
+        role={onRowClick ? "button" : undefined}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={onRowClick ? 0 : undefined}
+        aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
-          const isAttr = ((typeof AttrOrComponent) === "string");
-          const key = (datum.id || datum.ident || datum.dataset_id || index) + '.' + (isAttr ? AttrOrComponent : name);
+          const isAttr = typeof AttrOrComponent === "string";
+          const key = (datum.id || datum.ident || datum.dataset_id || index) + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
 
           const style = {
             padding: 8,
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
             width: columnWidths[colIndex],
             minWidth: columnWidths[colIndex],
             maxWidth: columnWidths[colIndex],
-            borderRight: '1px solid #eee',
+            borderRight: "1px solid #eee",
             ...options.style
           };
 
           // Apply alternating column shading only if row doesn't have custom background
           if (!rowStyle.backgroundColor && isEvenColumn) {
-            style.backgroundColor = '#f8f9fa';
+            style.backgroundColor = "#f8f9fa";
           }
 
           // Handle different types of components/attributes
@@ -169,27 +189,42 @@ export class ResizableTable extends React.Component {
           if (isAttr) {
             // It's a string attribute path
             content = (
-              <div style={{
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
-              }}
+              <div
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  width: "100%"
+                }}
               >
-                {_.get(datum, AttrOrComponent) || '—'}
+                {_.get(datum, AttrOrComponent) || "—"}
               </div>
             );
-          } else if (typeof AttrOrComponent === 'function') {
-            // Check if it's a React component or a simple function
-            if (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) {
-              // It's a React component
-              content = <AttrOrComponent datum={datum} {...(this.props.componentProps || {})}/>;
+          } else if (typeof AttrOrComponent === "function") {
+            // Check if it's a React component (class or functional) or a simple function
+            // We mark React components with a special property to distinguish them
+            const isReactComponent =
+              (AttrOrComponent.prototype && AttrOrComponent.prototype.isReactComponent) ||
+              AttrOrComponent.isReactComponent === true ||
+              (typeof AttrOrComponent === "function" && AttrOrComponent.name && AttrOrComponent.name.match(/^[A-Z]/));
+
+            if (isReactComponent) {
+              // It's a React component (class component or functional component)
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              content = <AttrOrComponent datum={datum} {...(componentProps || {})} />;
             } else {
               // It's a simple function that returns a value
               const value = AttrOrComponent(datum);
               content = (
-                <div style={{
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'
-                }}
+                <div
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    width: "100%"
+                  }}
                 >
-                  {value || '—'}
+                  {value || "—"}
                 </div>
               );
             }
@@ -208,101 +243,133 @@ export class ResizableTable extends React.Component {
   }
 
   render() {
-    const { containerHeight = 400, mappings, showFooter = true } = this.props;
     const {
-      scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc
-    } = this.state;
+      containerHeight = 400,
+      mappings,
+      showFooter = true,
+      componentProps: _componentProps,
+      itemName
+    } = this.props;
+    const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
     const rowHeight = 40;
 
     const sortedData = this.getSortedData();
 
     // Calculate which items are visible
     const startIndex = Math.floor(scrollTop / rowHeight);
-    const endIndex = Math.min(
-      startIndex + Math.ceil(containerHeight / rowHeight) + 1,
-      sortedData.length
-    );
+    const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 1, sortedData.length);
 
     // Only render visible items
     const visibleItems = sortedData.slice(startIndex, endIndex);
 
     return (
-      <div style={{
-        width: '100%',
-        border: '1px solid #dee2e6',
-        overflow: 'hidden',
-        boxSizing: 'border-box',
-        borderRadius: '4px'
-      }}
+      <div
+        style={{
+          width: "100%",
+          border: "1px solid #dee2e6",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          borderRadius: "4px"
+        }}
       >
         {/* Fixed Header */}
         <div
           ref={this.headerRef}
           style={{
-            overflowX: 'hidden',
-            overflowY: 'hidden',
-            borderBottom: '2px solid #dee2e6',
-            backgroundColor: '#f8f9fa',
-            paddingRight: scrollbarWidth + 'px'
+            overflowX: "hidden",
+            overflowY: "hidden",
+            borderBottom: "2px solid #dee2e6",
+            backgroundColor: "#f8f9fa",
+            paddingRight: scrollbarWidth + "px"
           }}
         >
           <div
             style={{
-              display: 'flex',
-              fontWeight: 'bold',
+              display: "flex",
+              fontWeight: "bold",
               fontSize: 13,
-              height: '40px',
-              minWidth: 'fit-content'
+              height: "40px",
+              minWidth: "fit-content"
             }}
           >
             {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
-              const isAttr = ((typeof AttrOrComponent) === "string");
+              const isAttr = typeof AttrOrComponent === "string";
               const isSortable = options.sortable !== false && (isAttr || options.sortKey);
               const columnKey = isAttr ? AttrOrComponent : options.sortKey;
+              // Explicitly capture sort state from parent scope for accessibility attributes
+              const currentSortColumn = sortColumn;
+              const currentSortDesc = sortDesc;
 
               const style = {
                 fontSize: 13,
                 padding: 8,
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: isEvenColumn ? '#e9ecef' : '#f8f9fa',
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
                 width: columnWidths[colIndex],
                 minWidth: columnWidths[colIndex],
                 maxWidth: columnWidths[colIndex],
-                borderRight: '1px solid #dee2e6',
-                position: 'relative',
-                cursor: isSortable ? 'pointer' : 'default'
+                borderRight: "1px solid #dee2e6",
+                position: "relative",
+                cursor: isSortable ? "pointer" : "default"
               };
+
+              /**
+               * Keyboard handler for sortable column headers
+               * WCAG 2.1.1: Column headers must be keyboard accessible for sorting
+               */
+              const handleHeaderKeyDown = isSortable
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      this.handleSort(columnKey);
+                    }
+                  }
+                : undefined;
 
               return (
                 <div
                   key={name}
                   style={style}
                   onClick={() => isSortable && this.handleSort(columnKey)}
+                  onKeyDown={handleHeaderKeyDown}
+                  role={isSortable ? "button" : "columnheader"}
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                  tabIndex={isSortable ? 0 : undefined}
+                  aria-label={isSortable ? `Sort by ${name}` : undefined}
+                  aria-sort={
+                    isSortable && currentSortColumn === columnKey
+                      ? currentSortDesc
+                        ? "descending"
+                        : "ascending"
+                      : "none"
+                  }
                 >
-                  <span style={{
-                    flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-                  }}
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
                   >
                     {name}
-                    {isSortable && sortColumn === columnKey && (
-                      <span style={{ marginLeft: 4 }}>
-                        {sortDesc ? '▼' : '▲'}
-                      </span>
+                    {isSortable && currentSortColumn === columnKey && (
+                      <span style={{ marginLeft: 4 }}>{currentSortDesc ? "▼" : "▲"}</span>
                     )}
                   </span>
                   {/* Resize handle */}
                   <div
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       right: 0,
                       top: 0,
                       bottom: 0,
-                      width: '4px',
-                      cursor: 'col-resize',
-                      backgroundColor: 'transparent'
+                      width: "4px",
+                      cursor: "col-resize",
+                      backgroundColor: "transparent"
                     }}
                     onMouseDown={(e) => this.onMouseDown(e, colIndex)}
                   />
@@ -317,18 +384,18 @@ export class ResizableTable extends React.Component {
           ref={this.bodyRef}
           style={{
             height: containerHeight,
-            overflowY: 'auto',
-            overflowX: 'auto',
-            boxSizing: 'border-box'
+            overflowY: "auto",
+            overflowX: "auto",
+            boxSizing: "border-box"
           }}
           onScroll={this.onScroll}
         >
           {/* Total height spacer */}
-          <div style={{ height: sortedData.length * rowHeight, position: 'relative' }}>
+          <div style={{ height: sortedData.length * rowHeight, position: "relative" }}>
             {/* Visible items positioned absolutely */}
-            <div style={{ position: 'absolute', top: startIndex * rowHeight, width: '100%' }}>
+            <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
               {visibleItems.map((item, index) => (
-                <div key={startIndex + index} style={{ height: rowHeight }}>
+                <div key={item.id || item.ident || item.dataset_id || startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
                 </div>
               ))}
@@ -337,20 +404,17 @@ export class ResizableTable extends React.Component {
         </div>
 
         {showFooter && (
-          <div style={{
-            marginTop: 10,
-            fontSize: 12,
-            color: '#666',
-            padding: '0 8px',
-            boxSizing: 'border-box',
-            overflow: 'hidden'
-          }}
+          <div
+            style={{
+              marginTop: 10,
+              fontSize: 12,
+              color: "#666",
+              padding: "0 8px",
+              boxSizing: "border-box",
+              overflow: "hidden"
+            }}
           >
-            Showing
-            {' '}
-            {sortedData.length}
-            {' '}
-            {this.props.itemName || 'items'}
+            Showing {sortedData.length} {itemName || "items"}
           </div>
         )}
       </div>

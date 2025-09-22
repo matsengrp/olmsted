@@ -10,7 +10,7 @@ class DownloadText extends React.Component {
   }
 
   createTextDownload(text) {
-    const data = new Blob([text], {type: 'text/plain'});
+    const data = new Blob([text], { type: "text/plain" });
     // If we are replacing a previously generated file we need to
     // manually revoke the object URL to avoid memory leaks.
     if (this.textFile !== null) {
@@ -23,13 +23,11 @@ class DownloadText extends React.Component {
   }
 
   render() {
+    const { text, filename, label } = this.props;
     return (
-      <a href={this.createTextDownload(this.props.text)}
-        download={this.props.filename? this.props.filename : this.defaultFilename}
-        id="downloadlink"
-      >
-        <button id="create">
-          {this.props.label? this.props.label: this.defaultLabel}
+      <a href={this.createTextDownload(text)} download={filename ? filename : this.defaultFilename} id="downloadlink">
+        <button type="button" id="create">
+          {label ? label : this.defaultLabel}
         </button>
       </a>
     );

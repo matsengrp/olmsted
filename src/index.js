@@ -3,7 +3,7 @@
 import "./util/polyfills"; // eslint-disable-line
 /* L I B R A R I E S */
 import React from "react";
-import { createRoot } from 'react-dom/client';
+import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import configureStore from "./store";
 /* S T Y L E S H E E T S */
@@ -12,23 +12,19 @@ import "./css/browserCompatability.css";
 import "./css/bootstrapCustomized.css";
 import "./css/static.css";
 
-
 const store = configureStore();
 
 /*
-Using React Hot Loader 4
-https://github.com/gaearon/react-hot-loader
+Using React Fast Refresh
+React 18 with Fast Refresh for hot reloading
 */
 
-let root;
+const container = document.getElementById("root");
+const root = createRoot(container);
 
 const renderApp = () => {
+  // eslint-disable-next-line global-require
   const Root = require("./Root").default;
-  const container = document.getElementById('root');
-
-  if (!root) {
-    root = createRoot(container);
-  }
 
   root.render(
     <Provider store={store}>
@@ -36,12 +32,5 @@ const renderApp = () => {
     </Provider>
   );
 };
-
-if (process.env.NODE_ENV !== 'production' && module.hot) {
-  console.log("hot component reload");
-  module.hot.accept("./Root", () => {
-    renderApp();
-  });
-}
 
 renderApp();

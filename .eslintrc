@@ -1,6 +1,10 @@
 ---
-extends: "airbnb"
+extends:
+  - "airbnb"
+  - "prettier"
 parser: "@babel/eslint-parser"
+plugins:
+  - "local"
 rules:
   camelcase: off # require camel case names
   prefer-template: off
@@ -26,6 +30,7 @@ rules:
   space-infix-ops: off
   no-param-reassign: [1, { "props": false }]
   no-underscore-dangle: off
+  no-unused-vars: ['error', { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
   no-unused-expressions: ['error', {"allowTernary": true }]
   no-restricted-syntax: ['error', 'ForInStatement', 'WithStatement'] # allow ForOfStatement & LabeledStatement
   class-methods-use-this: off
@@ -44,6 +49,8 @@ rules:
   no-unneeded-ternary: ["error", { "defaultAssignment": true }]
   quote-props: ["error", "as-needed"]
   prefer-const: ["error", {"destructuring": "all"}]
+  max-classes-per-file: off # Replaced with custom rule
+  local/max-exported-classes-per-file: ["error", 1] # Allow private helper classes, limit exports to 1
 parserOptions:
   ecmaVersion: 6
   sourceType: module

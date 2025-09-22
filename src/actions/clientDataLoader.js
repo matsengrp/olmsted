@@ -4,7 +4,8 @@
  */
 
 import * as types from "./types";
-import clientDataStore from '../utils/clientDataStore';
+import clientDataStore from "../utils/clientDataStore";
+import { charonAPIAddress } from "../util/globals";
 
 /**
  * Get tree data from client storage (replaces server getTree)
@@ -29,15 +30,15 @@ export const getClientTree = async (dispatch, tree_id) => {
       const treeSize = JSON.stringify(tree).length;
       console.log(`ClientDataLoader: Loaded tree ${tree_id} (${(treeSize / 1024).toFixed(1)}KB)`);
     } else {
-      console.warn('Tree not found in client storage:', tree_id);
+      console.warn("Tree not found in client storage:", tree_id);
       dispatch({
         type: types.TREE_ERROR,
         tree_id,
-        error: 'Tree not found in client storage'
+        error: "Tree not found in client storage"
       });
     }
   } catch (error) {
-    console.error('Error loading tree from client storage:', error);
+    console.error("Error loading tree from client storage:", error);
     dispatch({
       type: types.TREE_ERROR,
       tree_id,
@@ -71,9 +72,11 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
         loading: "DONE"
       });
 
-      console.log(`ClientDataLoader: Loaded ${clonalFamilies.length} clone families (${(JSON.stringify(clonalFamilies).length / 1024).toFixed(1)}KB)`);
+      console.log(
+        `ClientDataLoader: Loaded ${clonalFamilies.length} clone families (${(JSON.stringify(clonalFamilies).length / 1024).toFixed(1)}KB)`
+      );
     } else {
-      console.warn('Clonal families not found in client storage:', dataset_id);
+      console.warn("Clonal families not found in client storage:", dataset_id);
       dispatch({
         type: types.LOADING_DATASET,
         dataset_id,
@@ -81,7 +84,7 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
       });
     }
   } catch (error) {
-    console.error('Error loading clonal families from client storage:', error);
+    console.error("Error loading clonal families from client storage:", error);
     dispatch({
       type: types.LOADING_DATASET,
       dataset_id,
@@ -93,9 +96,9 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
 /**
  * Get datasets list from client storage (replaces server getDatasets)
  * @param {Function} dispatch - Redux dispatch function
- * @param {string} s3bucket - Legacy parameter for server compatibility (ignored)
+ * @param {string} _s3bucket - Legacy parameter for server compatibility (ignored)
  */
-export const getClientDatasets = async (dispatch, s3bucket = "live") => {
+export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
   try {
     const clientDatasets = await clientDataStore.getAllDatasets();
 
@@ -117,11 +120,12 @@ export const getClientDatasets = async (dispatch, s3bucket = "live") => {
 
     // Always attempt to load server datasets in parallel
     // This allows mixing client-side uploaded data with server-side data
+    // eslint-disable-next-line no-use-before-define
     loadServerDatasets(dispatch);
-
   } catch (error) {
-    console.error('Error loading client datasets:', error);
+    console.error("Error loading client datasets:", error);
     // Fallback to server-only loading
+    // eslint-disable-next-line no-use-before-define
     loadServerDatasets(dispatch);
   }
 };
@@ -151,30 +155,26 @@ const loadServerDatasets = async (dispatch) => {
     request.onload = () => {
       if (request.readyState === 4 && request.status === 200) {
         // Check if response is JSON before trying to parse
-        const contentType = request.getResponseHeader('content-type');
-        const isJson = contentType && contentType.includes('application/json');
+        const contentType = request.getResponseHeader("content-type");
+        const isJson = contentType && contentType.includes("application/json");
 
-        if (isJson || request.responseText.trim().startsWith('[') || request.responseText.trim().startsWith('{')) {
+        if (isJson || request.responseText.trim().startsWith("[") || request.responseText.trim().startsWith("{")) {
           try {
             const serverDatasets = JSON.parse(request.responseText);
 
             // Combine client and server datasets
-            const combinedDatasets = [
-              ...clientDatasets,
-              ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))
-            ];
+            const combinedDatasets = [...clientDatasets, ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))];
 
             dispatch({
               type: types.DATASETS_RECEIVED,
               availableDatasets: combinedDatasets
             });
 
-            console.log('Combined datasets loaded:', {
+            console.log("Combined datasets loaded:", {
               client: clientDatasets.length,
               server: serverDatasets.length,
               total: combinedDatasets.length
             });
-
           } catch (error) {
             // Silently fall back to client-only datasets
             if (clientDatasets.length > 0) {
@@ -213,13 +213,11 @@ const loadServerDatasets = async (dispatch) => {
     };
 
     // Load from server API (original endpoint)
-    const { charonAPIAddress } = require("../util/globals");
     request.open("get", `${charonAPIAddress}/datasets.json`, true);
     request.send(null);
-
   } catch (error) {
     // If even client dataset loading fails, dispatch empty array
-    console.error('Failed to load client datasets:', error);
+    console.error("Failed to load client datasets:", error);
     dispatch({
       type: types.DATASETS_RECEIVED,
       availableDatasets: []
@@ -235,20 +233,21 @@ const loadServerDatasets = async (dispatch) => {
  */
 export const loadDataSmart = (dispatch, dataType, identifier = null) => {
   switch (dataType) {
-    case 'datasets':
+    case "datasets":
       return getClientDatasets(dispatch);
-    case 'clones':
+    case "clones":
       if (identifier) {
         return getClientClonalFamilies(dispatch, identifier);
       }
-      break;
-    case 'tree':
+      return null;
+    case "tree":
       if (identifier) {
         return getClientTree(dispatch, identifier);
       }
-      break;
+      return null;
     default:
-      console.warn('Unknown data type for smart loading:', dataType);
+      console.warn("Unknown data type for smart loading:", dataType);
+      return null;
   }
 };
 
@@ -258,7 +257,7 @@ export const loadDataSmart = (dispatch, dataType, identifier = null) => {
  */
 export const clearClientData = (dispatch) => {
   clientDataStore.clearAllData();
-  console.log('Cleared all client-side data');
+  console.log("Cleared all client-side data");
 
   // Reload datasets to show only server data
   loadServerDatasets(dispatch);
