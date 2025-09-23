@@ -124,9 +124,37 @@ function SizeCell({ datum }) {
   return <span>{sizeInMB} MB</span>;
 }
 
+// Component for the upload time column
+function UploadTimeCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const uploadTime = datum.upload_time;
+  if (!uploadTime) {
+    return <span>—</span>;
+  }
+
+  // Display in YYYY-MM-DD HH:MM:SS format (remove T and Z from ISO format)
+  const formattedTime = uploadTime.replace('T', ' ').replace('Z', '');
+  return <span>{formattedTime}</span>;
+}
+
+// Component for the build time column
+function BuildTimeCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const buildTime = datum.build ? datum.build.time || "—" : "—";
+  return <span>{buildTime}</span>;
+}
+
 // Mark these as React components for production builds where names are minified
 CitationCell.isReactComponent = true;
 SizeCell.isReactComponent = true;
+UploadTimeCell.isReactComponent = true;
+BuildTimeCell.isReactComponent = true;
 
 // Component for the delete button
 class DeleteButtonCell extends React.Component {
@@ -205,7 +233,8 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
     ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
     ["Subjects", "subjects_count"],
     ["Families", "clone_count"],
-    ["Build Time", (d) => (d.build ? d.build.time || "—" : "—"), { sortKey: "build.time" }]
+    ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
+    ["Build Time", BuildTimeCell, { sortKey: "build.time" }]
   ];
 
   if (showCitation) {
@@ -225,6 +254,7 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
     80, // Size (MB)
     80, // Subjects
     100, // Families
+    120, // Upload time
     120, // Build time
     ...(showCitation ? [150] : []),
     ...(hasClientDatasets ? [80] : [])

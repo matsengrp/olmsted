@@ -44,8 +44,7 @@ class SelectedFamiliesSummary extends React.Component {
     const { nClonalFamiliesBrushed } = this.props;
     return (
       <p>
-        Number of families currently selected:
-        {nClonalFamiliesBrushed}
+        Number of families currently selected: {nClonalFamiliesBrushed}
       </p>
     );
   }
@@ -93,7 +92,8 @@ function Overlay({ styles, mobileDisplay, handler }) {
     pendingDatasetLoads: state.datasets.pendingDatasetLoads,
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     selectedSeq: state.clonalFamilies.selectedSeq,
-    locus: state.clonalFamilies.locus
+    locus: state.clonalFamilies.locus,
+    loadedClonalFamilies: clonalFamiliesSelectors.countLoadedClonalFamilies(state.datasets.availableDatasets)
   }),
   (dispatch) => ({
     dispatch,
@@ -177,7 +177,8 @@ class App extends React.Component {
       resetState,
       filterLocus,
       selectedFamily,
-      selectedSeq
+      selectedSeq,
+      loadedClonalFamilies
     } = this.props;
 
     /* D I M E N S I O N S */
@@ -227,11 +228,19 @@ class App extends React.Component {
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
+                <CollapseHelpTitle
+                  titleText="Datasets"
+                  helpText={`The Datasets section allows you to manage and load your B-cell repertoire datasets. Select
+                  datasets from the table by checking the "Select" column checkboxes, then click the "Update Visualization"
+                  button to load or unload datasets. To upload new datasets or delete existing ones,
+                  click the "Manage Datasets" button to return to the main page.`}
+                />
                 <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
             </div>
-            <div style={sectionStyle}>
-              <CollapsibleSection titleText="Clonal Families">
+            {loadedClonalFamilies > 0 && (
+              <div style={sectionStyle}>
+                <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
                   helpText={
@@ -250,8 +259,8 @@ class App extends React.Component {
                       <br />
                       For comparison of subsets, you may facet the plot into separated panels according to data values
                       for a range of fields. Interact with the plot by clicking and dragging across a subset of points
-                      or clicking individual points to filter the resulting clonal families in the Selected clonal
-                      families table below.
+                      or clicking individual points to filter the resulting clonal families in the Selected Clonal
+                      Families table below.
                     </div>
                   }
                 />
@@ -278,32 +287,36 @@ class App extends React.Component {
                 <ClonalFamiliesViz />
               </CollapsibleSection>
             </div>
+            )}
 
-            <div style={{ paddingBottom: 40, ...sectionStyle }}>
-              <CollapsibleSection titleText="Selected clonal families">
+            {loadedClonalFamilies > 0 && (
+              <div style={{ paddingBottom: 40, ...sectionStyle }}>
+                <CollapsibleSection titleText="Selected Clonal Families">
                 <CollapseHelpTitle
-                  titleText="Selected clonal families"
+                  titleText="Selected Clonal Families"
                   helpText={`Below the scatterplot, the full collection or selected subset of clonal families
                    appears in a table including a visualization of the recombination event resulting in the naive
                    antibody sequence and a subset of clonal family metadata. Each row in the table represents one clonal
                    family. The table automatically selects the top clonal family according to the sorting column. Click on
                    the checkbox in the "Select" column in the table to select a clonal family for further visualization.
                    Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family
-                   (as specified in the input JSON) is visualized below the table in the Clonal family details section.`}
+                   (as specified in the input JSON) is visualized below the table in the Clonal Family Details section.`}
                 />
                 <div style={tableStyle}>
                   <ClonalFamiliesTable />
                 </div>
               </CollapsibleSection>
             </div>
-            {selectedFamily && (
+            )}
+
+            {selectedFamily && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
-                <CollapsibleSection titleText="Clonal family details">
+                <CollapsibleSection titleText="Clonal Family Details">
                   <TreeViz availableHeight={availableHeight} />
                 </CollapsibleSection>
               </div>
             )}
-            {selectedSeq && Object.keys(selectedSeq).length > 0 && (
+            {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral sequences">
                   <Lineage />

@@ -365,6 +365,7 @@ class DatasetName extends React.Component {
   }
 }
 
+
 @connect(
   (_store) => ({}),
   (dispatch) => ({
@@ -379,7 +380,6 @@ class SelectAttribute extends React.Component {
     return (
       <input
         type="checkbox"
-        style={{ cursor: "pointer" }}
         checked={
           selectedFamily ? (datum.ident || datum.clone_id) === (selectedFamily.ident || selectedFamily.clone_id) : false
         }

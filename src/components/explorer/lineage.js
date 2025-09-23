@@ -18,24 +18,48 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 
 const mapStateToProps = (state) => {
   return {
-    lineageData: treesSelector.getLineageData(state),
+    selectedTree: treesSelector.getSelectedTree(state),
     selectedSeq: treesSelector.getSelectedSeq(state),
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
   };
 };
 
-// Compoent definition
+// Component definition
 
 @connect(mapStateToProps)
 class Lineage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showEntireLineage: false
+    };
+  }
+
+  handleCheckboxChange = (event) => {
+    this.setState({ showEntireLineage: event.target.checked });
+  }
+
   render() {
-    const { selectedFamily, selectedSeq, lineageData } = this.props;
-    if (selectedFamily) {
+    const { selectedFamily, selectedSeq, selectedTree } = this.props;
+    const { showEntireLineage } = this.state;
+
+    if (selectedFamily && selectedSeq && selectedTree) {
+      // Compute lineage data with the option to show all nodes
+      const lineageData = treesSelector.computeLineageDataWithOptions(
+        selectedTree,
+        selectedSeq,
+        showEntireLineage
+      );
+
       const naiveData = getNaiveVizData(selectedFamily);
-      const cdr3Bounds = [
-        { x: Math.floor(naiveData.source[0].start / 3) - 0.5 },
-        { x: Math.floor(naiveData.source[0].end / 3) + 0.5 }
-      ];
+
+      // Create boundary markers for all CDR regions
+      const cdrBounds = naiveData.source
+        .filter(region => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+        .flatMap(region => [
+          { x: Math.floor(region.start / 3) - 0.5, region: region.region },
+          { x: Math.floor(region.end / 3) + 0.5, region: region.region }
+        ]);
 
       return (
         <div>
@@ -61,18 +85,31 @@ class Lineage extends React.Component {
 
           <h3>Lineage</h3>
           <Vega
+            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${lineageData["lineage_seq_counter"]}`}
             onParseError={(...args) => console.error("parse error:", args)}
             debug
             data={{
               naive_data: naiveData.source,
-              cdr3_bounds: cdr3Bounds
+              cdr_bounds: cdrBounds,
+              source_0: lineageData.lineage_alignment
             }}
             spec={seqAlignSpec(lineageData)}
           />
+
+          <div style={{ marginTop: '10px' }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={showEntireLineage}
+                onChange={this.handleCheckboxChange}
+              />
+              {" "}Show entire lineage (include nodes without mutations)
+            </label>
+          </div>
         </div>
       );
     }
-    return <div>No acestral sequences to show</div>;
+    return <div>No ancestral sequences to show</div>;
   }
 }
 

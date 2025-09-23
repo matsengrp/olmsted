@@ -149,7 +149,7 @@ const createSelectionSignals = () => [
     name: "mouseDown",
     on: [
       {
-        events: { source: "scope", type: "mousedown", consume: true },
+        events: { source: "scope", type: "mousedown", consume: true, filter: ["!event.shiftKey"] },
         update: "[x(cell), y(cell)]"
       }
     ]
@@ -158,7 +158,7 @@ const createSelectionSignals = () => [
     name: "mouseUp",
     on: [
       {
-        events: { source: "window", type: "mouseup" },
+        events: { source: "window", type: "mouseup", filter: ["!event.shiftKey"] },
         update: "[x(cell), y(cell)]"
       }
     ]
@@ -246,7 +246,10 @@ const createControlSignals = () => [
   {
     name: "filledShapes",
     value: false,
-    bind: { name: "Filled shapes ", input: "checkbox" }
+    bind: {
+      input: "checkbox",
+      name: "Filled shapes"
+    }
   },
   {
     name: "brush_x_field",
@@ -264,25 +267,111 @@ const createControlSignals = () => [
   }
 ];
 
+// Helper function to create zoom/pan signals
+const createZoomPanSignals = () => [
+  // Zoom level signal (0.9 = slight zoom out for padding, 1.0 = no zoom, >1.0 = zoomed in)
+  {
+    name: "zoom_level",
+    value: 0.9,
+    on: [
+      {
+        // Shift + scroll to zoom
+        events: { type: "wheel", filter: ["event.shiftKey"] },
+        update: "clamp(zoom_level * pow(1.001, -event.deltaY), 0.5, 10)"
+      },
+      {
+        // Shift + doubleclick to reset zoom/pan
+        events: { type: "dblclick", filter: ["event.shiftKey"] },
+        update: "0.9"
+      },
+      {
+        // Reset zoom when facet changes
+        events: { signal: "facet_by_signal" },
+        update: "0.9"
+      }
+    ]
+  },
+  // Pan offset signals for x and y
+  {
+    name: "pan_x",
+    value: 0,
+    on: [
+      {
+        // Shift + drag to pan (inverted: drag right moves view left)
+        events: { type: "mousemove", between: [{ type: "mousedown", filter: ["event.shiftKey"] }, { type: "mouseup" }] },
+        update: "pan_x - event.movementX / child_width / zoom_level"
+      },
+      {
+        // Shift + doubleclick to reset zoom/pan
+        events: { type: "dblclick", filter: ["event.shiftKey"] },
+        update: "0"
+      },
+      {
+        // Reset pan when facet changes
+        events: { signal: "facet_by_signal" },
+        update: "0"
+      }
+    ]
+  },
+  {
+    name: "pan_y",
+    value: 0,
+    on: [
+      {
+        // Shift + drag to pan (inverted: drag down moves view up)
+        events: { type: "mousemove", between: [{ type: "mousedown", filter: ["event.shiftKey"] }, { type: "mouseup" }] },
+        update: "pan_y + event.movementY / child_height / zoom_level"
+      },
+      {
+        // Shift + doubleclick to reset zoom/pan
+        events: { type: "dblclick", filter: ["event.shiftKey"] },
+        update: "0"
+      },
+      {
+        // Reset pan when facet changes
+        events: { signal: "facet_by_signal" },
+        update: "0"
+      }
+    ]
+  },
+  // Helper signals for calculating zoomed/panned domains
+  {
+    name: "x_domain_raw",
+    update: "extent(pluck(data('data_0'), xField))"
+  },
+  {
+    name: "y_domain_raw",
+    update: "extent(pluck(data('data_0'), yField))"
+  },
+  {
+    name: "x_domain_zoomed",
+    update: "[x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_x), x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_x)]"
+  },
+  {
+    name: "y_domain_zoomed",
+    update: "[y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_y), y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_y)]"
+  }
+];
+
 // Helper function to create all signals
-const createSignals = () => [...createLayoutSignals(), ...createSelectionSignals(), ...createControlSignals()];
+const createSignals = () => [...createLayoutSignals(), ...createSelectionSignals(), ...createControlSignals(), ...createZoomPanSignals()];
 
 // Helper function to create scales configuration
 const createScales = () => [
   {
     name: "x",
     type: "linear",
-    domain: { data: "data_0", field: { signal: "xField" } },
+    domain: { signal: "x_domain_zoomed" },
     range: [0, { signal: "child_width" }],
-    nice: true,
+    nice: false,
     zero: false
   },
   {
     name: "y",
     type: "linear",
-    domain: { data: "data_0", field: { signal: "yField" } },
+    domain: { signal: "y_domain_zoomed" },
     range: [{ signal: "child_height" }, 0],
-    nice: true,
+    nice: false,
     zero: false
   },
   {
@@ -445,7 +534,7 @@ const createCellSignals = () => [
     push: "outer",
     on: [
       {
-        events: "@cell:mousedown",
+        events: { source: "scope", type: "mousedown", markname: "cell", filter: ["!event.shiftKey"] },
         update: "[facet_by_signal, facet.facet_by_field]"
       }
     ]
@@ -454,7 +543,7 @@ const createCellSignals = () => [
     name: "cell",
     push: "outer",
     on: [
-      { events: "@cell:mousedown", update: "group()" },
+      { events: { source: "scope", type: "mousedown", markname: "cell", filter: ["!event.shiftKey"] }, update: "group()" },
       { events: "@cell:mouseup", update: "!span(brush_x) && !span(brush_y) ? null : cell" }
     ]
   },
@@ -472,7 +561,7 @@ const createBrushSignals = () => [
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
         },
         update: "[x(cell), x(cell)]"
       },
@@ -484,7 +573,7 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
             },
             { source: "window", type: "mouseup" }
           ]
@@ -506,7 +595,7 @@ const createBrushSignals = () => [
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
         },
         update: "[y(cell), y(cell)]"
       },
@@ -518,7 +607,7 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
             },
             { source: "window", type: "mouseup" }
           ]
@@ -594,7 +683,7 @@ const createBrushTranslateSignals = () => [
     push: "outer",
     on: [
       {
-        events: "@cell:mouseup",
+        events: { source: "scope", type: "mouseup", markname: "cell", filter: ["!event.shiftKey"] },
         update:
           "span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : []"
       }
@@ -626,6 +715,7 @@ const createBrushMarks = () => [
     type: "symbol",
     style: ["point"],
     from: { data: "facet" },
+    clip: true,
     encode: {
       // eslint-disable-next-line no-use-before-define
       update: createSymbolEncoding()

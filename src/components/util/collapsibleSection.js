@@ -6,7 +6,8 @@ class CollapsibleSection extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: props.defaultOpen !== false // Default to open unless explicitly set to false
+      isOpen: props.defaultOpen !== false, // Default to open unless explicitly set to false
+      isHovered: false
     };
   }
 
@@ -14,9 +15,17 @@ class CollapsibleSection extends React.Component {
     this.setState({ isOpen });
   };
 
+  handleMouseEnter = () => {
+    this.setState({ isHovered: true });
+  };
+
+  handleMouseLeave = () => {
+    this.setState({ isHovered: false });
+  };
+
   render() {
     const { titleText, _helpText, children, ...otherProps } = this.props;
-    const { isOpen } = this.state;
+    const { isOpen, isHovered } = this.state;
 
     return (
       <Collapsible
@@ -27,8 +36,14 @@ class CollapsibleSection extends React.Component {
               alignItems: "center",
               cursor: "pointer",
               userSelect: "none",
-              marginBottom: "10px"
+              marginBottom: "10px",
+              padding: "8px",
+              borderRadius: "4px",
+              backgroundColor: isHovered ? "#f0f0f0" : "transparent",
+              transition: "background-color 0.2s ease"
             }}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
           >
             {isOpen ? (
               <FiChevronDown style={{ marginRight: "8px", fontSize: "16px", color: "#666" }} />

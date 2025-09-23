@@ -9,6 +9,7 @@ import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
 
+
 // Component for the citation column
 function CitationCell({ datum }) {
   if (!datum) {
@@ -45,6 +46,32 @@ function SizeCell({ datum }) {
   return <span>{sizeInMB} MB</span>;
 }
 
+// Component for the upload time column
+function UploadTimeCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const uploadTime = datum.upload_time;
+  if (!uploadTime) {
+    return <span>—</span>;
+  }
+
+  // Display in YYYY-MM-DD HH:MM:SS format (remove T and Z from ISO format)
+  const formattedTime = uploadTime.replace('T', ' ').replace('Z', '');
+  return <span>{formattedTime}</span>;
+}
+
+// Component for the build time column
+function BuildTimeCell({ datum }) {
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const buildTime = datum.build ? datum.build.time || "—" : "—";
+  return <span>{buildTime}</span>;
+}
+
 // Component for non-selectable load status
 function LoadStatusDisplay({ datum }) {
   if (!datum) {
@@ -67,7 +94,7 @@ function SelectionCell({ datum, selectedDatasets, dispatch }) {
   if (!datum) {
     return (
       <div style={{ width: "100%", textAlign: "center" }}>
-        <input type="checkbox" disabled style={{ cursor: "not-allowed" }} />
+        <input type="checkbox" disabled={true} checked={false} />
       </div>
     );
   }
@@ -82,7 +109,6 @@ function SelectionCell({ datum, selectedDatasets, dispatch }) {
         onChange={() => {
           dispatch(explorerActions.toggleDatasetSelection(datum.dataset_id));
         }}
-        style={{ cursor: "pointer" }}
       />
     </div>
   );
@@ -93,6 +119,8 @@ SelectionCell.isReactComponent = true;
 LoadStatusDisplay.isReactComponent = true;
 CitationCell.isReactComponent = true;
 SizeCell.isReactComponent = true;
+UploadTimeCell.isReactComponent = true;
+BuildTimeCell.isReactComponent = true;
 
 @connect((state) => ({
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
@@ -189,7 +217,8 @@ export default class LoadingTable extends React.Component {
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
-      ["Build Time", (d) => (d.build ? d.build.time || "—" : "—"), { sortKey: "build.time" }]
+      ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
+      ["Build Time", BuildTimeCell, { sortKey: "build.time" }]
     ];
 
     if (showCitation) {
@@ -206,6 +235,7 @@ export default class LoadingTable extends React.Component {
       80, // Size (MB)
       80, // Subjects
       100, // Families
+      120, // Upload time
       120, // Build time
       ...(showCitation ? [150] : [])
     ];
@@ -268,10 +298,38 @@ export default class LoadingTable extends React.Component {
           </button>
         </div>
 
-        <p style={{ marginTop: "10px" }}>
-          Loaded clonal families:
-          {loadedClonalFamilies}
-        </p>
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "12px",
+            backgroundColor: loadedClonalFamilies === 0 ? "#f8d7da" : "#d4edda",
+            border: loadedClonalFamilies === 0 ? "1px solid #dc3545" : "1px solid #28a745",
+            borderRadius: "4px",
+            color: loadedClonalFamilies === 0 ? "#721c24" : "#155724",
+            fontSize: "14px",
+            textAlign: "center",
+            fontWeight: "bold"
+          }}
+        >
+          Loaded clonal families: {loadedClonalFamilies}
+        </div>
+        {loadedClonalFamilies === 0 && (
+          <div
+            style={{
+              marginTop: "10px",
+              padding: "12px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: "4px",
+              color: "#856404",
+              fontSize: "14px",
+              textAlign: "center"
+            }}
+          >
+            No datasets loaded. Please select one or more datasets from the table above and click &quot;Update
+            Visualization&quot; to begin exploring clonal families.
+          </div>
+        )}
       </div>
     );
   }

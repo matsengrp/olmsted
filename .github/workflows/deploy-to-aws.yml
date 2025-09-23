@@ -1,0 +1,93 @@
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_scope:
+        description: 'Deployment scope'
+        required: true
+        default: 'app'
+        type: choice
+        options:
+          - app
+          - data
+          - full
+      invalidate_cloudfront:
+        description: 'Invalidate CloudFront cache after deployment'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  deploy:
+    name: Deploy to AWS S3 and CloudFront
+    runs-on: ubuntu-latest
+    environment: AWS deployment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 pyyaml
+
+      - name: Create AWS credentials file
+        run: |
+          mkdir -p ~/.olmsted
+          cat > ~/.olmsted/aws-credentials.yaml << EOF
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region_name: ${{ vars.AWS_REGION }}
+          EOF
+          chmod 600 ~/.olmsted/aws-credentials.yaml
+
+      - name: Create CloudFront config file
+        if: ${{ inputs.invalidate_cloudfront }}
+        run: |
+          cat > ~/.olmsted/cloudfront-distribution-id.yaml << EOF
+          distribution_id: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          EOF
+          chmod 600 ~/.olmsted/cloudfront-distribution-id.yaml
+
+      - name: Deploy to S3
+        run: |
+          if [ "${{ inputs.invalidate_cloudfront }}" = "true" ]; then
+            python3 bin/aws_deploy.py ${{ inputs.deploy_scope }} \
+              -b ${{ vars.S3_BUCKET_NAME }} \
+              --invalidate-cloudfront
+          else
+            python3 bin/aws_deploy.py ${{ inputs.deploy_scope }} \
+              -b ${{ vars.S3_BUCKET_NAME }}
+          fi
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scope:** ${{ inputs.deploy_scope }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **S3 Bucket:** ${{ vars.S3_BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **CloudFront Invalidation:** ${{ inputs.invalidate_cloudfront }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Website URL:** https://${{ vars.S3_BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ If CloudFront was invalidated, changes will be visible globally within 5-15 minutes." >> $GITHUB_STEP_SUMMARY

@@ -1,7 +1,7 @@
 import React from "react";
 import Dropzone from "react-dropzone";
 import { CenterContent } from "./centerContent";
-import AIRRProcessor from "../../utils/airrProcessor";
+import FileProcessor from "../../utils/fileProcessor";
 import SplitFileProcessor from "../../utils/splitFileProcessor";
 import clientDataStore from "../../utils/clientDataStore";
 import { getClientDatasets } from "../../actions/clientDataLoader";
@@ -61,11 +61,11 @@ class FileUpload extends React.Component {
       let fileType = null;
 
       if (fileName.endsWith(".json")) {
-        fileType = "airr";
+        fileType = "consolidated";
       } else if (fileName.endsWith(".gz")) {
         // Check the extension before .gz
         if (fileName.includes(".json.gz")) {
-          fileType = "airr";
+          fileType = "consolidated";
           // Note: gzip support would need additional implementation
           throw new Error("Gzipped files are not yet supported. Please upload uncompressed JSON files.");
         }
@@ -73,13 +73,13 @@ class FileUpload extends React.Component {
 
       if (!fileType) {
         throw new Error(
-          "Unsupported file type. Please upload AIRR JSON files (.json). For split files, select all files together (datasets.json, clones.*.json, tree.*.json)."
+          "Unsupported file type. Please upload olmsted-cli consolidated JSON files (.json). For split files, select all files together (datasets.json, clones.*.json, tree.*.json)."
         );
       }
 
       // Process file entirely client-side - no server communication!
       this.updateLoadingStatus("Reading and parsing file data...", 25);
-      const result = await AIRRProcessor.processFile(file);
+      const result = await FileProcessor.processFile(file);
 
       // Add file size to the first dataset
       if (result.datasets && result.datasets.length > 0) {
@@ -163,15 +163,25 @@ class FileUpload extends React.Component {
           // Successfully processed as split format
           this.updateLoadingStatus("Consolidating split file data...", 40);
 
-          // Process the consolidated dataset using AIRR processor
+          // Split files are already in consolidated format, just wrap them
           this.updateLoadingStatus("Processing consolidated dataset...", 55);
-          const consolidatedResult = await AIRRProcessor.processDataset(
-            splitResult.consolidatedDataset,
-            `Split files (${splitResult.fileCount} files)`
-          );
+          const datasetId = FileProcessor.generateDatasetId();
 
-          // Merge in the trees from split processing
-          consolidatedResult.trees = [...consolidatedResult.trees, ...splitResult.trees];
+          const consolidatedResult = {
+            datasets: [
+              {
+                ...splitResult.consolidatedDataset,
+                dataset_id: datasetId,
+                temporary: true,
+                isClientSide: true,
+                upload_time: new Date().toISOString(),
+                original_filename: `Split files (${splitResult.fileCount} files)`
+              }
+            ],
+            clones: { [datasetId]: splitResult.consolidatedDataset.clones || [] },
+            trees: splitResult.trees,
+            datasetId
+          };
 
           // Add total file size to the first dataset
           if (consolidatedResult.datasets && consolidatedResult.datasets.length > 0) {
@@ -181,7 +191,7 @@ class FileUpload extends React.Component {
 
           // Store processed data
           this.updateLoadingStatus("Storing data in browser database...", 75);
-          const datasetId = await clientDataStore.storeProcessedData(consolidatedResult);
+          await clientDataStore.storeProcessedData(consolidatedResult);
 
           // Update UI
           this.updateLoadingStatus("Finalizing upload...", 90);
@@ -191,7 +201,7 @@ class FileUpload extends React.Component {
               {
                 fileName: `Split format (${acceptedFiles.length} files)`,
                 datasetId: datasetId,
-                fileType: "airr-split",
+                fileType: "consolidated-split",
                 dataset: consolidatedResult.datasets[0],
                 success: true,
                 fileCount: acceptedFiles.length,
@@ -363,10 +373,10 @@ class FileUpload extends React.Component {
               </div>
             ) : (
               <div>
-                <div style={{ fontSize: 20, marginBottom: 10 }}>Drag & drop files here</div>
-                <div style={{ fontSize: 14, color: "#666", marginBottom: 10 }}>or click to browse</div>
-                <div style={{ fontSize: 12, color: "#999" }}>
-                  <strong>Supported formats:</strong> AIRR JSON (.json only)
+                <div style={{ fontSize: 20, marginBottom: 10, color: "#333" }}>Drag & drop files here</div>
+                <div style={{ fontSize: 18, color: "#333", marginBottom: 15 }}>or click to browse</div>
+                <div style={{ fontSize: 14, color: "#333" }}>
+                  <strong>Supported formats:</strong> olmsted-cli consolidated JSON (.json only)
                   <br />
                   • Single consolidated file from olmsted-cli (recommended)
                   <br />• Multiple split files together (datasets.json, clones.*.json, tree.*.json)
@@ -411,7 +421,7 @@ class FileUpload extends React.Component {
                     <div>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: "#666" }}>
-                        ({file.fileType === "airr-split" ? "AIRR Split" : file.fileType.toUpperCase()} format)
+                        ({file.fileType === "consolidated-split" ? "Consolidated Split" : "Consolidated"} format)
                       </span>
                       {file.dataset && file.dataset.clone_count && (
                         <span style={{ marginLeft: 10, color: "#666" }}>

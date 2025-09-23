@@ -2,6 +2,7 @@
 /dist/
 /data/
 /deploy/
+/_deploy/
 /releases/
 server.dist.js
 /static/

@@ -11,7 +11,7 @@
   "scripts": {
     "postinstall": "npm run create-data-dir && npm run setup-eslint-plugin",
     "setup-eslint-plugin": "node scripts/setup-eslint-plugin.js",
-    "clean": "rimraf deploy/dist",
+    "clean": "rimraf _deploy/dist",
     "server": "node server.dist.js",
     "build:client": "NODE_ENV=production BABEL_ENV=production webpack --config webpack.config.prod.js",
     "build:client:perf": "NODE_ENV=production BABEL_ENV=productiontiming webpack --config webpack.config.prod.js",
@@ -26,12 +26,9 @@
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,json,css,md}\"",
-    "run:electron": "npm run clean && npm run build:electron && npm run getdata && ./node_modules/.bin/electron . ",
-    "dist:electron": "npm run clean && npm run build:electron && npm run getdata && electron-builder",
+    "run:electron": "npm run clean && npm run build:electron && npm run create-data-dir && ./node_modules/.bin/electron . ",
+    "dist:electron": "npm run clean && npm run build:electron && npm run create-data-dir && electron-builder",
     "heroku-postbuild": "npm run build",
-    "get-data": "./bin/get-data.sh",
-    "redeploy-site": "./bin/redeploy-site.sh",
-    "gzip-and-upload": "./bin/gzip-and-upload.sh",
     "create-data-dir": "./bin/create-data-dir.sh"
   },
   "dependencies": {

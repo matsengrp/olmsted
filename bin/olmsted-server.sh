@@ -27,9 +27,16 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ $# -eq 0 ]; then
     exit 1
 fi
 
+# Default values
+DEFAULT_HOST_PORT="3999"
+DEFAULT_DOCKER_PORT="3999"
+DEFAULT_MODE="dev"
+
+# Parse arguments
 DOCKER_TAG_OR_IMAGE="$1"
-HOST_PORT="${2:-3999}"
-DOCKER_PORT="3999"
+HOST_PORT="${2:-DEFAULT_HOST_PORT}"
+DOCKER_PORT="${DEFAULT_DOCKER_PORT}"
+MODE="${3:-$DEFAULT_MODE}"
 
 # If the argument contains ':', treat it as a full image name
 # Otherwise, assume it's a tag for quay.io/matsengrp/olmsted
@@ -39,9 +46,14 @@ else
     DOCKER_IMAGE="quay.io/matsengrp/olmsted:$DOCKER_TAG_OR_IMAGE"
 fi
 
-echo "Starting Olmsted server with Docker image: $DOCKER_IMAGE"
-echo "Using port: $HOST_PORT"
+echo "============================================="
+echo "Starting Olmsted Server (Docker Image)"
+echo "============================================="
+echo "Docker image: $DOCKER_IMAGE"
+echo "Host Port: $HOST_PORT"
+echo "============================================="
 
 set -x
-docker run -p ${HOST_PORT}:${DOCKER_PORT} -v $PWD:/data "${DOCKER_IMAGE}" npm start localData /data
+docker run -p ${HOST_PORT}:${DOCKER_PORT} -v $PWD:/data "${DOCKER_IMAGE}" \
+    npm start localData /data
 
