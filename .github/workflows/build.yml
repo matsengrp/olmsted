@@ -19,7 +19,12 @@ jobs:
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
       - name: Build the Docker image
-        run: docker build . -t quay.io/matsengrp/olmsted:$TAG
+        uses: nick-fields/retry-action@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: docker build . -t quay.io/matsengrp/olmsted:$TAG
       - name: Run example in the Docker image
         run: docker run --rm -p 8080:3999 quay.io/matsengrp/olmsted:$TAG & sleep 20 && curl -I localhost:8080
       - name: Login to Registry
