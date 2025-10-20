@@ -160,7 +160,11 @@ class ResizableVirtualTable extends React.Component {
                     width: "100%"
                   }}
                 >
-                  {_.get(datum, AttrOrComponent) || "—"}
+                  {(() => {
+                    const value = _.get(datum, AttrOrComponent);
+                    // Show "—" only for null/undefined, not for 0 or other falsy values
+                    return value !== null && value !== undefined ? value : "—";
+                  })()}
                 </div>
               ) : (
                 <AttrOrComponent datum={datum} selectedFamily={selectedFamily} />
