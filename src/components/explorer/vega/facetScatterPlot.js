@@ -350,6 +350,11 @@ const createZoomPanSignals = () => [
   {
     name: "y_domain_zoomed",
     update: "[y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_y), y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_y)]"
+  },
+  // Signal to track if zoom/pan is active (different from default state)
+  {
+    name: "zoom_pan_active",
+    update: "zoom_level !== 0.9 || pan_x !== 0 || pan_y !== 0"
   }
 ];
 
@@ -733,6 +738,24 @@ const createBrushMarks = () => [
         x2: [{ test: "brush_test", signal: "brush_x[1]" }, { value: 0 }],
         y2: [{ test: "brush_test", signal: "brush_y[1]" }, { value: 0 }],
         stroke: [{ test: "brush_x[0] !== brush_x[1] && brush_y[0] !== brush_y[1]", value: "white" }, { value: null }]
+      }
+    }
+  },
+  {
+    name: "zoom_indicator",
+    type: "text",
+    encode: {
+      enter: {
+        align: { value: "right" },
+        baseline: { value: "top" },
+        fontSize: { value: 11 },
+        fontWeight: { value: "normal" },
+        fill: { value: "#666" }
+      },
+      update: {
+        x: { signal: "child_width - 10" },
+        y: { value: 10 },
+        text: { signal: "zoom_pan_active ? 'Zoom: ' + format(zoom_level, '.1f') + 'x (shift+dblclick to reset)' : ''" }
       }
     }
   }

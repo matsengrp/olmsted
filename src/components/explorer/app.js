@@ -261,6 +261,16 @@ class App extends React.Component {
                       for a range of fields. Interact with the plot by clicking and dragging across a subset of points
                       or clicking individual points to filter the resulting clonal families in the Selected Clonal
                       Families table below.
+                      <br />
+                      <br />
+                      <strong>Scatterplot Controls:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                        <li><strong>Click:</strong> Select single clone</li>
+                        <li><strong>Drag:</strong> Brush select multiple clones</li>
+                        <li><strong>Shift + Scroll:</strong> Zoom in/out (0.5x to 10x)</li>
+                        <li><strong>Shift + Drag:</strong> Pan plot in any direction</li>
+                        <li><strong>Shift + Double-click:</strong> Reset zoom and pan to default view</li>
+                      </ul>
                     </div>
                   }
                 />

@@ -36,14 +36,16 @@ def content_type(path):
 
 
 def push_asset(args, localpath, key):
-    if args.verbose:
-        print(f"publishing {key} {content_type(key)} from local file {localpath}")
-    args.client.upload_file(
-        Filename=localpath,
-        Bucket=args.bucket,
-        Key=key,
-        ExtraArgs={"ContentType": content_type(key), "ACL": "public-read"},
-    )
+    if args.verbose or args.dry_run:
+        prefix = "[DRY RUN] " if args.dry_run else ""
+        print(f"{prefix}publishing {key} {content_type(key)} from local file {localpath}")
+    if not args.dry_run:
+        args.client.upload_file(
+            Filename=localpath,
+            Bucket=args.bucket,
+            Key=key,
+            ExtraArgs={"ContentType": content_type(key), "ACL": "public-read"},
+        )
 
 
 def push_app(args, basepath=None):
@@ -84,6 +86,11 @@ def get_args():
     parser.add_argument("-a", "--app-dir", default="_deploy")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview files that would be uploaded without actually uploading"
+    )
+    parser.add_argument(
         "-c",
         "--creds-filename",
         default=os.path.join(
@@ -105,6 +112,12 @@ def get_args():
 
 def main():
     args = get_args()
+
+    if args.dry_run:
+        print("=== DRY RUN MODE ===")
+        print("No files will be uploaded. Preview only.")
+        print()
+
     args.client = load_client(args)
     if args.scope in ["app", "full"]:
         push_app(args)
@@ -112,22 +125,30 @@ def main():
         push_data(args)
 
     if args.invalidate_cloudfront:
-        print("Invalidating CloudFront cache...")
-        try:
-            cmd = [
-                sys.executable,
-                os.path.join(os.path.dirname(__file__), "aws_invalidate_cloudfront.py"),
-                "-b", args.bucket,
-                "-c", args.creds_filename
-            ]
-            if args.cloudfront_distribution_id:
-                cmd.extend(["-d", args.cloudfront_distribution_id])
+        if args.dry_run:
+            print("[DRY RUN] Would invalidate CloudFront cache")
+        else:
+            print("Invalidating CloudFront cache...")
+            try:
+                cmd = [
+                    sys.executable,
+                    os.path.join(os.path.dirname(__file__), "aws_invalidate_cloudfront.py"),
+                    "-b", args.bucket,
+                    "-c", args.creds_filename
+                ]
+                if args.cloudfront_distribution_id:
+                    cmd.extend(["-d", args.cloudfront_distribution_id])
 
-            subprocess.run(cmd, check=True)
-            print("✓ CloudFront invalidation completed")
-        except subprocess.CalledProcessError as e:
-            print(f"✗ CloudFront invalidation failed: {e}")
-            sys.exit(1)
+                subprocess.run(cmd, check=True)
+                print("✓ CloudFront invalidation completed")
+            except subprocess.CalledProcessError as e:
+                print(f"✗ CloudFront invalidation failed: {e}")
+                sys.exit(1)
+
+    if args.dry_run:
+        print()
+        print("=== DRY RUN COMPLETE ===")
+        print("No files were actually uploaded.")
 
 
 # Eventually may want to add delete/cleanup:

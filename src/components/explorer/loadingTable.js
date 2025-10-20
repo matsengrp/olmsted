@@ -310,6 +310,11 @@ export default class LoadingTable extends React.Component {
             textAlign: "center",
             fontWeight: "bold"
           }}
+          title={
+            loadedClonalFamilies > 0
+              ? `Loaded datasets: ${allDatasetsToUse.filter((d) => d.loading === "DONE").map((d) => d.name || d.dataset_id).join(", ")}`
+              : "No datasets loaded"
+          }
         >
           Loaded clonal families: {loadedClonalFamilies}
         </div>
