@@ -5,6 +5,7 @@ import boto3
 import yaml
 import time
 import sys
+import os
 
 
 def load_credentials(creds_filename):
@@ -168,5 +169,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import os
     main()

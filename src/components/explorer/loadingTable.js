@@ -94,7 +94,7 @@ function SelectionCell({ datum, selectedDatasets, dispatch }) {
   if (!datum) {
     return (
       <div style={{ width: "100%", textAlign: "center" }}>
-        <input type="checkbox" disabled={true} checked={false} />
+        <input type="checkbox" disabled />
       </div>
     );
   }

@@ -87,8 +87,7 @@ const getNaiveVizData = (datum) => {
   // But always keep the Sequence region
   const validRegions = regions.filter((region) => {
     if (region.region === "Sequence") return true; // Always keep the grey bar
-    const start = region.start;
-    const end = region.end;
+    const { start, end } = region;
     // Check for valid positions: start and end must be defined (not null/undefined) and start < end
     // Note: position 0 is valid (AIRR data uses 0-based indexing after conversion)
     return start != null && end != null && start >= 0 && end > 0 && start < end;

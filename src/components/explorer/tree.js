@@ -115,8 +115,8 @@ const mapStateToProps = (state) => {
 
     // Create boundary markers for all CDR regions
     const cdrBounds = naiveData.source
-      .filter(region => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
-      .flatMap(region => [
+      .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+      .flatMap((region) => [
         { x: Math.floor(region.start / 3) - 0.5, region: region.region },
         { x: Math.floor(region.end / 3) + 0.5, region: region.region }
       ]);

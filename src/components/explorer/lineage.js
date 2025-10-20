@@ -55,8 +55,8 @@ class Lineage extends React.Component {
 
       // Create boundary markers for all CDR regions
       const cdrBounds = naiveData.source
-        .filter(region => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
-        .flatMap(region => [
+        .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+        .flatMap((region) => [
           { x: Math.floor(region.start / 3) - 0.5, region: region.region },
           { x: Math.floor(region.end / 3) + 0.5, region: region.region }
         ]);
@@ -97,8 +97,9 @@ class Lineage extends React.Component {
           />
 
           <div style={{ marginTop: '10px' }}>
-            <label>
+            <label htmlFor="show-entire-lineage">
               <input
+                id="show-entire-lineage"
                 type="checkbox"
                 checked={showEntireLineage}
                 onChange={this.handleCheckboxChange}

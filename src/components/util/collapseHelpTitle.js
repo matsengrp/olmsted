@@ -6,14 +6,9 @@ class CollapseHelpTitle extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
       isHovered: false
     };
   }
-
-  handleToggle = (isOpen) => {
-    this.setState({ isOpen });
-  };
 
   handleMouseEnter = () => {
     this.setState({ isHovered: true });
@@ -46,8 +41,6 @@ class CollapseHelpTitle extends React.Component {
             </h2>
           </div>
         }
-        onTriggerOpening={() => this.handleToggle(true)}
-        onTriggerClosing={() => this.handleToggle(false)}
       >
         <div style={{ paddingBottom: "15px" }}>
           {helpText}

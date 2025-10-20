@@ -6,7 +6,6 @@ import Monitor from "./components/framework/monitor";
 import NavBar from "./components/framework/nav-bar";
 import { logos } from "./components/splash/logos";
 import { CenterContent } from "./components/splash/centerContent";
-import clientDataStore from "./utils/clientDataStore";
 
 // ROUTING
 @connect((state) => ({ displayComponent: state.datasets.displayComponent }))
@@ -30,9 +29,7 @@ class MainComponentSwitch extends React.Component {
 class Root extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      showCloseDialog: false
-    };
+    this.state = {};
   }
 
   componentDidMount() {
@@ -54,24 +51,6 @@ class Root extends React.Component {
     event.preventDefault();
     event.returnValue = ""; // Required for Chrome
     return ""; // Required for some browsers
-  };
-
-  handleClearDatabase = () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to clear all datasets from your local database?\n\n" +
-        "This action cannot be undone."
-    );
-
-    if (confirmed) {
-      clientDataStore
-        .clearAllData()
-        .then(() => {
-          console.log("Database cleared successfully");
-        })
-        .catch((error) => {
-          console.error("Error clearing database:", error);
-        });
-    }
   };
 
   handleDontAskAgain = () => {
