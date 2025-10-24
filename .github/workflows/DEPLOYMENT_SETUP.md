@@ -91,14 +91,20 @@ The AWS IAM user needs these permissions:
 2. **Bucket not found**: Verify `S3_BUCKET_NAME` variable
 3. **CloudFront invalidation fails**: Check `CLOUDFRONT_DISTRIBUTION_ID` and permissions
 4. **Build fails**: Check Node.js version compatibility
+5. **S3 ACL errors** (`AccessControlListNotSupported`): Some newer AWS S3 buckets have ACLs disabled by default. If you encounter ACL-related errors during deployment, either:
+   - Enable ACLs in your S3 bucket settings (Bucket → Permissions → Object Ownership → ACLs enabled)
+   - Remove ACL-related flags from the deployment script if your bucket uses bucket policies instead
 
 ### Testing Locally
 
 Before deploying via GitHub Actions, test locally:
 
 ```bash
-# Build the project
+# Build the project (automatically creates _deploy/ and _deploy/data directories)
 npm run build
+
+# Preview deployment without uploading (dry-run mode)
+python3 bin/aws_deploy.py app -b YOUR_BUCKET_NAME --dry-run
 
 # Deploy to S3
 python3 bin/aws_deploy.py app -b YOUR_BUCKET_NAME
@@ -106,6 +112,11 @@ python3 bin/aws_deploy.py app -b YOUR_BUCKET_NAME
 # With CloudFront invalidation
 python3 bin/aws_deploy.py app -b YOUR_BUCKET_NAME --invalidate-cloudfront
 ```
+
+**Note**: The build process automatically creates the `_deploy/` directory structure:
+- `webpack.config.prod.js` creates `_deploy/dist` and `_deploy/data` before compilation
+- `bin/postbuild.sh` ensures these directories exist and copies static assets
+- No manual directory setup is required
 
 ## Security Notes
 

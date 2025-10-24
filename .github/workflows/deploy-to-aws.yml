@@ -91,3 +91,8 @@ jobs:
           echo "- **Website URL:** https://${{ vars.S3_BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "⏱️ If CloudFront was invalidated, changes will be visible globally within 5-15 minutes." >> $GITHUB_STEP_SUMMARY
+
+      - name: Clean up credentials
+        if: always()
+        run: |
+          rm -rf ~/.olmsted

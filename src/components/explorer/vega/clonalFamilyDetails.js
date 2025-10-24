@@ -1484,9 +1484,10 @@ const seqAlignSpec = (family) => {
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
+  const max_height = 5000; // Maximum height to prevent performance issues with very large trees
   // Add some height here for padding and to accomodate naive gene regions section
   const calculated_height = (family["lineage_seq_counter"] + 2) * mutation_mark_height + padding;
-  const height = Math.max(min_height, calculated_height);
+  const height = Math.min(max_height, Math.max(min_height, calculated_height));
 
   return {
     $schema: "https://vega.github.io/schema/vega/v5.json",
