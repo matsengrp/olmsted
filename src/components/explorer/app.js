@@ -110,8 +110,7 @@ function Overlay({ styles, mobileDisplay, handler }) {
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus)),
-    resetState: () => dispatch(explorerActions.resetState())
+    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus))
   })
 )
 class App extends React.Component {
@@ -187,7 +186,6 @@ class App extends React.Component {
       availableDatasets,
       dispatch,
       locus,
-      resetState,
       filterLocus,
       selectedFamily,
       selectedSeq,
