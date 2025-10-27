@@ -43,9 +43,22 @@ class SelectedFamiliesSummary extends React.Component {
   render() {
     const { nClonalFamiliesBrushed } = this.props;
     return (
-      <p>
+      <div
+        style={{
+          marginTop: "10px",
+          marginBottom: "10px",
+          padding: "12px",
+          backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
+          border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
+          borderRadius: "4px",
+          color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724",
+          fontSize: "14px",
+          textAlign: "center",
+          fontWeight: "bold"
+        }}
+      >
         Number of families currently selected: {nClonalFamiliesBrushed}
-      </p>
+      </div>
     );
   }
 }
@@ -97,8 +110,8 @@ function Overlay({ styles, mobileDisplay, handler }) {
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: explorerActions.filterLocus,
-    resetState: explorerActions.resetState
+    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus)),
+    resetState: () => dispatch(explorerActions.resetState())
   })
 )
 class App extends React.Component {
@@ -247,7 +260,7 @@ class App extends React.Component {
                     <div>
                       The Clonal Families section represents each clonal family as a point in a scatterplot. Choose an
                       immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the
-                      default is immunoglobulin gamma, or igh (where h stands for heavy chain). In order to visualize
+                      default is immunoglobulin gamma, or IGH (where H stands for heavy chain). In order to visualize
                       all clonal families from all loci in the dataset at once, choose &quot;ALL&quot; in the locus
                       selector. By default, the scatterplot maps the number of unique members in a clonal family,
                       unique_seqs_count, to the x-axis, and the average mutation frequency among members of that clonal
@@ -281,12 +294,11 @@ class App extends React.Component {
                     id="locus-select"
                     value={locus}
                     onChange={(event) => {
-                      resetState();
                       filterLocus(event.target.value);
                     }}
                     aria-label="Filter by locus"
                   >
-                    {["igh", "igk", "igl", "ALL"].map((locus_option) => (
+                    {["IGH", "IGK", "IGL", "ALL"].map((locus_option) => (
                       <option key={locus_option} value={locus_option}>
                         {locus_option}
                       </option>

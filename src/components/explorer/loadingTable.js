@@ -316,7 +316,7 @@ export default class LoadingTable extends React.Component {
               : "No datasets loaded"
           }
         >
-          Loaded clonal families: {loadedClonalFamilies}
+          Number of clonal families loaded: {loadedClonalFamilies}
         </div>
         {loadedClonalFamilies === 0 && (
           <div

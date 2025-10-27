@@ -18,7 +18,7 @@ const initialState = {
   // EH:facet field is no longer required to update the spec but
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
-  locus: "ALL"
+  locus: "IGH"
 };
 
 // eslint-disable-next-line default-param-last

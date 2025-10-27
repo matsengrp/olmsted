@@ -19,6 +19,8 @@ class ResizableVirtualTable extends React.Component {
       80, // V gene
       80, // D gene
       80, // J gene
+      80, // Locus
+      100, // Junction length
       80, // Seed run
       100, // Subject
       100, // Sample
@@ -439,11 +441,13 @@ class ClonalFamiliesTable extends React.Component {
           ["V gene", "v_call"],
           ["D gene", "d_call"],
           ["J gene", "j_call"],
+          ["Locus", "sample.locus"],
+          ["Junction length", "junction_length"],
+          ["Mut freq", "mean_mut_freq"],
           ["Seed run", "has_seed"],
           ["Subject", "subject_id"],
           ["Sample", "sample_id"],
           ["Timepoint", "sample.timepoint_id"],
-          ["Mut freq", "mean_mut_freq"],
           // ["Path", 'path'],
           // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
           ["Dataset", DatasetName],

@@ -32,7 +32,16 @@ const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
       }
     });
   }
-  return locus === "ALL" ? availableClonalFamilies : _.filter(availableClonalFamilies, { sample: { locus: locus } });
+  // Case-insensitive locus filtering: IGH matches 'igh', 'IGH', 'Igh', etc.
+  return locus === "ALL"
+    ? availableClonalFamilies
+    : _.filter(availableClonalFamilies, (family) => {
+        return (
+          family.sample &&
+          family.sample.locus &&
+          family.sample.locus.toUpperCase() === locus.toUpperCase()
+        );
+      });
 };
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(
