@@ -171,11 +171,8 @@ class ClientDataStore {
       throw new Error("ClientDataStore: treeIdent must be a non-empty string");
     }
 
-    console.log(`ClientDataStore: Loading full tree data for ${treeIdent}`);
-
     // Check memory cache first
     if (this.recentTrees.has(treeIdent)) {
-      console.log(`ClientDataStore: Found tree ${treeIdent} in memory cache`);
       return this.recentTrees.get(treeIdent);
     }
 
@@ -202,14 +199,12 @@ class ClientDataStore {
           }
         }
 
-        console.log(`ClientDataStore: Trying fallback - parsed "${treeIdent}" → clone ID "${cloneId}"`);
         fullTree = await olmstedDB.getTreeForClone(cloneId);
       }
 
       if (fullTree) {
         // Cache in memory for fast subsequent access
         this.addToCache(this.recentTrees, treeIdent, fullTree);
-        console.log(`ClientDataStore: Loaded and cached tree ${treeIdent}`);
         return fullTree;
       }
 

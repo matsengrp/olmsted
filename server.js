@@ -61,8 +61,8 @@ if (devServer) {
 
 } else {
   // zip up the source code for production
-  app.use("/dist", expressStaticGzip("deploy/dist"));
-  app.use(express.static(path.join(__dirname, "deploy/dist")));
+  app.use("/dist", expressStaticGzip("_deploy/dist"));
+  app.use(express.static(path.join(__dirname, "_deploy/dist")));
 }
 
 /* redirect www.nextstrain.org to nextstrain.org */

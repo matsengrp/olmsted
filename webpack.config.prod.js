@@ -11,7 +11,7 @@ module.exports = {
     "./src/index"
   ],
   output: {
-    path: path.join(__dirname, "deploy/dist/"),
+    path: path.join(__dirname, "_deploy/dist/"),
     filename: "bundle.js",
     publicPath: "dist/"
   },
@@ -40,11 +40,11 @@ module.exports = {
       // Custom plugin to replace WebpackShellPlugin functionality
       apply: (compiler) => {
         // Create directories before build
-        if (!fs.existsSync('deploy/dist')) {
-          fs.mkdirSync('deploy/dist', { recursive: true });
+        if (!fs.existsSync('_deploy/dist')) {
+          fs.mkdirSync('_deploy/dist', { recursive: true });
         }
-        if (!fs.existsSync('deploy/data')) {
-          fs.mkdirSync('deploy/data', { recursive: true });
+        if (!fs.existsSync('_deploy/data')) {
+          fs.mkdirSync('_deploy/data', { recursive: true });
         }
         
         // Run postbuild script after compilation

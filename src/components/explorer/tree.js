@@ -108,19 +108,26 @@ const isTreeComplete = (tree) => tree.nodes && !tree.nodes.error;
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
+
   // idea is that none of these selectors will work (or be needed) if tree data isn't in yet
   if (selectedFamily && selectedTree && isTreeComplete(selectedTree)) {
     const naiveData = getNaiveVizData(selectedFamily);
+
+    // Create boundary markers for all CDR regions
+    const cdrBounds = naiveData.source
+      .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+      .flatMap((region) => [
+        { x: Math.floor(region.start / 3) - 0.5, region: region.region },
+        { x: Math.floor(region.end / 3) + 0.5, region: region.region }
+      ]);
+
     return {
       selectedFamily,
       selectedTree,
       naiveData,
       tree: treesSelector.getTreeData(state),
       selectedSeq: state.clonalFamilies.selectedSeq,
-      cdr3Bounds: [
-        { x: Math.floor(naiveData.source[0].start / 3) - 0.5 },
-        { x: Math.floor(naiveData.source[0].end / 3) + 0.5 }
-      ]
+      cdrBounds
     };
   }
   return { selectedFamily, selectedTree };
@@ -145,7 +152,7 @@ class TreeViz extends React.Component {
       source_0: [],
       source_1: [],
       naive_data: [],
-      cdr3_bounds: [{ x: 0 }, { x: 100 }],
+      cdr_bounds: [{ x: 0 }, { x: 100 }],
       leaves_count_incl_naive: 42,
       pts_tuple: [],
       seed: []
@@ -165,12 +172,12 @@ class TreeViz extends React.Component {
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor
   treeDataFromProps() {
-    const { tree, naiveData, cdr3Bounds, selectedFamily } = this.props;
+    const { tree, naiveData, cdrBounds, selectedFamily } = this.props;
     return {
       source_0: tree.nodes,
       source_1: tree.tips_alignment,
       naive_data: naiveData.source,
-      cdr3_bounds: cdr3Bounds,
+      cdr_bounds: cdrBounds,
       leaves_count_incl_naive: tree.leaves_count_incl_naive,
       pts_tuple: selectedFamily,
       // Here we create a separate dataset only containing the id of the
@@ -235,7 +242,7 @@ class TreeViz extends React.Component {
         />
 
         {/* Show downloads if complete family, tree */}
-        {completeData && (
+        {completeData && tree.download_unique_family_seqs && (
           <div>
             <DownloadFasta
               sequencesSet={tree.download_unique_family_seqs.slice()}

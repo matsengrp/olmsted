@@ -43,10 +43,22 @@ class SelectedFamiliesSummary extends React.Component {
   render() {
     const { nClonalFamiliesBrushed } = this.props;
     return (
-      <p>
-        Number of families currently selected:
-        {nClonalFamiliesBrushed}
-      </p>
+      <div
+        style={{
+          marginTop: "10px",
+          marginBottom: "10px",
+          padding: "12px",
+          backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
+          border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
+          borderRadius: "4px",
+          color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724",
+          fontSize: "14px",
+          textAlign: "center",
+          fontWeight: "bold"
+        }}
+      >
+        Number of families currently selected: {nClonalFamiliesBrushed}
+      </div>
     );
   }
 }
@@ -93,12 +105,12 @@ function Overlay({ styles, mobileDisplay, handler }) {
     pendingDatasetLoads: state.datasets.pendingDatasetLoads,
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     selectedSeq: state.clonalFamilies.selectedSeq,
-    locus: state.clonalFamilies.locus
+    locus: state.clonalFamilies.locus,
+    loadedClonalFamilies: clonalFamiliesSelectors.countLoadedClonalFamilies(state.datasets.availableDatasets)
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: explorerActions.filterLocus,
-    resetState: explorerActions.resetState
+    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus))
   })
 )
 class App extends React.Component {
@@ -174,10 +186,10 @@ class App extends React.Component {
       availableDatasets,
       dispatch,
       locus,
-      resetState,
       filterLocus,
       selectedFamily,
-      selectedSeq
+      selectedSeq,
+      loadedClonalFamilies
     } = this.props;
 
     /* D I M E N S I O N S */
@@ -227,18 +239,26 @@ class App extends React.Component {
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
+                <CollapseHelpTitle
+                  titleText="Datasets"
+                  helpText={`The Datasets section allows you to manage and load your B-cell repertoire datasets. Select
+                  datasets from the table by checking the "Select" column checkboxes, then click the "Update Visualization"
+                  button to load or unload datasets. To upload new datasets or delete existing ones,
+                  click the "Manage Datasets" button to return to the main page.`}
+                />
                 <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
             </div>
-            <div style={sectionStyle}>
-              <CollapsibleSection titleText="Clonal Families">
+            {loadedClonalFamilies > 0 && (
+              <div style={sectionStyle}>
+                <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
                   helpText={
                     <div>
                       The Clonal Families section represents each clonal family as a point in a scatterplot. Choose an
                       immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the
-                      default is immunoglobulin gamma, or igh (where h stands for heavy chain). In order to visualize
+                      default is immunoglobulin gamma, or IGH (where H stands for heavy chain). In order to visualize
                       all clonal families from all loci in the dataset at once, choose &quot;ALL&quot; in the locus
                       selector. By default, the scatterplot maps the number of unique members in a clonal family,
                       unique_seqs_count, to the x-axis, and the average mutation frequency among members of that clonal
@@ -250,8 +270,18 @@ class App extends React.Component {
                       <br />
                       For comparison of subsets, you may facet the plot into separated panels according to data values
                       for a range of fields. Interact with the plot by clicking and dragging across a subset of points
-                      or clicking individual points to filter the resulting clonal families in the Selected clonal
-                      families table below.
+                      or clicking individual points to filter the resulting clonal families in the Selected Clonal
+                      Families table below.
+                      <br />
+                      <br />
+                      <strong>Scatterplot Controls:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                        <li><strong>Click:</strong> Select single clone</li>
+                        <li><strong>Drag:</strong> Brush select multiple clones</li>
+                        <li><strong>Shift + Scroll:</strong> Zoom in/out (0.5x to 10x)</li>
+                        <li><strong>Shift + Drag:</strong> Pan plot in any direction</li>
+                        <li><strong>Shift + Double-click:</strong> Reset zoom and pan to default view</li>
+                      </ul>
                     </div>
                   }
                 />
@@ -262,12 +292,11 @@ class App extends React.Component {
                     id="locus-select"
                     value={locus}
                     onChange={(event) => {
-                      resetState();
                       filterLocus(event.target.value);
                     }}
                     aria-label="Filter by locus"
                   >
-                    {["igh", "igk", "igl", "ALL"].map((locus_option) => (
+                    {["IGH", "IGK", "IGL", "ALL"].map((locus_option) => (
                       <option key={locus_option} value={locus_option}>
                         {locus_option}
                       </option>
@@ -278,32 +307,36 @@ class App extends React.Component {
                 <ClonalFamiliesViz />
               </CollapsibleSection>
             </div>
+            )}
 
-            <div style={{ paddingBottom: 40, ...sectionStyle }}>
-              <CollapsibleSection titleText="Selected clonal families">
+            {loadedClonalFamilies > 0 && (
+              <div style={{ paddingBottom: 40, ...sectionStyle }}>
+                <CollapsibleSection titleText="Selected Clonal Families">
                 <CollapseHelpTitle
-                  titleText="Selected clonal families"
+                  titleText="Selected Clonal Families"
                   helpText={`Below the scatterplot, the full collection or selected subset of clonal families
                    appears in a table including a visualization of the recombination event resulting in the naive
                    antibody sequence and a subset of clonal family metadata. Each row in the table represents one clonal
                    family. The table automatically selects the top clonal family according to the sorting column. Click on
                    the checkbox in the "Select" column in the table to select a clonal family for further visualization.
                    Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family
-                   (as specified in the input JSON) is visualized below the table in the Clonal family details section.`}
+                   (as specified in the input JSON) is visualized below the table in the Clonal Family Details section.`}
                 />
                 <div style={tableStyle}>
                   <ClonalFamiliesTable />
                 </div>
               </CollapsibleSection>
             </div>
-            {selectedFamily && (
+            )}
+
+            {selectedFamily && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
-                <CollapsibleSection titleText="Clonal family details">
+                <CollapsibleSection titleText="Clonal Family Details">
                   <TreeViz availableHeight={availableHeight} />
                 </CollapsibleSection>
               </div>
             )}
-            {selectedSeq && Object.keys(selectedSeq).length > 0 && (
+            {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral sequences">
                   <Lineage />

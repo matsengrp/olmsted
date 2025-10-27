@@ -115,8 +115,8 @@ const concatTreeWithAlignmentSpec = () => {
         transform: [{ type: "extent", field: "end", signal: "dna_j_gene_end" }]
       },
       {
-        // For showing the cdr3 with dotted lines in the alignment
-        name: "cdr3_bounds"
+        // For showing CDR regions with dotted lines in the alignment
+        name: "cdr_bounds"
       },
       {
         // Stores points that have been clicked on
@@ -151,13 +151,6 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "tree",
         transform: [
-          { expr: "datum.distance", type: "formula", as: "x" },
-
-          // xscale and y scale depend on these extents
-          { type: "extent", field: "x", signal: "xext" },
-
-          // Then we can scale by x and y scales to fit into zoomed domains
-
           { key: "sequence_id", type: "stratify", parentKey: "parent" },
           {
             // The size of the tree here should be constant with the number of leaves;
@@ -167,12 +160,28 @@ const concatTreeWithAlignmentSpec = () => {
             method: "cluster",
             separation: false,
             // We are only using the y values from this transform, x comes from "distance"
-            size: [{ signal: "leaves_count_incl_naive" }, { signal: "span(xext)" }],
+            size: [{ signal: "leaves_count_incl_naive" }, { signal: "width" }],
             as: ["y_tree", "x_tree", "depth", "children"]
           },
+
+          // Calculate x_raw based on the current mode (for extent calculation)
+          // Now depth is available from the tree transform
+          {
+            expr: 'fixed_branch_lengths ? datum.depth : datum.distance',
+            type: "formula",
+            as: "x_raw"
+          },
+
+          // Calculate extent AFTER we have depth from the tree transform
+          { type: "extent", field: "x_raw", signal: "xext" },
           { type: "extent", field: "y_tree", signal: "yext" },
 
-          { expr: 'scale("time", datum.distance)', type: "formula", as: "x" },
+          // Now scale the x values
+          {
+            expr: 'scale("time", datum.x_raw)',
+            type: "formula",
+            as: "x"
+          },
           { expr: 'scale("yscale", datum.y_tree)', type: "formula", as: "y" },
           {
             type: "formula",
@@ -198,7 +207,10 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "nodes",
         transform: [
-          { expr: "datum.type == 'node' || datum.type =='root' || datum.type == 'internal'", type: "filter" },
+          {
+            expr: "datum.type == 'node' || datum.type =='root' || datum.type == 'internal'",
+            type: "filter"
+          },
           {
             type: "extent",
             field: "branch_width_by_field",
@@ -311,6 +323,7 @@ const concatTreeWithAlignmentSpec = () => {
             as: "position"
           },
           { type: "extent", field: "y", signal: "mutations_height_extent" },
+          { type: "extent", field: "position", signal: "position_extent" },
           {
             type: "filter",
             expr: "datum.type !== 'naive'"
@@ -405,6 +418,10 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "xdom",
         update: "slice(xext)"
+      },
+      {
+        name: "branch_length_mode_text",
+        update: "fixed_branch_lengths ? 'Tree depth (fixed lengths)' : 'Evolutionary distance from naive'"
       },
       {
         name: "ydom",
@@ -529,7 +546,18 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "show_labels",
         value: true,
-        bind: { input: "checkbox", options: [true, false] }
+        bind: {
+          input: "checkbox",
+          name: "Show labels"
+        }
+      },
+      {
+        name: "fixed_branch_lengths",
+        value: false,
+        bind: {
+          input: "checkbox",
+          name: "Fixed branch lengths"
+        }
       },
       // Padding to add to the initial tree size to not clip labels
       {
@@ -584,9 +612,10 @@ const concatTreeWithAlignmentSpec = () => {
       // ---------------------------------------------------------------------------
 
       // max length for the amino acid scale
+      // Use the maximum of: gene annotation end OR actual data extent
       {
         name: "max_aa_seq_length",
-        update: "ceil(dna_j_gene_end[1]/3)"
+        update: "max(ceil(dna_j_gene_end[1]/3), position_extent ? position_extent[1] + 1 : 0)"
       },
       // Size of mutation marks vertically, clamped to max 20;
       // with scale factor to give space between each mark
@@ -636,7 +665,7 @@ const concatTreeWithAlignmentSpec = () => {
             scale: "time",
             orient: "bottom",
             grid: false,
-            title: "Evolutionary distance from naive",
+            title: { signal: "branch_length_mode_text" },
             labelFlush: true,
             labelOverlap: true,
             labelBound: true,
@@ -920,7 +949,7 @@ const concatTreeWithAlignmentSpec = () => {
                   field: "x"
                 },
                 tooltip: {
-                  signal: '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"]}'
+                  signal: '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"]}'
                 }
               },
               enter: {
@@ -1047,7 +1076,7 @@ const concatTreeWithAlignmentSpec = () => {
         signals: [
           {
             name: "naive_group_height",
-            value: 30
+            value: 40
           },
           // This is an SVG path used to assign a special clipping region (not the default,
           // i.e. the height and width of the group mark) for the alignment. This is
@@ -1098,6 +1127,13 @@ const concatTreeWithAlignmentSpec = () => {
                 encode: {
                   update: {
                     fill: { scale: "naive_color", field: "region" },
+                    opacity: [
+                      {
+                        test: "datum[\"region\"] == 'Sequence'",
+                        value: 0.75
+                      },
+                      { value: 1 }
+                    ],
                     tooltip: {
                       signal:
                         '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
@@ -1113,8 +1149,12 @@ const concatTreeWithAlignmentSpec = () => {
                     yc: { signal: "naive_group_height/4" },
                     height: [
                       {
-                        test: "datum[\"region\"] == 'CDR3'",
-                        signal: "naive_group_height/2"
+                        test: "datum[\"region\"] == 'CDR1' || datum[\"region\"] == 'CDR2' || datum[\"region\"] == 'CDR3'",
+                        signal: "naive_group_height*0.6"
+                      },
+                      {
+                        test: "datum[\"region\"] == 'Sequence'",
+                        signal: "naive_group_height/4"
                       },
                       { signal: "naive_group_height/4" }
                     ]
@@ -1184,7 +1224,7 @@ const concatTreeWithAlignmentSpec = () => {
                 direction: "horizontal",
                 fill: "naive_color",
                 title: "Gene region color key",
-                offset: { signal: "0" },
+                offset: { signal: "10" },
                 encode: {
                   symbols: {
                     update: { shape: { value: "square" }, opacity: { value: 0.9 } }
@@ -1227,7 +1267,7 @@ const concatTreeWithAlignmentSpec = () => {
               {
                 name: "rule_cdr3",
                 type: "rule",
-                from: { data: "cdr3_bounds" },
+                from: { data: "cdr_bounds" },
                 encode: {
                   enter: {
                     stroke: { value: "black" },
@@ -1366,9 +1406,9 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "naive_color",
         type: "ordinal",
-        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR3"],
-        // /COLORS
-        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837"]
+        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR1", "CDR2", "CDR3", "Sequence"],
+        // /COLORS - CDR1, CDR2, and CDR3 all use the same dark green (#1b7837), Sequence is grey
+        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837", "#1b7837", "#1b7837", "#cccccc"]
       },
       {
         name: "timepoint_multiplicities",
@@ -1442,9 +1482,13 @@ const concatTreeWithAlignmentSpec = () => {
 
 const seqAlignSpec = (family) => {
   const padding = 20;
-  const mutation_mark_height = 8;
+  const mutation_mark_height = 16; // Increased for better spacing and padding
+  const min_height = 100; // Minimum height to ensure visibility
+  const max_height = 5000; // Maximum height to prevent performance issues with very large trees
   // Add some height here for padding and to accomodate naive gene regions section
-  const height = (family["lineage_seq_counter"] + 2) * mutation_mark_height + padding;
+  const calculated_height = (family["lineage_seq_counter"] + 2) * mutation_mark_height + padding;
+  const height = Math.min(max_height, Math.max(min_height, calculated_height));
+
   return {
     $schema: "https://vega.github.io/schema/vega/v5.json",
     padding: 5,
@@ -1459,12 +1503,11 @@ const seqAlignSpec = (family) => {
         transform: [{ type: "extent", field: "end", signal: "dna_j_gene_end" }]
       },
       {
-        // For showing the cdr3 with dotted lines in the alignment
-        name: "cdr3_bounds"
+        // For showing CDR regions with dotted lines in the alignment
+        name: "cdr_bounds"
       },
       {
-        name: "source_0",
-        values: family["lineage_alignment"]
+        name: "source_0"
       },
       {
         name: "data_0",
@@ -1474,6 +1517,11 @@ const seqAlignSpec = (family) => {
             type: "formula",
             expr: 'toNumber(datum["position"])',
             as: "position"
+          },
+          {
+            type: "extent",
+            field: "position",
+            signal: "position_extent"
           }
         ]
       },
@@ -1491,7 +1539,7 @@ const seqAlignSpec = (family) => {
     signals: [
       {
         name: "max_aa_seq_length",
-        update: "ceil(dna_j_gene_end[1]/3)"
+        update: "max(ceil(dna_j_gene_end[1]/3), position_extent ? position_extent[1] + 1 : 0)"
       },
       {
         name: "mutation_mark_height",
@@ -1518,6 +1566,13 @@ const seqAlignSpec = (family) => {
         encode: {
           update: {
             fill: { scale: "naive_color", field: "region" },
+            opacity: [
+              {
+                test: "datum[\"region\"] == 'Sequence'",
+                value: 0.75
+              },
+              { value: 1 }
+            ],
             tooltip: {
               signal:
                 '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
@@ -1533,19 +1588,23 @@ const seqAlignSpec = (family) => {
             yc: { signal: "-1.5*mutation_mark_height" },
             height: [
               {
-                test: "datum[\"region\"] == 'CDR3'",
-                signal: "mutation_mark_height*2"
+                test: "datum[\"region\"] == 'CDR1' || datum[\"region\"] == 'CDR2' || datum[\"region\"] == 'CDR3'",
+                signal: "mutation_mark_height*2.4"
+              },
+              {
+                test: "datum[\"region\"] == 'Sequence'",
+                signal: "mutation_mark_height"
               },
               { signal: "mutation_mark_height" }
             ]
           }
         }
       },
-      // CDR3 bounds
+      // CDR bounds
       {
         name: "rule_cdr3",
         type: "rule",
-        from: { data: "cdr3_bounds" },
+        from: { data: "cdr_bounds" },
 
         encode: {
           enter: {
@@ -1623,9 +1682,9 @@ const seqAlignSpec = (family) => {
       {
         name: "naive_color",
         type: "ordinal",
-        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR3"],
-        // COLORS
-        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837"]
+        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR1", "CDR2", "CDR3", "Sequence"],
+        // COLORS - CDR1, CDR2, and CDR3 all use the same dark green (#1b7837), Sequence is grey
+        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837", "#1b7837", "#1b7837", "#cccccc"]
       },
       {
         name: "aa_position",

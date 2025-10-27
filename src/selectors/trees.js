@@ -34,67 +34,111 @@ export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree]
 
 const createAlignment = (naive_seq, tree) => {
   let all_mutations = [];
+  // Get the length of the naive sequence to determine alignment width
+  const naive_length = _.isObject(naive_seq) ? Object.keys(naive_seq).length : naive_seq.length;
+
   // compute mutations for each node in the tree
   _.forEach(tree, (node) => {
     const mutations = [];
     const seq = node.sequence_alignment_aa;
     const seq_id = node.sequence_id;
     const is_naive = node.type === "root";
-    const pairs = _.toPairs(seq);
-    // add mutation for each position deviating from the naive sequence_alignment_aa
-    _.forEach(pairs, (pair) => {
-      const i = pair[0];
-      const aa = pair[1];
-      if (aa !== naive_seq[i]) {
-        // add a mutation for a sequence deviating from the naive
-        mutations.push({
-          type: node.type,
-          parent: node.parent,
-          seq_id: seq_id,
-          position: i,
-          mut_from: naive_seq[i],
-          mut_to: aa
-        });
-      } else if (is_naive) {
-        // add a mutation for the naive so it shows up in the viz
+
+    // Iterate over ALL positions in the naive sequence (0 to naive_length)
+    // This ensures the alignment table includes all positions, even if some nodes are shorter
+    for (let i = 0; i < naive_length; i++) {
+      const aa = seq ? seq[i] : undefined;
+      const naive_aa = naive_seq[i];
+
+      if (is_naive) {
+        // CRITICAL: For naive sequence, ALWAYS add an entry at EVERY position
+        // This ensures the x-axis extends to the full length of the naive sequence
+        // even if there are no mutations at the end positions
         mutations.push({
           type: "naive",
           parent: node.parent,
           seq_id: seq_id,
           position: i,
-          mut_from: naive_seq[i],
+          mut_from: naive_aa,
+          mut_to: naive_aa // naive sequence shows its own AA
+        });
+      } else if (aa !== undefined && aa !== naive_aa) {
+        // Mutation: sequence deviates from naive
+        mutations.push({
+          type: node.type,
+          parent: node.parent,
+          seq_id: seq_id,
+          position: i,
+          mut_from: naive_aa,
           mut_to: aa
         });
       }
-    });
+    }
+
+    // CRITICAL: If a non-naive sequence has NO mutations (empty mutations array),
+    // add a placeholder entry so it still appears in the y-scale domain
+    // This ensures every sequence gets a row in the alignment, even with zero mutations
+    if (mutations.length === 0 && !is_naive) {
+      mutations.push({
+        type: node.type,
+        parent: node.parent,
+        seq_id: seq_id,
+        position: null, // null position = placeholder, won't render a mark
+        mut_from: null,
+        mut_to: null
+      });
+    }
+
     all_mutations = all_mutations.concat(mutations);
   });
 
   return all_mutations;
 };
 
-const followLineage = (nodes, leaf, naive) => {
+const followLineage = (nodes, leaf, naive, includeAllNodes = false) => {
   // this tracks unique intermediate nodes to be downloaded bewtween naive and leaf
   let curr_node = leaf;
-  const uniq_int_nodes = [];
-  // Prioritize leaf and naive
-  const taken_seqs = new Set([leaf.sequence_alignment, naive.sequence_alignment]);
-  // Loop through the intermediate nodes to find unique sequences, keeping back mutations,
-  // prioritizing the closest to naive in a series of duplicates
-  while (curr_node.parent) {
-    const parent_id = curr_node.parent;
-    const parent = _.find(nodes, { sequence_id: parent_id });
-    // Prioritize the seq closest to root if two are identical and make sure it isnt the same as leaf or naive
-    if (parent.sequence_alignment !== curr_node.sequence_alignment && !taken_seqs.has(curr_node.sequence_alignment)) {
-      uniq_int_nodes.push(curr_node);
+  const all_lineage_nodes = [];
+
+  // Walk from leaf up to naive, collecting all nodes in the path
+  while (curr_node && curr_node.sequence_id !== naive.sequence_id) {
+    all_lineage_nodes.push(curr_node);
+    if (curr_node.parent) {
+      const parent_id = curr_node.parent;
+      curr_node = _.find(nodes, { sequence_id: parent_id });
+    } else {
+      break;
     }
-    curr_node = parent;
   }
-  // put the lineage seqs in order naive -> leaf
+
+  // Remove the leaf from the list (we'll add it back at the end)
+  all_lineage_nodes.shift();
+
+  let lineage_nodes;
+  if (includeAllNodes) {
+    // Include all internal nodes in the lineage path, regardless of mutations
+    lineage_nodes = all_lineage_nodes;
+  } else {
+    // Original logic: only include nodes with mutations (different sequences)
+    const taken_seqs = new Set([leaf.sequence_alignment, naive.sequence_alignment]);
+    lineage_nodes = [];
+
+    // Filter to only nodes with unique sequences
+    let prev_node = leaf;
+    for (const node of all_lineage_nodes) {
+      if (node.sequence_alignment !== prev_node.sequence_alignment && !taken_seqs.has(node.sequence_alignment)) {
+        lineage_nodes.push(node);
+        taken_seqs.add(node.sequence_alignment);
+      }
+      prev_node = node;
+    }
+  }
+
+  // Build final lineage in order: naive -> intermediates -> leaf
   let lineage = [naive];
-  // this relies on node records having been added in postorder
-  lineage = lineage.concat(_.reverse(uniq_int_nodes));
-  // add the leaf in question at the end
+  // Reverse because we collected from leaf to naive
+  lineage = lineage.concat(_.reverse(lineage_nodes));
+  // Add the leaf at the end
   lineage.push(leaf);
   return lineage;
 };
@@ -162,17 +206,18 @@ export const computeTreeData = (tree) => {
 
 // Create an alignment for the lineage of a particular sequence from naive
 // and find lineage sequences, removing repeat sequences but preserving back mutations.
-const computeLineageData = (tree, seq) => {
+const computeLineageData = (tree, seq, includeAllNodes = false) => {
   const treeData = _.clone(tree); // clone for assign by value
   if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {
     const data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
-    const lineage = followLineage(data, seq, naive);
+    const lineage = followLineage(data, seq, naive, includeAllNodes);
     treeData["download_lineage_seqs"] = lineage;
-    // Count unique aa sequences to set the height of the lineage viz accordingly
-    treeData["lineage_seq_counter"] = _.uniqBy(lineage, "sequence_alignment_aa").length;
     const alignment = createAlignment(naive.sequence_alignment_aa, lineage);
     treeData["lineage_alignment"] = alignment;
+    // Count sequences in the alignment to set the height of the lineage viz accordingly
+    // This should be based on actual sequences in the lineage, not unique AA sequences
+    treeData["lineage_seq_counter"] = lineage.length;
     return treeData;
   }
 
@@ -182,3 +227,8 @@ const computeLineageData = (tree, seq) => {
 export const getTreeData = createSelector([getSelectedTree], computeTreeData);
 
 export const getLineageData = createSelector([getSelectedTree, getSelectedSeq], computeLineageData);
+
+// Export the function for direct use with options
+export const computeLineageDataWithOptions = (tree, seq, includeAllNodes) => {
+  return computeLineageData(tree, seq, includeAllNodes);
+};

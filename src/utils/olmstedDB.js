@@ -6,7 +6,7 @@ import Dexie from "dexie";
 
 class OlmstedDB extends Dexie {
   constructor() {
-    super("OlmstedClientStorage_v3"); // Bump version for compound key fix
+    super("OlmstedClientStorage");
 
     // Define database schema with separate stores for lazy loading
     this.version(1).stores({
@@ -17,7 +17,8 @@ class OlmstedDB extends Dexie {
       clones: "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
 
       // Complete tree data (heavy, loaded on demand per family)
-      trees: "tree_id, clone_id, ident"
+      // CRITICAL: Use ident as primary key since tree_id can have duplicates
+      trees: "ident, tree_id, clone_id"
     });
 
     // Create a ready promise that resolves when database is open
@@ -30,57 +31,6 @@ class OlmstedDB extends Dexie {
         console.error("Failed to open OlmstedDB:", error);
         throw error;
       });
-
-    // Check for old database and prompt user if needed
-    this.checkAndPromptForOldDatabase();
-  }
-
-  /**
-   * Check for old database and prompt user for migration
-   */
-  async checkAndPromptForOldDatabase() {
-    try {
-      // Check if old database exists
-      const databases = await Dexie.getDatabaseNames();
-      const hasOldDatabase =
-        databases.includes("OlmstedClientStorage") || databases.includes("OlmstedClientStorage_v2");
-
-      if (hasOldDatabase) {
-        console.log("OlmstedDB: Found old database format");
-
-        // Prompt user about database upgrade
-        const userConfirmed = window.confirm(
-          "Olmsted has been upgraded with improved performance for large datasets.\n\n" +
-            "This requires clearing your previously uploaded datasets and starting fresh.\n\n" +
-            "Click OK to proceed with the upgrade and clear old data, or Cancel to continue with potential compatibility issues.\n\n" +
-            "Note: Server datasets and bookmarks are not affected."
-        );
-
-        if (userConfirmed) {
-          await Dexie.delete("OlmstedClientStorage");
-          await Dexie.delete("OlmstedClientStorage_v2");
-          console.log("OlmstedDB: User approved - cleared old databases");
-
-          // Show success message
-          setTimeout(() => {
-            alert("Database upgrade completed! You can now upload datasets with improved performance.");
-          }, 100);
-        } else {
-          console.warn("OlmstedDB: User declined database upgrade - potential compatibility issues may occur");
-
-          // Show warning message
-          setTimeout(() => {
-            alert(
-              "Database upgrade declined. You may experience issues with client-side dataset storage. Please refresh and accept the upgrade for best performance."
-            );
-          }, 100);
-        }
-      } else {
-        console.log("OlmstedDB: No old database found - fresh installation");
-      }
-    } catch (error) {
-      console.error("OlmstedDB: Failed to check for old database:", error);
-    }
   }
 
   /**
@@ -121,6 +71,10 @@ class OlmstedDB extends Dexie {
               d_alignment_end: clone.d_alignment_end,
               j_alignment_start: clone.j_alignment_start,
               j_alignment_end: clone.j_alignment_end,
+              cdr1_alignment_start: clone.cdr1_alignment_start,
+              cdr1_alignment_end: clone.cdr1_alignment_end,
+              cdr2_alignment_start: clone.cdr2_alignment_start,
+              cdr2_alignment_end: clone.cdr2_alignment_end,
               germline_alignment: clone.germline_alignment,
               has_seed: clone.has_seed,
               sample: clone.sample,
@@ -147,6 +101,7 @@ class OlmstedDB extends Dexie {
           downsampling_strategy: tree.downsampling_strategy,
           tree_type: tree.tree_type
         }));
+
         if (allTreeData.length > 0) {
           await this.trees.bulkPut(allTreeData);
         }

@@ -19,7 +19,21 @@ jobs:
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
       - name: Build the Docker image
-        run: docker build . -t quay.io/matsengrp/olmsted:$TAG
+        run: |
+          # Retry logic for transient quay registry failures (502 Bad Gateway, rate limits)
+          for i in 1 2 3; do
+            echo "Build attempt $i of 3..."
+            if docker build . -t quay.io/matsengrp/olmsted:$TAG; then
+              echo "Build succeeded on attempt $i"
+              exit 0
+            fi
+            if [ $i -lt 3 ]; then
+              echo "Build failed, waiting 30 seconds before retry..."
+              sleep 30
+            fi
+          done
+          echo "Build failed after 3 attempts"
+          exit 1
       - name: Run example in the Docker image
         run: docker run --rm -p 8080:3999 quay.io/matsengrp/olmsted:$TAG & sleep 20 && curl -I localhost:8080
       - name: Login to Registry

@@ -38,12 +38,12 @@ fi
 
 # Default values
 DEFAULT_DATA_DIR="example_data/build_data"
-DEFAULT_PORT="3999"
+DEFAULT_HOST_PORT="3999"
 DEFAULT_MODE="dev"
 
 # Parse arguments
 DATA_DIR="${1:-$DEFAULT_DATA_DIR}"
-HOST_PORT="${2:-$DEFAULT_PORT}"
+HOST_PORT="${2:-$DEFAULT_HOST_PORT}"
 MODE="${3:-$DEFAULT_MODE}"
 
 # Get the directory where this script is located
@@ -101,16 +101,16 @@ if [ "$MODE" = "production" ]; then
     # Production mode: build first, then run
     echo "Building for production..."
     npm run build
-    
+
     echo "Starting production server..."
     # The production server reads from localDataPath
     BABEL_ENV=production node server.dist.js localData "$DATA_DIR" "$HOST_PORT"
-    
+
 elif [ "$MODE" = "dev" ]; then
     # Development mode: use babel-node with hot reloading
     echo "Starting development server with hot reloading..."
     BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData "$DATA_DIR" "$HOST_PORT"
-    
+
 else
     echo "ERROR: Invalid mode '$MODE'. Use 'dev' or 'production'."
     exit 1

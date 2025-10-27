@@ -26,17 +26,70 @@ class MainComponentSwitch extends React.Component {
   }
 }
 
-function Root() {
-  return (
-    <div>
-      <Monitor />
-      <NavBar />
-      <MainComponentSwitch />
-      <div className="static" style={{ marginTop: 50 }}>
-        <CenterContent>{logos}</CenterContent>
+class Root extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  componentDidMount() {
+    // Check localStorage for user preference
+    const dontAskAgain = localStorage.getItem("olmsted_dont_ask_clear_db") === "true";
+
+    if (!dontAskAgain) {
+      window.addEventListener("beforeunload", this.handleBeforeUnload);
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("beforeunload", this.handleBeforeUnload);
+  }
+
+  handleBeforeUnload = (event) => {
+    // Modern browsers will show their own confirmation dialog
+    // We can only trigger it, not customize the message
+    event.preventDefault();
+    event.returnValue = ""; // Required for Chrome
+    return ""; // Required for some browsers
+  };
+
+  handleDontAskAgain = () => {
+    localStorage.setItem("olmsted_dont_ask_clear_db", "true");
+    window.removeEventListener("beforeunload", this.handleBeforeUnload);
+    alert("You will no longer be prompted when closing the browser. Your data will be preserved until you manually clear it.");
+  };
+
+  render() {
+    return (
+      <div>
+        <Monitor />
+        <NavBar />
+        <MainComponentSwitch />
+        <div className="static" style={{ marginTop: 50 }}>
+          <CenterContent>
+            {logos}
+            <div style={{ marginTop: 20, textAlign: "center" }}>
+              <button
+                type="button"
+                onClick={this.handleDontAskAgain}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
+              >
+                Don&apos;t ask about clearing data when closing
+              </button>
+            </div>
+          </CenterContent>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Root;
