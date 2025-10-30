@@ -37,7 +37,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build production bundle
         run: npm run build
@@ -52,6 +52,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install boto3 pyyaml
 
+      - name: Validate AWS credentials are set
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "ERROR: AWS_ACCESS_KEY_ID secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "ERROR: AWS_SECRET_ACCESS_KEY secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.AWS_REGION }}" ]; then
+            echo "ERROR: AWS_REGION variable is not set"
+            exit 1
+          fi
+          echo "✓ All AWS credentials are set"
+
       - name: Create AWS credentials file
         run: |
           mkdir -p ~/.olmsted
@@ -61,6 +77,7 @@ jobs:
           region_name: ${{ vars.AWS_REGION }}
           EOF
           chmod 600 ~/.olmsted/aws-credentials.yaml
+          echo "✓ Created credentials file at ~/.olmsted/aws-credentials.yaml"
 
       - name: Create CloudFront config file
         if: ${{ inputs.invalidate_cloudfront }}
