@@ -330,43 +330,36 @@
   - Contains: clonal families, trees, sequences, metadata
 
 - **PCP (Parent-Child Pair) Format**:
-  - **Two-file structure**:
-    - Main file: `pcp.csv` (sequences and metadata)
-    - Trees file: `trees.csv` (Newick phylogenetic trees)
-
-  - **Show example from** `olmsted-cli/example_data/pcp/`:
-    - Open `pcp.csv` in viewer
-    - Key columns:
-      - `sample_id`: Dataset identifier
-      - `family`: Clonal family ID
-      - `parent_name` / `child_name`: Phylogenetic relationships
-      - `parent_seq` / `child_seq`: Amino acid sequences
-      - Metadata fields (timepoint, affinity, etc.)
-
-  - **Trees file structure**:
-    - Open `trees.csv`
-    - Columns: `sample_id`, `family`, `newick_tree`
-    - Newick format phylogenetic strings
+  - **Two-file structure**: Main CSV + Trees CSV
+  - Show example from `olmsted-cli/example_data/pcp/`
+  - Key columns: `sample_id`, `family`, `parent_name`, `child_name`, sequences, V/J genes
+  - Newick trees in separate file
+  - **Reference**: See `tutorial/format-pcp.md` for full specification
 
 - **AIRR (Adaptive Immune Receptor Repertoire) Format**:
   - **Single JSON file** following AIRR Community standards
   - Show example from `olmsted-cli/example_data/airr/`
-  - Open `full_schema_dataset.json`
-  - Key structure:
-    - Rearrangement records (sequences, V/D/J calls)
-    - Clone definitions
-    - Tree structures
-    - Nested JSON format
+  - Nested structure: samples → clones → trees → nodes
+  - Includes metadata, sequences, multiplicities, metrics
+  - **Reference**: See `tutorial/format-airr.md` for full specification
 
-  - **Schema documentation**: Point to AIRR standards documentation
+- **Format comparison**:
+  - PCP: Simple CSV, good for basic lineages
+  - AIRR: Rich JSON, supports complex metadata and timepoints
+  - Both convert to same Olmsted JSON for visualization
 
 - **Uploading to web app**:
-  - Only the **Olmsted JSON output** is used by the web app
+  - Only the **Olmsted JSON output** is uploaded
   - Return to web interface
-  - Upload processed JSON file (drag-and-drop)
+  - Drag-and-drop processed JSON
   - Verify visualization works
 
-**Visual**: Show file contents, compare formats, demo upload
+**Visual**: Show file examples, highlight key differences, demo upload
+
+**Documentation**:
+- Detailed format specs: `tutorial/format-pcp.md` and `tutorial/format-airr.md`
+- AIRR standards: https://docs.airr-community.org/
+- Olmsted schema: https://olmstedviz.org/schema.html
 
 ---
 
