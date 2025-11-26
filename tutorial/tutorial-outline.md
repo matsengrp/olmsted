@@ -192,7 +192,8 @@
 **Content:**
 
 - We will now talk about how to prepare your data for use with Olmsted.  
-- We are taking data in two reasonable, popular common file formats.  
+- We are taking data in two popular file formats (AIRR and PCP).  
+- These will be converted into a common olmsted-readable JSON format.    
 
 ## Shot 2.1: Install Guide (1-2 minutes)
 
