@@ -15,8 +15,12 @@
   - Processing your own data with the CLI tool
 - Three ways to access Olmsted:
   - **Public website**: https://olmstedviz.org (no installation required)
+    - Public website is static. 
+    - Can "upload" your own data using the public website.
+    - Data is not actually uploaded, it is kept in a local client-side database.
   - **Docker deployment**: `docker run -p 8080:3999 quay.io/matsengrp/olmsted`
   - **Local development**: `npm start` or `./bin/olmsted-server-local.sh`
+- Clarify that 
 
 **Visual**: Show olmstedviz.org homepage
 
@@ -181,7 +185,17 @@
 
 # PART 2: COMMAND-LINE INTERFACE (olmsted-cli)
 
+## Shot 2.0: Transition
+
+**Purpose:** Establish the role of the CLI toolchain
+
+**Content:**
+
+- We will now talk about how to prepare your data for use with Olmsted.  
+- We are taking data in two reasonable, popular common file formats.  
+
 ## Shot 2.1: Install Guide (1-2 minutes)
+
 **Purpose**: Set up olmsted-cli on your system
 
 **Content**:
@@ -252,11 +266,10 @@
 
 - **AIRR-specific options**:
   ```bash
-  olmsted process -i data.json -f airr -o output.json --naive-name "naive" --root-trees
+  olmsted process -i data.json -f airr -o output.json --naive-name "naive"
   ```
   - `--naive-name`: Specify naive sequence identifier
-  - `--root-trees`: Re-root trees at naive
-
+  
 - **Verbosity control**:
   ```bash
   olmsted process -i data.csv -o output.json -v 2
@@ -308,13 +321,6 @@
   ```
   - Machine-readable statistics
 
-- **Splitting large files**:
-  ```bash
-  olmsted split -i large_data.json -o split_files --max-clones 100
-  ```
-  - Break into smaller chunks
-  - Useful for performance optimization
-  - Each file ≤100 clones
 
 **Visual**: Run commands, show validation errors/success, display summary
 
@@ -342,11 +348,6 @@
   - Nested structure: samples → clones → trees → nodes
   - Includes metadata, sequences, multiplicities, metrics
   - **Reference**: See `tutorial/format-airr.md` for full specification
-
-- **Format comparison**:
-  - PCP: Simple CSV, good for basic lineages
-  - AIRR: Rich JSON, supports complex metadata and timepoints
-  - Both convert to same Olmsted JSON for visualization
 
 - **Uploading to web app**:
   - Only the **Olmsted JSON output** is uploaded
