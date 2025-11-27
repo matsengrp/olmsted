@@ -187,7 +187,7 @@
 
 ## Shot 2.0: Transition
 
-**Purpose:** Establish the role of the CLI toolchain
+**Purpose:** Establish the role of the CLI toolchain.
 
 **Content:**
 
@@ -310,17 +310,18 @@
   ```
 
 - **Summary statistics**:
+  
   ```bash
   olmsted summary output.json
   ```
   - Display dataset overview
   - Count clones, sequences, metadata fields
-
+  
 - **JSON summary output**:
   ```bash
   olmsted summary --json output.json -o summary.json
   ```
-  - Machine-readable statistics
+  - Human-readable statistics
 
 
 **Visual**: Run commands, show validation errors/success, display summary
@@ -365,7 +366,7 @@
 
 ---
 
-## Closing (1 minute)
+## Shot 3.1: Closing (1 minute)
 **Purpose**: Resources and next steps
 
 **Content**:
