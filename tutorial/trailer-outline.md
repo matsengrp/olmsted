@@ -8,8 +8,7 @@
 
 **Visual**:
 - Clean title card: "Olmsted" with subtitle "B Cell Lineage Visualization"
-- Fade to Olmsted interface showing scatterplot with real data
-- Show scale indicator: "15,847 clonal families"
+- Fade to Olmsted interface showing scatterplot with data
 
 **Narration**:
 > "Olmsted is a browser-based tool for interactive exploration of B cell receptor repertoire sequencing data and clonal lineage trees."
@@ -24,7 +23,7 @@
 - Show splash page with example datasets listed
 
 **Narration**:
-> "The web application requires no installation and runs entirely in the browser. Data processing is performed client-side, with local IndexedDB persistence."
+> "The web application requires no installation and runs entirely in the browser. Data processing is performed client-side, with local persistence."
 
 ---
 
@@ -39,7 +38,7 @@
 
 **Narration**:
 
-> "Data files are loaded directly into the browser. Supported formats include AIRR-compliant JSON and PCP CSV, with conversion tools available for data preparation."
+> "Data files are loaded directly into the browser. Supported formats include AIRR-compliant JSON and in-house PCP CSV, with conversion tools available for data preparation."
 
 ---
 
@@ -98,7 +97,7 @@
 - Show example of multi-dataset comparison in faceted view
 
 **Narration**:
-> "Additional features include multi-dataset comparison, computed phylogenetic metrics such as local branching index, and persistent client-side storage using IndexedDB."
+> "Additional features include multi-dataset comparison, computed phylogenetic metrics such as local branching index, and persistent client-side storage."
 
 ---
 
@@ -124,4 +123,4 @@
 
 **Narration**:
 
-> "Olmsted: B cell lineage visualization. Developed by the Matsen Group at Fred Hutchinson Cancer Center."
+> "Olmsted: B cell lineage visualization tool. Developed by the Matsen Group at Fred Hutchinson Cancer Center."
