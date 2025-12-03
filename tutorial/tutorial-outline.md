@@ -8,8 +8,9 @@
 **Purpose**: Overview of Olmsted and what viewers will learn
 
 **Content**:
+
 - What is Olmsted? (B cell lineage visualization tool)
-- Who is it for? (Immunology researchers, bioinformaticians)
+- Software project by Matsen Lab at Fred Hutch
 - What you'll learn in this tutorial:
   - Web application interface and features
   - Processing your own data with the CLI tool
