@@ -9,7 +9,6 @@
 **Visual**:
 - Clean title card: "Olmsted" with subtitle "B Cell Lineage Visualization"
 - Fade to Olmsted interface showing scatterplot with real data
-- Steady, professional camera movement (no rapid cuts)
 - Show scale indicator: "15,847 clonal families"
 
 **Narration**:
@@ -22,7 +21,6 @@
 **Visual**:
 - Browser window showing olmstedviz.org
 - Address bar clearly visible
-- Clean interface load (real-time, not sped up)
 - Show splash page with example datasets listed
 
 **Narration**:
@@ -72,10 +70,6 @@
 
 **Narration**:
 > "Individual clonal families are displayed as phylogenetic trees with aligned sequences. Branch properties can be mapped to computed metrics including LBI, mutation count, or timepoint. Leaf nodes show multiplicity data."
-
-**On-Screen Text**:
-- "Interactive phylogenetic trees"
-- "Synchronized alignment view"
 
 ---
 
