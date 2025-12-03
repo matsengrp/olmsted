@@ -13,14 +13,11 @@
 - What you'll learn in this tutorial:
   - Web application interface and features
   - Processing your own data with the CLI tool
-- Three ways to access Olmsted:
+- Main way to access Olmsted:
   - **Public website**: https://olmstedviz.org (no installation required)
     - Public website is static. 
     - Can "upload" your own data using the public website.
     - Data is not actually uploaded, it is kept in a local client-side database.
-  - **Docker deployment**: `docker run -p 8080:3999 quay.io/matsengrp/olmsted`
-  - **Local development**: `npm start` or `./bin/olmsted-server-local.sh`
-- Clarify that 
 
 **Visual**: Show olmstedviz.org homepage
 
@@ -204,25 +201,28 @@
   - Python 3.9 or higher required
   - Check version: `python --version`
 
-- **Recommended installation (pipx)**:
+- **Recommended installation (pipx) -- primary method used for guide**:
+  
   ```bash
   pipx install olmsted-cli
   ```
   - Benefits: Isolated environment, clean PATH management
-
+  
 - **Alternative installation (pip)**:
   ```bash
   pip install olmsted-cli
   ```
 
-- **Optional: Conda environment** (best practice):
+- **Optional: Conda environment**
+  
   ```bash
   conda create -n olmsted python=3.9
   conda activate olmsted
   pip install olmsted-cli
   ```
-
+  
 - **Verify installation**:
+  
   ```bash
   olmsted --help
   ```
