@@ -22,7 +22,9 @@ proddata
 **/__pycache__/
 
 ### development ###
-**/tmp*/
+**/_*/
 **/_claude*/
 **/_test*/
 **/_backup*/
+
+.claude/

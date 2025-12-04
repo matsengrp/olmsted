@@ -4,17 +4,15 @@
 
 *After landscape architect [Fredrick Law Olmsted](https://en.wikipedia.org/wiki/Frederick_Law_Olmsted)*
 
-Olmsted is an open-source tool for visualizing and exploring B cell lineages. You can visit a live demo application at <http://olmstedviz.org>, and use the [guide below](https://github.com/matsengrp/olmsted#guide) to direct your time there.
+Olmsted is an open-source tool for visualizing and exploring B cell lineages.
 
-  - [Overview](#overview)
-  - [Quickstart](#quickstart)
-  - [Preparing input data](#preparing-input-data)
-  - Deployment
-    - [with Docker](#Deployment-with-Docker)
-    - [without Docker](#Deploying-without-Docker)
-  - [Static Build](#Static-Build)
-  - [Using the visualization](#using-the-visualization)
-  - [Miscellany](#Miscellany)
+**Most users should simply visit [olmstedviz.org](http://olmstedviz.org)** — no installation required. You can upload and explore your data directly in the browser.
+
+  - [Getting Started](#getting-started)
+  - [Preparing Your Data](#preparing-your-data)
+  - [Using the Visualization](#using-the-visualization)
+  - [Local Deployment](#local-deployment) (for developers)
+  - [Miscellany](#miscellany)
 
 ## Overview
 
@@ -25,129 +23,73 @@ We aim to address this need with Olmsted: a browser-based application for visual
 Olmsted allows the user to scan across collections of clonal families at a high level using summary statistics, and then hone in on individual families to visualize phylogenies and mutations.
 This will enable lab-based researchers to more quickly and intuitively identify lineages of interest among vast B cell sequencing datasets, and move forward with in-depth analyses and testing of individual antibodies.
 
-## Quickstart
+## Getting Started
 
-### 1. Clone the repositories
+### 1. Visit the website
 
-First, clone the main Olmsted repository:
+Go to **[olmstedviz.org](http://olmstedviz.org)** in your browser.
+
+### 2. Prepare your data
+
+Use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to convert your data into Olmsted format (see [Preparing Your Data](#preparing-your-data) below).
+
+### 3. Upload and explore
+
+Once on the website:
+- **Upload data**: Drag and drop your processed JSON file onto the upload area, or use the file browser
+- **Select datasets**: Check the datasets you want to visualize in the table
+- **Start exploring**: Click "Explore!" to begin
+
+**Note**: You must select at least one dataset before clicking "Explore!" or you'll see an empty display. You can also select datasets from the table on the visualization page.
+
+## Preparing Your Data
+
+Use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to convert your data into the format required by Olmsted.
+
+### Installing olmsted-cli
 
 ```bash
-git clone https://github.com/matsengrp/olmsted.git
-cd olmsted
-git submodule update --init
-```
-
-Then clone the olmsted-cli data processing tool:
-
-```bash
-git clone https://github.com/matsengrp/olmsted-cli.git
-```
-
-### 2. Install olmsted-cli
-
-Create a conda environment and install olmsted-cli:
-
-```bash
+# Create a conda environment and install
 conda create -n olmsted python=3.9
 conda activate olmsted
+
+git clone https://github.com/matsengrp/olmsted-cli.git
 cd olmsted-cli
 pip install .
 ```
 
-### 3. Build and run Olmsted server
-
-#### Option A: Using Docker (Recommended)
-
-Navigate to the main olmsted directory, build the container, and start the server:
-
-```bash
-cd olmsted
-docker build -t olmsted:latest .
-./bin/olmsted-server.sh olmsted:latest 3999
-```
-
-#### Option B: Local installation
-
-For local installation, you'll need to install Node.js dependencies, create a data directory, and start the server:
-
-```bash
-cd olmsted
-npm install --legacy-peer-deps --ignore-scripts
-mkdir -p _data
-./bin/olmsted-server-local.sh _data/ 3999
-```
-
-### 4. Process your data with olmsted-cli
-
-Use olmsted-cli to convert your data into Olmsted format. Here are examples using the provided sample data in the olmsted-cli directory:
-
-**Processing PCP format data:**
-```bash
-olmsted process -i olmsted-cli/example_data/pcp/pcp.csv -t olmsted-cli/example_data/pcp/trees.csv -o processed_data.json -f pcp -n "pcp-example"
-```
-
-**Processing AIRR format data:**
-```bash
-olmsted process -i olmsted-cli/example_data/airr/full_schema_dataset.json -o processed_data.json -f airr -n "airr-example"
-```
-
-**Note**: The `--format` flag is optional as `olmsted process` can automatically infer the input file format from the file extension and contents.
-
-### 5. Access the web application
-
-Open your browser and navigate to `localhost:3999` to see the Olmsted interface.
-
-### 6. Upload and explore your data
-
-Once in the web application:
-- **Upload data**: Use the file explorer to browse and upload your processed JSON files, or simply drag and drop them onto the upload area
-- **Select datasets**: Choose the desired datasets from the database table by clicking the checkbox next to each dataset
-- **Start exploring**: Click the "Explore!" button to begin visualizing your B cell lineage data
-
-**Note**: You must select at least one dataset before clicking "Explore!" or you'll see an empty display.  You can also select dataset from the Dataset table on the visualization page.
-
-## Data Processing with olmsted-cli
-
-### Overview
-
-We now use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to format data into a single unified file format that can be uploaded to the Olmsted web application. The olmsted-cli package provides a streamlined command-line interface for converting various data formats (AIRR, PCP, etc.) into the standardized format required by Olmsted.
-
-### Basic API Usage
-
-The olmsted-cli tool provides a simple `process` command:
+### Basic Usage
 
 ```bash
 olmsted process [OPTIONS]
 ```
 
-**Note**: Use `olmsted process -h` for more options.
+Use `olmsted process -h` for all options.
 
 **Common options:**
-- `--input, -i`: Input file path (PCP CSV or AIRR json)
+- `--input, -i`: Input file path (PCP CSV or AIRR JSON)
 - `--output, -o`: Output file path (defaults to `olmsted_output.json`)
-- `--format, -f`: Input format (`airr`, `pcp`) (optional, olmsted-cli can infer input file type in most situations)
-- `--name, -n`: Dataset name (optional, but recommended for olmsted database navigation)
+- `--format, -f`: Input format (`airr`, `pcp`) — usually auto-detected
+- `--name, -n`: Dataset name (recommended for navigation in Olmsted)
 
-**PCP options:**
+**PCP-specific:**
 - `--input-trees, -t`: Tree data CSV file path
 
-**AIRR options:**
+**AIRR-specific:**
 - `--naive-name`: Name of naive/root node for tree rooting
 - `--root-trees, -r`: Root trees
 
 **Examples:**
 
-Process a PCP CSV file with separate tree data file:
 ```bash
-olmsted process -i data.csv -t trees.csv -o processed.json -f pcp -n "PCP Dataset"
+# PCP format with separate tree file
+olmsted process -i data.csv -t trees.csv -o processed.json -n "My Dataset"
+
+# AIRR format
+olmsted process -i data.json -o processed.json -n "My Dataset"
 ```
 
-Process an AIRR format file:
-```bash
-olmsted process -i data.json -o processed.json -f airr -n "AIRR Dataset"
-```
-
-### Input format
+### Input Formats
 
 Olmsted supports two primary input formats:
 
@@ -191,56 +133,15 @@ For a human-readable version of the schema, see [olmstedviz.org/schema.html](htt
 
 ### Validation
 
-#### Using olmsted-cli for Validation
+olmsted-cli provides built-in validation:
 
-The olmsted-cli package provides built-in validation capabilities to ensure data meets the required schema standards for processing by Olmsted webapp:
-
-**Validation-only mode:**
 ```bash
+# Validation only
 olmsted validate --input your_data.json
-```
 
-**Validation during processing:**
-```bash
+# Validate during processing
 olmsted process --input your_data.json --output processed.json --validate
 ```
-
-## Deployment with Docker
-
-1. Install [Docker](https://www.docker.com/get-started)
-2. Choose a port number available to you locally, e.g. 8080
-3. Choose a [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) e.g. `v2.1.1-11-gec852b7` - we recommend that you choose a specific tag even if you want the latest version, i.e. that you don't use the `latest` tag, if you want to be able to reproduce your efforts later.
-4. Start the server (this can be stopped at any time with ctrl-C):
-```
-docker run -p 8080:3999 quay.io/matsengrp/olmsted
-```
-5. Navigate to `localhost:8080` in your browser to see the application.
-
-To run an interactive session in the container:
-```
-docker run -it quay.io/matsengrp/olmsted /bin/bash
-```
-
-## Static Build
-
-Olmsted is designed to statically compile as a single page app, which can then be deployed using a simple CDN setup.
-
-To create a static deployment, run `npm run build` from within the project directory (the path to your clone of this repository or `/usr/src/app` in the Docker image).
-This will generate most of a deployment in a `deploy` directory.
-To complete the static deployment, you simply have to place the data you want to deploy at `deploy/data`.
-
-You can test the local static build by running the following:
-
-```
-cd deploy
-python -m SimpleHTTPServer 4000
-```
-Use ctrl-C to stop the server.
-Once you've verified that your static build works, you simply have to deploy the contents to a static file server or CDN.
-
-If you're content deploying with AWS S3, there is a deploy script at `bin/deploy.py` which you can use to push your static deployment up to an S3 bucket.
-For deploy script usage run `./bin/deploy.py -h`.
-To see what you need to do on the S3 side to acitvate website hosting for a bucket, see: <https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html>
 
 ## Using the visualization
 
@@ -319,6 +220,60 @@ The *Ancestral Sequences* section displays an alignment of the selected sequence
 
 Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
 
+## Local Deployment
+
+For developers who want to run Olmsted locally or deploy their own instance.
+
+### Using Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/matsengrp/olmsted.git
+cd olmsted
+git submodule update --init
+
+# Option 1: Use pre-built image from quay.io
+docker run -p 8080:3999 quay.io/matsengrp/olmsted:latest
+
+# Option 2: Build locally
+docker build -t olmsted:latest .
+./bin/olmsted-server.sh olmsted:latest 3999
+```
+
+Navigate to `localhost:8080` (or `localhost:3999` for local build) in your browser.
+
+For reproducibility, use a specific [version tag](https://quay.io/repository/matsengrp/olmsted?tab=tags) rather than `latest`.
+
+### Without Docker
+
+```bash
+git clone https://github.com/matsengrp/olmsted.git
+cd olmsted
+git submodule update --init
+
+npm install --legacy-peer-deps --ignore-scripts
+mkdir -p _data
+./bin/olmsted-server-local.sh _data/ 3999
+```
+
+### Static Build
+
+Olmsted can be compiled as a single-page app for CDN deployment:
+
+```bash
+npm run build
+# Output is in the `deploy` directory
+# Place your data at `deploy/data`
+```
+
+Test locally:
+```bash
+cd deploy
+python -m http.server 4000
+```
+
+For AWS S3 deployment, see `bin/deploy.py -h`.
+
 ## Miscellany
 ### Versioning
 We use git tags to tag [releases of Olmsted](https://github.com/matsengrp/olmsted/releases) using the [semver](https://semver.org/) versioning strategy.
@@ -331,7 +286,7 @@ The tagged release's major version of Olmsted should always match that of its co
 This application relies on React.js and Redux for basic framework, and Vega and Vega-Lite for the interactive data visualizations.
 
 ### License and copyright
-Copyright 2019 Christopher Small, Eli Harkins, and Erick Matsen.
-Forked from [Auspice](https://github.com/nextstrain/auspice), copyright 2014-2018 Trevor Bedford and Richard Neher.
+Copyright 2025 Dave Rich, Christopher Small, Eli Harkins, and Erick Matsen.
+Originally forked from [Auspice](https://github.com/nextstrain/auspice), copyright 2014-2018 Trevor Bedford and Richard Neher.
 
 Source code to Olmsted is made available under the terms of the [GNU Affero General Public License](LICENSE.txt) (AGPL). Olmsted is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
