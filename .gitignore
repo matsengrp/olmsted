@@ -26,3 +26,5 @@ proddata
 **/_claude*/
 **/_test*/
 **/_backup*/
+
+.claude/
