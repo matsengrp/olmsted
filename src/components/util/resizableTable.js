@@ -55,10 +55,6 @@ export class ResizableTable extends React.Component {
 
   onScroll(e) {
     this.setState({ scrollTop: e.target.scrollTop });
-    // Sync header scroll with body scroll
-    if (this.headerRef.current) {
-      this.headerRef.current.scrollLeft = e.target.scrollLeft;
-    }
   }
 
   onMouseDown(e, columnIndex) {
@@ -254,13 +250,18 @@ export class ResizableTable extends React.Component {
     const rowHeight = 40;
 
     const sortedData = this.getSortedData();
+    const headerHeight = 40;
 
-    // Calculate which items are visible
-    const startIndex = Math.floor(scrollTop / rowHeight);
-    const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 1, sortedData.length);
+    // Calculate which items are visible (account for header in scroll position)
+    const adjustedScrollTop = Math.max(0, scrollTop - headerHeight);
+    const startIndex = Math.floor(adjustedScrollTop / rowHeight);
+    const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 2, sortedData.length);
 
     // Only render visible items
     const visibleItems = sortedData.slice(startIndex, endIndex);
+
+    // Calculate total content width for proper horizontal scrolling
+    const totalContentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
 
     return (
       <div
@@ -272,133 +273,137 @@ export class ResizableTable extends React.Component {
           borderRadius: "4px"
         }}
       >
-        {/* Fixed Header */}
-        <div
-          ref={this.headerRef}
-          style={{
-            overflowX: "hidden",
-            overflowY: "hidden",
-            borderBottom: "2px solid #dee2e6",
-            backgroundColor: "#f8f9fa",
-            paddingRight: scrollbarWidth + "px"
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              fontWeight: "bold",
-              fontSize: 13,
-              height: "40px",
-              minWidth: "fit-content"
-            }}
-          >
-            {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
-              const isEvenColumn = colIndex % 2 === 0;
-              const isAttr = typeof AttrOrComponent === "string";
-              const isSortable = options.sortable !== false && (isAttr || options.sortKey);
-              const columnKey = isAttr ? AttrOrComponent : options.sortKey;
-              // Explicitly capture sort state from parent scope for accessibility attributes
-              const currentSortColumn = sortColumn;
-              const currentSortDesc = sortDesc;
-
-              const style = {
-                fontSize: 13,
-                padding: 8,
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
-                width: columnWidths[colIndex],
-                minWidth: columnWidths[colIndex],
-                maxWidth: columnWidths[colIndex],
-                borderRight: "1px solid #dee2e6",
-                position: "relative",
-                cursor: isSortable ? "pointer" : "default"
-              };
-
-              /**
-               * Keyboard handler for sortable column headers
-               * WCAG 2.1.1: Column headers must be keyboard accessible for sorting
-               */
-              const handleHeaderKeyDown = isSortable
-                ? (e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      this.handleSort(columnKey);
-                    }
-                  }
-                : undefined;
-
-              return (
-                <div
-                  key={name}
-                  style={style}
-                  onClick={() => isSortable && this.handleSort(columnKey)}
-                  onKeyDown={handleHeaderKeyDown}
-                  role={isSortable ? "button" : "columnheader"}
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                  tabIndex={isSortable ? 0 : undefined}
-                  aria-label={isSortable ? `Sort by ${name}` : undefined}
-                  aria-sort={
-                    isSortable && currentSortColumn === columnKey
-                      ? currentSortDesc
-                        ? "descending"
-                        : "ascending"
-                      : "none"
-                  }
-                >
-                  <span
-                    style={{
-                      flex: 1,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {name}
-                    {isSortable && currentSortColumn === columnKey && (
-                      <span style={{ marginLeft: 4 }}>{currentSortDesc ? "▼" : "▲"}</span>
-                    )}
-                  </span>
-                  {/* Resize handle */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: "4px",
-                      cursor: "col-resize",
-                      backgroundColor: "transparent"
-                    }}
-                    onMouseDown={(e) => this.onMouseDown(e, colIndex)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Scrollable Body */}
+        {/* Scrollable Container for both Header and Body */}
         <div
           ref={this.bodyRef}
           style={{
-            height: containerHeight,
+            height: containerHeight + 40, // Add header height
             overflowY: "auto",
             overflowX: "auto",
             boxSizing: "border-box"
           }}
           onScroll={this.onScroll}
         >
-          {/* Total height spacer */}
-          <div style={{ height: sortedData.length * rowHeight, position: "relative" }}>
-            {/* Visible items positioned absolutely */}
-            <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
-              {visibleItems.map((item, index) => (
-                <div key={item.id || item.ident || item.dataset_id || startIndex + index} style={{ height: rowHeight }}>
-                  {this.renderTableRow(item, startIndex + index)}
-                </div>
-              ))}
+          {/* Sticky Header */}
+          <div
+            ref={this.headerRef}
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              borderBottom: "2px solid #dee2e6",
+              backgroundColor: "#f8f9fa",
+              minWidth: totalContentWidth
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                fontWeight: "bold",
+                fontSize: 13,
+                height: "40px",
+                minWidth: "fit-content"
+              }}
+            >
+              {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
+                const isEvenColumn = colIndex % 2 === 0;
+                const isAttr = typeof AttrOrComponent === "string";
+                const isSortable = options.sortable !== false && (isAttr || options.sortKey);
+                const columnKey = isAttr ? AttrOrComponent : options.sortKey;
+                // Explicitly capture sort state from parent scope for accessibility attributes
+                const currentSortColumn = sortColumn;
+                const currentSortDesc = sortDesc;
+
+                const style = {
+                  fontSize: 13,
+                  padding: 8,
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
+                  width: columnWidths[colIndex],
+                  minWidth: columnWidths[colIndex],
+                  maxWidth: columnWidths[colIndex],
+                  borderRight: "1px solid #dee2e6",
+                  position: "relative",
+                  cursor: isSortable ? "pointer" : "default"
+                };
+
+                /**
+                 * Keyboard handler for sortable column headers
+                 * WCAG 2.1.1: Column headers must be keyboard accessible for sorting
+                 */
+                const handleHeaderKeyDown = isSortable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        this.handleSort(columnKey);
+                      }
+                    }
+                  : undefined;
+
+                return (
+                  <div
+                    key={name}
+                    style={style}
+                    onClick={() => isSortable && this.handleSort(columnKey)}
+                    onKeyDown={handleHeaderKeyDown}
+                    role={isSortable ? "button" : "columnheader"}
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                    tabIndex={isSortable ? 0 : undefined}
+                    aria-label={isSortable ? `Sort by ${name}` : undefined}
+                    aria-sort={
+                      isSortable && currentSortColumn === columnKey
+                        ? currentSortDesc
+                          ? "descending"
+                          : "ascending"
+                        : "none"
+                    }
+                  >
+                    <span
+                      style={{
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      {name}
+                      {isSortable && currentSortColumn === columnKey && (
+                        <span style={{ marginLeft: 4 }}>{currentSortDesc ? "▼" : "▲"}</span>
+                      )}
+                    </span>
+                    {/* Resize handle */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: "4px",
+                        cursor: "col-resize",
+                        backgroundColor: "transparent"
+                      }}
+                      onMouseDown={(e) => this.onMouseDown(e, colIndex)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Table Body */}
+          <div style={{ minWidth: totalContentWidth }}>
+            {/* Total height spacer */}
+            <div style={{ height: sortedData.length * rowHeight, position: "relative" }}>
+              {/* Visible items positioned absolutely */}
+              <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
+                {visibleItems.map((item, index) => (
+                  <div key={item.id || item.ident || item.dataset_id || startIndex + index} style={{ height: rowHeight }}>
+                    {this.renderTableRow(item, startIndex + index)}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

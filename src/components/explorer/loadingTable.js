@@ -228,7 +228,7 @@ export default class LoadingTable extends React.Component {
     // Define column widths
     const columnWidths = [
       60, // Select
-      120, // Status
+      60, // Status
       200, // Name
       150, // ID
       80, // Source

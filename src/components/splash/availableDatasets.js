@@ -156,6 +156,80 @@ SizeCell.isReactComponent = true;
 UploadTimeCell.isReactComponent = true;
 BuildTimeCell.isReactComponent = true;
 
+// Component for the download button
+class DownloadButtonCell extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { downloading: false };
+    this.downloadDataset = this.downloadDataset.bind(this);
+  }
+
+  async downloadDataset(e) {
+    const { datum } = this.props;
+    e.stopPropagation();
+
+    this.setState({ downloading: true });
+
+    try {
+      const consolidated = await clientDataStore.exportDataset(datum.dataset_id);
+
+      // Create downloadable blob
+      const jsonString = JSON.stringify(consolidated, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      // Create temporary link and trigger download
+      const link = document.createElement("a");
+      const filename = `${datum.name || datum.dataset_id}_olmsted.json`;
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up blob URL
+      URL.revokeObjectURL(url);
+
+      console.log("Downloaded dataset:", datum.dataset_id);
+    } catch (error) {
+      console.error("Failed to download dataset:", error);
+      alert(`Failed to download dataset: ${error.message}`);
+    } finally {
+      this.setState({ downloading: false });
+    }
+  }
+
+  render() {
+    const { datum } = this.props;
+    const { downloading } = this.state;
+    const isClientSide = datum.isClientSide || datum.temporary;
+
+    if (!isClientSide) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={this.downloadDataset}
+        disabled={downloading}
+        style={{
+          padding: "2px 8px",
+          fontSize: "12px",
+          backgroundColor: downloading ? "#6c757d" : "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "3px",
+          cursor: downloading ? "wait" : "pointer",
+          marginRight: "4px"
+        }}
+      >
+        {downloading ? "..." : "Download"}
+      </button>
+    );
+  }
+}
+
 // Component for the delete button
 class DeleteButtonCell extends React.Component {
   constructor(props) {
@@ -184,7 +258,7 @@ class DeleteButtonCell extends React.Component {
     const isClientSide = datum.isClientSide || datum.temporary;
 
     if (!isClientSide) {
-      return <span>—</span>;
+      return null;
     }
 
     return (
@@ -207,6 +281,25 @@ class DeleteButtonCell extends React.Component {
   }
 }
 
+// Combined actions cell with Download and Delete buttons
+function ActionsCell({ datum, dispatch }) {
+  const isClientSide = datum.isClientSide || datum.temporary;
+
+  if (!isClientSide) {
+    return <span>—</span>;
+  }
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <DownloadButtonCell datum={datum} dispatch={dispatch} />
+      <DeleteButtonCell datum={datum} dispatch={dispatch} />
+    </div>
+  );
+}
+
+// Mark as React component for production builds
+ActionsCell.isReactComponent = true;
+
 export function DatasetsTable({ availableDatasets, dispatch }) {
   if (!availableDatasets) {
     return (
@@ -221,7 +314,7 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
 
   // Build mappings for the table
   const mappings = [
-    ["Load", LoadStatusCell, { sortKey: "loading" }],
+    ["Status", LoadStatusCell, { sortKey: "loading" }],
     ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
     ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
     [
@@ -242,12 +335,12 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
   }
 
   if (hasClientDatasets) {
-    mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
+    mappings.push(["Actions", ActionsCell, { sortable: false }]);
   }
 
   // Define column widths
   const columnWidths = [
-    120, // Load (doubled from 60)
+    60, // Status
     200, // Name
     150, // ID
     80, // Source
@@ -257,7 +350,7 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
     120, // Upload time
     120, // Build time
     ...(showCitation ? [150] : []),
-    ...(hasClientDatasets ? [80] : [])
+    ...(hasClientDatasets ? [160] : [])
   ];
 
   return (

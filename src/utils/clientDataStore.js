@@ -412,6 +412,138 @@ class ClientDataStore {
     this.recentTrees.clear();
     console.log("ClientDataStore: Cleared memory cache");
   }
+
+  /**
+   * Export a dataset as consolidated JSON format for download.
+   * Reconstructs the original upload format from IndexedDB storage.
+   * @async
+   * @param {string} datasetId - Dataset identifier to export
+   * @returns {Promise<Object>} Consolidated JSON object with datasets, clones, and trees
+   * @throws {Error} If dataset not found or export fails
+   * @example
+   * const data = await store.exportDataset('dataset_001');
+   * // Returns: { datasets: [...], clones: { dataset_id: [...] }, trees: [...] }
+   */
+  async exportDataset(datasetId) {
+    try {
+      validateRequired(datasetId, "datasetId");
+      validateType(datasetId, "string", "datasetId");
+
+      ErrorLogger.info(`ClientDataStore: Exporting dataset ${datasetId}...`);
+
+      // Get dataset metadata
+      const allDatasets = await olmstedDB.getAllDatasets();
+      const dataset = allDatasets.find((d) => d.dataset_id === datasetId);
+
+      if (!dataset) {
+        throw new Error(`Dataset not found: ${datasetId}`);
+      }
+
+      // Get all clone metadata for this dataset
+      const cloneMetaList = await olmstedDB.getCloneMetadata(datasetId);
+
+      // Get all trees for these clones
+      const trees = [];
+      for (const cloneMeta of cloneMetaList) {
+        if (cloneMeta.tree_ids && cloneMeta.tree_ids.length > 0) {
+          for (const treeId of cloneMeta.tree_ids) {
+            const tree = await olmstedDB.getTreeByIdent(treeId);
+            if (tree) {
+              // Convert nodes back to object format for export
+              const nodesObject = {};
+              if (Array.isArray(tree.nodes)) {
+                for (const node of tree.nodes) {
+                  nodesObject[node.sequence_id] = {
+                    parent: node.parent,
+                    sequence_alignment: node.sequence_alignment,
+                    sequence_alignment_aa: node.sequence_alignment_aa,
+                    distance: node.distance,
+                    length: node.length,
+                    lbi: node.lbi,
+                    lbr: node.lbr,
+                    affinity: node.affinity,
+                    type: node.type,
+                    multiplicity: node.multiplicity,
+                    timepoint_multiplicities: node.timepoint_multiplicities
+                  };
+                }
+              }
+
+              trees.push({
+                tree_id: tree.tree_id,
+                ident: tree.ident,
+                clone_id: tree.clone_id,
+                newick: tree.newick,
+                root_node: tree.root_node,
+                nodes: nodesObject,
+                downsampling_strategy: tree.downsampling_strategy,
+                tree_type: tree.tree_type
+              });
+            }
+          }
+        }
+      }
+
+      // Reconstruct clones with embedded tree references
+      const clones = cloneMetaList.map((cloneMeta) => ({
+        clone_id: cloneMeta.clone_id,
+        ident: cloneMeta.ident,
+        dataset_id: cloneMeta.dataset_id,
+        subject_id: cloneMeta.subject_id,
+        sample_id: cloneMeta.sample_id,
+        name: cloneMeta.name,
+        unique_seqs_count: cloneMeta.unique_seqs_count,
+        mean_mut_freq: cloneMeta.mean_mut_freq,
+        junction_length: cloneMeta.junction_length,
+        junction_start: cloneMeta.junction_start,
+        v_call: cloneMeta.v_call,
+        d_call: cloneMeta.d_call,
+        j_call: cloneMeta.j_call,
+        v_alignment_start: cloneMeta.v_alignment_start,
+        v_alignment_end: cloneMeta.v_alignment_end,
+        d_alignment_start: cloneMeta.d_alignment_start,
+        d_alignment_end: cloneMeta.d_alignment_end,
+        j_alignment_start: cloneMeta.j_alignment_start,
+        j_alignment_end: cloneMeta.j_alignment_end,
+        cdr1_alignment_start: cloneMeta.cdr1_alignment_start,
+        cdr1_alignment_end: cloneMeta.cdr1_alignment_end,
+        cdr2_alignment_start: cloneMeta.cdr2_alignment_start,
+        cdr2_alignment_end: cloneMeta.cdr2_alignment_end,
+        germline_alignment: cloneMeta.germline_alignment,
+        has_seed: cloneMeta.has_seed,
+        sample: cloneMeta.sample,
+        trees: cloneMeta.tree_ids
+          ? cloneMeta.tree_ids.map((tree_id) => ({
+              ident: tree_id,
+              tree_id: tree_id
+            }))
+          : []
+      }));
+
+      // Build consolidated format
+      const consolidated = {
+        datasets: [dataset],
+        clones: {
+          [datasetId]: clones
+        },
+        trees: trees
+      };
+
+      ErrorLogger.info(
+        `ClientDataStore: Exported dataset with ${clones.length} clones and ${trees.length} trees`
+      );
+
+      return consolidated;
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      const dbError = new DatabaseError("Failed to export dataset", "exportDataset", error);
+      ErrorLogger.log(dbError, { datasetId });
+      throw dbError;
+    }
+  }
 }
 
 // Create a singleton instance
