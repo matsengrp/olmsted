@@ -4,18 +4,18 @@
 
 ---
 
-## Opening (0:00-0:15, ~15 seconds)
+## 1.1 Opening (0:00-0:15, ~15 seconds)
 
 **Visual**:
 - Clean title card: "Olmsted" with subtitle "B Cell Lineage Visualization"
 - Fade to Olmsted interface showing scatterplot with data
 
 **Narration**:
-> "Olmsted is a browser-based tool for interactive exploration of B cell receptor repertoire sequencing data and clonal lineage trees."
+> "Olmsted is a browser-based tool for interactive exploration and visualization of B cell receptor repertoires and clonal family trees."
 
 ---
 
-## Platform Overview (0:15-0:30, ~15 seconds)
+## 1.2 Platform Overview (0:15-0:30, ~15 seconds)
 
 **Visual**:
 - Browser window showing olmstedviz.org
@@ -27,7 +27,7 @@
 
 ---
 
-## Data Loading (0:30-0:45, ~15 seconds)
+## 1.3 Data Loading (0:30-0:45, ~15 seconds)
 
 **Visual**:
 - Mouse cursor drags JSON file onto browser window
@@ -42,7 +42,7 @@
 
 ---
 
-## Repertoire-Level View (0:45-1:00, ~15 seconds)
+## 1.4 Repertoire-Level View (0:45-1:00, ~15 seconds)
 
 **Visual**:
 - Scatterplot displaying clonal families
@@ -57,7 +57,7 @@
 
 ---
 
-## Clonal Tree View (1:00-1:15, ~15 seconds)
+## 1.5 Clonal Tree View (1:00-1:15, ~15 seconds)
 
 **Visual**:
 - Transition from scatterplot to phylogenetic tree view
@@ -68,11 +68,11 @@
 - Show tree configuration controls: branch color mapping, leaf size mapping
 
 **Narration**:
-> "Individual clonal families are displayed as phylogenetic trees with aligned sequences. Branch properties can be mapped to computed metrics including LBI, mutation count, or timepoint. Leaf nodes show multiplicity data."
+> "Individual clonal families are displayed as phylogenetic trees with aligned sequences. Branch properties can be mapped to computed metrics including LBI,  LBR, and mutation counts. Leaf node sizes can represent multiplicity or affinity data."
 
 ---
 
-## Lineage Detail View (1:15-1:30, ~15 seconds)
+## 1.6 Lineage Detail View (1:15-1:30, ~15 seconds)
 
 **Visual**:
 - Click on a leaf node in the tree
@@ -83,11 +83,11 @@
 - Show mutation positions relative to CDR regions (if available)
 
 **Narration**:
-> "Selecting a sequence displays its full ancestral lineage from the germline sequence. Amino acid mutations are highlighted, enabling detailed analysis of somatic hypermutation patterns."
+> "Selecting a sequence displays its complete ancestral lineage from the germline sequence. Positional mutations are highlighted, enabling for detailed analysis of  patterns."
 
 ---
 
-## Technical Features (1:30-1:45, ~15 seconds)
+## 2.1 Technical Features (1:30-1:45, ~15 seconds)
 
 **Visual**:
 - Return to interface showing multiple datasets loaded
@@ -101,7 +101,7 @@
 
 ---
 
-## Access and Resources (1:45-2:00, ~15 seconds)
+## 2.2 Access and Resources (1:45-2:00, ~15 seconds)
 
 **Visual**:
 - Clean screen showing olmstedviz.org in browser
@@ -113,7 +113,7 @@
 
 ---
 
-## Closing (2:00-2:15, ~15 seconds)
+## 2.3 Closing (2:00-2:15, ~15 seconds)
 
 **Visual**:
 - Static title card with clean typography
