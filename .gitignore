@@ -28,3 +28,5 @@ proddata
 **/_backup*/
 
 .claude/
+paper/other_papers/
+paper/paper.pdf
