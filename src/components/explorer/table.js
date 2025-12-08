@@ -35,7 +35,8 @@ class ResizableVirtualTable extends React.Component {
       columnWidths: defaultWidths.slice(0, props.mappings.length),
       isResizing: false,
       resizingColumn: null,
-      scrollbarWidth: 0
+      scrollbarWidth: 0,
+      hoveredRowId: null
     };
 
     this.headerRef = React.createRef();
@@ -110,9 +111,18 @@ class ResizableVirtualTable extends React.Component {
   }
 
   renderTableRow(datum, _index) {
-    const { selectedFamily, mappings } = this.props;
+    const { selectedFamily, mappings, dispatch } = this.props;
     const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
-    const { columnWidths } = this.state;
+    const { columnWidths, hoveredRowId } = this.state;
+    const isHovered = hoveredRowId === datum.ident;
+
+    // Determine background color with hover effect
+    let backgroundColor = isSelected ? "lightblue" : "white";
+    if (isHovered && !isSelected) {
+      backgroundColor = "#e8e8e8"; // Light gray for hover
+    } else if (isHovered && isSelected) {
+      backgroundColor = "#87CEEB"; // Darker lightblue for selected + hover
+    }
 
     return (
       <div
@@ -123,9 +133,18 @@ class ResizableVirtualTable extends React.Component {
           borderBottom: "1px solid #eee",
           fontSize: 12,
           height: "40px",
-          backgroundColor: isSelected ? "lightblue" : "white",
-          minWidth: "fit-content"
+          minHeight: "40px",
+          maxHeight: "40px",
+          backgroundColor,
+          minWidth: "fit-content",
+          cursor: "pointer",
+          transition: "background-color 0.15s ease",
+          overflow: "hidden",
+          boxSizing: "border-box"
         }}
+        onClick={() => dispatch(explorerActions.selectFamily(datum.ident || datum.clone_id))}
+        onMouseEnter={() => this.setState({ hoveredRowId: datum.ident })}
+        onMouseLeave={() => this.setState({ hoveredRowId: null })}
       >
         {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
@@ -146,8 +165,8 @@ class ResizableVirtualTable extends React.Component {
             borderRight: "1px solid #eee"
           };
 
-          // Apply alternating column shading only if row is not selected
-          if (!isSelected && isEvenColumn) {
+          // Apply alternating column shading only if row is not selected or hovered
+          if (!isSelected && !isHovered && isEvenColumn) {
             style.backgroundColor = "#f8f9fa";
           }
 

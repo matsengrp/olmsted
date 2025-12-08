@@ -256,6 +256,10 @@ export default class LoadingTable extends React.Component {
             dispatch,
             selectedDatasets
           }}
+          getRowStyle={(dataset) => ({
+            backgroundColor: selectedDatasets.includes(dataset.dataset_id) ? "lightblue" : "white"
+          })}
+          onRowClick={(dataset) => dispatch(explorerActions.toggleDatasetSelection(dataset.dataset_id))}
         />
 
         <div style={{ marginTop: "15px", marginBottom: "15px", textAlign: "center" }}>

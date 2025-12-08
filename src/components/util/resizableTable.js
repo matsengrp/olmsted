@@ -16,7 +16,8 @@ export class ResizableTable extends React.Component {
       resizingColumn: null,
       scrollbarWidth: 0,
       sortColumn: props.defaultSortColumn || null,
-      sortDesc: false
+      sortDesc: false,
+      hoveredRowId: null
     };
 
     this.headerRef = React.createRef();
@@ -120,10 +121,23 @@ export class ResizableTable extends React.Component {
   }
 
   renderTableRow(datum, index) {
-    const { columnWidths } = this.state;
+    const { columnWidths, hoveredRowId } = this.state;
     const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
 
+    const rowId = datum.id || datum.ident || datum.dataset_id || index;
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
+    const isHovered = hoveredRowId === rowId;
+
+    // Determine background color with hover effect
+    let backgroundColor = rowStyle.backgroundColor || "white";
+    if (isHovered) {
+      // Darken the background on hover
+      if (rowStyle.backgroundColor === "lightblue") {
+        backgroundColor = "#87CEEB"; // Darker lightblue
+      } else {
+        backgroundColor = "#e8e8e8"; // Light gray for hover
+      }
+    }
 
     /**
      * Keyboard handler for clickable table rows
@@ -140,24 +154,32 @@ export class ResizableTable extends React.Component {
 
     return (
       <div
-        key={datum.id || datum.ident || datum.dataset_id || index}
+        key={rowId}
         style={{
           display: "flex",
           alignItems: "center",
           borderBottom: "1px solid #eee",
           fontSize: 12,
           height: "40px",
-          backgroundColor: rowStyle.backgroundColor || "white",
+          minHeight: "40px",
+          maxHeight: "40px",
+          backgroundColor,
           minWidth: "fit-content",
           cursor: onRowClick ? "pointer" : "default",
-          ...rowStyle
+          transition: "background-color 0.15s ease",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          ...rowStyle,
+          backgroundColor // Override rowStyle.backgroundColor with our computed value
         }}
         onClick={() => onRowClick && onRowClick(datum)}
         onKeyDown={handleRowKeyDown}
+        onMouseEnter={() => this.setState({ hoveredRowId: rowId })}
+        onMouseLeave={() => this.setState({ hoveredRowId: null })}
         role={onRowClick ? "button" : undefined}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={onRowClick ? 0 : undefined}
-        aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
+        aria-label={onRowClick ? `Select row ${rowId}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
@@ -179,8 +201,9 @@ export class ResizableTable extends React.Component {
             ...options.style
           };
 
-          // Apply alternating column shading only if row doesn't have custom background
-          if (!rowStyle.backgroundColor && isEvenColumn) {
+          // Apply alternating column shading only if row doesn't have custom background and is not hovered
+          const hasDefaultBackground = !rowStyle.backgroundColor || rowStyle.backgroundColor === "white";
+          if (hasDefaultBackground && !isHovered && isEvenColumn) {
             style.backgroundColor = "#f8f9fa";
           }
 

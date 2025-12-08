@@ -207,6 +207,47 @@ class DeleteButtonCell extends React.Component {
   }
 }
 
+// Helper function to handle dataset selection (load/unload)
+function handleDatasetSelect(dataset, dispatch) {
+  switch (dataset.loading) {
+    case "LOADING": {
+      // Do nothing while loading
+      break;
+    }
+    case "DONE": {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: false
+      });
+      break;
+    }
+    case "ERROR": {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: false
+      });
+      break;
+    }
+    default: {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: "LOADING"
+      });
+
+      // Try client-side data first, fallback to server
+      if (dataset.isClientSide) {
+        getClientClonalFamilies(dispatch, dataset.dataset_id);
+      } else {
+        getClonalFamilies(dispatch, dataset.dataset_id);
+      }
+      break;
+    }
+  }
+}
+
 export function DatasetsTable({ availableDatasets, dispatch }) {
   if (!availableDatasets) {
     return (
@@ -273,6 +314,7 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
         getRowStyle={(dataset) => ({
           backgroundColor: dataset.loading ? "lightblue" : "white"
         })}
+        onRowClick={(dataset) => handleDatasetSelect(dataset, dispatch)}
       />
     </div>
   );
