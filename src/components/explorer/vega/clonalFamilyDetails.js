@@ -94,6 +94,8 @@ const concatTreeWithAlignmentSpec = () => {
     $schema: "https://vega.github.io/schema/vega/v5.json",
     description: "",
     autosize: { type: "pad", resize: true },
+    // Small top padding for visual spacing
+    padding: { top: 20, left: 0, right: 0, bottom: 0 },
     // Note that we have some datasets named for signals
     // these are a current way around being able to set
     // the initial values of signals through the props
@@ -412,7 +414,8 @@ const concatTreeWithAlignmentSpec = () => {
       // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
       // are all visible when fully zoomed out
       { name: "xrange", update: "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
-      { name: "yrange", update: "[pie_chart_padding , height - pie_chart_padding]" },
+      // Extra +20 top/bottom padding to prevent leaves from falling off
+      { name: "yrange", update: "[pie_chart_padding + 20, height - pie_chart_padding - 20]" },
       // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
       // in the outer scope to allow scales/axes to update accordingly
       {
@@ -858,7 +861,7 @@ const concatTreeWithAlignmentSpec = () => {
     // ---------------------------------------------------------------------------
 
     layout: {
-      padding: { column: 8 },
+      padding: { column: 8, row: 10 },
       // 2 columns so the grid repeats on the next row after two items (group marks)
       columns: 2,
       bounds: "full",
@@ -1348,6 +1351,8 @@ const concatTreeWithAlignmentSpec = () => {
         type: "group",
         name: "alignment_group",
         style: "cell",
+        // Disable clipping so naive_group (gene region) above isn't cut off
+        clip: false,
         encode: {
           update: {
             // Hide cell border
@@ -1371,8 +1376,9 @@ const concatTreeWithAlignmentSpec = () => {
           // , so the mutation marks were not flush agaisnt the border of their plot.
           {
             name: "mutations_clip",
+            // Extend clip region slightly (10px) so top/bottom leaves aren't cut off
             update:
-              " 'M 0 ' + toString(yrange[0]-mutation_mark_padding) + ' L 0 ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[0]-mutation_mark_padding) + ' z' "
+              " 'M 0 ' + toString(yrange[0]-mutation_mark_padding-10) + ' L 0 ' + toString(yrange[1]+mutation_mark_padding+10) + ' L ' + alignment_group_width + ' ' + toString(yrange[1]+mutation_mark_padding+10) + ' L ' + alignment_group_width + ' ' + toString(yrange[0]-mutation_mark_padding-10) + ' z' "
           }
         ],
         marks: [
@@ -1398,7 +1404,8 @@ const concatTreeWithAlignmentSpec = () => {
               update: {
                 stroke: { value: "transparent" },
                 // #59 this will need to be controlled by slider
-                y: { signal: "pie_chart_padding-naive_group_height-mutation_mark_padding" },
+                // Extra -10 accounts for extended mutations_clip padding
+                y: { signal: "pie_chart_padding-naive_group_height-mutation_mark_padding-10" },
                 width: { signal: "alignment_group_width" },
                 height: { signal: "naive_group_height" }
               }
