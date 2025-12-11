@@ -2083,7 +2083,7 @@ const seqAlignSpec = (family) => {
             ],
             tooltip: {
               signal:
-                '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
+                '{"region": \'\'+datum["region"], "start (NT)": format(datum["start"], ""), "start (AA)": format(floor(datum["start"]/3), ""), "end (NT)": format(datum["end"], ""), "end (AA)": format(floor(datum["end"]/3), ""), "gene": \'\'+datum["gene"]}'
             },
             x: {
               scale: "aa_position",
@@ -2147,6 +2147,8 @@ const seqAlignSpec = (family) => {
               },
               { scale: "aa_color", field: "mut_to" }
             ],
+            stroke: { value: "black" },
+            strokeWidth: { value: 0.5 },
             tooltip: {
               signal:
                 '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'

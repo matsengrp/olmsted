@@ -1,4 +1,15 @@
 import React from "react";
+import { FiDownload } from "react-icons/fi";
+
+const buttonStyle = {
+  padding: "6px 12px",
+  color: "#333",
+  cursor: "pointer"
+};
+
+const linkStyle = {
+  textDecoration: "none"
+};
 
 class DownloadText extends React.Component {
   constructor(props) {
@@ -25,8 +36,13 @@ class DownloadText extends React.Component {
   render() {
     const { text, filename, label } = this.props;
     return (
-      <a href={this.createTextDownload(text)} download={filename ? filename : this.defaultFilename} id="downloadlink">
-        <button type="button" id="create">
+      <a
+        href={this.createTextDownload(text)}
+        download={filename ? filename : this.defaultFilename}
+        style={linkStyle}
+      >
+        <button type="button" style={buttonStyle}>
+          <FiDownload style={{ marginRight: "6px", verticalAlign: "middle" }} />
           {label ? label : this.defaultLabel}
         </button>
       </a>

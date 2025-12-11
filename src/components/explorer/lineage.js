@@ -72,16 +72,19 @@ class Lineage extends React.Component {
 
           <h3>Amino acid sequence:</h3>
           <p>{selectedSeq.sequence_alignment_aa}</p>
-          <Copy
-            value={selectedSeq.sequence_alignment ? selectedSeq.sequence_alignment : "NO NUCLEOTIDE SEQUENCE"}
-            buttonLabel="Copy nucleotide sequence to clipboard"
-          />
-
-          <DownloadFasta
-            sequencesSet={lineageData.download_lineage_seqs.slice()}
-            filename={selectedSeq.sequence_id.concat("-lineage.fasta")}
-            label="Download Fasta: Lineage Sequences"
-          />
+          <div style={{ marginTop: "10px", marginBottom: "8px" }}>
+            <Copy
+              value={selectedSeq.sequence_alignment ? selectedSeq.sequence_alignment : "NO NUCLEOTIDE SEQUENCE"}
+              buttonLabel="Copy nucleotide sequence to clipboard"
+            />
+          </div>
+          <div style={{ marginBottom: "8px" }}>
+            <DownloadFasta
+              sequencesSet={lineageData.download_lineage_seqs.slice()}
+              filename={selectedSeq.sequence_id.concat("-lineage.fasta")}
+              label="Download Fasta: Lineage Sequences"
+            />
+          </div>
 
           <h3>Lineage</h3>
           <Vega

@@ -35,15 +35,15 @@ const naiveVegaSpec = {
           ],
           tooltip: {
             signal:
-              '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
+              '{"region": \'\'+datum["region"], "start (NT)": format(datum["start"], ""), "start (AA)": format(floor(datum["start"]/3), ""), "end (NT)": format(datum["end"], ""), "end (AA)": format(floor(datum["end"]/3), ""), "gene": \'\'+datum["gene"]}'
           },
           x: {
             scale: "x",
-            field: "start"
+            signal: "floor(datum['start']/3)"
           },
           x2: {
             scale: "x",
-            field: "end"
+            signal: "floor(datum['end']/3)"
           },
           yc: {
             scale: "y",
@@ -69,7 +69,7 @@ const naiveVegaSpec = {
     {
       name: "x",
       type: "linear",
-      domain: [0, 400],
+      domain: [0, 150],
       range: [0, { signal: "width" }],
       nice: true,
       zero: false

@@ -243,27 +243,30 @@ class TreeViz extends React.Component {
 
         {/* Show downloads if complete family, tree */}
         {completeData && tree.download_unique_family_seqs && (
-          <div>
-            <DownloadFasta
-              sequencesSet={tree.download_unique_family_seqs.slice()}
-              filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
-                "-",
-                selectedFamily.clone_id,
-                ".fasta"
-              )}
-              label="Download Fasta: Unique Sequences In This Tree"
-            />
-
-            <DownloadText
-              text={selectedTree.newick}
-              filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
-                "-",
-                selectedFamily.clone_id,
-                "-newick",
-                ".txt"
-              )}
-              label="Download Clonal Family Tree Newick String"
-            />
+          <div style={{ marginTop: "10px" }}>
+            <div style={{ marginBottom: "8px" }}>
+              <DownloadFasta
+                sequencesSet={tree.download_unique_family_seqs.slice()}
+                filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                  "-",
+                  selectedFamily.clone_id,
+                  ".fasta"
+                )}
+                label="Download Fasta: Unique Sequences In This Tree"
+              />
+            </div>
+            <div>
+              <DownloadText
+                text={selectedTree.newick}
+                filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                  "-",
+                  selectedFamily.clone_id,
+                  "-newick",
+                  ".txt"
+                )}
+                label="Download Clonal Family Tree Newick String"
+              />
+            </div>
           </div>
         )}
       </div>
