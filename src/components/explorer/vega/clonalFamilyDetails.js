@@ -94,7 +94,7 @@ const concatTreeWithAlignmentSpec = () => {
     $schema: "https://vega.github.io/schema/vega/v5.json",
     description: "",
     autosize: { type: "pad", resize: true },
-    // Small top padding for visual spacing
+    // Top padding for readability around the gene region
     padding: { top: 20, left: 0, right: 0, bottom: 0 },
     // Note that we have some datasets named for signals
     // these are a current way around being able to set
@@ -414,8 +414,8 @@ const concatTreeWithAlignmentSpec = () => {
       // These are the ranges for displaying the tree marks. We pad so that the pie charts and labels
       // are all visible when fully zoomed out
       { name: "xrange", update: "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
-      // Extra +20 top/bottom padding to prevent leaves from falling off
-      { name: "yrange", update: "[pie_chart_padding + 20, height - pie_chart_padding - 20]" },
+      // Add 5px buffer to ensure top/bottom pie charts don't touch clip boundary
+      { name: "yrange", update: "[pie_chart_padding + 5, height - pie_chart_padding - 5]" },
       // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
       // in the outer scope to allow scales/axes to update accordingly
       {
@@ -861,7 +861,7 @@ const concatTreeWithAlignmentSpec = () => {
     // ---------------------------------------------------------------------------
 
     layout: {
-      padding: { column: 8, row: 10 },
+      padding: { column: 8 },
       // 2 columns so the grid repeats on the next row after two items (group marks)
       columns: 2,
       bounds: "full",
@@ -914,8 +914,9 @@ const concatTreeWithAlignmentSpec = () => {
         encode: { update: { width: { signal: "alignment_group_width" } } },
         axes: [
           {
-            // Offset to align with the change of the alignment height due to padding
-            offset: { signal: "mutation_mark_padding-pie_chart_padding" },
+            // Offset to align axis with the mutations_clip region
+            // yrange[0] accounts for pie_chart_padding plus any additional buffer
+            offset: { signal: "mutation_mark_padding-yrange[0]" },
             scale: "aa_position",
             orient: "bottom",
             grid: false,
@@ -1368,6 +1369,12 @@ const concatTreeWithAlignmentSpec = () => {
             name: "naive_group_height",
             value: 40
           },
+          // Horizontal-only clip path for naive_group
+          // Clips horizontally to alignment_group_width, but extends far vertically to avoid vertical clipping
+          {
+            name: "naive_horizontal_clip",
+            update: "'M 0 -1000 L 0 1000 L ' + alignment_group_width + ' 1000 L ' + alignment_group_width + ' -1000 z'"
+          },
           // This is an SVG path used to assign a special clipping region (not the default,
           // i.e. the height and width of the group mark) for the alignment. This is
           // necessary to get the naive viz as close as possible to the alignment so one
@@ -1376,9 +1383,8 @@ const concatTreeWithAlignmentSpec = () => {
           // , so the mutation marks were not flush agaisnt the border of their plot.
           {
             name: "mutations_clip",
-            // Extend clip region slightly (10px) so top/bottom leaves aren't cut off
             update:
-              " 'M 0 ' + toString(yrange[0]-mutation_mark_padding-10) + ' L 0 ' + toString(yrange[1]+mutation_mark_padding+10) + ' L ' + alignment_group_width + ' ' + toString(yrange[1]+mutation_mark_padding+10) + ' L ' + alignment_group_width + ' ' + toString(yrange[0]-mutation_mark_padding-10) + ' z' "
+              " 'M 0 ' + toString(yrange[0]-mutation_mark_padding) + ' L 0 ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[1]+mutation_mark_padding) + ' L ' + alignment_group_width + ' ' + toString(yrange[0]-mutation_mark_padding) + ' z' "
           }
         ],
         marks: [
@@ -1398,14 +1404,17 @@ const concatTreeWithAlignmentSpec = () => {
             name: "naive_group",
             type: "group",
             style: "cell",
-            // Clip to prevent gene region marks from overflowing
-            clip: true,
+            // Use horizontal-only clip path to prevent gene region marks from overflowing
+            // horizontally while allowing full vertical visibility
+            clip: { path: { signal: "naive_horizontal_clip" } },
             encode: {
               update: {
                 stroke: { value: "transparent" },
                 // #59 this will need to be controlled by slider
-                // Extra -10 accounts for extended mutations_clip padding
-                y: { signal: "pie_chart_padding-naive_group_height-mutation_mark_padding-10" },
+                // Position naive_group above the mutations_clip region
+                // yrange[0] - mutation_mark_padding is the top of mutations_clip
+                // Then subtract naive_group_height and a 10px gap
+                y: { signal: "yrange[0]-mutation_mark_padding-naive_group_height-10" },
                 width: { signal: "alignment_group_width" },
                 height: { signal: "naive_group_height" }
               }
