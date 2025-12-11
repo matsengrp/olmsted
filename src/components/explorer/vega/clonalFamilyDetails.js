@@ -432,19 +432,8 @@ const concatTreeWithAlignmentSpec = () => {
       // ---------------------------------------------------------------------------
 
       {
-        name: "tree_group_width_ratio",
-        value: 0.3,
-        bind: {
-          name: "Tree width ratio",
-          input: "range",
-          max: 1,
-          min: 0.2,
-          step: 0.01
-        }
-      },
-      {
         name: "tree_group_width",
-        update: "tree_group_width_ratio*width"
+        update: "show_alignment ? tree_group_width_ratio*width : width"
       },
       // Number of leaves
       {
@@ -617,6 +606,120 @@ const concatTreeWithAlignmentSpec = () => {
         name: "max_aa_seq_length",
         update: "max(ceil(dna_j_gene_end[1]/3), position_extent ? position_extent[1] + 1 : 0)"
       },
+
+      // /ALIGNMENT ZOOM/PAN SIGNALS:
+      // Horizontal zoom level for alignment (1.0 = no zoom, >1 = zoomed in)
+      {
+        name: "alignment_zoom",
+        value: 1,
+        on: [
+          {
+            // Scroll to zoom when hovering over alignment group
+            // consume: true prevents page scrolling
+            events: [
+              { source: "scope", type: "wheel", markname: "alignment_zoom_area", consume: true },
+              { source: "scope", type: "wheel", markname: "naive_zoom_area", consume: true }
+            ],
+            update: "clamp(alignment_zoom * pow(1.002, -event.deltaY), 1, 50)"
+          },
+          {
+            // Double-click to reset zoom/pan
+            events: [
+              { source: "scope", type: "dblclick", markname: "alignment_zoom_area" },
+              { source: "scope", type: "dblclick", markname: "naive_zoom_area" }
+            ],
+            update: "1"
+          }
+        ]
+      },
+      // Pan offset for alignment (0 = leftmost, 1 = rightmost)
+      // Max pan value depends on zoom: at zoom=2, can pan 0.5; at zoom=10, can pan 0.9
+      {
+        name: "alignment_pan_max",
+        update: "max(0, 1 - 1/alignment_zoom)"
+      },
+      {
+        name: "alignment_pan",
+        value: 0,
+        on: [
+          {
+            // Clamp pan when zoom changes (keep within valid range)
+            events: { signal: "alignment_zoom" },
+            update: "clamp(alignment_pan, 0, alignment_pan_max)"
+          },
+          {
+            // Drag scrollbar thumb to pan
+            events: {
+              source: "window",
+              type: "mousemove",
+              between: [
+                { source: "scope", type: "mousedown", markname: "scrollbar_thumb" },
+                { source: "window", type: "mouseup" }
+              ]
+            },
+            // Direct mapping: drag distance maps to pan change
+            update: "clamp(alignment_pan + event.movementX / alignment_group_width, 0, alignment_pan_max)"
+          },
+          {
+            // Click on scrollbar track to jump to position
+            events: { source: "scope", type: "click", markname: "scrollbar_track" },
+            // Calculate pan from click position, centering the thumb on click
+            update: "clamp(x() / alignment_group_width - 0.5/alignment_zoom, 0, alignment_pan_max)"
+          },
+          {
+            // Double-click to reset zoom/pan
+            events: [
+              { source: "scope", type: "dblclick", markname: "alignment_zoom_area" },
+              { source: "scope", type: "dblclick", markname: "naive_zoom_area" }
+            ],
+            update: "0"
+          }
+        ]
+      },
+      // Track if we're dragging the scrollbar (for cursor change)
+      {
+        name: "alignment_dragging",
+        value: false,
+        on: [
+          {
+            events: { source: "scope", type: "mousedown", markname: "scrollbar_thumb" },
+            update: "true"
+          },
+          {
+            events: { source: "window", type: "mouseup" },
+            update: "false"
+          }
+        ]
+      },
+      // Computed domain for zoomed alignment view
+      // Full domain is [-1, max_aa_seq_length]
+      // When zoomed, we show a subset based on pan position
+      {
+        name: "aa_domain_start",
+        update: "-1 + alignment_pan * (max_aa_seq_length + 1)"
+      },
+      {
+        name: "aa_domain_end",
+        update: "aa_domain_start + (max_aa_seq_length + 1) / alignment_zoom"
+      },
+      // Generate integer tick values for the visible domain range
+      // This ensures ticks are always at integer positions regardless of zoom
+      {
+        name: "aa_tick_step",
+        // Adjust step based on visible range to avoid overcrowding
+        // At low zoom, use larger steps; at high zoom, show every integer
+        update: "max(1, floor((aa_domain_end - aa_domain_start) / 20))"
+      },
+      {
+        name: "aa_visible_ticks",
+        // Generate integers from visible start to end, with appropriate step
+        update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, aa_tick_step)"
+      },
+      {
+        name: "aa_gridline_values",
+        // Generate ALL integers in visible range for gridlines (step = 1)
+        update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, 1)"
+      },
       // Size of mutation marks vertically, clamped to max 20;
       // with scale factor to give space between each mark
       {
@@ -635,7 +738,118 @@ const concatTreeWithAlignmentSpec = () => {
       // #59 this will need to be controlled by slider
       {
         name: "alignment_group_width",
-        update: "width-tree_group_width"
+        update: "show_alignment ? width-tree_group_width : 0"
+      },
+
+      // /DIVIDER DRAG SIGNALS:
+      // ---------------------------------------------------------------------------
+      // Track if the divider is being dragged
+      {
+        name: "divider_dragging",
+        value: false,
+        on: [
+          {
+            events: "@divider:mousedown, @divider:touchstart",
+            update: "true"
+          },
+          {
+            events: "window:mouseup, window:touchend",
+            update: "false"
+          }
+        ]
+      },
+      // Track the starting x position when drag begins
+      {
+        name: "divider_drag_start_x",
+        value: 0,
+        on: [
+          {
+            events: "@divider:mousedown, @divider:touchstart",
+            update: "x()"
+          }
+        ]
+      },
+      // Track the starting ratio when drag begins
+      {
+        name: "divider_drag_start_ratio",
+        value: 0.3,
+        on: [
+          {
+            events: "@divider:mousedown, @divider:touchstart",
+            update: "tree_group_width_ratio"
+          }
+        ]
+      },
+      // Update ratio during drag
+      {
+        name: "tree_group_width_ratio",
+        value: 0.3,
+        bind: {
+          name: "Tree width ratio",
+          input: "range",
+          max: 0.98,
+          min: 0.2,
+          step: 0.02
+        },
+        on: [
+          {
+            events: {
+              source: "window",
+              type: "mousemove",
+              between: [
+                { source: "scope", type: "mousedown", markname: "divider" },
+                { source: "window", type: "mouseup" }
+              ]
+            },
+            // Round to 0.02 increments for cleaner values
+            update: "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
+          },
+          {
+            events: {
+              type: "touchmove",
+              between: [
+                { source: "scope", type: "touchstart", markname: "divider" },
+                { source: "window", type: "touchend" }
+              ]
+            },
+            // Round to 0.02 increments for cleaner values
+            update: "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
+          }
+        ]
+      },
+      // Toggle to show/hide alignment - also controlled by drag position
+      {
+        name: "show_alignment",
+        value: true,
+        bind: {
+          input: "checkbox",
+          name: "Show alignment"
+        },
+        on: [
+          {
+            // Hide alignment when dragged past 0.90
+            events: {
+              source: "window",
+              type: "mousemove",
+              between: [
+                { source: "scope", type: "mousedown", markname: "divider" },
+                { source: "window", type: "mouseup" }
+              ]
+            },
+            update: "(divider_drag_start_ratio + (x() - divider_drag_start_x) / width) <= 0.90"
+          },
+          {
+            // Touch support
+            events: {
+              type: "touchmove",
+              between: [
+                { source: "scope", type: "touchstart", markname: "divider" },
+                { source: "window", type: "touchend" }
+              ]
+            },
+            update: "(divider_drag_start_ratio + (x() - divider_drag_start_x) / width) <= 0.90"
+          }
+        ]
       }
     ],
 
@@ -643,7 +857,7 @@ const concatTreeWithAlignmentSpec = () => {
     // ---------------------------------------------------------------------------
 
     layout: {
-      padding: { column: 0 },
+      padding: { column: 8 },
       // 2 columns so the grid repeats on the next row after two items (group marks)
       columns: 2,
       bounds: "full",
@@ -701,11 +915,28 @@ const concatTreeWithAlignmentSpec = () => {
             scale: "aa_position",
             orient: "bottom",
             grid: false,
-            title: "Amino acid position",
+            title: { signal: "show_alignment ? 'Amino acid position' : ''" },
             labelFlush: true,
             labelOverlap: true,
-            values: { signal: "sequence(max_aa_seq_length)" },
-            zindex: 1
+            // Use computed integer tick values based on visible domain
+            values: { signal: "aa_visible_ticks" },
+            // Format as integers (no decimals)
+            format: "d",
+            zindex: 1,
+            encode: {
+              ticks: {
+                update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+              },
+              labels: {
+                update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+              },
+              domain: {
+                update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+              },
+              title: {
+                update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+              }
+            }
           }
         ]
       },
@@ -733,7 +964,14 @@ const concatTreeWithAlignmentSpec = () => {
             value: null,
             on: [
               { events: "touchend", update: "null" },
-              { events: "mousedown, touchstart", update: "xy()" }
+              {
+                events: {
+                  type: "mousedown",
+                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track')"
+                },
+                update: "xy()"
+              },
+              { events: "touchstart", update: "xy()" }
             ]
           },
           {
@@ -741,9 +979,13 @@ const concatTreeWithAlignmentSpec = () => {
             value: null,
             on: [
               {
-                events: "mousedown, touchstart, touchend",
+                events: {
+                  type: "mousedown",
+                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track')"
+                },
                 update: "slice(xdom)"
-              }
+              },
+              { events: "touchstart, touchend", update: "slice(xdom)" }
             ]
           },
           {
@@ -751,9 +993,13 @@ const concatTreeWithAlignmentSpec = () => {
             value: null,
             on: [
               {
-                events: "mousedown, touchstart, touchend",
+                events: {
+                  type: "mousedown",
+                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track')"
+                },
                 update: "slice(ydom)"
-              }
+              },
+              { events: "touchstart, touchend", update: "slice(ydom)" }
             ]
           },
           // Dragging / panning
@@ -766,7 +1012,13 @@ const concatTreeWithAlignmentSpec = () => {
                   {
                     source: "window",
                     type: "mousemove",
-                    between: [{ type: "mousedown" }, { source: "window", type: "mouseup" }]
+                    between: [
+                      {
+                        type: "mousedown",
+                        filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track')"
+                      },
+                      { source: "window", type: "mouseup" }
+                    ]
                   },
                   {
                     type: "touchmove",
@@ -878,6 +1130,11 @@ const concatTreeWithAlignmentSpec = () => {
                 // Limiting zoom to the boundaries of the tree
                 update:
                   "[ max( (anchor[0] + (xdom[0] - anchor[0]) * zoom) , xext[0] ),   min( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[1]) ]"
+              },
+              // Reset to full extent on double-click
+              {
+                events: { type: "dblclick" },
+                update: "slice(xext)"
               }
             ]
           },
@@ -901,6 +1158,11 @@ const concatTreeWithAlignmentSpec = () => {
                 // Limiting zoom to the boundaries of the tree
                 update:
                   "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0]), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] ) ] "
+              },
+              // Reset to full extent on double-click
+              {
+                events: { type: "dblclick" },
+                update: "slice(yext)"
               }
             ]
           }
@@ -1053,6 +1315,27 @@ const concatTreeWithAlignmentSpec = () => {
               }
             },
             from: { data: "leaves" }
+          },
+          // /DRAGGABLE DIVIDER
+          // Vertical bar at the right edge of tree_group that can be dragged to resize
+          // Always visible so user can drag back to show alignment
+          {
+            name: "divider",
+            type: "rect",
+            encode: {
+              enter: {
+                cursor: { value: "col-resize" }
+              },
+              update: {
+                x: { signal: "tree_group_width - 6" },
+                y: { value: -10 },
+                width: { value: 14 },
+                height: { signal: "height + 20" },
+                fill: { signal: "divider_dragging ? '#666' : '#ccc'" },
+                fillOpacity: { signal: "divider_dragging ? 0.9 : 0.6" },
+                cornerRadius: { value: 2 }
+              }
+            }
           }
         ]
       },
@@ -1070,7 +1353,8 @@ const concatTreeWithAlignmentSpec = () => {
             stroke: { value: "transparent" },
             // #59 this will need to be controlled by slider
             width: { signal: "alignment_group_width" },
-            height: { signal: "height" }
+            height: { signal: "height" },
+            opacity: { signal: "show_alignment ? 1 : 0" }
           }
         },
         signals: [
@@ -1107,6 +1391,8 @@ const concatTreeWithAlignmentSpec = () => {
             name: "naive_group",
             type: "group",
             style: "cell",
+            // Clip to prevent gene region marks from overflowing
+            clip: true,
             encode: {
               update: {
                 stroke: { value: "transparent" },
@@ -1117,6 +1403,25 @@ const concatTreeWithAlignmentSpec = () => {
               }
             },
             marks: [
+              // Interaction area for naive region zoom
+              // Use very low opacity fill (not transparent) to ensure mouse events are captured
+              {
+                name: "naive_zoom_area",
+                type: "rect",
+                encode: {
+                  enter: {
+                    fill: { value: "#000" },
+                    fillOpacity: { value: 0.001 },
+                    cursor: { value: "default" }
+                  },
+                  update: {
+                    x: { value: 0 },
+                    y: { value: 0 },
+                    width: { signal: "alignment_group_width" },
+                    height: { signal: "naive_group_height" }
+                  }
+                }
+              },
               {
                 name: "naive",
                 type: "rect",
@@ -1226,8 +1531,17 @@ const concatTreeWithAlignmentSpec = () => {
                 title: "Gene region color key",
                 offset: { signal: "10" },
                 encode: {
+                  title: {
+                    update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+                  },
+                  labels: {
+                    update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+                  },
                   symbols: {
-                    update: { shape: { value: "square" }, opacity: { value: 0.9 } }
+                    update: { shape: { value: "square" }, opacity: { signal: "show_alignment ? 0.9 : 0" } }
+                  },
+                  entries: {
+                    update: { opacity: { signal: "show_alignment ? 1 : 0" } }
                   }
                 }
               }
@@ -1247,6 +1561,25 @@ const concatTreeWithAlignmentSpec = () => {
               }
             },
             marks: [
+              // Interaction area for zoom (scroll wheel)
+              // Use very low opacity fill (not transparent) to ensure mouse events are captured
+              {
+                name: "alignment_zoom_area",
+                type: "rect",
+                encode: {
+                  enter: {
+                    fill: { value: "#000" },
+                    fillOpacity: { value: 0.001 },
+                    cursor: { value: "default" }
+                  },
+                  update: {
+                    x: { value: 0 },
+                    y: { value: 0 },
+                    width: { signal: "alignment_group_width" },
+                    height: { signal: "height" }
+                  }
+                }
+              },
               {
                 name: "y_grid",
                 type: "rule",
@@ -1363,12 +1696,13 @@ const concatTreeWithAlignmentSpec = () => {
             ],
             // ALIGNMENT GRIDLINES
             axes: [
-              // x grid
+              // x grid - always at integer positions
               {
                 scale: "aa_position",
                 orient: "bottom",
                 grid: true,
-                tickCount: { signal: "max_aa_seq_length" },
+                // Use explicit integer values for gridlines
+                values: { signal: "aa_gridline_values" },
                 domain: false,
                 labels: false,
                 maxExtent: 0,
@@ -1377,6 +1711,62 @@ const concatTreeWithAlignmentSpec = () => {
                 zindex: 0
               }
             ]
+          },
+          // /SCROLLBAR (outside mutations_group to avoid clipping)
+          // Interactive scrollbar for panning when zoomed
+          // Track background (full width) - clickable to jump to position
+          {
+            name: "scrollbar_track",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 0 },
+                y: { signal: "height + 42" },
+                width: { signal: "alignment_group_width" },
+                height: { value: 8 },
+                fill: { value: "#e0e0e0" },
+                cornerRadius: { value: 4 },
+                cursor: { signal: "alignment_zoom > 1 ? 'pointer' : 'default'" },
+                // Only show when zoomed
+                opacity: { signal: "alignment_zoom > 1 ? 0.9 : 0" }
+              }
+            }
+          },
+          // Draggable thumb (shows current view area)
+          {
+            name: "scrollbar_thumb",
+            type: "rect",
+            encode: {
+              update: {
+                // Position based on pan (0-1 range scaled to track width)
+                x: { signal: "alignment_pan * alignment_group_width" },
+                y: { signal: "height + 42" },
+                // Width represents the proportion of visible content
+                width: { signal: "max(20, alignment_group_width / alignment_zoom)" },
+                height: { value: 8 },
+                fill: { signal: "alignment_dragging ? '#555' : '#888'" },
+                cornerRadius: { value: 4 },
+                cursor: { signal: "alignment_zoom > 1 ? 'grab' : 'default'" },
+                // Only show when zoomed
+                opacity: { signal: "alignment_zoom > 1 ? 1 : 0" }
+              }
+            }
+          },
+          // Zoom level indicator text
+          {
+            name: "zoom_indicator_text",
+            type: "text",
+            encode: {
+              update: {
+                x: { signal: "alignment_group_width - 5" },
+                y: { signal: "height + 38" },
+                text: { signal: "alignment_zoom > 1 ? format(alignment_zoom, '.1f') + 'x zoom' : ''" },
+                fontSize: { value: 11 },
+                fill: { value: "#555" },
+                align: { value: "right" },
+                baseline: { value: "bottom" }
+              }
+            }
           }
         ]
       }
@@ -1447,13 +1837,13 @@ const concatTreeWithAlignmentSpec = () => {
         domain: { signal: "ydom" },
         range: { signal: "yrange" }
       },
-      // Alignment x scale
+      // Alignment x scale (with zoom/pan support)
       {
         name: "aa_position",
         type: "linear",
-        domain: [-1, { signal: "max_aa_seq_length" }],
+        domain: { signal: "[aa_domain_start, aa_domain_end]" },
         range: [0, { signal: "alignment_group_width" }],
-        zero: true
+        zero: false
       },
       {
         name: "aa_color",
@@ -1471,6 +1861,9 @@ const concatTreeWithAlignmentSpec = () => {
         fill: "aa_color",
         title: "AA color",
         encode: {
+          legend: {
+            update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+          },
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }
           }

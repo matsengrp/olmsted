@@ -1183,7 +1183,9 @@ const createCellMark = () => ({
   encode: {
     update: {
       width: { signal: "child_width" },
-      height: { signal: "child_height" }
+      height: { signal: "child_height" },
+      // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
+      cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'default'" }
     }
   },
   signals: createCellSignals(),
