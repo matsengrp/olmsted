@@ -89,13 +89,18 @@ const tableau20plusColors = [
 //   "#CCFFCC" //   Y - Tyr - Tyrosine
 // ];
 
-const concatTreeWithAlignmentSpec = () => {
+const concatTreeWithAlignmentSpec = (options = {}) => {
+  const { showControls = true, showLegend = true, topPadding = 20 } = options;
+
+  // Helper to conditionally add bind property
+  const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
+
   return {
     $schema: "https://vega.github.io/schema/vega/v5.json",
     description: "",
     autosize: { type: "pad", resize: true },
     // Top padding for readability around the gene region
-    padding: { top: 20, left: 0, right: 0, bottom: 0 },
+    padding: { top: topPadding, left: 0, right: 0, bottom: 0 },
     // Note that we have some datasets named for signals
     // these are a current way around being able to set
     // the initial values of signals through the props
@@ -387,15 +392,19 @@ const concatTreeWithAlignmentSpec = () => {
 
     signals: [
       {
-        // Update height from window size see https://github.com/matsengrp/olmsted/issues/83)
+        // Update height from window size and viz_height_ratio (see https://github.com/matsengrp/olmsted/issues/83)
         name: "height",
 
-        update: "floor(windowSize()[1]*0.8)",
+        update: "floor(windowSize()[1]*viz_height_ratio)",
 
         on: [
           {
             events: { source: "window", type: "resize" },
-            update: "floor(windowSize()[1]*0.8)"
+            update: "floor(windowSize()[1]*viz_height_ratio)"
+          },
+          {
+            events: { signal: "viz_height_ratio" },
+            update: "floor(windowSize()[1]*viz_height_ratio)"
           }
         ]
       },
@@ -459,22 +468,22 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "max_leaf_size",
         value: 50,
-        bind: {
+        ...maybeAddBind({
           max: 100,
           step: 1,
           input: "range",
           min: 1
-        }
+        })
       },
       // HEIGHTSCALE SIGNALS END
       {
         // Metadata field to use for sizing the leaves
         name: "leaf_size_by",
         value: "<none>",
-        bind: {
+        ...maybeAddBind({
           input: "select",
           options: ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]
-        }
+        })
       },
       {
         name: "leaf_size_by_legend_label",
@@ -491,19 +500,19 @@ const concatTreeWithAlignmentSpec = () => {
         // uses value from the child of the branch
         name: "branch_width_by",
         value: "<none>",
-        bind: { input: "select", options: ["<none>", "lbr", "lbi"] }
+        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi"] })
       },
       {
         // Seq metric to use for coloring branches;
         // uses value from the child of the branch
         name: "branch_color_by",
         value: "parent",
-        bind: { input: "select", options: ["<none>", "lbr", "lbi", "parent"] }
+        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi", "parent"] })
       },
       {
         name: "branch_color_scheme",
         value: "redblue",
-        bind: { input: "select", options: ["redblue", "purples"] }
+        ...maybeAddBind({ input: "select", options: ["redblue", "purples"] })
       },
       {
         name: "branch_color_scheme_map",
@@ -512,12 +521,12 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "min_color_value",
         value: 0,
-        bind: {
+        ...maybeAddBind({
           input: "range",
           max: 4,
           step: 1,
           min: 0
-        }
+        })
       },
       {
         name: "full_purple_range",
@@ -538,18 +547,18 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "show_labels",
         value: true,
-        bind: {
+        ...maybeAddBind({
           input: "checkbox",
           name: "Show labels"
-        }
+        })
       },
       {
         name: "fixed_branch_lengths",
         value: false,
-        bind: {
+        ...maybeAddBind({
           input: "checkbox",
           name: "Fixed branch lengths"
-        }
+        })
       },
       // Padding to add to the initial tree size to not clip labels
       {
@@ -826,13 +835,13 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "tree_group_width_ratio",
         value: 0.3,
-        bind: {
+        ...maybeAddBind({
           name: "Tree width ratio",
           input: "range",
           max: 0.98,
           min: 0.2,
           step: 0.02
-        },
+        }),
         on: [
           {
             events: {
@@ -859,14 +868,92 @@ const concatTreeWithAlignmentSpec = () => {
           }
         ]
       },
+      // /BOTTOM DIVIDER DRAG SIGNALS:
+      // ---------------------------------------------------------------------------
+      // Track if the bottom divider is being dragged
+      {
+        name: "bottom_divider_dragging",
+        value: false,
+        on: [
+          {
+            events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+            update: "true"
+          },
+          {
+            events: "window:mouseup, window:touchend",
+            update: "false"
+          }
+        ]
+      },
+      // Track the starting y position when drag begins
+      {
+        name: "bottom_divider_drag_start_y",
+        value: 0,
+        on: [
+          {
+            events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+            update: "event.clientY"
+          }
+        ]
+      },
+      // Track the starting ratio when drag begins
+      {
+        name: "bottom_divider_drag_start_ratio",
+        value: 0.8,
+        on: [
+          {
+            events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+            update: "viz_height_ratio"
+          }
+        ]
+      },
+      // Height ratio control - allows compacting view for stacked mode
+      // Also controlled by dragging the bottom divider
+      {
+        name: "viz_height_ratio",
+        value: 0.8,
+        ...maybeAddBind({
+          name: "Viz height",
+          input: "range",
+          min: 0.2,
+          max: 0.9,
+          step: 0.05
+        }),
+        on: [
+          {
+            events: {
+              source: "window",
+              type: "mousemove",
+              between: [
+                { source: "scope", type: "mousedown", markname: "bottom_divider" },
+                { source: "window", type: "mouseup" }
+              ]
+            },
+            // Calculate new ratio based on drag distance relative to window height
+            // Round to 0.05 increments for cleaner values
+            update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+          },
+          {
+            events: {
+              type: "touchmove",
+              between: [
+                { source: "scope", type: "touchstart", markname: "bottom_divider" },
+                { source: "window", type: "touchend" }
+              ]
+            },
+            // Round to 0.05 increments for cleaner values
+            update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+          }
+        ]
+      },
       // Toggle to show/hide alignment - also controlled by drag position
       {
         name: "show_alignment",
         value: true,
-        bind: {
+        ...maybeAddBind({
           input: "checkbox",
           name: "Show alignment"
-        },
+        }),
         on: [
           {
             // Hide alignment when dragged past 0.90
@@ -897,10 +984,10 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "show_mutation_borders",
         value: false,
-        bind: {
+        ...maybeAddBind({
           input: "checkbox",
           name: "Show mutation borders"
-        }
+        })
       }
     ],
 
@@ -937,21 +1024,23 @@ const concatTreeWithAlignmentSpec = () => {
             zindex: 1
           }
         ],
-        // pie chart legend
-        legends: [
-          {
-            orient: "bottom",
-            direction: "horizontal",
-            fill: "timepoint_multiplicities",
-            title: { signal: "leaf_size_by_legend_label" }, // "Leaf color key:",
-            titleLimit: "2000",
-            encode: {
-              symbols: {
-                update: { shape: { value: "circle" }, opacity: { value: 0.9 } }
+        // pie chart legend - conditionally shown
+        ...(showLegend ? {
+          legends: [
+            {
+              orient: "bottom",
+              direction: "horizontal",
+              fill: "timepoint_multiplicities",
+              title: { signal: "leaf_size_by_legend_label" }, // "Leaf color key:",
+              titleLimit: "2000",
+              encode: {
+                symbols: {
+                  update: { shape: { value: "circle" }, opacity: { value: 0.9 } }
+                }
               }
             }
-          }
-        ]
+          ]
+        } : {})
       },
       // Amino acid position axis
       {
@@ -1401,7 +1490,7 @@ const concatTreeWithAlignmentSpec = () => {
             },
             from: { data: "leaves" }
           },
-          // /DRAGGABLE DIVIDER
+          // /DRAGGABLE DIVIDER (vertical - tree/alignment width)
           // Vertical bar at the right edge of tree_group that can be dragged to resize
           // Always visible so user can drag back to show alignment
           {
@@ -1418,6 +1507,26 @@ const concatTreeWithAlignmentSpec = () => {
                 height: { signal: "height + 20" },
                 fill: { signal: "divider_dragging ? '#666' : '#ccc'" },
                 fillOpacity: { signal: "divider_dragging ? 0.9 : 0.6" },
+                cornerRadius: { value: 2 }
+              }
+            }
+          },
+          // /BOTTOM DIVIDER (horizontal - viz height)
+          // Horizontal bar at the bottom of tree_group that can be dragged to resize height
+          {
+            name: "bottom_divider",
+            type: "rect",
+            encode: {
+              enter: {
+                cursor: { value: "row-resize" }
+              },
+              update: {
+                x: { value: 0 },
+                y: { signal: "height - 6" },
+                width: { signal: "tree_group_width" },
+                height: { value: 14 },
+                fill: { signal: "bottom_divider_dragging ? '#666' : '#ccc'" },
+                fillOpacity: { signal: "bottom_divider_dragging ? 0.9 : 0.6" },
                 cornerRadius: { value: 2 }
               }
             }

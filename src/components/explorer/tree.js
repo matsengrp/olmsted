@@ -203,9 +203,25 @@ const mapStateToProps = (state) => {
 class TreeViz extends React.Component {
   constructor(props) {
     super(props);
-    this.spec = concatTreeWithAlignmentSpec();
+    // Spec with controls (for light chain in stacked mode, or single chain mode)
+    this.spec = concatTreeWithAlignmentSpec({ showControls: true });
+    // Spec without controls (for heavy chain in stacked mode - mirrors light chain settings)
+    // Also hides legend and removes top padding for compact layout
+    this.specNoControls = concatTreeWithAlignmentSpec({ showControls: false, showLegend: false, topPadding: 0 });
     this.treeDataFromProps = this.treeDataFromProps.bind(this);
     this.getChainData = this.getChainData.bind(this);
+    this.handleLightChainSignal = this.handleLightChainSignal.bind(this);
+    // Refs to access Vega views for signal synchronization
+    this.heavyVegaRef = React.createRef();
+    this.lightVegaRef = React.createRef();
+    // List of signals to synchronize between light and heavy chain
+    this.syncedSignals = [
+      "max_leaf_size", "leaf_size_by", "branch_width_by", "branch_color_by",
+      "branch_color_scheme", "min_color_value", "show_labels", "fixed_branch_lengths",
+      "tree_group_width_ratio", "show_alignment", "show_mutation_borders", "viz_height_ratio"
+    ];
+    // Signals that can be changed via drag on either view (bidirectional)
+    this.bidirectionalSignals = ["tree_group_width_ratio", "show_alignment", "viz_height_ratio"];
     this.tempVegaData = {
       source_0: [],
       source_1: [],
@@ -215,6 +231,56 @@ class TreeViz extends React.Component {
       pts_tuple: [],
       seed: []
     };
+  }
+
+  // Handle signal changes from light chain and propagate to heavy chain
+  handleLightChainSignal(signalName, value) {
+    if (this.heavyVegaRef.current) {
+      try {
+        this.heavyVegaRef.current.signal(signalName, value).run();
+      } catch (e) {
+        // Signal may not exist or view not ready
+      }
+    }
+  }
+
+  // Set up signal listeners on the light chain view to sync with heavy chain
+  setupLightChainSignalSync(lightView, initialHeightRatio = null) {
+    this.lightVegaRef.current = lightView;
+
+    // Set initial height ratio for stacked mode
+    if (initialHeightRatio !== null) {
+      lightView.signal("viz_height_ratio", initialHeightRatio).run();
+      // Also sync to heavy chain
+      this.handleLightChainSignal("viz_height_ratio", initialHeightRatio);
+    }
+
+    this.syncedSignals.forEach((signalName) => {
+      lightView.addSignalListener(signalName, (name, value) => {
+        this.handleLightChainSignal(name, value);
+      });
+    });
+  }
+
+  // Handle signal changes from heavy chain and propagate to light chain (for bidirectional signals)
+  handleHeavyChainSignal(signalName, value) {
+    if (this.lightVegaRef.current) {
+      try {
+        this.lightVegaRef.current.signal(signalName, value).run();
+      } catch (e) {
+        // Signal may not exist or view not ready
+      }
+    }
+  }
+
+  // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
+  setupHeavyChainSignalSync(heavyView) {
+    this.heavyVegaRef.current = heavyView;
+    this.bidirectionalSignals.forEach((signalName) => {
+      heavyView.addSignalListener(signalName, (name, value) => {
+        this.handleHeavyChainSignal(name, value);
+      });
+    });
   }
 
   componentDidMount() {
@@ -310,30 +376,32 @@ class TreeViz extends React.Component {
         )}
 
         {/* Stacked mode: render two separate tree/alignment visualizations */}
+        {/* Light chain has controls, heavy chain mirrors light chain settings */}
         {isStackedMode && completeData && (
           <div>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
                 const node = args.slice(1)[0];
-                if (node.parent) {
+                if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                 }
               }}
+              onNewView={(view) => this.setupHeavyChainSignalSync(view)}
               debug
               data={this.getChainData("heavy")}
-              spec={this.spec}
+              spec={this.specNoControls}
             />
-            <h4 style={{ marginBottom: "5px", marginTop: "20px" }}>Light Chain</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
                 const node = args.slice(1)[0];
-                if (node.parent) {
+                if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                 }
               }}
+              onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
               debug
               data={this.getChainData("light")}
               spec={this.spec}
@@ -342,33 +410,35 @@ class TreeViz extends React.Component {
         )}
 
         {/* Side-by-side mode: TODO - requires modified Vega spec */}
+        {/* For now, showing stacked view with synchronized controls */}
         {isSideBySideMode && completeData && (
           <div>
             <p style={{ fontStyle: "italic", color: "#666" }}>
               Side-by-side mode coming soon. For now, showing stacked view:
             </p>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
                 const node = args.slice(1)[0];
-                if (node.parent) {
+                if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                 }
               }}
+              onNewView={(view) => this.setupHeavyChainSignalSync(view)}
               debug
               data={this.getChainData("heavy")}
-              spec={this.spec}
+              spec={this.specNoControls}
             />
-            <h4 style={{ marginBottom: "5px", marginTop: "20px" }}>Light Chain</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
                 const node = args.slice(1)[0];
-                if (node.parent) {
+                if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                 }
               }}
+              onNewView={(view) => this.setupLightChainSignalSync(view)}
               debug
               data={this.getChainData("light")}
               spec={this.spec}
@@ -382,7 +452,7 @@ class TreeViz extends React.Component {
             onParseError={(...args) => console.error("parse error:", args)}
             onSignalPts_tuple={(...args) => {
               const node = args.slice(1)[0];
-              if (node.parent) {
+              if (node && node.parent) {
                 // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
                 dispatchSelectedSeq(node.sequence_id);
               }
