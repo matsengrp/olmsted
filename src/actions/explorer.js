@@ -72,6 +72,10 @@ export const filterBrushSelection = (key, value) => {
   return { type: types.FILTER_BRUSH_SELECTION, key, value };
 };
 
+export const clearBrushSelection = () => {
+  return { type: types.CLEAR_BRUSH_SELECTION };
+};
+
 export const updateFacet = (facetByField) => {
   return { type: types.UPDATE_FACET, facetByField };
 };

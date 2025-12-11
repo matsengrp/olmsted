@@ -149,8 +149,9 @@ const createSelectionSignals = () => [
     name: "mouseDown",
     on: [
       {
-        events: { source: "scope", type: "mousedown", consume: true, filter: ["!event.shiftKey"] },
-        update: "[x(cell), y(cell)]"
+        // Only track mousedown for selection when in select mode
+        events: { source: "scope", type: "mousedown", consume: true },
+        update: "interaction_mode === 'select' ? [x(cell), y(cell)] : null"
       }
     ]
   },
@@ -158,8 +159,9 @@ const createSelectionSignals = () => [
     name: "mouseUp",
     on: [
       {
-        events: { source: "window", type: "mouseup", filter: ["!event.shiftKey"] },
-        update: "[x(cell), y(cell)]"
+        // Only track mouseup for selection when in select mode
+        events: { source: "window", type: "mouseup" },
+        update: "interaction_mode === 'select' ? [x(cell), y(cell)] : null"
       }
     ]
   }
@@ -269,24 +271,106 @@ const createControlSignals = () => [
 
 // Helper function to create zoom/pan signals
 const createZoomPanSignals = () => [
+  // Base interaction mode set by clicking buttons: "select" or "zoom"
+  {
+    name: "interaction_mode_base",
+    value: "select",
+    on: [
+      {
+        // Click on select button or its text
+        events: [
+          { source: "scope", type: "click", markname: "select_button_bg" },
+          { source: "scope", type: "click", markname: "select_button_text" }
+        ],
+        update: "'select'"
+      },
+      {
+        // Click on zoom button or its text
+        events: [
+          { source: "scope", type: "click", markname: "zoom_button_bg" },
+          { source: "scope", type: "click", markname: "zoom_button_text" }
+        ],
+        update: "'zoom'"
+      }
+    ]
+  },
+  // Track if Shift key is held
+  {
+    name: "shift_held",
+    value: false,
+    on: [
+      {
+        events: { source: "window", type: "keydown", filter: ["event.key === 'Shift'"] },
+        update: "true"
+      },
+      {
+        events: { source: "window", type: "keyup", filter: ["event.key === 'Shift'"] },
+        update: "false"
+      }
+    ]
+  },
+  // Effective interaction mode: base mode XOR shift_held
+  // When shift is held, mode is toggled to opposite
+  {
+    name: "interaction_mode",
+    update: "shift_held ? (interaction_mode_base === 'select' ? 'zoom' : 'select') : interaction_mode_base"
+  },
+  // Multi-select mode: when true, selections accumulate instead of replacing
+  {
+    name: "multi_select_mode",
+    value: false,
+    on: [
+      {
+        // Toggle on click of multi-select button
+        events: [
+          { source: "scope", type: "click", markname: "multiselect_button_bg" },
+          { source: "scope", type: "click", markname: "multiselect_button_text" }
+        ],
+        update: "!multi_select_mode"
+      }
+    ]
+  },
+  // Clear selection signal - increments when clear button is clicked
+  // React component listens for changes to trigger selection clear
+  {
+    name: "clear_selection_trigger",
+    value: 0,
+    on: [
+      {
+        events: [
+          { source: "scope", type: "click", markname: "clear_button_bg" },
+          { source: "scope", type: "click", markname: "clear_button_text" }
+        ],
+        update: "clear_selection_trigger + 1"
+      }
+    ]
+  },
   // Zoom level signal (0.9 = slight zoom out for padding, 1.0 = no zoom, >1.0 = zoomed in)
   {
     name: "zoom_level",
     value: 0.9,
     on: [
       {
-        // Shift + scroll to zoom
-        events: { type: "wheel", filter: ["event.shiftKey"] },
-        update: "clamp(zoom_level * pow(1.001, -event.deltaY), 0.5, 10)"
+        // Scroll to zoom when in zoom mode (consume event to prevent page scroll)
+        events: { type: "wheel", consume: true },
+        update: "interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.5, 100) : zoom_level"
       },
       {
-        // Shift + doubleclick to reset zoom/pan
-        events: { type: "dblclick", filter: ["event.shiftKey"] },
-        update: "0.9"
+        // Doubleclick to reset zoom/pan (when in zoom mode)
+        events: { type: "dblclick" },
+        update: "interaction_mode === 'zoom' ? 0.9 : zoom_level"
       },
       {
         // Reset zoom when facet changes
         events: { signal: "facet_by_signal" },
+        update: "0.9"
+      },
+      {
+        // Reset button clicked
+        events: [
+          { source: "scope", type: "click", markname: "reset_button_bg" },
+          { source: "scope", type: "click", markname: "reset_button_text" }
+        ],
         update: "0.9"
       }
     ]
@@ -297,18 +381,26 @@ const createZoomPanSignals = () => [
     value: 0,
     on: [
       {
-        // Shift + drag to pan (inverted: drag right moves view left)
-        events: { type: "mousemove", between: [{ type: "mousedown", filter: ["event.shiftKey"] }, { type: "mouseup" }] },
-        update: "pan_x - event.movementX / child_width / zoom_level"
+        // Drag to pan when in zoom mode (inverted: drag right moves view left)
+        events: { type: "mousemove", between: [{ type: "mousedown" }, { type: "mouseup" }] },
+        update: "interaction_mode === 'zoom' ? pan_x - event.movementX / child_width / zoom_level : pan_x"
       },
       {
-        // Shift + doubleclick to reset zoom/pan
-        events: { type: "dblclick", filter: ["event.shiftKey"] },
-        update: "0"
+        // Doubleclick to reset zoom/pan (when in zoom mode)
+        events: { type: "dblclick" },
+        update: "interaction_mode === 'zoom' ? 0 : pan_x"
       },
       {
         // Reset pan when facet changes
         events: { signal: "facet_by_signal" },
+        update: "0"
+      },
+      {
+        // Reset button clicked
+        events: [
+          { source: "scope", type: "click", markname: "reset_button_bg" },
+          { source: "scope", type: "click", markname: "reset_button_text" }
+        ],
         update: "0"
       }
     ]
@@ -318,18 +410,26 @@ const createZoomPanSignals = () => [
     value: 0,
     on: [
       {
-        // Shift + drag to pan (inverted: drag down moves view up)
-        events: { type: "mousemove", between: [{ type: "mousedown", filter: ["event.shiftKey"] }, { type: "mouseup" }] },
-        update: "pan_y + event.movementY / child_height / zoom_level"
+        // Drag to pan when in zoom mode (inverted: drag down moves view up)
+        events: { type: "mousemove", between: [{ type: "mousedown" }, { type: "mouseup" }] },
+        update: "interaction_mode === 'zoom' ? pan_y + event.movementY / child_height / zoom_level : pan_y"
       },
       {
-        // Shift + doubleclick to reset zoom/pan
-        events: { type: "dblclick", filter: ["event.shiftKey"] },
-        update: "0"
+        // Doubleclick to reset zoom/pan (when in zoom mode)
+        events: { type: "dblclick" },
+        update: "interaction_mode === 'zoom' ? 0 : pan_y"
       },
       {
         // Reset pan when facet changes
         events: { signal: "facet_by_signal" },
+        update: "0"
+      },
+      {
+        // Reset button clicked
+        events: [
+          { source: "scope", type: "click", markname: "reset_button_bg" },
+          { source: "scope", type: "click", markname: "reset_button_text" }
+        ],
         update: "0"
       }
     ]
@@ -539,8 +639,9 @@ const createCellSignals = () => [
     push: "outer",
     on: [
       {
-        events: { source: "scope", type: "mousedown", markname: "cell", filter: ["!event.shiftKey"] },
-        update: "[facet_by_signal, facet.facet_by_field]"
+        // Only update brushed facet when in select mode
+        events: { source: "scope", type: "mousedown", markname: "cell" },
+        update: "interaction_mode === 'select' ? [facet_by_signal, facet.facet_by_field] : brushed_facet_value"
       }
     ]
   },
@@ -548,7 +649,11 @@ const createCellSignals = () => [
     name: "cell",
     push: "outer",
     on: [
-      { events: { source: "scope", type: "mousedown", markname: "cell", filter: ["!event.shiftKey"] }, update: "group()" },
+      {
+        // Only start cell selection when in select mode
+        events: { source: "scope", type: "mousedown", markname: "cell" },
+        update: "interaction_mode === 'select' ? group() : cell"
+      },
       { events: "@cell:mouseup", update: "!span(brush_x) && !span(brush_y) ? null : cell" }
     ]
   },
@@ -563,14 +668,16 @@ const createBrushSignals = () => [
     value: [],
     on: [
       {
+        // Start brush when in select mode
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
         },
-        update: "[x(cell), x(cell)]"
+        update: "interaction_mode === 'select' ? [x(cell), x(cell)] : brush_x"
       },
       {
+        // Extend brush during drag when in select mode
         events: {
           source: "window",
           type: "mousemove",
@@ -578,12 +685,12 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
             },
             { source: "window", type: "mouseup" }
           ]
         },
-        update: "[brush_x[0], clamp(x(cell), 0, child_width)]"
+        update: "interaction_mode === 'select' ? [brush_x[0], clamp(x(cell), 0, child_width)] : brush_x"
       },
       {
         events: { signal: "brush_translate_delta" },
@@ -597,14 +704,16 @@ const createBrushSignals = () => [
     value: [],
     on: [
       {
+        // Start brush when in select mode
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
         },
-        update: "[y(cell), y(cell)]"
+        update: "interaction_mode === 'select' ? [y(cell), y(cell)] : brush_y"
       },
       {
+        // Extend brush during drag when in select mode
         events: {
           source: "window",
           type: "mousemove",
@@ -612,12 +721,12 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)", "!event.shiftKey"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
             },
             { source: "window", type: "mouseup" }
           ]
         },
-        update: "[brush_y[0], clamp(y(cell), 0, child_height)]"
+        update: "interaction_mode === 'select' ? [brush_y[0], clamp(y(cell), 0, child_height)] : brush_y"
       },
       {
         events: { signal: "brush_translate_delta" },
@@ -688,9 +797,10 @@ const createBrushTranslateSignals = () => [
     push: "outer",
     on: [
       {
-        events: { source: "scope", type: "mouseup", markname: "cell", filter: ["!event.shiftKey"] },
+        // Only finalize brush selection when in select mode
+        events: { source: "scope", type: "mouseup", markname: "cell" },
         update:
-          "span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : []"
+          "interaction_mode === 'select' && span(brush_x) && span(brush_y) ? pluck(data('facet'), 'clone_id', 'inrange(datum[xField], brush_x) && inrange(datum[yField], brush_y)') : brush_selection"
       }
     ]
   }
@@ -741,21 +851,252 @@ const createBrushMarks = () => [
       }
     }
   },
+  // Mode toggle button - Select Mode
+  {
+    name: "select_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 5 },
+        width: { value: 105 },
+        height: { value: 22 },
+        fill: { signal: "interaction_mode === 'select' ? '#4682b4' : '#fff'" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  {
+    name: "select_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 20 },
+        text: { value: "Select Mode" },
+        fontSize: { value: 12 },
+        fontWeight: { value: "normal" },
+        fill: { signal: "interaction_mode === 'select' ? '#fff' : '#333'" },
+        align: { value: "center" },
+        baseline: { value: "bottom" }
+      }
+    }
+  },
+  // Mode toggle button - Pan/Zoom Mode
+  {
+    name: "zoom_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 30 },
+        width: { value: 105 },
+        height: { value: 22 },
+        fill: { signal: "interaction_mode === 'zoom' ? '#4682b4' : '#fff'" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  {
+    name: "zoom_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 45 },
+        text: { value: "Pan/Zoom Mode" },
+        fontSize: { value: 12 },
+        fontWeight: { value: "normal" },
+        fill: { signal: "interaction_mode === 'zoom' ? '#fff' : '#333'" },
+        align: { value: "center" },
+        baseline: { value: "bottom" }
+      }
+    }
+  },
+  // Multi-Select Mode toggle button
+  {
+    name: "multiselect_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 55 },
+        width: { value: 105 },
+        height: { value: 22 },
+        fill: { signal: "multi_select_mode ? '#4682b4' : '#fff'" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  {
+    name: "multiselect_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 70 },
+        text: { value: "Multi-Select Mode" },
+        fontSize: { value: 12 },
+        fontWeight: { value: "normal" },
+        fill: { signal: "multi_select_mode ? '#fff' : '#333'" },
+        align: { value: "center" },
+        baseline: { value: "bottom" }
+      }
+    }
+  },
+  // Reset View button
+  {
+    name: "reset_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 80 },
+        width: { value: 105 },
+        height: { value: 22 },
+        fill: { value: "#fff" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  {
+    name: "reset_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 95 },
+        text: { value: "Reset View" },
+        fontSize: { value: 12 },
+        fontWeight: { value: "normal" },
+        fill: { value: "#333" },
+        align: { value: "center" },
+        baseline: { value: "bottom" }
+      }
+    }
+  },
+  // Clear Selection button
+  {
+    name: "clear_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 105 },
+        width: { value: 105 },
+        height: { value: 22 },
+        fill: { value: "#fff" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  {
+    name: "clear_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 120 },
+        text: { value: "Clear Selection" },
+        fontSize: { value: 12 },
+        fontWeight: { value: "normal" },
+        fill: { value: "#333" },
+        align: { value: "center" },
+        baseline: { value: "bottom" }
+      }
+    }
+  },
+  // Zoom level indicator background
+  {
+    name: "zoom_indicator_bg",
+    type: "rect",
+    encode: {
+      update: {
+        x: { signal: "child_width - 115" },
+        y: { value: 132 },
+        width: { value: 105 },
+        height: { value: 32 },
+        fill: { value: "#fff" },
+        fillOpacity: { value: 0.7 },
+        cornerRadius: { value: 3 }
+      }
+    }
+  },
+  // Zoom level indicator
   {
     name: "zoom_indicator",
     type: "text",
     encode: {
       enter: {
-        align: { value: "right" },
+        align: { value: "center" },
         baseline: { value: "top" },
         fontSize: { value: 11 },
         fontWeight: { value: "normal" },
-        fill: { value: "#666" }
+        fill: { value: "#555" }
       },
       update: {
-        x: { signal: "child_width - 10" },
-        y: { value: 10 },
-        text: { signal: "zoom_pan_active ? 'Zoom: ' + format(zoom_level, '.1f') + 'x (shift+dblclick to reset)' : ''" }
+        x: { signal: "child_width - 62" },
+        y: { value: 135 },
+        text: { signal: "'Zoom: ' + format(zoom_level, '.1f') + 'x'" }
+      }
+    }
+  },
+  // Pan offset indicator
+  {
+    name: "pan_indicator",
+    type: "text",
+    encode: {
+      enter: {
+        align: { value: "center" },
+        baseline: { value: "top" },
+        fontSize: { value: 11 },
+        fontWeight: { value: "normal" },
+        fill: { value: "#555" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 148 },
+        text: { signal: "'Pan: ' + format(pan_x, '.2f') + ', ' + format(pan_y, '.2f')" }
       }
     }
   }
