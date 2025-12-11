@@ -713,11 +713,12 @@ const concatTreeWithAlignmentSpec = () => {
       {
         name: "aa_visible_ticks",
         // Generate integers from visible start to end, with appropriate step
-        update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, aa_tick_step)"
+        // Conditional on alignment_group_width forces re-evaluation when divider changes
+        update: "alignment_group_width > 0 ? sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, aa_tick_step) : []"
       },
       {
         name: "aa_gridline_values",
-        // Generate ALL integers in visible range for gridlines (step = 1)
+        // Generate ALL integers in visible range for vertical gridlines (step = 1)
         update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, 1)"
       },
       // Size of mutation marks vertically, clamped to max 20;
@@ -1588,12 +1589,13 @@ const concatTreeWithAlignmentSpec = () => {
                   enter: {
                     stroke: { signal: "rgb(221, 221, 221)" },
                     opacity: { value: 1 },
-                    x: { scale: "aa_position", value: "-5" },
-                    x2: { scale: "aa_position", signal: "max_aa_seq_length" },
                     strokeWidth: { value: 1 }
                   },
                   update: {
-                    y: { field: "y" }
+                    y: { field: "y" },
+                    // Use pixel values directly to ensure full width coverage
+                    x: { value: 0 },
+                    x2: { signal: "alignment_group_width" }
                   }
                 }
               },
