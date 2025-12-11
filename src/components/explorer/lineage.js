@@ -21,7 +21,8 @@ const mapStateToProps = (state) => {
     selectedTree: treesSelector.getSelectedTree(state),
     selectedSeq: treesSelector.getSelectedSeq(state),
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
-    selectedChain: state.clonalFamilies.selectedChain || "heavy"
+    // Tree/alignment chain selection - used to infer lineage chain when leaf is clicked
+    treeChain: state.clonalFamilies.selectedChain || "heavy"
   };
 };
 
@@ -33,8 +34,25 @@ class Lineage extends React.Component {
     super(props);
     this.state = {
       showEntireLineage: false,
-      showMutationBorders: false
+      showMutationBorders: false,
+      lineageChain: "heavy"
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    // When a new sequence is selected, infer the lineage chain from the tree's chain selection
+    const { selectedSeq, treeChain } = this.props;
+    if (selectedSeq && selectedSeq !== prevProps.selectedSeq) {
+      // Map tree chain to lineage chain (both modes default to heavy)
+      let inferredChain = "heavy";
+      if (treeChain === "light") {
+        inferredChain = "light";
+      }
+      // For "both-stacked" and "both-side-by-side", default to heavy
+      // (could be enhanced later to track which chain was clicked)
+
+      this.setState({ lineageChain: inferredChain });
+    }
   }
 
   handleEntireLineageChange = (event) => {
@@ -45,9 +63,13 @@ class Lineage extends React.Component {
     this.setState({ showMutationBorders: event.target.checked });
   }
 
+  handleLineageChainChange = (event) => {
+    this.setState({ lineageChain: event.target.value });
+  }
+
   render() {
-    const { selectedFamily, selectedSeq, selectedTree, selectedChain } = this.props;
-    const { showEntireLineage, showMutationBorders } = this.state;
+    const { selectedFamily, selectedSeq, selectedTree } = this.props;
+    const { showEntireLineage, showMutationBorders, lineageChain } = this.state;
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Compute lineage data with the option to show all nodes
@@ -55,10 +77,10 @@ class Lineage extends React.Component {
         selectedTree,
         selectedSeq,
         showEntireLineage,
-        selectedChain
+        lineageChain
       );
 
-      const naiveData = getNaiveVizData(selectedFamily, selectedChain);
+      const naiveData = getNaiveVizData(selectedFamily, lineageChain);
 
       // Create boundary markers for all CDR regions
       const cdrBounds = naiveData.source
@@ -77,13 +99,28 @@ class Lineage extends React.Component {
           are shown as in the Clonal Family Details section.`}
           />
 
-          <h3>Amino acid sequence{selectedChain === "light" ? " (light chain)" : selectedChain === "both" ? "" : ""}:</h3>
-          <p>{selectedChain === "light"
+          {selectedFamily.is_paired && (
+            <div style={{ marginBottom: "12px" }}>
+              <span style={{ marginRight: 8 }}>Chain:</span>
+              <select
+                id="lineage-chain-select"
+                value={lineageChain}
+                onChange={this.handleLineageChainChange}
+                aria-label="Chain selection for lineage"
+              >
+                <option value="heavy">Heavy chain</option>
+                <option value="light">Light chain</option>
+              </select>
+            </div>
+          )}
+
+          <h3>Amino acid sequence{lineageChain === "light" ? " (light chain)" : ""}:</h3>
+          <p>{lineageChain === "light"
             ? (selectedSeq.sequence_alignment_light_aa || selectedSeq.sequence_alignment_aa)
             : selectedSeq.sequence_alignment_aa}</p>
           <div style={{ marginTop: "10px", marginBottom: "8px" }}>
             <Copy
-              value={selectedChain === "light"
+              value={lineageChain === "light"
                 ? (selectedSeq.sequence_alignment_light || selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")
                 : (selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")}
               buttonLabel="Copy nucleotide sequence to clipboard"
@@ -99,7 +136,7 @@ class Lineage extends React.Component {
 
           <h3>Lineage</h3>
           <Vega
-            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${selectedChain}-${lineageData["lineage_seq_counter"]}`}
+            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
             onParseError={(...args) => console.error("parse error:", args)}
             debug
             data={{
