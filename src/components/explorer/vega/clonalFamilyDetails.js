@@ -600,25 +600,40 @@ const concatTreeWithAlignmentSpec = () => {
         ]
       },
 
-      // /CROSS-VIZ HOVER HIGHLIGHT (#24):
-      // Track hovered leaf y position for cross-visualization highlighting
+      // /CROSS-VIZ HOVER HIGHLIGHT:
+      // Track hovered leaf y_tree (unscaled) for cross-visualization highlighting
+      // We store y_tree and scale it dynamically so highlights follow pan/zoom
+      // Exclude naive/root sequence from highlighting
       {
-        name: "hovered_leaf_y",
+        name: "hovered_leaf_y_tree",
         value: null,
         on: [
           {
-            // Tree side: pie charts, leaf centers, leaf labels
+            // Tree side: pie charts, leaf centers, leaf labels (exclude naive/root)
             events: "@pie:mouseover, @leaf_center:mouseover, @leaf_label:mouseover",
-            update: "datum.y"
+            update: "datum.type !== 'naive' && datum.type !== 'root' ? datum.y_tree : null"
           },
           {
-            // Alignment side: mutations marks and gridlines
+            // Alignment side: mutations marks and gridlines (these have y, need to invert)
+            // Exclude naive type
             events: "@marks:mouseover, @y_grid:mouseover, @gap_and_x_marks:mouseover",
-            update: "datum.y"
+            update: "datum.type !== 'naive' ? invert('yscale', datum.y) : null"
           },
           {
             events: "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
             update: "null"
+          }
+        ]
+      },
+      // Track selected/clicked leaf y_tree (unscaled) for persistent highlighting
+      // Exclude naive/root sequence from highlighting
+      {
+        name: "selected_leaf_y_tree",
+        value: null,
+        on: [
+          {
+            events: { signal: "pts_tuple" },
+            update: "pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== 'naive' && pts_tuple.type !== 'root' ? pts_tuple.y_tree : null"
           }
         ]
       },
@@ -1196,7 +1211,23 @@ const concatTreeWithAlignmentSpec = () => {
           }
         ],
         marks: [
-          // /HOVER HIGHLIGHT ROW (#24)
+          // /SELECTED HIGHLIGHT ROW
+          // Persistent highlight bar for clicked/selected leaf
+          {
+            name: "tree_selected_highlight",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 0 },
+                x2: { signal: "tree_group_width" },
+                yc: { signal: "scale('yscale', selected_leaf_y_tree)" },
+                height: { signal: "mutation_mark_height + 4" },
+                fill: { value: "#90caf9" },
+                fillOpacity: { signal: "selected_leaf_y_tree !== null ? 0.4 : 0" }
+              }
+            }
+          },
+          // /HOVER HIGHLIGHT ROW
           // Horizontal highlight bar that appears when hovering over a leaf
           {
             name: "tree_hover_highlight",
@@ -1205,10 +1236,10 @@ const concatTreeWithAlignmentSpec = () => {
               update: {
                 x: { value: 0 },
                 x2: { signal: "tree_group_width" },
-                yc: { signal: "hovered_leaf_y" },
+                yc: { signal: "scale('yscale', hovered_leaf_y_tree)" },
                 height: { signal: "mutation_mark_height + 4" },
                 fill: { value: "#ffeb3b" },
-                fillOpacity: { signal: "hovered_leaf_y !== null ? 0.3 : 0" }
+                fillOpacity: { signal: "hovered_leaf_y_tree !== null ? 0.3 : 0" }
               }
             }
           },
@@ -1498,7 +1529,7 @@ const concatTreeWithAlignmentSpec = () => {
                     ],
                     tooltip: {
                       signal:
-                        '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
+                        '{"region": \'\'+datum["region"], "start (NT)": format(datum["start"], ""), "start (AA)": format(floor(datum["start"]/3), ""), "end (NT)": format(datum["end"], ""), "end (AA)": format(floor(datum["end"]/3), ""), "gene": \'\'+datum["gene"]}'
                     },
                     x: {
                       scale: "aa_position",
@@ -1538,6 +1569,8 @@ const concatTreeWithAlignmentSpec = () => {
                       },
                       { scale: "aa_color", field: "mut_to" }
                     ],
+                    stroke: { value: "black" },
+                    strokeWidth: { value: 0.5 },
                     tooltip: {
                       signal:
                         '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
@@ -1637,7 +1670,23 @@ const concatTreeWithAlignmentSpec = () => {
                   }
                 }
               },
-              // /HOVER HIGHLIGHT ROW (#24)
+              // /SELECTED HIGHLIGHT ROW
+              // Persistent highlight bar for clicked/selected leaf
+              {
+                name: "alignment_selected_highlight",
+                type: "rect",
+                encode: {
+                  update: {
+                    x: { value: 0 },
+                    x2: { signal: "alignment_group_width" },
+                    yc: { signal: "scale('yscale', selected_leaf_y_tree)" },
+                    height: { signal: "mutation_mark_height + 4" },
+                    fill: { value: "#90caf9" },
+                    fillOpacity: { signal: "selected_leaf_y_tree !== null ? 0.4 : 0" }
+                  }
+                }
+              },
+              // /HOVER HIGHLIGHT ROW
               // Horizontal highlight bar that appears when hovering over a leaf
               {
                 name: "alignment_hover_highlight",
@@ -1646,10 +1695,10 @@ const concatTreeWithAlignmentSpec = () => {
                   update: {
                     x: { value: 0 },
                     x2: { signal: "alignment_group_width" },
-                    yc: { signal: "hovered_leaf_y" },
+                    yc: { signal: "scale('yscale', hovered_leaf_y_tree)" },
                     height: { signal: "mutation_mark_height + 4" },
                     fill: { value: "#ffeb3b" },
-                    fillOpacity: { signal: "hovered_leaf_y !== null ? 0.3 : 0" }
+                    fillOpacity: { signal: "hovered_leaf_y_tree !== null ? 0.3 : 0" }
                   }
                 }
               },
@@ -1703,11 +1752,6 @@ const concatTreeWithAlignmentSpec = () => {
                 encode: {
                   update: {
                     opacity: { value: 0.9 },
-                    // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
-                    // [
-                    //   {"test": "pts_tuple.id == null || datum.seq_id == pts_tuple.id || datum.type == 'naive'", "value": 0.9},
-                    //   {"value": 0.1}
-                    // ],
                     fill: [
                       {
                         test: 'datum["position"] === null || isNaN(datum["position"])',
@@ -1715,6 +1759,8 @@ const concatTreeWithAlignmentSpec = () => {
                       },
                       { scale: "aa_color", field: "mut_to" }
                     ],
+                    stroke: { value: "black" },
+                    strokeWidth: { value: 0.5 },
                     tooltip: {
                       signal:
                         '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
@@ -1751,11 +1797,6 @@ const concatTreeWithAlignmentSpec = () => {
                         'datum.mut_to == "-" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)'
                     },
                     opacity: { value: 0.9 },
-                    // Set opacity similar to this (but with 'indata' function and with hovered id stored in a separate dataset) for hovered data #24:
-                    // [
-                    //   {"test": "pts_tuple.id == null || datum.id == pts_tuple.id || datum.type == 'naive'"", "value": 0.9},
-                    //   {"value": 0.1}
-                    // ],
                     y: {
                       field: "y"
                     },

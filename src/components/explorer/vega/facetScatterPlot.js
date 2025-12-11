@@ -315,21 +315,7 @@ const createZoomPanSignals = () => [
     name: "interaction_mode",
     update: "shift_held ? (interaction_mode_base === 'select' ? 'zoom' : 'select') : interaction_mode_base"
   },
-  // Multi-select mode: when true, selections accumulate instead of replacing
-  {
-    name: "multi_select_mode",
-    value: false,
-    on: [
-      {
-        // Toggle on click of multi-select button
-        events: [
-          { source: "scope", type: "click", markname: "multiselect_button_bg" },
-          { source: "scope", type: "click", markname: "multiselect_button_text" }
-        ],
-        update: "!multi_select_mode"
-      }
-    ]
-  },
+  // Multi-select mode removed - see issue #114 for future implementation
   // Clear selection signal - increments when clear button is clicked
   // React component listens for changes to trigger selection clear
   {
@@ -929,45 +915,7 @@ const createBrushMarks = () => [
       }
     }
   },
-  // Multi-Select Mode toggle button
-  {
-    name: "multiselect_button_bg",
-    type: "rect",
-    encode: {
-      enter: {
-        cursor: { value: "pointer" }
-      },
-      update: {
-        x: { signal: "child_width - 115" },
-        y: { value: 55 },
-        width: { value: 105 },
-        height: { value: 22 },
-        fill: { signal: "multi_select_mode ? '#4682b4' : '#fff'" },
-        stroke: { value: "#999" },
-        strokeWidth: { value: 1 },
-        cornerRadius: { value: 3 }
-      }
-    }
-  },
-  {
-    name: "multiselect_button_text",
-    type: "text",
-    encode: {
-      enter: {
-        cursor: { value: "pointer" }
-      },
-      update: {
-        x: { signal: "child_width - 62" },
-        y: { value: 70 },
-        text: { value: "Multi-Select Mode" },
-        fontSize: { value: 12 },
-        fontWeight: { value: "normal" },
-        fill: { signal: "multi_select_mode ? '#fff' : '#333'" },
-        align: { value: "center" },
-        baseline: { value: "bottom" }
-      }
-    }
-  },
+  // Multi-Select Mode button removed - see issue #114 for future implementation
   // Reset View button
   {
     name: "reset_button_bg",
