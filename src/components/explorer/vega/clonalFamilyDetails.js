@@ -600,6 +600,29 @@ const concatTreeWithAlignmentSpec = () => {
         ]
       },
 
+      // /CROSS-VIZ HOVER HIGHLIGHT (#24):
+      // Track hovered leaf y position for cross-visualization highlighting
+      {
+        name: "hovered_leaf_y",
+        value: null,
+        on: [
+          {
+            // Tree side: pie charts, leaf centers, leaf labels
+            events: "@pie:mouseover, @leaf_center:mouseover, @leaf_label:mouseover",
+            update: "datum.y"
+          },
+          {
+            // Alignment side: mutations marks and gridlines
+            events: "@marks:mouseover, @y_grid:mouseover, @gap_and_x_marks:mouseover",
+            update: "datum.y"
+          },
+          {
+            events: "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
+            update: "null"
+          }
+        ]
+      },
+
       // /ALIGNMENT SIGNALS:
       // ---------------------------------------------------------------------------
 
@@ -1173,6 +1196,22 @@ const concatTreeWithAlignmentSpec = () => {
           }
         ],
         marks: [
+          // /HOVER HIGHLIGHT ROW (#24)
+          // Horizontal highlight bar that appears when hovering over a leaf
+          {
+            name: "tree_hover_highlight",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 0 },
+                x2: { signal: "tree_group_width" },
+                yc: { signal: "hovered_leaf_y" },
+                height: { signal: "mutation_mark_height + 4" },
+                fill: { value: "#ffeb3b" },
+                fillOpacity: { signal: "hovered_leaf_y !== null ? 0.3 : 0" }
+              }
+            }
+          },
           // /LINKS
           {
             encode: {
@@ -1287,6 +1326,7 @@ const concatTreeWithAlignmentSpec = () => {
           },
           // /LEAF LABELS
           {
+            name: "leaf_label",
             type: "text",
             encode: {
               update: {
@@ -1594,6 +1634,22 @@ const concatTreeWithAlignmentSpec = () => {
                     y: { value: 0 },
                     width: { signal: "alignment_group_width" },
                     height: { signal: "height" }
+                  }
+                }
+              },
+              // /HOVER HIGHLIGHT ROW (#24)
+              // Horizontal highlight bar that appears when hovering over a leaf
+              {
+                name: "alignment_hover_highlight",
+                type: "rect",
+                encode: {
+                  update: {
+                    x: { value: 0 },
+                    x2: { signal: "alignment_group_width" },
+                    yc: { signal: "hovered_leaf_y" },
+                    height: { signal: "mutation_mark_height + 4" },
+                    fill: { value: "#ffeb3b" },
+                    fillOpacity: { signal: "hovered_leaf_y !== null ? 0.3 : 0" }
                   }
                 }
               },
