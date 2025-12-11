@@ -435,9 +435,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "branch_length_mode_text",
         update: "fixed_branch_lengths ? 'Tree depth (fixed lengths)' : 'Evolutionary distance from naive'"
       },
+      // Fence-post spacing: expand yext by one leaf-spacing on each side
+      // so top/bottom leaves have same spacing to edge as to their neighbors
+      {
+        name: "yext_fencepost",
+        update: "[yext[0] - span(yext)/(leaves_count_incl_naive - 1), yext[1] + span(yext)/(leaves_count_incl_naive - 1)]"
+      },
       {
         name: "ydom",
-        update: "slice(yext)"
+        update: "slice(yext_fencepost)"
       },
 
       // /TREE SIGNALS:
@@ -836,7 +842,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "tree_group_width_ratio",
         value: 0.3,
         ...maybeAddBind({
-          name: "Tree width ratio",
+          name: "Tree width",
           input: "range",
           max: 0.98,
           min: 0.2,
@@ -913,7 +919,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "viz_height_ratio",
         value: 0.8,
         ...maybeAddBind({
-          name: "Viz height",
+          name: "Tree height",
           input: "range",
           min: 0.2,
           max: 0.9,
@@ -1241,7 +1247,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           },
           // Original delta values are stored in these signals to make the {x,y}dom delta handlers more readable
           {
-            update: "slice(yext)",
+            update: "slice(yext_fencepost)",
 
             name: "ydom_delta",
             on: [
@@ -1288,22 +1294,23 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 events: { signal: "delta" },
                 // Original values
                 // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-                // Limiting dragging to the boundaries of the tree
-                update: "ydom_delta[0] < yext[0] || ydom_delta[1] > yext[1] ? slice(ydom) : slice(ydom_delta)"
+                // Limiting dragging so tree stays at least at the midpoint of the view
+                // Top branch (yext[0]) cannot go below midpoint, bottom branch (yext[1]) cannot go above midpoint
+                update: "yext[0] > (ydom_delta[0] + ydom_delta[1])/2 || yext[1] < (ydom_delta[0] + ydom_delta[1])/2 ? slice(ydom) : slice(ydom_delta)"
               },
               // Update shown y values when zooming
               {
                 events: { signal: "zoom" },
                 // Original values
                 // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
-                // Limiting zoom to the boundaries of the tree
+                // Limiting zoom so tree stays at least at the midpoint of the view
                 update:
-                  "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0]), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] ) ] "
+                  "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0] - span(yext)/2), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] + span(yext)/2 ) ] "
               },
-              // Reset to full extent on double-click
+              // Reset to full extent on double-click (with fence-post spacing)
               {
                 events: { type: "dblclick" },
-                update: "slice(yext)"
+                update: "slice(yext_fencepost)"
               }
             ]
           }

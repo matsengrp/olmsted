@@ -106,3 +106,9 @@ export const batchUpdateDatasets = () => {
 export const updateSelectedChain = (chain) => {
   return { type: types.UPDATE_SELECTED_CHAIN, chain };
 };
+
+// Track which chain was last clicked (for stacked mode lineage inference)
+// Options: 'heavy', 'light'
+export const updateLastClickedChain = (chain) => {
+  return { type: types.UPDATE_LAST_CLICKED_CHAIN, chain };
+};

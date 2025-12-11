@@ -20,7 +20,9 @@ const initialState = {
   facetByField: "none",
   locus: "IGH",
   // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
-  selectedChain: "heavy"
+  selectedChain: "heavy",
+  // Track which chain was last clicked in stacked mode (for lineage inference)
+  lastClickedChain: "heavy"
 };
 
 // eslint-disable-next-line default-param-last
@@ -155,6 +157,9 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_SELECTED_CHAIN: {
       return { ...state, selectedChain: action.chain };
+    }
+    case types.UPDATE_LAST_CLICKED_CHAIN: {
+      return { ...state, lastClickedChain: action.chain };
     }
     default: {
       return state;

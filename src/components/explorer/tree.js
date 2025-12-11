@@ -198,6 +198,9 @@ const mapStateToProps = (state) => {
   },
   dispatchSelectFamily: (family_ident) => {
     dispatch(explorerActions.selectFamily(family_ident));
+  },
+  dispatchLastClickedChain: (chain) => {
+    dispatch(explorerActions.updateLastClickedChain(chain));
   }
 }))
 class TreeViz extends React.Component {
@@ -330,7 +333,7 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, dispatchSelectedSeq, selectedChain } = this.props;
+    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -386,6 +389,7 @@ class TreeViz extends React.Component {
                 const node = args.slice(1)[0];
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
+                  dispatchLastClickedChain("heavy");
                 }
               }}
               onNewView={(view) => this.setupHeavyChainSignalSync(view)}
@@ -399,6 +403,7 @@ class TreeViz extends React.Component {
                 const node = args.slice(1)[0];
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
+                  dispatchLastClickedChain("light");
                 }
               }}
               onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
@@ -423,6 +428,7 @@ class TreeViz extends React.Component {
                 const node = args.slice(1)[0];
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
+                  dispatchLastClickedChain("heavy");
                 }
               }}
               onNewView={(view) => this.setupHeavyChainSignalSync(view)}
@@ -436,6 +442,7 @@ class TreeViz extends React.Component {
                 const node = args.slice(1)[0];
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
+                  dispatchLastClickedChain("light");
                 }
               }}
               onNewView={(view) => this.setupLightChainSignalSync(view)}

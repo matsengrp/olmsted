@@ -22,7 +22,9 @@ const mapStateToProps = (state) => {
     selectedSeq: treesSelector.getSelectedSeq(state),
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     // Tree/alignment chain selection - used to infer lineage chain when leaf is clicked
-    treeChain: state.clonalFamilies.selectedChain || "heavy"
+    treeChain: state.clonalFamilies.selectedChain || "heavy",
+    // Track which chain was clicked in stacked mode
+    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy"
   };
 };
 
@@ -41,16 +43,15 @@ class Lineage extends React.Component {
 
   componentDidUpdate(prevProps) {
     // When a new sequence is selected, infer the lineage chain from the tree's chain selection
-    const { selectedSeq, treeChain } = this.props;
+    const { selectedSeq, treeChain, lastClickedChain } = this.props;
     if (selectedSeq && selectedSeq !== prevProps.selectedSeq) {
-      // Map tree chain to lineage chain (both modes default to heavy)
       let inferredChain = "heavy";
       if (treeChain === "light") {
         inferredChain = "light";
+      } else if (treeChain === "both-stacked" || treeChain === "both-side-by-side") {
+        // In stacked/side-by-side mode, use the chain that was actually clicked
+        inferredChain = lastClickedChain;
       }
-      // For "both-stacked" and "both-side-by-side", default to heavy
-      // (could be enhanced later to track which chain was clicked)
-
       this.setState({ lineageChain: inferredChain });
     }
   }
