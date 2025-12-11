@@ -100,3 +100,9 @@ export const clearDatasetSelections = () => {
 export const batchUpdateDatasets = () => {
   return { type: types.BATCH_UPDATE_DATASETS };
 };
+
+// Chain selection for paired heavy/light chain data
+// Options: 'heavy', 'light', 'both'
+export const updateSelectedChain = (chain) => {
+  return { type: types.UPDATE_SELECTED_CHAIN, chain };
+};

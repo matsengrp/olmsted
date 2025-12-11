@@ -4,6 +4,7 @@ import * as _ from "lodash";
 import * as explorerActions from "../../actions/explorer";
 import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
+import DownloadCSV from "../util/downloadCsv";
 
 // Resizable virtual scrolling table component
 class ResizableVirtualTable extends React.Component {
@@ -20,6 +21,7 @@ class ResizableVirtualTable extends React.Component {
       80, // D gene
       80, // J gene
       80, // Locus
+      60, // Paired
       100, // Junction length
       80, // Seed run
       100, // Subject
@@ -183,8 +185,11 @@ class ResizableVirtualTable extends React.Component {
                 >
                   {(() => {
                     const value = _.get(datum, AttrOrComponent);
-                    // Show "—" only for null/undefined, not for 0 or other falsy values
-                    return value !== null && value !== undefined ? value : "—";
+                    // Show "—" for null, undefined, or empty string
+                    if (value === null || value === undefined || value === "") return "—";
+                    // Convert booleans to Yes/No for display (React doesn't render raw booleans)
+                    if (typeof value === "boolean") return value ? "Yes" : "No";
+                    return value;
                   })()}
                 </div>
               ) : (
@@ -198,7 +203,7 @@ class ResizableVirtualTable extends React.Component {
   }
 
   render() {
-    const { data, containerHeight = 500, mappings, dispatch } = this.props;
+    const { data, containerHeight = 500, mappings, dispatch, footerAction } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
 
@@ -350,10 +355,14 @@ class ResizableVirtualTable extends React.Component {
             color: "#666",
             padding: "0 8px",
             boxSizing: "border-box",
-            overflow: "hidden"
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
           }}
         >
-          Showing {data.length} families
+          <span>Showing {data.length} families</span>
+          {footerAction}
         </div>
       </div>
     );
@@ -363,7 +372,7 @@ class ResizableVirtualTable extends React.Component {
 @connect()
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination, footerAction } = this.props;
     return (
       <ResizableVirtualTable
         data={data}
@@ -372,6 +381,7 @@ class Table extends React.Component {
         dispatch={dispatch}
         pagination={pagination}
         containerHeight={500}
+        footerAction={footerAction}
       />
     );
   }
@@ -448,6 +458,36 @@ class ClonalFamiliesTable extends React.Component {
   render() {
     const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
+
+    // CSV columns for export (excludes non-exportable columns like Select, Naive sequence, Dataset component)
+    const csvColumns = [
+      { header: "ID", accessor: "clone_id" },
+      { header: "Unique seqs", accessor: "unique_seqs_count" },
+      { header: "V gene", accessor: "v_call" },
+      { header: "D gene", accessor: "d_call" },
+      { header: "J gene", accessor: "j_call" },
+      { header: "Locus", accessor: "sample.locus" },
+      { header: "Paired", accessor: "is_paired" },
+      { header: "Junction length", accessor: "junction_length" },
+      { header: "Mut freq", accessor: "mean_mut_freq" },
+      { header: "Seed run", accessor: "has_seed" },
+      { header: "Subject", accessor: "subject_id" },
+      { header: "Sample", accessor: "sample_id" },
+      { header: "Timepoint", accessor: "sample.timepoint_id" },
+      { header: "Dataset", accessor: "dataset_id" },
+      { header: "Ident", accessor: "ident" }
+    ];
+
+    const footerAction = visibleClonalFamilies.length > 0 ? (
+      <DownloadCSV
+        data={visibleClonalFamilies}
+        columns={csvColumns}
+        filename="clonal_families.csv"
+        label="Download Table as CSV"
+        compact
+      />
+    ) : null;
+
     return (
       <Table
         data={visibleClonalFamilies}
@@ -461,6 +501,7 @@ class ClonalFamiliesTable extends React.Component {
           ["D gene", "d_call"],
           ["J gene", "j_call"],
           ["Locus", "sample.locus"],
+          ["Paired", "is_paired"],
           ["Junction length", "junction_length"],
           ["Mut freq", "mean_mut_freq"],
           ["Seed run", "has_seed"],
@@ -474,6 +515,7 @@ class ClonalFamiliesTable extends React.Component {
         ]}
         selectedFamily={this.selectedFamily}
         pagination={pagination}
+        footerAction={footerAction}
       />
     );
   }

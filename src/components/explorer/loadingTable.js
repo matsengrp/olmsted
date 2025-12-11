@@ -8,6 +8,7 @@ import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
+import DownloadCSV from "../util/downloadCsv";
 
 
 // Component for the citation column
@@ -240,6 +241,30 @@ export default class LoadingTable extends React.Component {
       ...(showCitation ? [150] : [])
     ];
 
+    // CSV columns for export
+    const csvColumns = [
+      { header: "Status", accessor: "loading" },
+      { header: "Name", accessor: (d) => d.name || d.dataset_id },
+      { header: "ID", accessor: "dataset_id" },
+      { header: "Source", accessor: (d) => (d.isClientSide || d.temporary ? "Local" : "Server") },
+      { header: "Size (bytes)", accessor: "file_size" },
+      { header: "Subjects", accessor: "subjects_count" },
+      { header: "Families", accessor: "clone_count" },
+      { header: "Upload Time", accessor: "upload_time" },
+      { header: "Build Time", accessor: (d) => (d.build ? d.build.time : "") },
+      ...(showCitation ? [{ header: "Citation", accessor: (d) => (d.paper ? d.paper.authorstring : "") }] : [])
+    ];
+
+    const footerAction = allDatasetsToUse.length > 0 ? (
+      <DownloadCSV
+        data={allDatasetsToUse}
+        columns={csvColumns}
+        filename="datasets.csv"
+        label="Download Table as CSV"
+        compact
+      />
+    ) : null;
+
     return (
       <div>
         <div style={{ marginBottom: "10px" }}>
@@ -260,6 +285,7 @@ export default class LoadingTable extends React.Component {
             backgroundColor: selectedDatasets.includes(dataset.dataset_id) ? "lightblue" : "white"
           })}
           onRowClick={(dataset) => dispatch(explorerActions.toggleDatasetSelection(dataset.dataset_id))}
+          footerAction={footerAction}
         />
 
         <div style={{ marginTop: "15px", marginBottom: "15px", textAlign: "center" }}>

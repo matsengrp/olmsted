@@ -20,7 +20,8 @@ const mapStateToProps = (state) => {
   return {
     selectedTree: treesSelector.getSelectedTree(state),
     selectedSeq: treesSelector.getSelectedSeq(state),
-    selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state)
+    selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
+    selectedChain: state.clonalFamilies.selectedChain || "heavy"
   };
 };
 
@@ -31,27 +32,33 @@ class Lineage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showEntireLineage: false
+      showEntireLineage: false,
+      showMutationBorders: false
     };
   }
 
-  handleCheckboxChange = (event) => {
+  handleEntireLineageChange = (event) => {
     this.setState({ showEntireLineage: event.target.checked });
   }
 
+  handleMutationBordersChange = (event) => {
+    this.setState({ showMutationBorders: event.target.checked });
+  }
+
   render() {
-    const { selectedFamily, selectedSeq, selectedTree } = this.props;
-    const { showEntireLineage } = this.state;
+    const { selectedFamily, selectedSeq, selectedTree, selectedChain } = this.props;
+    const { showEntireLineage, showMutationBorders } = this.state;
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Compute lineage data with the option to show all nodes
       const lineageData = treesSelector.computeLineageDataWithOptions(
         selectedTree,
         selectedSeq,
-        showEntireLineage
+        showEntireLineage,
+        selectedChain
       );
 
-      const naiveData = getNaiveVizData(selectedFamily);
+      const naiveData = getNaiveVizData(selectedFamily, selectedChain);
 
       // Create boundary markers for all CDR regions
       const cdrBounds = naiveData.source
@@ -70,11 +77,15 @@ class Lineage extends React.Component {
           are shown as in the Clonal Family Details section.`}
           />
 
-          <h3>Amino acid sequence:</h3>
-          <p>{selectedSeq.sequence_alignment_aa}</p>
+          <h3>Amino acid sequence{selectedChain === "light" ? " (light chain)" : selectedChain === "both" ? "" : ""}:</h3>
+          <p>{selectedChain === "light"
+            ? (selectedSeq.sequence_alignment_light_aa || selectedSeq.sequence_alignment_aa)
+            : selectedSeq.sequence_alignment_aa}</p>
           <div style={{ marginTop: "10px", marginBottom: "8px" }}>
             <Copy
-              value={selectedSeq.sequence_alignment ? selectedSeq.sequence_alignment : "NO NUCLEOTIDE SEQUENCE"}
+              value={selectedChain === "light"
+                ? (selectedSeq.sequence_alignment_light || selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")
+                : (selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")}
               buttonLabel="Copy nucleotide sequence to clipboard"
             />
           </div>
@@ -88,7 +99,7 @@ class Lineage extends React.Component {
 
           <h3>Lineage</h3>
           <Vega
-            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${lineageData["lineage_seq_counter"]}`}
+            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${selectedChain}-${lineageData["lineage_seq_counter"]}`}
             onParseError={(...args) => console.error("parse error:", args)}
             debug
             data={{
@@ -96,18 +107,29 @@ class Lineage extends React.Component {
               cdr_bounds: cdrBounds,
               source_0: lineageData.lineage_alignment
             }}
-            spec={seqAlignSpec(lineageData)}
+            spec={seqAlignSpec(lineageData, { showMutationBorders })}
           />
 
-          <div style={{ marginTop: '10px' }}>
-            <label htmlFor="show-entire-lineage">
+          <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label htmlFor="show-mutation-borders" style={{ cursor: 'pointer' }}>
+              <input
+                id="show-mutation-borders"
+                type="checkbox"
+                checked={showMutationBorders}
+                onChange={this.handleMutationBordersChange}
+                style={{ marginRight: '6px' }}
+              />
+              Show mutation borders
+            </label>
+            <label htmlFor="show-entire-lineage" style={{ cursor: 'pointer' }}>
               <input
                 id="show-entire-lineage"
                 type="checkbox"
                 checked={showEntireLineage}
-                onChange={this.handleCheckboxChange}
+                onChange={this.handleEntireLineageChange}
+                style={{ marginRight: '6px' }}
               />
-              {" "}Show entire lineage (include nodes without mutations)
+              Show entire lineage (include nodes without mutations)
             </label>
           </div>
         </div>

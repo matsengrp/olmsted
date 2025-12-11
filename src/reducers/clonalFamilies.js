@@ -18,7 +18,9 @@ const initialState = {
   // EH:facet field is no longer required to update the spec but
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
-  locus: "IGH"
+  locus: "IGH",
+  // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
+  selectedChain: "heavy"
 };
 
 // eslint-disable-next-line default-param-last
@@ -150,6 +152,9 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.FILTER_LOCUS: {
       return { ...state, locus: action.locus };
+    }
+    case types.UPDATE_SELECTED_CHAIN: {
+      return { ...state, selectedChain: action.chain };
     }
     default: {
       return state;

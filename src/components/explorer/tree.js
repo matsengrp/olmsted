@@ -15,14 +15,22 @@ import { SimpleInProgress } from "../util/loading";
 // Tree header component
 // =================================
 // Describes the tree viz, includes dropdown for selecting trees.
-@connect(null, (dispatch) => ({
-  dispatchSelectedTree: (treeIdent, selectedFamily, selectedSeq) => {
-    dispatch(explorerActions.updateSelectedTree(treeIdent, selectedFamily, selectedSeq));
-  }
-}))
+@connect(
+  (state) => ({
+    selectedChain: state.clonalFamilies.selectedChain
+  }),
+  (dispatch) => ({
+    dispatchSelectedTree: (treeIdent, selectedFamily, selectedSeq) => {
+      dispatch(explorerActions.updateSelectedTree(treeIdent, selectedFamily, selectedSeq));
+    },
+    dispatchSelectedChain: (chain) => {
+      dispatch(explorerActions.updateSelectedChain(chain));
+    }
+  })
+)
 class TreeHeader extends React.Component {
   render() {
-    const { selectedFamily, tree, dispatchSelectedTree, selectedSeq } = this.props;
+    const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } = this.props;
     return (
       <div>
         <CollapseHelpTitle
@@ -74,7 +82,7 @@ class TreeHeader extends React.Component {
           }
         />
 
-        <div>
+        <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
           <div>
             <span style={{ marginRight: 8 }}>Ancestral reconstruction method:</span>
             <select
@@ -90,6 +98,22 @@ class TreeHeader extends React.Component {
               ))}
             </select>
           </div>
+          {selectedFamily.is_paired && (
+            <div>
+              <span style={{ marginRight: 8 }}>Chain:</span>
+              <select
+                id="chain-select"
+                value={selectedChain}
+                onChange={(event) => dispatchSelectedChain(event.target.value)}
+                aria-label="Chain selection"
+              >
+                <option value="heavy">Heavy chain only</option>
+                <option value="light">Light chain only</option>
+                <option value="both-stacked">Both chains (stacked)</option>
+                <option value="both-side-by-side">Both chains (side-by-side)</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -105,32 +129,65 @@ const isTreeComplete = (tree) => tree.nodes && !tree.nodes.error;
 
 // First some redux connection functions
 
+// Helper to compute visualization data for a specific chain
+const computeChainVizData = (selectedFamily, selectedTree, chain) => {
+  const naiveData = getNaiveVizData(selectedFamily, chain);
+  const cdrBounds = naiveData.source
+    .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+    .flatMap((region) => [
+      { x: Math.floor(region.start / 3) - 0.5, region: region.region },
+      { x: Math.floor(region.end / 3) + 0.5, region: region.region }
+    ]);
+  return { naiveData, cdrBounds };
+};
+
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
+  const selectedChain = state.clonalFamilies.selectedChain || "heavy";
 
   // idea is that none of these selectors will work (or be needed) if tree data isn't in yet
   if (selectedFamily && selectedTree && isTreeComplete(selectedTree)) {
-    const naiveData = getNaiveVizData(selectedFamily);
+    const isBothMode = selectedChain === "both-stacked" || selectedChain === "both-side-by-side";
 
-    // Create boundary markers for all CDR regions
-    const cdrBounds = naiveData.source
-      .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
-      .flatMap((region) => [
-        { x: Math.floor(region.start / 3) - 0.5, region: region.region },
-        { x: Math.floor(region.end / 3) + 0.5, region: region.region }
-      ]);
+    if (isBothMode) {
+      // Compute data for both chains
+      const heavyVizData = computeChainVizData(selectedFamily, selectedTree, "heavy");
+      const lightVizData = computeChainVizData(selectedFamily, selectedTree, "light");
 
-    return {
-      selectedFamily,
-      selectedTree,
-      naiveData,
-      tree: treesSelector.getTreeData(state),
-      selectedSeq: state.clonalFamilies.selectedSeq,
-      cdrBounds
-    };
+      // Import computeTreeData directly for chain-specific tree data
+      const heavyTreeData = treesSelector.computeTreeData(selectedTree, "heavy");
+      const lightTreeData = treesSelector.computeTreeData(selectedTree, "light");
+
+      return {
+        selectedFamily,
+        selectedTree,
+        selectedChain,
+        selectedSeq: state.clonalFamilies.selectedSeq,
+        // Heavy chain data
+        heavyNaiveData: heavyVizData.naiveData,
+        heavyCdrBounds: heavyVizData.cdrBounds,
+        heavyTree: heavyTreeData,
+        // Light chain data
+        lightNaiveData: lightVizData.naiveData,
+        lightCdrBounds: lightVizData.cdrBounds,
+        lightTree: lightTreeData
+      };
+    } else {
+      // Single chain mode
+      const vizData = computeChainVizData(selectedFamily, selectedTree, selectedChain);
+      return {
+        selectedFamily,
+        selectedTree,
+        naiveData: vizData.naiveData,
+        tree: treesSelector.getTreeData(state),
+        selectedSeq: state.clonalFamilies.selectedSeq,
+        selectedChain,
+        cdrBounds: vizData.cdrBounds
+      };
+    }
   }
-  return { selectedFamily, selectedTree };
+  return { selectedFamily, selectedTree, selectedChain };
 };
 
 // now for the actual component definition
@@ -148,6 +205,7 @@ class TreeViz extends React.Component {
     super(props);
     this.spec = concatTreeWithAlignmentSpec();
     this.treeDataFromProps = this.treeDataFromProps.bind(this);
+    this.getChainData = this.getChainData.bind(this);
     this.tempVegaData = {
       source_0: [],
       source_1: [],
@@ -169,6 +227,24 @@ class TreeViz extends React.Component {
     }
   }
 
+  // Get data for a specific chain (used in both modes)
+  getChainData(chain) {
+    const { selectedFamily, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
+    const tree = chain === "heavy" ? heavyTree : lightTree;
+    const naiveData = chain === "heavy" ? heavyNaiveData : lightNaiveData;
+    const cdrBounds = chain === "heavy" ? heavyCdrBounds : lightCdrBounds;
+
+    return {
+      source_0: tree.nodes,
+      source_1: tree.tips_alignment,
+      naive_data: naiveData.source,
+      cdr_bounds: cdrBounds,
+      leaves_count_incl_naive: tree.leaves_count_incl_naive,
+      pts_tuple: selectedFamily,
+      seed: selectedFamily.seed_id === null ? [] : [{ id: selectedFamily.seed_id }]
+    };
+  }
+
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor
   treeDataFromProps() {
@@ -188,7 +264,7 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const { selectedFamily, selectedTree, selectedSeq, tree, dispatchSelectedSeq } = this.props;
+    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, dispatchSelectedSeq, selectedChain } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -201,6 +277,14 @@ class TreeViz extends React.Component {
 
     const incompleteTree = !treeLoading && !isTreeComplete(selectedTree);
     const completeData = !incompleteFamily && !treeLoading && isTreeComplete(selectedTree);
+
+    const isStackedMode = selectedChain === "both-stacked";
+    const isSideBySideMode = selectedChain === "both-side-by-side";
+    const isBothMode = isStackedMode || isSideBySideMode;
+
+    // Use heavyTree for downloads in both mode, otherwise use tree
+    const downloadTree = isBothMode ? heavyTree : tree;
+
     return (
       <div>
         {/* Tree still loading aka undefined */}
@@ -221,32 +305,101 @@ class TreeViz extends React.Component {
             selectedFamily={selectedFamily}
             selectedTree={selectedTree}
             selectedSeq={selectedSeq}
-            tree={tree}
+            tree={isBothMode ? heavyTree : tree}
           />
         )}
-        {/* Vega component always gets rendered, its data are faked if necessary;
-               this allows us to not reset its UI controls between selecting trees */}
-        <Vega
-          onParseError={(...args) => console.error("parse error:", args)}
-          onSignalPts_tuple={(...args) => {
-            const node = args.slice(1)[0];
-            if (node.parent) {
-              // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-              dispatchSelectedSeq(node.sequence_id);
-            }
-          }}
-          debug
-          // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
-          data={completeData ? this.treeDataFromProps() : this.tempVegaData}
-          spec={this.spec}
-        />
+
+        {/* Stacked mode: render two separate tree/alignment visualizations */}
+        {isStackedMode && completeData && (
+          <div>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
+            <Vega
+              onParseError={(...args) => console.error("parse error:", args)}
+              onSignalPts_tuple={(...args) => {
+                const node = args.slice(1)[0];
+                if (node.parent) {
+                  dispatchSelectedSeq(node.sequence_id);
+                }
+              }}
+              debug
+              data={this.getChainData("heavy")}
+              spec={this.spec}
+            />
+            <h4 style={{ marginBottom: "5px", marginTop: "20px" }}>Light Chain</h4>
+            <Vega
+              onParseError={(...args) => console.error("parse error:", args)}
+              onSignalPts_tuple={(...args) => {
+                const node = args.slice(1)[0];
+                if (node.parent) {
+                  dispatchSelectedSeq(node.sequence_id);
+                }
+              }}
+              debug
+              data={this.getChainData("light")}
+              spec={this.spec}
+            />
+          </div>
+        )}
+
+        {/* Side-by-side mode: TODO - requires modified Vega spec */}
+        {isSideBySideMode && completeData && (
+          <div>
+            <p style={{ fontStyle: "italic", color: "#666" }}>
+              Side-by-side mode coming soon. For now, showing stacked view:
+            </p>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
+            <Vega
+              onParseError={(...args) => console.error("parse error:", args)}
+              onSignalPts_tuple={(...args) => {
+                const node = args.slice(1)[0];
+                if (node.parent) {
+                  dispatchSelectedSeq(node.sequence_id);
+                }
+              }}
+              debug
+              data={this.getChainData("heavy")}
+              spec={this.spec}
+            />
+            <h4 style={{ marginBottom: "5px", marginTop: "20px" }}>Light Chain</h4>
+            <Vega
+              onParseError={(...args) => console.error("parse error:", args)}
+              onSignalPts_tuple={(...args) => {
+                const node = args.slice(1)[0];
+                if (node.parent) {
+                  dispatchSelectedSeq(node.sequence_id);
+                }
+              }}
+              debug
+              data={this.getChainData("light")}
+              spec={this.spec}
+            />
+          </div>
+        )}
+
+        {/* Single chain mode: original Vega component */}
+        {!isBothMode && (
+          <Vega
+            onParseError={(...args) => console.error("parse error:", args)}
+            onSignalPts_tuple={(...args) => {
+              const node = args.slice(1)[0];
+              if (node.parent) {
+                // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
+                dispatchSelectedSeq(node.sequence_id);
+              }
+            }}
+            debug
+            // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+            data={completeData ? this.treeDataFromProps() : this.tempVegaData}
+            spec={this.spec}
+          />
+        )}
 
         {/* Show downloads if complete family, tree */}
-        {completeData && tree.download_unique_family_seqs && (
+        {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
           <div style={{ marginTop: "10px" }}>
             <div style={{ marginBottom: "8px" }}>
               <DownloadFasta
-                sequencesSet={tree.download_unique_family_seqs.slice()}
+                sequencesSet={downloadTree.download_unique_family_seqs.slice()}
                 filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
                   "-",
                   selectedFamily.clone_id,

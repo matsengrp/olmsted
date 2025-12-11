@@ -892,6 +892,15 @@ const concatTreeWithAlignmentSpec = () => {
             update: "(divider_drag_start_ratio + (x() - divider_drag_start_x) / width) <= 0.90"
           }
         ]
+      },
+      // Toggle to show/hide mutation borders
+      {
+        name: "show_mutation_borders",
+        value: false,
+        bind: {
+          input: "checkbox",
+          name: "Show mutation borders"
+        }
       }
     ],
 
@@ -1759,8 +1768,8 @@ const concatTreeWithAlignmentSpec = () => {
                       },
                       { scale: "aa_color", field: "mut_to" }
                     ],
-                    stroke: { value: "black" },
-                    strokeWidth: { value: 0.5 },
+                    stroke: { signal: "show_mutation_borders ? 'black' : null" },
+                    strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal:
                         '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
@@ -1988,7 +1997,8 @@ const concatTreeWithAlignmentSpec = () => {
   };
 };
 
-const seqAlignSpec = (family) => {
+const seqAlignSpec = (family, options = {}) => {
+  const { showMutationBorders = false } = options;
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -2060,6 +2070,11 @@ const seqAlignSpec = (family) => {
       {
         name: "mark_width",
         update: "ceil(width/150)"
+      },
+      // Toggle to show/hide mutation borders - controlled via React state
+      {
+        name: "show_mutation_borders",
+        value: showMutationBorders
       }
     ],
     marks: [
@@ -2147,8 +2162,8 @@ const seqAlignSpec = (family) => {
               },
               { scale: "aa_color", field: "mut_to" }
             ],
-            stroke: { value: "black" },
-            strokeWidth: { value: 0.5 },
+            stroke: { signal: "show_mutation_borders ? 'black' : null" },
+            strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
               signal:
                 '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
@@ -2269,7 +2284,7 @@ const seqAlignSpec = (family) => {
         direction: "horizontal",
         fill: "naive_color",
         title: "Gene region color key",
-        offset: { signal: "2.5*mutation_mark_height" },
+        offset: { signal: "4*mutation_mark_height" },
         encode: {
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }

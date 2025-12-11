@@ -271,7 +271,8 @@ export class ResizableTable extends React.Component {
       mappings,
       showFooter = true,
       componentProps: _componentProps,
-      itemName
+      itemName,
+      footerAction
     } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
     const rowHeight = 40;
@@ -434,10 +435,14 @@ export class ResizableTable extends React.Component {
               color: "#666",
               padding: "0 8px",
               boxSizing: "border-box",
-              overflow: "hidden"
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
             }}
           >
-            Showing {sortedData.length} {itemName || "items"}
+            <span>Showing {sortedData.length} {itemName || "items"}</span>
+            {footerAction}
           </div>
         )}
       </div>
