@@ -110,7 +110,6 @@ class TreeHeader extends React.Component {
               <option value="heavy">Heavy chain only</option>
               <option value="light">Light chain only</option>
               <option value="both-stacked">Both chains (stacked)</option>
-              <option value="both-side-by-side">Both chains (side-by-side)</option>
             </select>
           </div>
         )}
@@ -503,7 +502,7 @@ class TreeViz extends React.Component {
         {/* Light chain has controls, heavy chain mirrors light chain settings */}
         {isStackedMode && completeData && (
           <div>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
@@ -520,7 +519,6 @@ class TreeViz extends React.Component {
               data={this.getChainData("heavy")}
               spec={this.specNoControls}
             />
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Light Chain</h4>
             {lightTree ? (
               <Vega
                 onParseError={(...args) => console.error("parse error:", args)}
