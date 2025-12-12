@@ -676,7 +676,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               { source: "scope", type: "wheel", markname: "alignment_zoom_area", consume: true },
               { source: "scope", type: "wheel", markname: "naive_zoom_area", consume: true }
             ],
-            update: "clamp(alignment_zoom * pow(1.002, -event.deltaY), 1, 50)"
+            update: "clamp(alignment_zoom * pow(1.002, -event.deltaY), 1, 10)"
           },
           {
             // Double-click to reset zoom/pan
@@ -789,8 +789,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         update: "mutation_mark_height/2"
       },
       {
+        // Width scales with zoom: pixels per amino acid position (0.8 factor to prevent overlap)
         name: "mutation_mark_width",
-        update: "ceil(alignment_group_width/150)"
+        update: "clamp(alignment_group_width * alignment_zoom * 0.8 / (max_aa_seq_length + 1), 1, 20)"
       },
       // #59 this will need to be controlled by slider
       {
@@ -1313,6 +1314,30 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 update: "slice(yext_fencepost)"
               }
             ]
+          },
+          // Zoom level indicator signals
+          // Calculate zoom as ratio of full extent to current domain
+          {
+            name: "tree_zoom_x",
+            update: "span(xext) / span(xdom)"
+          },
+          {
+            name: "tree_zoom_y",
+            update: "span(yext_fencepost) / span(ydom)"
+          },
+          // Pan offset: how far center has shifted as fraction of extent
+          {
+            name: "tree_pan_x",
+            update: "((xdom[0] + xdom[1])/2 - (xext[0] + xext[1])/2) / span(xext)"
+          },
+          {
+            name: "tree_pan_y",
+            update: "((ydom[0] + ydom[1])/2 - (yext_fencepost[0] + yext_fencepost[1])/2) / span(yext_fencepost)"
+          },
+          // Check if zoomed/panned from default
+          {
+            name: "tree_zoom_pan_active",
+            update: "abs(tree_zoom_x - 1) > 0.01 || abs(tree_zoom_y - 1) > 0.01 || abs(tree_pan_x) > 0.01 || abs(tree_pan_y) > 0.01"
           }
         ],
         marks: [
@@ -1535,6 +1560,55 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 fill: { signal: "bottom_divider_dragging ? '#666' : '#ccc'" },
                 fillOpacity: { signal: "bottom_divider_dragging ? 0.9 : 0.6" },
                 cornerRadius: { value: 2 }
+              }
+            }
+          },
+          // /ZOOM/PAN INDICATORS
+          // Background for zoom/pan indicators
+          {
+            name: "tree_zoom_indicator_bg",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 5 },
+                y: { value: 5 },
+                width: { value: 95 },
+                height: { value: 32 },
+                fill: { value: "#fff" },
+                fillOpacity: { signal: "tree_zoom_pan_active ? 0.8 : 0" },
+                cornerRadius: { value: 3 }
+              }
+            }
+          },
+          // Zoom level indicator (x and y separately)
+          {
+            name: "tree_zoom_indicator",
+            type: "text",
+            encode: {
+              update: {
+                x: { value: 10 },
+                y: { value: 17 },
+                text: { signal: "tree_zoom_pan_active ? 'Zoom: ' + format(tree_zoom_x, '.1f') + 'x, ' + format(tree_zoom_y, '.1f') + 'x' : ''" },
+                fontSize: { value: 11 },
+                fill: { value: "#555" },
+                align: { value: "left" },
+                baseline: { value: "middle" }
+              }
+            }
+          },
+          // Pan offset indicator (x and y separately)
+          {
+            name: "tree_pan_indicator",
+            type: "text",
+            encode: {
+              update: {
+                x: { value: 10 },
+                y: { value: 30 },
+                text: { signal: "tree_zoom_pan_active ? 'Pan: ' + format(tree_pan_x, '.2f') + ', ' + format(tree_pan_y, '.2f') : ''" },
+                fontSize: { value: 11 },
+                fill: { value: "#555" },
+                align: { value: "left" },
+                baseline: { value: "middle" }
               }
             }
           }
@@ -2000,7 +2074,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               update: {
                 x: { signal: "alignment_group_width - 5" },
                 y: { signal: "height + 38" },
-                text: { signal: "alignment_zoom > 1 ? format(alignment_zoom, '.1f') + 'x zoom' : ''" },
+                text: { signal: "alignment_zoom > 1 ? format(alignment_zoom, '.1f') + 'x zoom, pan: ' + format(alignment_pan, '.2f') : ''" },
                 fontSize: { value: 11 },
                 fill: { value: "#555" },
                 align: { value: "right" },

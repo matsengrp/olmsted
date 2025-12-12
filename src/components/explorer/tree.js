@@ -201,6 +201,9 @@ const mapStateToProps = (state) => {
   },
   dispatchLastClickedChain: (chain) => {
     dispatch(explorerActions.updateLastClickedChain(chain));
+  },
+  dispatchSelectedChain: (chain) => {
+    dispatch(explorerActions.updateSelectedChain(chain));
   }
 }))
 class TreeViz extends React.Component {
@@ -286,6 +289,28 @@ class TreeViz extends React.Component {
     });
   }
 
+  // Sync leaf selection from heavy to light chain view
+  syncSelectionToLightChain(yTree) {
+    if (this.lightVegaRef.current) {
+      try {
+        this.lightVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
+      } catch (e) {
+        // View not ready
+      }
+    }
+  }
+
+  // Sync leaf selection from light to heavy chain view
+  syncSelectionToHeavyChain(yTree) {
+    if (this.heavyVegaRef.current) {
+      try {
+        this.heavyVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
+      } catch (e) {
+        // View not ready
+      }
+    }
+  }
+
   componentDidMount() {
     const { selectedFamily, dispatchSelectFamily } = this.props;
     // Automatically request a tree for the selected family
@@ -293,6 +318,19 @@ class TreeViz extends React.Component {
     const familyId = selectedFamily?.ident || selectedFamily?.clone_id;
     if (familyId) {
       dispatchSelectFamily(familyId);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { selectedFamily, selectedChain, dispatchSelectedChain } = this.props;
+    // When family changes, check if we need to reset chain selection
+    if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
+      const isBothMode = selectedChain === "both-stacked" || selectedChain === "both-side-by-side";
+      const isLightMode = selectedChain === "light";
+      // If in "both" or "light" mode but new family is not paired, reset to "heavy"
+      if ((isBothMode || isLightMode) && !selectedFamily.is_paired) {
+        dispatchSelectedChain("heavy");
+      }
     }
   }
 
@@ -390,6 +428,8 @@ class TreeViz extends React.Component {
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                   dispatchLastClickedChain("heavy");
+                  // Sync selection to light chain view
+                  this.syncSelectionToLightChain(node.y_tree);
                 }
               }}
               onNewView={(view) => this.setupHeavyChainSignalSync(view)}
@@ -404,6 +444,8 @@ class TreeViz extends React.Component {
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                   dispatchLastClickedChain("light");
+                  // Sync selection to heavy chain view
+                  this.syncSelectionToHeavyChain(node.y_tree);
                 }
               }}
               onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
@@ -429,6 +471,8 @@ class TreeViz extends React.Component {
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                   dispatchLastClickedChain("heavy");
+                  // Sync selection to light chain view
+                  this.syncSelectionToLightChain(node.y_tree);
                 }
               }}
               onNewView={(view) => this.setupHeavyChainSignalSync(view)}
@@ -443,6 +487,8 @@ class TreeViz extends React.Component {
                 if (node && node.parent) {
                   dispatchSelectedSeq(node.sequence_id);
                   dispatchLastClickedChain("light");
+                  // Sync selection to heavy chain view
+                  this.syncSelectionToHeavyChain(node.y_tree);
                 }
               }}
               onNewView={(view) => this.setupLightChainSignalSync(view)}

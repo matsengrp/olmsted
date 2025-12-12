@@ -42,8 +42,18 @@ class Lineage extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    const { selectedSeq, selectedFamily, treeChain, lastClickedChain } = this.props;
+    const { lineageChain } = this.state;
+
+    // When family changes to non-paired, reset lineageChain to heavy if it was light
+    if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
+      if (!selectedFamily.is_paired && lineageChain === "light") {
+        this.setState({ lineageChain: "heavy" });
+        return;
+      }
+    }
+
     // When a new sequence is selected, infer the lineage chain from the tree's chain selection
-    const { selectedSeq, treeChain, lastClickedChain } = this.props;
     if (selectedSeq && selectedSeq !== prevProps.selectedSeq) {
       let inferredChain = "heavy";
       if (treeChain === "light") {
