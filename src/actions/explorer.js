@@ -3,7 +3,7 @@ import * as types from "./types";
 import * as loadData from "./loadData";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
-import { getPairedClone, getAvailableClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
+import { getPairedClone, getAllClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
 
 export const pageDown = { type: types.PAGE_DOWN };
 export const pageUp = { type: types.PAGE_UP };
@@ -39,8 +39,10 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
 
     // For paired families, also load the paired clone's trees
     // This ensures light chain data is available for "both" and "light" modes
+    // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
+    // even when they're filtered out of the scatterplot
     if (clonalFamily && clonalFamily.is_paired && clonalFamily.pair_id) {
-      const allClonalFamilies = getAvailableClonalFamilies(state);
+      const allClonalFamilies = getAllClonalFamilies(state);
       const pairedClone = getPairedClone(allClonalFamilies, clonalFamily);
       if (pairedClone) {
         const pairedTrees = pairedClone.trees || [];

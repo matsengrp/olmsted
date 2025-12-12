@@ -11,7 +11,7 @@ import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
-import { getPairedClone, getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
+import { getPairedClone, getAllClonalFamilies } from "../../selectors/clonalFamilies";
 
 // Tree header component
 // =================================
@@ -83,39 +83,37 @@ class TreeHeader extends React.Component {
           }
         />
 
-        <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-          <div>
-            <span style={{ marginRight: 8 }}>Ancestral reconstruction method:</span>
+        <div>
+          <span style={{ marginRight: 8 }}>Ancestral reconstruction method:</span>
+          <select
+            id="tree-select"
+            value={tree.ident}
+            onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
+            aria-label="Ancestral reconstruction method"
+          >
+            {selectedFamily.trees.map((tree_option) => (
+              <option key={tree_option.ident} value={tree_option.ident}>
+                {tree_option.type || tree_option.tree_id}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedFamily.is_paired && (
+          <div style={{ marginTop: "8px" }}>
+            <span style={{ marginRight: 8 }}>Chain:</span>
             <select
-              id="tree-select"
-              value={tree.ident}
-              onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
-              aria-label="Ancestral reconstruction method"
+              id="chain-select"
+              value={selectedChain}
+              onChange={(event) => dispatchSelectedChain(event.target.value)}
+              aria-label="Chain selection"
             >
-              {selectedFamily.trees.map((tree_option) => (
-                <option key={tree_option.ident} value={tree_option.ident}>
-                  {tree_option.tree_id}
-                </option>
-              ))}
+              <option value="heavy">Heavy chain only</option>
+              <option value="light">Light chain only</option>
+              <option value="both-stacked">Both chains (stacked)</option>
+              <option value="both-side-by-side">Both chains (side-by-side)</option>
             </select>
           </div>
-          {selectedFamily.is_paired && (
-            <div>
-              <span style={{ marginRight: 8 }}>Chain:</span>
-              <select
-                id="chain-select"
-                value={selectedChain}
-                onChange={(event) => dispatchSelectedChain(event.target.value)}
-                aria-label="Chain selection"
-              >
-                <option value="heavy">Heavy chain only</option>
-                <option value="light">Light chain only</option>
-                <option value="both-stacked">Both chains (stacked)</option>
-                <option value="both-side-by-side">Both chains (side-by-side)</option>
-              </select>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     );
   }
@@ -148,7 +146,9 @@ const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
   const selectedChain = state.clonalFamilies.selectedChain || "heavy";
-  const allClonalFamilies = getAvailableClonalFamilies(state);
+  // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
+  // even when they're filtered out of the scatterplot
+  const allClonalFamilies = getAllClonalFamilies(state);
   const treeCache = state.trees.cache;
 
   // idea is that none of these selectors will work (or be needed) if tree data isn't in yet
@@ -223,7 +223,16 @@ const mapStateToProps = (state) => {
           lightClone
         };
       }
-      // Fall through to heavy mode if light chain not available
+      // Light chain not available - return error state instead of falling through
+      return {
+        selectedFamily,
+        selectedTree,
+        selectedChain,
+        selectedSeq: state.clonalFamilies.selectedSeq,
+        lightChainUnavailable: true,
+        pairedClone,
+        lightClone
+      };
     }
 
     // Heavy chain mode (default) - use heavy clone's data
@@ -445,7 +454,7 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, lightTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain } = this.props;
+    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, lightTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain, lightChainUnavailable } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -494,7 +503,7 @@ class TreeViz extends React.Component {
         {/* Light chain has controls, heavy chain mirrors light chain settings */}
         {isStackedMode && completeData && (
           <div>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain</h4>
             <Vega
               onParseError={(...args) => console.error("parse error:", args)}
               onSignalPts_tuple={(...args) => {
@@ -511,6 +520,7 @@ class TreeViz extends React.Component {
               data={this.getChainData("heavy")}
               spec={this.specNoControls}
             />
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Light Chain</h4>
             {lightTree ? (
               <Vega
                 onParseError={(...args) => console.error("parse error:", args)}
@@ -529,76 +539,83 @@ class TreeViz extends React.Component {
                 spec={this.spec}
               />
             ) : (
-              <p style={{ fontStyle: "italic", color: "#666", marginTop: "10px" }}>
-                Light chain tree data not available. The paired clone may not be loaded yet.
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "10px", backgroundColor: "#fff3f3", border: "1px solid #ffcccc", borderRadius: "4px" }}>
+                <span style={{ color: "#cc0000", fontSize: "18px", fontWeight: "bold" }}>✗</span>
+                <span style={{ color: "#cc0000" }}>
+                  Light chain tree data not available. The paired clone may not be loaded yet.
+                </span>
+              </div>
             )}
           </div>
         )}
 
-        {/* Side-by-side mode: TODO - requires modified Vega spec */}
-        {/* For now, showing stacked view with synchronized controls */}
+        {/* Side-by-side mode: In development */}
         {isSideBySideMode && completeData && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "12px", backgroundColor: "#fff8e6", border: "1px solid #ffcc00", borderRadius: "4px" }}>
+            <span style={{ color: "#cc8800", fontSize: "18px" }}>⚠</span>
+            <span style={{ color: "#806600" }}>
+              Side-by-side view is currently in development. Please use the stacked view for now.
+            </span>
+          </div>
+        )}
+
+        {/* Single chain mode: light chain unavailable error */}
+        {!isBothMode && lightChainUnavailable && (
           <div>
-            <p style={{ fontStyle: "italic", color: "#666" }}>
-              Side-by-side mode coming soon. For now, showing stacked view:
-            </p>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
-            <Vega
-              onParseError={(...args) => console.error("parse error:", args)}
-              onSignalPts_tuple={(...args) => {
-                const node = args.slice(1)[0];
-                if (node && node.parent) {
-                  dispatchSelectedSeq(node.sequence_id);
-                  dispatchLastClickedChain("heavy");
-                  // Sync selection to light chain view
-                  this.syncSelectionToLightChain(node.y_tree);
-                }
-              }}
-              onNewView={(view) => this.setupHeavyChainSignalSync(view)}
-              debug
-              data={this.getChainData("heavy")}
-              spec={this.specNoControls}
+            <TreeHeader
+              selectedFamily={selectedFamily}
+              selectedTree={selectedTree}
+              selectedSeq={selectedSeq}
+              tree={tree}
             />
-            {lightTree ? (
+            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Light Chain</h4>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "10px", backgroundColor: "#fff3f3", border: "1px solid #ffcccc", borderRadius: "4px" }}>
+              <span style={{ color: "#cc0000", fontSize: "18px", fontWeight: "bold" }}>✗</span>
+              <span style={{ color: "#cc0000" }}>
+                Light chain tree data not available. The paired clone may not be loaded yet.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Single chain mode: original Vega component */}
+        {!isBothMode && !lightChainUnavailable && completeData && (() => {
+          // Determine chain label: for paired data use selectedChain, for non-paired use locus
+          const chainType = selectedFamily.is_paired
+            ? selectedChain
+            : clonalFamiliesSelectors.getCloneChain(selectedFamily);
+          const chainLabel = chainType === "heavy" ? "Heavy Chain" : "Light Chain";
+          return (
+            <div>
+              <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
               <Vega
                 onParseError={(...args) => console.error("parse error:", args)}
                 onSignalPts_tuple={(...args) => {
                   const node = args.slice(1)[0];
                   if (node && node.parent) {
+                    // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
                     dispatchSelectedSeq(node.sequence_id);
-                    dispatchLastClickedChain("light");
-                    // Sync selection to heavy chain view
-                    this.syncSelectionToHeavyChain(node.y_tree);
                   }
                 }}
-                onNewView={(view) => this.setupLightChainSignalSync(view)}
                 debug
-                data={this.getChainData("light")}
+                // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+                data={this.treeDataFromProps()}
                 spec={this.spec}
               />
-            ) : (
-              <p style={{ fontStyle: "italic", color: "#666", marginTop: "10px" }}>
-                Light chain tree data not available. The paired clone may not be loaded yet.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Single chain mode: original Vega component */}
-        {!isBothMode && (
+            </div>
+          );
+        })()}
+        {!isBothMode && !lightChainUnavailable && !completeData && (
           <Vega
             onParseError={(...args) => console.error("parse error:", args)}
             onSignalPts_tuple={(...args) => {
               const node = args.slice(1)[0];
               if (node && node.parent) {
-                // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
                 dispatchSelectedSeq(node.sequence_id);
               }
             }}
             debug
-            // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
-            data={completeData ? this.treeDataFromProps() : this.tempVegaData}
+            data={this.tempVegaData}
             spec={this.spec}
           />
         )}

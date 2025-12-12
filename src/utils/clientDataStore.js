@@ -130,13 +130,8 @@ class ClientDataStore {
       // Convert to format expected by existing code
       const cloneList = cloneMeta.map((clone) => ({
         ...clone,
-        // Add tree references in expected format
-        trees: clone.tree_ids
-          ? clone.tree_ids.map((tree_id) => ({
-              ident: tree_id,
-              tree_id: tree_id
-            }))
-          : []
+        // Add tree references in expected format (use trees_meta which has type, downsampling_strategy, etc.)
+        trees: clone.trees_meta || []
       }));
 
       ErrorLogger.info(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);

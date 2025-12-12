@@ -49,6 +49,26 @@ export const getAvailableClonalFamilies = createDeepEqualSelector(
   computeAvailableClonalFamilies
 );
 
+/**
+ * Get ALL clonal families without locus filtering.
+ * Used for paired clone lookup - we need to find paired clones even when
+ * they're filtered out of the scatterplot (e.g., light chain filtered out).
+ */
+export const getAllClonalFamilies = createDeepEqualSelector(
+  [getClonalFamiliesDict, getDatasets],
+  (byDatasetId, datasets) => {
+    let allClonalFamilies = [];
+    if (datasets.length > 0) {
+      _.forEach(datasets, (dataset) => {
+        if (dataset.loading && dataset.loading === "DONE") {
+          allClonalFamilies = allClonalFamilies.concat(byDatasetId[dataset.dataset_id]);
+        }
+      });
+    }
+    return allClonalFamilies;
+  }
+);
+
 // FILTER TABLE RESULTS BY BRUSH SELECTION
 
 const getBrushSelection = (state) => state.clonalFamilies.brushSelection;

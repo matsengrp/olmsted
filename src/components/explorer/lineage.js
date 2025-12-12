@@ -3,7 +3,7 @@ import React from "react";
 import Vega from "react-vega";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import { getPairedClone, getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
+import { getPairedClone, getAllClonalFamilies } from "../../selectors/clonalFamilies";
 import { seqAlignSpec } from "./vega/clonalFamilyDetails";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadFasta";
@@ -20,7 +20,9 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
-  const allClonalFamilies = getAvailableClonalFamilies(state);
+  // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
+  // even when they're filtered out of the scatterplot
+  const allClonalFamilies = getAllClonalFamilies(state);
   const treeCache = state.trees.cache;
 
   // Determine the actual chain type of the selected family

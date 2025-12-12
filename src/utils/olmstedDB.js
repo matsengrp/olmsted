@@ -81,8 +81,15 @@ class OlmstedDB extends Dexie {
               // Paired data fields (two-clone model: heavy and light are separate clones linked by pair_id)
               is_paired: clone.is_paired,
               pair_id: clone.pair_id,
-              // Store just references to trees, not full objects
-              tree_ids: clone.trees ? clone.trees.map((t) => t.ident || t.tree_id) : []
+              // Store tree metadata (lightweight, for dropdown display)
+              trees_meta: clone.trees
+                ? clone.trees.map((t) => ({
+                    ident: t.ident || t.tree_id,
+                    tree_id: t.tree_id,
+                    type: t.type,
+                    downsampling_strategy: t.downsampling_strategy
+                  }))
+                : []
             };
 
             allCloneMeta.push(cloneMeta);
@@ -102,7 +109,8 @@ class OlmstedDB extends Dexie {
           nodes: tree.nodes, // Store complete nodes object as-is
           // Add any other tree properties that might be needed
           downsampling_strategy: tree.downsampling_strategy,
-          tree_type: tree.tree_type
+          tree_type: tree.tree_type,
+          type: tree.type // Reconstruction method type (e.g., "pcp.reconstruction", "cft.reconstruction")
         }));
 
         if (allTreeData.length > 0) {
