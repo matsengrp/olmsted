@@ -226,20 +226,20 @@ export default class LoadingTable extends React.Component {
       mappings.push(["Citation", CitationCell, { sortable: false }]);
     }
 
-    // Define column widths
-    const columnWidths = [
-      60, // Select
-      120, // Status
-      200, // Name
-      150, // ID
-      80, // Source
-      80, // Size (MB)
-      80, // Subjects
-      100, // Families
-      120, // Upload time
-      120, // Build time
-      ...(showCitation ? [150] : [])
-    ];
+    // Define column widths by name
+    const widthMap = {
+      "Select": 60,
+      "Status": 60,
+      "Name": 200,
+      "ID": 150,
+      "Source": 80,
+      "Size (MB)": 80,
+      "Subjects": 80,
+      "Families": 100,
+      "Upload Time": 120,
+      "Build Time": 120,
+      "Citation": 150
+    };
 
     // CSV columns for export
     const csvColumns = [
@@ -274,7 +274,7 @@ export default class LoadingTable extends React.Component {
         <ResizableTable
           data={allDatasetsToUse}
           mappings={mappings}
-          columnWidths={columnWidths}
+          widthMap={widthMap}
           containerHeight={200}
           itemName="available datasets"
           componentProps={{

@@ -5,113 +5,10 @@ import * as explorerActions from "../../actions/explorer";
 import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
+import { ResizableTable } from "../util/resizableTable";
 
-// Resizable virtual scrolling table component
-class ResizableVirtualTable extends React.Component {
-  constructor(props) {
-    super(props);
-
-    // Initialize column widths
-    const defaultWidths = [
-      60, // Select
-      260, // Naive sequence
-      120, // ID
-      100, // Unique seqs
-      80, // V gene
-      80, // D gene
-      80, // J gene
-      80, // Locus
-      60, // Paired
-      100, // Junction length
-      80, // Seed run
-      100, // Subject
-      100, // Sample
-      100, // Timepoint
-      80, // Mut freq
-      120, // Dataset
-      120 // Ident
-    ];
-
-    this.state = {
-      scrollTop: 0,
-      columnWidths: defaultWidths.slice(0, props.mappings.length),
-      isResizing: false,
-      resizingColumn: null,
-      scrollbarWidth: 0,
-      hoveredRowId: null
-    };
-
-    this.headerRef = React.createRef();
-    this.bodyRef = React.createRef();
-    this.onScroll = this.onScroll.bind(this);
-    this.onMouseDown = this.onMouseDown.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
-  }
-
-  componentDidMount() {
-    document.addEventListener("mousemove", this.onMouseMove);
-    document.addEventListener("mouseup", this.onMouseUp);
-    this.updateScrollbarWidth();
-  }
-
-  componentDidUpdate() {
-    this.updateScrollbarWidth();
-  }
-
-  updateScrollbarWidth() {
-    const { scrollbarWidth: currentScrollbarWidth } = this.state;
-    if (this.bodyRef.current) {
-      const newScrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (newScrollbarWidth !== currentScrollbarWidth) {
-        this.setState({ scrollbarWidth: newScrollbarWidth });
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("mousemove", this.onMouseMove);
-    document.removeEventListener("mouseup", this.onMouseUp);
-  }
-
-  onScroll(e) {
-    this.setState({ scrollTop: e.target.scrollTop });
-    // Sync header scroll with body scroll
-    if (this.headerRef.current) {
-      this.headerRef.current.scrollLeft = e.target.scrollLeft;
-    }
-  }
-
-  onMouseDown(e, columnIndex) {
-    const { columnWidths } = this.state;
-    e.preventDefault();
-    this.setState({
-      isResizing: true,
-      resizingColumn: columnIndex,
-      startX: e.clientX,
-      startWidth: columnWidths[columnIndex]
-    });
-  }
-
-  onMouseMove(e) {
-    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
-    if (!isResizing) return;
-    const deltaX = e.clientX - startX;
-    const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
-
-    const newWidths = [...columnWidths];
-    newWidths[resizingColumn] = newWidth;
-
-    this.setState({ columnWidths: newWidths });
-  }
-
-  onMouseUp() {
-    this.setState({
-      isResizing: false,
-      resizingColumn: null
-    });
-  }
-
+// Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
+class ResizableVirtualTable extends ResizableTable {
   renderTableRow(datum, _index) {
     const { selectedFamily, mappings, dispatch } = this.props;
     const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
@@ -372,11 +269,12 @@ class ResizableVirtualTable extends React.Component {
 @connect()
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination, footerAction } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap } = this.props;
     return (
       <ResizableVirtualTable
         data={data}
         mappings={mappings}
+        widthMap={widthMap}
         selectedFamily={selectedFamily}
         dispatch={dispatch}
         pagination={pagination}
@@ -444,6 +342,13 @@ const mapStateToProps = (state) => {
   selectFamily: explorerActions.selectFamily
 })
 class ClonalFamiliesTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showPairedColumns: false
+    };
+  }
+
   componentDidUpdate(prevProps) {
     const { selectingStatus, visibleClonalFamilies, selectFamily } = this.props;
     // Checks:
@@ -455,9 +360,22 @@ class ClonalFamiliesTable extends React.Component {
     }
   }
 
+  handlePairedColumnsChange = (event) => {
+    this.setState({ showPairedColumns: event.target.checked });
+  }
+
   render() {
     const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
+    const { showPairedColumns } = this.state;
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
+
+    // Light chain columns (shown when showPairedColumns is true)
+    const lightChainColumns = [
+      { header: "Light chain type", accessor: "light_chain_type" },
+      { header: "V gene (light)", accessor: "v_call_light" },
+      { header: "J gene (light)", accessor: "j_call_light" },
+      { header: "Junction length (light)", accessor: "junction_length_light" }
+    ];
 
     // CSV columns for export (excludes non-exportable columns like Select, Naive sequence, Dataset component)
     const csvColumns = [
@@ -468,6 +386,7 @@ class ClonalFamiliesTable extends React.Component {
       { header: "J gene", accessor: "j_call" },
       { header: "Locus", accessor: "sample.locus" },
       { header: "Paired", accessor: "is_paired" },
+      ...(showPairedColumns ? lightChainColumns : []),
       { header: "Junction length", accessor: "junction_length" },
       { header: "Mut freq", accessor: "mean_mut_freq" },
       { header: "Seed run", accessor: "has_seed" },
@@ -488,35 +407,85 @@ class ClonalFamiliesTable extends React.Component {
       />
     ) : null;
 
+    // Light chain mappings for table display
+    const lightChainMappings = [
+      ["Light chain type", "light_chain_type"],
+      ["V gene (light)", "v_call_light"],
+      ["J gene (light)", "j_call_light"],
+      ["Junction length (light)", "junction_length_light"]
+    ];
+
+    // Column width map for this table
+    const columnWidthMap = {
+      "Select": 60,
+      "Naive sequence": 260,
+      "ID": 120,
+      "Unique seqs": 100,
+      "V gene": 80,
+      "D gene": 80,
+      "J gene": 80,
+      "Locus": 80,
+      "Paired": 60,
+      "Light chain type": 100,
+      "V gene (light)": 100,
+      "J gene (light)": 100,
+      "Junction length (light)": 120,
+      "Junction length": 100,
+      "Mut freq": 80,
+      "Seed run": 80,
+      "Subject": 100,
+      "Sample": 100,
+      "Timepoint": 100,
+      "Dataset": 120,
+      "Ident": 120
+    };
+
     return (
-      <Table
-        data={visibleClonalFamilies}
-        mappings={[
-          ["Select", SelectAttribute],
-          ["Naive sequence", NaiveSequence],
-          ["ID", "clone_id"],
-          // TODO decide on language for unique seqs vs rearrangement count
-          ["Unique seqs", "unique_seqs_count"],
-          ["V gene", "v_call"],
-          ["D gene", "d_call"],
-          ["J gene", "j_call"],
-          ["Locus", "sample.locus"],
-          ["Paired", "is_paired"],
-          ["Junction length", "junction_length"],
-          ["Mut freq", "mean_mut_freq"],
-          ["Seed run", "has_seed"],
-          ["Subject", "subject_id"],
-          ["Sample", "sample_id"],
-          ["Timepoint", "sample.timepoint_id"],
-          // ["Path", 'path'],
-          // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-          ["Dataset", DatasetName],
-          ["Ident", "ident"]
-        ]}
-        selectedFamily={this.selectedFamily}
-        pagination={pagination}
-        footerAction={footerAction}
-      />
+      <div>
+        <div style={{ marginBottom: "8px" }}>
+          <label htmlFor="show-paired-columns" style={{ cursor: "pointer" }}>
+            <input
+              id="show-paired-columns"
+              type="checkbox"
+              checked={showPairedColumns}
+              onChange={this.handlePairedColumnsChange}
+              style={{ marginRight: "6px" }}
+            />
+            Show light chain columns
+          </label>
+        </div>
+        <Table
+          key={showPairedColumns ? "with-paired" : "without-paired"}
+          data={visibleClonalFamilies}
+          widthMap={columnWidthMap}
+          mappings={[
+            ["Select", SelectAttribute],
+            ["Naive sequence", NaiveSequence],
+            ["ID", "clone_id"],
+            // TODO decide on language for unique seqs vs rearrangement count
+            ["Unique seqs", "unique_seqs_count"],
+            ["V gene", "v_call"],
+            ["D gene", "d_call"],
+            ["J gene", "j_call"],
+            ["Locus", "sample.locus"],
+            ["Paired", "is_paired"],
+            ...(showPairedColumns ? lightChainMappings : []),
+            ["Junction length", "junction_length"],
+            ["Mut freq", "mean_mut_freq"],
+            ["Seed run", "has_seed"],
+            ["Subject", "subject_id"],
+            ["Sample", "sample_id"],
+            ["Timepoint", "sample.timepoint_id"],
+            // ["Path", 'path'],
+            // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
+            ["Dataset", DatasetName],
+            ["Ident", "ident"]
+          ]}
+          selectedFamily={this.selectedFamily}
+          pagination={pagination}
+          footerAction={footerAction}
+        />
+      </div>
     );
   }
 }

@@ -286,20 +286,20 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
     mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
   }
 
-  // Define column widths
-  const columnWidths = [
-    120, // Load (doubled from 60)
-    200, // Name
-    150, // ID
-    80, // Source
-    80, // Size (MB)
-    80, // Subjects
-    100, // Families
-    120, // Upload time
-    120, // Build time
-    ...(showCitation ? [150] : []),
-    ...(hasClientDatasets ? [80] : [])
-  ];
+  // Define column widths by name
+  const widthMap = {
+    "Load": 60,
+    "Name": 200,
+    "ID": 150,
+    "Source": 80,
+    "Size (MB)": 80,
+    "Subjects": 80,
+    "Families": 100,
+    "Upload Time": 120,
+    "Build Time": 120,
+    "Citation": 150,
+    "Actions": 80
+  };
 
   return (
     <div style={{ width: "100%" }}>
@@ -307,7 +307,7 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
       <ResizableTable
         data={availableDatasets}
         mappings={mappings}
-        columnWidths={columnWidths}
+        widthMap={widthMap}
         containerHeight={200}
         itemName="datasets"
         componentProps={{ dispatch: dispatch }}

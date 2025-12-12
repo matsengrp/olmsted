@@ -6,12 +6,9 @@ export class ResizableTable extends React.Component {
   constructor(props) {
     super(props);
 
-    // Initialize column widths from props or use defaults
-    const defaultWidths = props.columnWidths || props.mappings.map(() => 120);
-
     this.state = {
       scrollTop: 0,
-      columnWidths: defaultWidths,
+      columnWidths: this.getDefaultWidths(props.mappings, props.widthMap, props.columnWidths),
       isResizing: false,
       resizingColumn: null,
       scrollbarWidth: 0,
@@ -29,14 +26,31 @@ export class ResizableTable extends React.Component {
     this.handleSort = this.handleSort.bind(this);
   }
 
+  // Generate default widths based on column names via widthMap, or use columnWidths array, or default to 120
+  getDefaultWidths(mappings, widthMap, columnWidths) {
+    if (columnWidths) {
+      return columnWidths;
+    }
+    if (widthMap) {
+      return mappings.map(([name]) => widthMap[name] || 120);
+    }
+    return mappings.map(() => 120);
+  }
+
   componentDidMount() {
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
     this.updateScrollbarWidth();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     this.updateScrollbarWidth();
+    // Reset column widths when mappings change (e.g., toggling optional columns)
+    if (prevProps.mappings.length !== this.props.mappings.length) {
+      this.setState({
+        columnWidths: this.getDefaultWidths(this.props.mappings, this.props.widthMap, this.props.columnWidths)
+      });
+    }
   }
 
   updateScrollbarWidth() {
@@ -164,7 +178,6 @@ export class ResizableTable extends React.Component {
           minHeight: "40px",
           maxHeight: "40px",
           backgroundColor,
-          minWidth: "fit-content",
           cursor: onRowClick ? "pointer" : "default",
           transition: "background-color 0.15s ease",
           overflow: "hidden",
@@ -186,6 +199,7 @@ export class ResizableTable extends React.Component {
           const key = (datum.id || datum.ident || datum.dataset_id || index) + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
 
+          const colWidth = columnWidths[colIndex] || 120;
           const style = {
             padding: 8,
             height: "100%",
@@ -194,9 +208,11 @@ export class ResizableTable extends React.Component {
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            width: columnWidths[colIndex],
-            minWidth: columnWidths[colIndex],
-            maxWidth: columnWidths[colIndex],
+            width: colWidth,
+            minWidth: colWidth,
+            maxWidth: colWidth,
+            flexShrink: 0,
+            flexGrow: 0,
             borderRight: "1px solid #eee",
             ...options.style
           };
@@ -312,8 +328,7 @@ export class ResizableTable extends React.Component {
               display: "flex",
               fontWeight: "bold",
               fontSize: 13,
-              height: "40px",
-              minWidth: "fit-content"
+              height: "40px"
             }}
           >
             {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
@@ -325,6 +340,7 @@ export class ResizableTable extends React.Component {
               const currentSortColumn = sortColumn;
               const currentSortDesc = sortDesc;
 
+              const colWidth = columnWidths[colIndex] || 120;
               const style = {
                 fontSize: 13,
                 padding: 8,
@@ -332,9 +348,11 @@ export class ResizableTable extends React.Component {
                 display: "flex",
                 alignItems: "center",
                 backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
-                width: columnWidths[colIndex],
-                minWidth: columnWidths[colIndex],
-                maxWidth: columnWidths[colIndex],
+                width: colWidth,
+                minWidth: colWidth,
+                maxWidth: colWidth,
+                flexShrink: 0,
+                flexGrow: 0,
                 borderRight: "1px solid #dee2e6",
                 position: "relative",
                 cursor: isSortable ? "pointer" : "default"
