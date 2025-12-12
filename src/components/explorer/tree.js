@@ -412,16 +412,19 @@ class TreeViz extends React.Component {
   // Get data for a specific chain (used in both modes)
   getChainData(chain) {
     const { heavyClone, lightClone, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
+
+    // Validate data exists before performing assignments
     const tree = chain === "heavy" ? heavyTree : lightTree;
     const naiveData = chain === "heavy" ? heavyNaiveData : lightNaiveData;
-    const cdrBounds = chain === "heavy" ? heavyCdrBounds : lightCdrBounds;
-    // Use the actual heavy/light clone for family data (for seed_id lookup)
     const cloneForChain = chain === "heavy" ? heavyClone : lightClone;
 
-    // Handle missing chain data gracefully
+    // Handle missing chain data gracefully - return early if critical data is missing
     if (!tree || !naiveData || !cloneForChain) {
       return this.tempVegaData;
     }
+
+    // Only compute remaining data after validation passes
+    const cdrBounds = chain === "heavy" ? heavyCdrBounds : lightCdrBounds;
 
     return {
       source_0: tree.nodes,
