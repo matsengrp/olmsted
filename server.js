@@ -3,6 +3,7 @@ const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
+const charon = require("./src/server/charon");
 const { execFile } = require('child_process');
 
 /* documentation in the static site! */
@@ -72,6 +73,8 @@ app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
 
+/* apply charon API routes for data fetching */
+charon.applyCharonToApp(app);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));

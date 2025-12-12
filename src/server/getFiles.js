@@ -10,7 +10,7 @@ const request = require("request"); // deprecated package, server code not activ
 
 const getDataFile = (res, filePath, s3) => {
   if (global.LOCAL_DATA) {
-    res.sendFile(path.join(global.LOCAL_DATA_PATH, filePath));
+    res.sendFile(path.resolve(global.LOCAL_DATA_PATH, filePath));
   } else if (s3 === "staging") {
     request(global.REMOTE_DATA_STAGING_BASEURL + filePath).pipe(res);
     /* TODO explore https://www.npmjs.com/package/cached-request */

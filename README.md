@@ -251,10 +251,36 @@ git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
 git submodule update --init
 
-npm install --legacy-peer-deps --ignore-scripts
-mkdir -p _data
-./bin/olmsted-server-local.sh _data/ 3999
+npm install --legacy-peer-deps
+npm run start
 ```
+
+### With Local Data
+
+The server's `localData` mode requires data in **split format** (separate files for datasets, clones, and trees), as opposed to the consolidated single-file format used for browser uploads. The split format allows the server to serve individual files on demand via the charon API.
+
+Split format structure:
+```
+data/
+  datasets.json                          # List of available datasets
+  clones.{dataset_id}.json              # Clonal families for each dataset
+  tree.{tree_id}.json                   # Individual tree files
+```
+
+To run with example data from [olmsted-cli](https://github.com/matsengrp/olmsted-cli):
+
+```bash
+# Clone olmsted-cli if you haven't already
+git clone https://github.com/matsengrp/olmsted-cli.git ../olmsted-cli
+
+# Copy pre-split example data to data/ (gitignored)
+cp ../olmsted-cli/example_data/pcp/split_golden_data/* data/
+
+# Start server with local data
+BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
+```
+
+The `data/` directory is gitignored, so local data files won't be committed.
 
 ### Static Build
 
