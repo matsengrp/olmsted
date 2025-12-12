@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import * as explorerActions from "../../actions/explorer";
-import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
+import { getBrushedClonalFamilies, getCloneChain } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
 import { ResizableTable } from "../util/resizableTable";
@@ -140,9 +140,11 @@ class ResizableVirtualTable extends ResizableTable {
               minWidth: "fit-content"
             }}
           >
-            {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
+            {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
               const isAttr = typeof AttrOrComponent === "string";
+              const isSortable = options.sortable !== false && (isAttr || options.sortKey);
+              const sortKey = isAttr ? AttrOrComponent : options.sortKey;
 
               const style = {
                 fontSize: 13,
@@ -156,11 +158,11 @@ class ResizableVirtualTable extends ResizableTable {
                 maxWidth: columnWidths[colIndex],
                 borderRight: "1px solid #dee2e6",
                 position: "relative",
-                cursor: isAttr ? "pointer" : "default"
+                cursor: isSortable ? "pointer" : "default"
               };
 
               const { pagination } = this.props;
-              const isCurrentSort = isAttr && pagination && pagination.order_by === AttrOrComponent;
+              const isCurrentSort = isSortable && pagination && pagination.order_by === sortKey;
               const sortDesc = pagination && pagination.desc;
 
               /**
@@ -169,9 +171,9 @@ class ResizableVirtualTable extends ResizableTable {
                * Using button role as this performs an action (sorting)
                */
               const handleHeaderKeyDown = (e) => {
-                if ((e.key === "Enter" || e.key === " ") && isAttr) {
+                if ((e.key === "Enter" || e.key === " ") && isSortable) {
                   e.preventDefault();
-                  dispatch(explorerActions.toggleSort(AttrOrComponent));
+                  dispatch(explorerActions.toggleSort(sortKey));
                 }
               };
 
@@ -180,16 +182,16 @@ class ResizableVirtualTable extends ResizableTable {
                   key={name}
                   style={style}
                   onClick={() => {
-                    if (isAttr) {
-                      dispatch(explorerActions.toggleSort(AttrOrComponent));
+                    if (isSortable) {
+                      dispatch(explorerActions.toggleSort(sortKey));
                     }
                   }}
                   onKeyDown={handleHeaderKeyDown}
-                  role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
+                  role={isSortable ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
                   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                  tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
+                  tabIndex={isSortable ? 0 : undefined} // Only sortable columns are focusable
                   aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
-                  aria-label={isAttr ? `Sort by ${name}` : undefined}
+                  aria-label={isSortable ? `Sort by ${name}` : undefined}
                 >
                   <span
                     style={{
@@ -200,7 +202,7 @@ class ResizableVirtualTable extends ResizableTable {
                     }}
                   >
                     {name}
-                    {isAttr && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
+                    {isSortable && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
                   </span>
                   {/* Resize handle */}
                   <div
@@ -298,6 +300,15 @@ class DatasetName extends React.Component {
   }
 }
 
+// Chain column component - displays "heavy" or "light" based on locus
+class ChainDisplay extends React.Component {
+  render() {
+    const { datum } = this.props;
+    const chain = getCloneChain(datum);
+    return <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chain}</div>;
+  }
+}
+
 
 @connect(
   (_store) => ({}),
@@ -342,13 +353,6 @@ const mapStateToProps = (state) => {
   selectFamily: explorerActions.selectFamily
 })
 class ClonalFamiliesTable extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showPairedColumns: false
-    };
-  }
-
   componentDidUpdate(prevProps) {
     const { selectingStatus, visibleClonalFamilies, selectFamily } = this.props;
     // Checks:
@@ -360,33 +364,21 @@ class ClonalFamiliesTable extends React.Component {
     }
   }
 
-  handlePairedColumnsChange = (event) => {
-    this.setState({ showPairedColumns: event.target.checked });
-  }
-
   render() {
     const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
-    const { showPairedColumns } = this.state;
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
-
-    // Light chain columns (shown when showPairedColumns is true)
-    const lightChainColumns = [
-      { header: "Light chain type", accessor: "light_chain_type" },
-      { header: "V gene (light)", accessor: "v_call_light" },
-      { header: "J gene (light)", accessor: "j_call_light" },
-      { header: "Junction length (light)", accessor: "junction_length_light" }
-    ];
 
     // CSV columns for export (excludes non-exportable columns like Select, Naive sequence, Dataset component)
     const csvColumns = [
-      { header: "ID", accessor: "clone_id" },
+      { header: "Family ID", accessor: "clone_id" },
       { header: "Unique seqs", accessor: "unique_seqs_count" },
       { header: "V gene", accessor: "v_call" },
       { header: "D gene", accessor: "d_call" },
       { header: "J gene", accessor: "j_call" },
       { header: "Locus", accessor: "sample.locus" },
+      { header: "Chain", accessor: (d) => getCloneChain(d) },
       { header: "Paired", accessor: "is_paired" },
-      ...(showPairedColumns ? lightChainColumns : []),
+      { header: "Pair ID", accessor: "pair_id" },
       { header: "Junction length", accessor: "junction_length" },
       { header: "Mut freq", accessor: "mean_mut_freq" },
       { header: "Seed run", accessor: "has_seed" },
@@ -407,29 +399,19 @@ class ClonalFamiliesTable extends React.Component {
       />
     ) : null;
 
-    // Light chain mappings for table display
-    const lightChainMappings = [
-      ["Light chain type", "light_chain_type"],
-      ["V gene (light)", "v_call_light"],
-      ["J gene (light)", "j_call_light"],
-      ["Junction length (light)", "junction_length_light"]
-    ];
-
     // Column width map for this table
     const columnWidthMap = {
       "Select": 60,
       "Naive sequence": 260,
-      "ID": 120,
+      "Family ID": 120,
       "Unique seqs": 100,
       "V gene": 80,
       "D gene": 80,
       "J gene": 80,
       "Locus": 80,
+      "Chain": 60,
       "Paired": 60,
-      "Light chain type": 100,
-      "V gene (light)": 100,
-      "J gene (light)": 100,
-      "Junction length (light)": 120,
+      "Pair ID": 150,
       "Junction length": 100,
       "Mut freq": 80,
       "Seed run": 80,
@@ -441,51 +423,37 @@ class ClonalFamiliesTable extends React.Component {
     };
 
     return (
-      <div>
-        <div style={{ marginBottom: "8px" }}>
-          <label htmlFor="show-paired-columns" style={{ cursor: "pointer" }}>
-            <input
-              id="show-paired-columns"
-              type="checkbox"
-              checked={showPairedColumns}
-              onChange={this.handlePairedColumnsChange}
-              style={{ marginRight: "6px" }}
-            />
-            Show light chain columns
-          </label>
-        </div>
-        <Table
-          key={showPairedColumns ? "with-paired" : "without-paired"}
-          data={visibleClonalFamilies}
-          widthMap={columnWidthMap}
-          mappings={[
-            ["Select", SelectAttribute],
-            ["Naive sequence", NaiveSequence],
-            ["ID", "clone_id"],
-            // TODO decide on language for unique seqs vs rearrangement count
-            ["Unique seqs", "unique_seqs_count"],
-            ["V gene", "v_call"],
-            ["D gene", "d_call"],
-            ["J gene", "j_call"],
-            ["Locus", "sample.locus"],
-            ["Paired", "is_paired"],
-            ...(showPairedColumns ? lightChainMappings : []),
-            ["Junction length", "junction_length"],
-            ["Mut freq", "mean_mut_freq"],
-            ["Seed run", "has_seed"],
-            ["Subject", "subject_id"],
-            ["Sample", "sample_id"],
-            ["Timepoint", "sample.timepoint_id"],
-            // ["Path", 'path'],
-            // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-            ["Dataset", DatasetName],
-            ["Ident", "ident"]
-          ]}
-          selectedFamily={this.selectedFamily}
-          pagination={pagination}
-          footerAction={footerAction}
-        />
-      </div>
+      <Table
+        data={visibleClonalFamilies}
+        widthMap={columnWidthMap}
+        mappings={[
+          ["Select", SelectAttribute],
+          ["Naive sequence", NaiveSequence],
+          ["Family ID", "clone_id"],
+          // TODO decide on language for unique seqs vs rearrangement count
+          ["Unique seqs", "unique_seqs_count"],
+          ["V gene", "v_call"],
+          ["D gene", "d_call"],
+          ["J gene", "j_call"],
+          ["Locus", "sample.locus"],
+          ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
+          ["Paired", "is_paired"],
+          ["Pair ID", "pair_id"],
+          ["Junction length", "junction_length"],
+          ["Mut freq", "mean_mut_freq"],
+          ["Seed run", "has_seed"],
+          ["Subject", "subject_id"],
+          ["Sample", "sample_id"],
+          ["Timepoint", "sample.timepoint_id"],
+          // ["Path", 'path'],
+          // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
+          ["Dataset", DatasetName, { sortKey: "dataset_id" }],
+          ["Ident", "ident"]
+        ]}
+        selectedFamily={this.selectedFamily}
+        pagination={pagination}
+        footerAction={footerAction}
+      />
     );
   }
 }

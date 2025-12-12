@@ -141,3 +141,35 @@ export const getSelectedFamily = createSelector(
     return selected ? selected : page[0];
   }
 );
+
+// PAIRED DATA HELPERS
+
+/**
+ * Determine if a clone is heavy or light chain based on locus
+ * @param {Object} clone - The clone object
+ * @returns {string} 'heavy' or 'light'
+ */
+export const getCloneChain = (clone) => {
+  if (!clone || !clone.sample || !clone.sample.locus) {
+    return "heavy"; // default to heavy if unknown
+  }
+  const locus = clone.sample.locus.toLowerCase();
+  // IGH = heavy chain, IGK/IGL = light chain (kappa/lambda)
+  return locus === "igh" ? "heavy" : "light";
+};
+
+/**
+ * Find the paired clone for a given clone (by pair_id)
+ * @param {Array} clonalFamilies - Array of all clonal families
+ * @param {Object} clone - The clone to find the pair for
+ * @returns {Object|null} The paired clone or null if not found
+ */
+export const getPairedClone = (clonalFamilies, clone) => {
+  if (!clone || !clone.is_paired || !clone.pair_id) {
+    return null;
+  }
+  // Find the other clone with the same pair_id but different ident
+  return _.find(clonalFamilies, (cf) =>
+    cf.pair_id === clone.pair_id && cf.ident !== clone.ident
+  ) || null;
+};

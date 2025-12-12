@@ -1,38 +1,40 @@
 import React from "react";
 import { createClassFromSpec } from "react-vega";
 import naiveVegaSpec from "./vega/naive";
+import { getCloneChain } from "../../selectors/clonalFamilies";
 
 // Naive gene reassortment viz component
 // =====================================
 
 /**
- * Build gene region data for a single chain (heavy or light)
- * @param {Object} datum - Clone family data
- * @param {string} chainType - 'heavy' or 'light'
- * @param {string} familyLabel - Label for the chain (e.g., "5p" for heavy, "light" for light)
+ * Build gene region data from a clone's own data
+ * With the two-clone model, each clone only has its own chain data
+ * @param {Object} clone - Clone data
+ * @param {string} familyLabel - Label for display (e.g., "5p", "Heavy", "Light")
  * @returns {Array} Array of region objects
  */
-const buildChainRegions = (datum, chainType, familyLabel) => {
-  const isLight = chainType === "light";
-  const suffix = isLight ? "_light" : "";
+const buildCloneRegions = (clone, familyLabel) => {
+  // Determine if this is a light chain clone (no D gene)
+  const chain = getCloneChain(clone);
+  const isLight = chain === "light";
 
-  // Get field values with appropriate suffix
-  const germlineAlignment = isLight ? datum.germline_alignment_light : datum.germline_alignment;
-  const vAlignmentStart = datum.v_alignment_start; // Light chain doesn't have separate v_alignment positions in current data
-  const vAlignmentEnd = datum.v_alignment_end;
-  const dAlignmentStart = isLight ? null : datum.d_alignment_start; // Light chains have no D gene
-  const dAlignmentEnd = isLight ? null : datum.d_alignment_end;
-  const jAlignmentStart = datum.j_alignment_start;
-  const jAlignmentEnd = datum.j_alignment_end;
-  const junctionStart = isLight ? datum.junction_start_light : datum.junction_start;
-  const junctionLength = isLight ? datum.junction_length_light : datum.junction_length;
-  const cdr1Start = isLight ? datum.cdr1_alignment_start_light : datum.cdr1_alignment_start;
-  const cdr1End = isLight ? datum.cdr1_alignment_end_light : datum.cdr1_alignment_end;
-  const cdr2Start = isLight ? datum.cdr2_alignment_start_light : datum.cdr2_alignment_start;
-  const cdr2End = isLight ? datum.cdr2_alignment_end_light : datum.cdr2_alignment_end;
-  const vCall = isLight ? datum.v_call_light : datum.v_call;
-  const dCall = isLight ? null : datum.d_call;
-  const jCall = isLight ? datum.j_call_light : datum.j_call;
+  // Get field values directly from the clone (no _light suffixes needed)
+  const germlineAlignment = clone.germline_alignment;
+  const vAlignmentStart = clone.v_alignment_start;
+  const vAlignmentEnd = clone.v_alignment_end;
+  const dAlignmentStart = clone.d_alignment_start;
+  const dAlignmentEnd = clone.d_alignment_end;
+  const jAlignmentStart = clone.j_alignment_start;
+  const jAlignmentEnd = clone.j_alignment_end;
+  const junctionStart = clone.junction_start;
+  const junctionLength = clone.junction_length;
+  const cdr1Start = clone.cdr1_alignment_start;
+  const cdr1End = clone.cdr1_alignment_end;
+  const cdr2Start = clone.cdr2_alignment_start;
+  const cdr2End = clone.cdr2_alignment_end;
+  const vCall = clone.v_call;
+  const dCall = clone.d_call;
+  const jCall = clone.j_call;
 
   // Calculate sequence length
   const germlineLength = germlineAlignment ? germlineAlignment.length : 0;
@@ -83,8 +85,16 @@ const buildChainRegions = (datum, chainType, familyLabel) => {
     }
   ];
 
-  // Add D gene and insertions only for heavy chain
-  if (!isLight) {
+  // Light chains have no D gene - show V-J insertion instead
+  if (isLight || !dAlignmentStart || !dAlignmentEnd) {
+    regions.push({
+      family: familyLabel,
+      region: "V-J Insertion",
+      start: vAlignmentEnd,
+      end: jAlignmentStart
+    });
+  } else {
+    // Heavy chain: D gene with 5' and 3' insertions
     regions.push(
       {
         family: familyLabel,
@@ -106,14 +116,6 @@ const buildChainRegions = (datum, chainType, familyLabel) => {
         end: jAlignmentStart
       }
     );
-  } else {
-    // Light chain: single insertion between V and J
-    regions.push({
-      family: familyLabel,
-      region: "V-J Insertion",
-      start: vAlignmentEnd,
-      end: jAlignmentStart
-    });
   }
 
   regions.push({
@@ -139,44 +141,16 @@ const filterValidRegions = (regions) => {
 };
 
 /**
- * Get naive visualization data for a clone family
- * @param {Object} datum - Clone family data
- * @param {string} chain - 'heavy', 'light', 'both-stacked', or 'both-side-by-side' (default: 'heavy')
+ * Get naive visualization data for a clone
+ * With the two-clone model, just pass the clone you want to visualize
+ * For "both" modes, call this separately for heavy and light clones
+ * @param {Object} clone - Clone data (can be heavy or light chain)
+ * @param {string} label - Optional label override (default: "5p")
  * @returns {Object} Object with source array for Vega
  */
-const getNaiveVizData = (datum, chain = "heavy") => {
-  let allRegions = [];
-
-  // Normalize chain value - for single chain visualization, use the specific chain
-  const showHeavy = chain === "heavy" || chain === "both-stacked" || chain === "both-side-by-side";
-  const showLight = chain === "light" || chain === "both-stacked" || chain === "both-side-by-side";
-  const isBothMode = chain === "both-stacked" || chain === "both-side-by-side";
-
-  if (showHeavy && !isBothMode) {
-    const heavyRegions = buildChainRegions(datum, "heavy", "5p");
-    allRegions = allRegions.concat(filterValidRegions(heavyRegions));
-  }
-
-  if (showLight && !isBothMode) {
-    // Only add light chain regions if the family has paired data
-    if (datum.is_paired) {
-      const lightRegions = buildChainRegions(datum, "light", "5p");
-      allRegions = allRegions.concat(filterValidRegions(lightRegions));
-    }
-  }
-
-  // For "both" modes when called directly (not from stacked/side-by-side component)
-  // This shouldn't happen in normal flow since stacked mode calls this separately for each chain
-  if (isBothMode) {
-    const heavyRegions = buildChainRegions(datum, "heavy", "Heavy");
-    allRegions = allRegions.concat(filterValidRegions(heavyRegions));
-    if (datum.is_paired) {
-      const lightRegions = buildChainRegions(datum, "light", "Light");
-      allRegions = allRegions.concat(filterValidRegions(lightRegions));
-    }
-  }
-
-  return { source: allRegions };
+const getNaiveVizData = (clone, label = "5p") => {
+  const regions = buildCloneRegions(clone, label);
+  return { source: filterValidRegions(regions) };
 };
 
 const NaiveViz = createClassFromSpec(naiveVegaSpec);

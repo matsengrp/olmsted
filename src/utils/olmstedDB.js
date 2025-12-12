@@ -78,18 +78,9 @@ class OlmstedDB extends Dexie {
               germline_alignment: clone.germline_alignment,
               has_seed: clone.has_seed,
               sample: clone.sample,
-              // Paired data fields
+              // Paired data fields (two-clone model: heavy and light are separate clones linked by pair_id)
               is_paired: clone.is_paired,
-              light_chain_type: clone.light_chain_type,
-              v_call_light: clone.v_call_light,
-              j_call_light: clone.j_call_light,
-              germline_alignment_light: clone.germline_alignment_light,
-              cdr1_alignment_start_light: clone.cdr1_alignment_start_light,
-              cdr1_alignment_end_light: clone.cdr1_alignment_end_light,
-              cdr2_alignment_start_light: clone.cdr2_alignment_start_light,
-              cdr2_alignment_end_light: clone.cdr2_alignment_end_light,
-              junction_start_light: clone.junction_start_light,
-              junction_length_light: clone.junction_length_light,
+              pair_id: clone.pair_id,
               // Store just references to trees, not full objects
               tree_ids: clone.trees ? clone.trees.map((t) => t.ident || t.tree_id) : []
             };
@@ -174,9 +165,6 @@ class OlmstedDB extends Dexie {
             parent: nodeData.parent,
             sequence_alignment: nodeData.sequence_alignment,
             sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            // Light chain sequence data for paired families
-            sequence_alignment_light: nodeData.sequence_alignment_light,
-            sequence_alignment_light_aa: nodeData.sequence_alignment_light_aa,
             distance: nodeData.distance,
             length: nodeData.length,
             lbi: nodeData.lbi,
@@ -242,9 +230,6 @@ class OlmstedDB extends Dexie {
             parent: nodeData.parent,
             sequence_alignment: nodeData.sequence_alignment,
             sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            // Light chain sequence data for paired families
-            sequence_alignment_light: nodeData.sequence_alignment_light,
-            sequence_alignment_light_aa: nodeData.sequence_alignment_light_aa,
             distance: nodeData.distance,
             length: nodeData.length,
             lbi: nodeData.lbi,

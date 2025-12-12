@@ -11,6 +11,7 @@ import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
+import { getPairedClone, getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 
 // Tree header component
 // =================================
@@ -120,7 +121,7 @@ class TreeHeader extends React.Component {
   }
 }
 
-const isTreeComplete = (tree) => tree.nodes && !tree.nodes.error;
+const isTreeComplete = (tree) => tree && tree.nodes && !tree.nodes.error;
 
 // Phylogenetic tree & alignment viz
 // =================================
@@ -129,63 +130,129 @@ const isTreeComplete = (tree) => tree.nodes && !tree.nodes.error;
 
 // First some redux connection functions
 
-// Helper to compute visualization data for a specific chain
-const computeChainVizData = (selectedFamily, selectedTree, chain) => {
-  const naiveData = getNaiveVizData(selectedFamily, chain);
+// Helper to compute visualization data for a clone
+// With the two-clone model, each clone has its own data
+const computeCloneVizData = (clone, tree, label = "5p") => {
+  const naiveData = getNaiveVizData(clone, label);
   const cdrBounds = naiveData.source
     .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
     .flatMap((region) => [
       { x: Math.floor(region.start / 3) - 0.5, region: region.region },
       { x: Math.floor(region.end / 3) + 0.5, region: region.region }
     ]);
-  return { naiveData, cdrBounds };
+  const treeData = treesSelector.computeTreeData(tree);
+  return { naiveData, cdrBounds, treeData };
 };
 
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
   const selectedChain = state.clonalFamilies.selectedChain || "heavy";
+  const allClonalFamilies = getAvailableClonalFamilies(state);
+  const treeCache = state.trees.cache;
 
   // idea is that none of these selectors will work (or be needed) if tree data isn't in yet
   if (selectedFamily && selectedTree && isTreeComplete(selectedTree)) {
     const isBothMode = selectedChain === "both-stacked" || selectedChain === "both-side-by-side";
+    const isLightMode = selectedChain === "light";
+
+    // Determine the actual chain type of the selected family
+    const selectedFamilyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
+    const selectedIsHeavy = selectedFamilyChain === "heavy";
+
+    // For paired data, look up the paired clone and its tree
+    let pairedClone = null;
+    let pairedTree = null;
+    if (selectedFamily.is_paired) {
+      pairedClone = getPairedClone(allClonalFamilies, selectedFamily);
+      if (pairedClone) {
+        // Get the paired clone's tree from cache
+        pairedTree = treesSelector.getTreeFromCache(treeCache, pairedClone, null);
+      }
+    }
+
+    // Determine which clone/tree is heavy and which is light
+    // This handles the case where the user selected the light chain clone from the table
+    const heavyClone = selectedIsHeavy ? selectedFamily : pairedClone;
+    const heavyCloneTree = selectedIsHeavy ? selectedTree : pairedTree;
+    const lightClone = selectedIsHeavy ? pairedClone : selectedFamily;
+    const lightCloneTree = selectedIsHeavy ? pairedTree : selectedTree;
 
     if (isBothMode) {
       // Compute data for both chains
-      const heavyVizData = computeChainVizData(selectedFamily, selectedTree, "heavy");
-      const lightVizData = computeChainVizData(selectedFamily, selectedTree, "light");
+      let heavyVizData = null;
+      let lightVizData = null;
 
-      // Import computeTreeData directly for chain-specific tree data
-      const heavyTreeData = treesSelector.computeTreeData(selectedTree, "heavy");
-      const lightTreeData = treesSelector.computeTreeData(selectedTree, "light");
+      if (heavyClone && heavyCloneTree && isTreeComplete(heavyCloneTree)) {
+        heavyVizData = computeCloneVizData(heavyClone, heavyCloneTree, "5p");
+      }
+      if (lightClone && lightCloneTree && isTreeComplete(lightCloneTree)) {
+        lightVizData = computeCloneVizData(lightClone, lightCloneTree, "5p");
+      }
 
       return {
         selectedFamily,
         selectedTree,
         selectedChain,
         selectedSeq: state.clonalFamilies.selectedSeq,
+        pairedClone,
+        heavyClone,
+        lightClone,
         // Heavy chain data
-        heavyNaiveData: heavyVizData.naiveData,
-        heavyCdrBounds: heavyVizData.cdrBounds,
-        heavyTree: heavyTreeData,
+        heavyNaiveData: heavyVizData ? heavyVizData.naiveData : null,
+        heavyCdrBounds: heavyVizData ? heavyVizData.cdrBounds : null,
+        heavyTree: heavyVizData ? heavyVizData.treeData : null,
         // Light chain data
-        lightNaiveData: lightVizData.naiveData,
-        lightCdrBounds: lightVizData.cdrBounds,
-        lightTree: lightTreeData
+        lightNaiveData: lightVizData ? lightVizData.naiveData : null,
+        lightCdrBounds: lightVizData ? lightVizData.cdrBounds : null,
+        lightTree: lightVizData ? lightVizData.treeData : null
       };
-    } else {
-      // Single chain mode
-      const vizData = computeChainVizData(selectedFamily, selectedTree, selectedChain);
+    } else if (isLightMode) {
+      // Light chain only mode
+      if (lightClone && lightCloneTree && isTreeComplete(lightCloneTree)) {
+        const vizData = computeCloneVizData(lightClone, lightCloneTree, "5p");
+        return {
+          selectedFamily,
+          selectedTree: lightCloneTree,
+          naiveData: vizData.naiveData,
+          tree: vizData.treeData,
+          selectedSeq: state.clonalFamilies.selectedSeq,
+          selectedChain,
+          cdrBounds: vizData.cdrBounds,
+          pairedClone,
+          lightClone
+        };
+      }
+      // Fall through to heavy mode if light chain not available
+    }
+
+    // Heavy chain mode (default) - use heavy clone's data
+    if (heavyClone && heavyCloneTree && isTreeComplete(heavyCloneTree)) {
+      const vizData = computeCloneVizData(heavyClone, heavyCloneTree, "5p");
       return {
         selectedFamily,
-        selectedTree,
+        selectedTree: heavyCloneTree,
         naiveData: vizData.naiveData,
-        tree: treesSelector.getTreeData(state),
+        tree: vizData.treeData,
         selectedSeq: state.clonalFamilies.selectedSeq,
         selectedChain,
-        cdrBounds: vizData.cdrBounds
+        cdrBounds: vizData.cdrBounds,
+        pairedClone,
+        heavyClone
       };
     }
+
+    // Fallback - use whatever we have (selectedFamily)
+    const vizData = computeCloneVizData(selectedFamily, selectedTree, "5p");
+    return {
+      selectedFamily,
+      selectedTree,
+      naiveData: vizData.naiveData,
+      tree: vizData.treeData,
+      selectedSeq: state.clonalFamilies.selectedSeq,
+      selectedChain,
+      cdrBounds: vizData.cdrBounds
+    };
   }
   return { selectedFamily, selectedTree, selectedChain };
 };
@@ -336,10 +403,17 @@ class TreeViz extends React.Component {
 
   // Get data for a specific chain (used in both modes)
   getChainData(chain) {
-    const { selectedFamily, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
+    const { heavyClone, lightClone, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
     const tree = chain === "heavy" ? heavyTree : lightTree;
     const naiveData = chain === "heavy" ? heavyNaiveData : lightNaiveData;
     const cdrBounds = chain === "heavy" ? heavyCdrBounds : lightCdrBounds;
+    // Use the actual heavy/light clone for family data (for seed_id lookup)
+    const cloneForChain = chain === "heavy" ? heavyClone : lightClone;
+
+    // Handle missing chain data gracefully
+    if (!tree || !naiveData || !cloneForChain) {
+      return this.tempVegaData;
+    }
 
     return {
       source_0: tree.nodes,
@@ -347,8 +421,8 @@ class TreeViz extends React.Component {
       naive_data: naiveData.source,
       cdr_bounds: cdrBounds,
       leaves_count_incl_naive: tree.leaves_count_incl_naive,
-      pts_tuple: selectedFamily,
-      seed: selectedFamily.seed_id === null ? [] : [{ id: selectedFamily.seed_id }]
+      pts_tuple: cloneForChain,
+      seed: cloneForChain.seed_id === null ? [] : [{ id: cloneForChain.seed_id }]
     };
   }
 
@@ -371,7 +445,7 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain } = this.props;
+    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, lightTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -437,22 +511,28 @@ class TreeViz extends React.Component {
               data={this.getChainData("heavy")}
               spec={this.specNoControls}
             />
-            <Vega
-              onParseError={(...args) => console.error("parse error:", args)}
-              onSignalPts_tuple={(...args) => {
-                const node = args.slice(1)[0];
-                if (node && node.parent) {
-                  dispatchSelectedSeq(node.sequence_id);
-                  dispatchLastClickedChain("light");
-                  // Sync selection to heavy chain view
-                  this.syncSelectionToHeavyChain(node.y_tree);
-                }
-              }}
-              onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
-              debug
-              data={this.getChainData("light")}
-              spec={this.spec}
-            />
+            {lightTree ? (
+              <Vega
+                onParseError={(...args) => console.error("parse error:", args)}
+                onSignalPts_tuple={(...args) => {
+                  const node = args.slice(1)[0];
+                  if (node && node.parent) {
+                    dispatchSelectedSeq(node.sequence_id);
+                    dispatchLastClickedChain("light");
+                    // Sync selection to heavy chain view
+                    this.syncSelectionToHeavyChain(node.y_tree);
+                  }
+                }}
+                onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
+                debug
+                data={this.getChainData("light")}
+                spec={this.spec}
+              />
+            ) : (
+              <p style={{ fontStyle: "italic", color: "#666", marginTop: "10px" }}>
+                Light chain tree data not available. The paired clone may not be loaded yet.
+              </p>
+            )}
           </div>
         )}
 
@@ -480,22 +560,28 @@ class TreeViz extends React.Component {
               data={this.getChainData("heavy")}
               spec={this.specNoControls}
             />
-            <Vega
-              onParseError={(...args) => console.error("parse error:", args)}
-              onSignalPts_tuple={(...args) => {
-                const node = args.slice(1)[0];
-                if (node && node.parent) {
-                  dispatchSelectedSeq(node.sequence_id);
-                  dispatchLastClickedChain("light");
-                  // Sync selection to heavy chain view
-                  this.syncSelectionToHeavyChain(node.y_tree);
-                }
-              }}
-              onNewView={(view) => this.setupLightChainSignalSync(view)}
-              debug
-              data={this.getChainData("light")}
-              spec={this.spec}
-            />
+            {lightTree ? (
+              <Vega
+                onParseError={(...args) => console.error("parse error:", args)}
+                onSignalPts_tuple={(...args) => {
+                  const node = args.slice(1)[0];
+                  if (node && node.parent) {
+                    dispatchSelectedSeq(node.sequence_id);
+                    dispatchLastClickedChain("light");
+                    // Sync selection to heavy chain view
+                    this.syncSelectionToHeavyChain(node.y_tree);
+                  }
+                }}
+                onNewView={(view) => this.setupLightChainSignalSync(view)}
+                debug
+                data={this.getChainData("light")}
+                spec={this.spec}
+              />
+            ) : (
+              <p style={{ fontStyle: "italic", color: "#666", marginTop: "10px" }}>
+                Light chain tree data not available. The paired clone may not be loaded yet.
+              </p>
+            )}
           </div>
         )}
 

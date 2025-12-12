@@ -3,6 +3,7 @@ import * as types from "./types";
 import * as loadData from "./loadData";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
+import { getPairedClone, getAvailableClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
 
 export const pageDown = { type: types.PAGE_DOWN };
 export const pageUp = { type: types.PAGE_UP };
@@ -17,7 +18,8 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (ident, updateBrushSelection = false) => {
   return (dispatch, getState) => {
     dispatch({ type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection });
-    const { clonalFamilies, datasets } = getState();
+    const state = getState();
+    const { clonalFamilies, datasets } = state;
     const clonalFamily = clonalFamilies.byIdent[ident];
     const clonalFamilyTrees = clonalFamily ? clonalFamily.trees || [] : [];
 
@@ -34,6 +36,29 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
         loadData.getTree(dispatch, tree.ident);
       }
     });
+
+    // For paired families, also load the paired clone's trees
+    // This ensures light chain data is available for "both" and "light" modes
+    if (clonalFamily && clonalFamily.is_paired && clonalFamily.pair_id) {
+      const allClonalFamilies = getAvailableClonalFamilies(state);
+      const pairedClone = getPairedClone(allClonalFamilies, clonalFamily);
+      if (pairedClone) {
+        const pairedTrees = pairedClone.trees || [];
+        _.forEach(pairedTrees, (tree) => {
+          if (isClientSide) {
+            getClientTree(dispatch, tree.ident);
+          } else {
+            loadData.getTree(dispatch, tree.ident);
+          }
+        });
+      }
+
+      // Auto-switch chain selection based on which chain was selected
+      // If user selected a light chain clone, switch to "light" mode
+      // If user selected a heavy chain clone, switch to "heavy" mode
+      const selectedChain = getCloneChain(clonalFamily);
+      dispatch({ type: types.UPDATE_SELECTED_CHAIN, chain: selectedChain });
+    }
   };
 };
 
