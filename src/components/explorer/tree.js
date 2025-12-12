@@ -11,7 +11,8 @@ import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
-import { getPairedClone, getAllClonalFamilies } from "../../selectors/clonalFamilies";
+import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
+import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
 
 // Tree header component
 // =================================
@@ -107,9 +108,9 @@ class TreeHeader extends React.Component {
               onChange={(event) => dispatchSelectedChain(event.target.value)}
               aria-label="Chain selection"
             >
-              <option value="heavy">Heavy chain only</option>
-              <option value="light">Light chain only</option>
-              <option value="both-stacked">Both chains (stacked)</option>
+              <option value={CHAIN_TYPES.HEAVY}>Heavy chain only</option>
+              <option value={CHAIN_TYPES.LIGHT}>Light chain only</option>
+              <option value={CHAIN_TYPES.BOTH_STACKED}>Both chains (stacked)</option>
             </select>
           </div>
         )}
@@ -152,12 +153,8 @@ const mapStateToProps = (state) => {
 
   // idea is that none of these selectors will work (or be needed) if tree data isn't in yet
   if (selectedFamily && selectedTree && isTreeComplete(selectedTree)) {
-    const isBothMode = selectedChain === "both-stacked" || selectedChain === "both-side-by-side";
-    const isLightMode = selectedChain === "light";
-
-    // Determine the actual chain type of the selected family
-    const selectedFamilyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
-    const selectedIsHeavy = selectedFamilyChain === "heavy";
+    const isBothMode = isBothChainsMode(selectedChain);
+    const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
 
     // For paired data, look up the paired clone and its tree
     let pairedClone = null;
@@ -172,9 +169,10 @@ const mapStateToProps = (state) => {
 
     // Determine which clone/tree is heavy and which is light
     // This handles the case where the user selected the light chain clone from the table
-    const heavyClone = selectedIsHeavy ? selectedFamily : pairedClone;
+    const { heavyClone, lightClone } = getHeavyLightClones(selectedFamily, pairedClone);
+    const selectedFamilyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
+    const selectedIsHeavy = selectedFamilyChain === CHAIN_TYPES.HEAVY;
     const heavyCloneTree = selectedIsHeavy ? selectedTree : pairedTree;
-    const lightClone = selectedIsHeavy ? pairedClone : selectedFamily;
     const lightCloneTree = selectedIsHeavy ? pairedTree : selectedTree;
 
     if (isBothMode) {
@@ -400,11 +398,11 @@ class TreeViz extends React.Component {
     const { selectedFamily, selectedChain, dispatchSelectedChain } = this.props;
     // When family changes, check if we need to reset chain selection
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
-      const isBothMode = selectedChain === "both-stacked" || selectedChain === "both-side-by-side";
-      const isLightMode = selectedChain === "light";
+      const isBothMode = isBothChainsMode(selectedChain);
+      const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
       // If in "both" or "light" mode but new family is not paired, reset to "heavy"
       if ((isBothMode || isLightMode) && !selectedFamily.is_paired) {
-        dispatchSelectedChain("heavy");
+        dispatchSelectedChain(CHAIN_TYPES.HEAVY);
       }
     }
   }
@@ -414,9 +412,9 @@ class TreeViz extends React.Component {
     const { heavyClone, lightClone, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
 
     // Validate data exists before performing assignments
-    const tree = chain === "heavy" ? heavyTree : lightTree;
-    const naiveData = chain === "heavy" ? heavyNaiveData : lightNaiveData;
-    const cloneForChain = chain === "heavy" ? heavyClone : lightClone;
+    const tree = chain === CHAIN_TYPES.HEAVY ? heavyTree : lightTree;
+    const naiveData = chain === CHAIN_TYPES.HEAVY ? heavyNaiveData : lightNaiveData;
+    const cloneForChain = chain === CHAIN_TYPES.HEAVY ? heavyClone : lightClone;
 
     // Handle missing chain data gracefully - return early if critical data is missing
     if (!tree || !naiveData || !cloneForChain) {
@@ -424,7 +422,7 @@ class TreeViz extends React.Component {
     }
 
     // Only compute remaining data after validation passes
-    const cdrBounds = chain === "heavy" ? heavyCdrBounds : lightCdrBounds;
+    const cdrBounds = chain === CHAIN_TYPES.HEAVY ? heavyCdrBounds : lightCdrBounds;
 
     return {
       source_0: tree.nodes,
@@ -470,9 +468,9 @@ class TreeViz extends React.Component {
     const incompleteTree = !treeLoading && !isTreeComplete(selectedTree);
     const completeData = !incompleteFamily && !treeLoading && isTreeComplete(selectedTree);
 
-    const isStackedMode = selectedChain === "both-stacked";
-    const isSideBySideMode = selectedChain === "both-side-by-side";
-    const isBothMode = isStackedMode || isSideBySideMode;
+    const isStacked = isStackedMode(selectedChain);
+    const isSideBySide = isSideBySideMode(selectedChain);
+    const isBothMode = isBothChainsMode(selectedChain);
 
     // Use heavyTree for downloads in both mode, otherwise use tree
     const downloadTree = isBothMode ? heavyTree : tree;
@@ -503,7 +501,7 @@ class TreeViz extends React.Component {
 
         {/* Stacked mode: render two separate tree/alignment visualizations */}
         {/* Light chain has controls, heavy chain mirrors light chain settings */}
-        {isStackedMode && completeData && (
+        {isStacked && completeData && (
           <div>
             <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
             <Vega
@@ -551,7 +549,7 @@ class TreeViz extends React.Component {
         )}
 
         {/* Side-by-side mode: In development */}
-        {isSideBySideMode && completeData && (
+        {isSideBySide && completeData && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "12px", backgroundColor: "#fff8e6", border: "1px solid #ffcc00", borderRadius: "4px" }}>
             <span style={{ color: "#cc8800", fontSize: "18px" }}>⚠</span>
             <span style={{ color: "#806600" }}>

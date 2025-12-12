@@ -2,6 +2,7 @@ import React from "react";
 import { createClassFromSpec } from "react-vega";
 import naiveVegaSpec from "./vega/naive";
 import { getCloneChain } from "../../selectors/clonalFamilies";
+import { CHAIN_TYPES } from "../../constants/chainTypes";
 
 // Naive gene reassortment viz component
 // =====================================
@@ -16,7 +17,7 @@ import { getCloneChain } from "../../selectors/clonalFamilies";
 const buildCloneRegions = (clone, familyLabel) => {
   // Determine if this is a light chain clone (no D gene)
   const chain = getCloneChain(clone);
-  const isLight = chain === "light";
+  const isLight = chain === CHAIN_TYPES.LIGHT;
 
   // Get field values directly from the clone (no _light suffixes needed)
   const germlineAlignment = clone.germline_alignment;
@@ -66,7 +67,9 @@ const buildCloneRegions = (clone, familyLabel) => {
       family: familyLabel,
       region: "CDR3",
       start: junctionStart,
-      end: junctionStart != null && junctionLength != null ? junctionStart + junctionLength : null
+      end: junctionStart !== null && junctionStart !== undefined && junctionLength !== null && junctionLength !== undefined
+        ? junctionStart + junctionLength
+        : null
     },
     // Layer 2 (middle): Grey background bar
     {
@@ -136,7 +139,9 @@ const filterValidRegions = (regions) => {
   return regions.filter((region) => {
     if (region.region === "Sequence") return true;
     const { start, end } = region;
-    return start != null && end != null && start >= 0 && end > 0 && start < end;
+    return start !== null && start !== undefined &&
+           end !== null && end !== undefined &&
+           start >= 0 && end > 0 && start < end;
   });
 };
 

@@ -193,3 +193,31 @@ export const getPairedClone = (clonalFamilies, clone) => {
     cf.pair_id === clone.pair_id && cf.ident !== clone.ident
   ) || null;
 };
+
+/**
+ * Determine heavy/light clone assignments for paired data
+ *
+ * This selector consolidates the logic for determining which clone is heavy
+ * and which is light, handling the case where the user may have selected
+ * either the heavy or light clone from the table.
+ *
+ * @param {Object} selectedFamily - The currently selected clone/family
+ * @param {Object} pairedClone - The paired clone (if it exists)
+ * @returns {Object} Object with heavyClone and lightClone properties
+ *
+ * @example
+ * const { heavyClone, lightClone } = getHeavyLightClones(selectedFamily, pairedClone);
+ */
+export const getHeavyLightClones = (selectedFamily, pairedClone) => {
+  if (!selectedFamily) {
+    return { heavyClone: null, lightClone: null };
+  }
+
+  const selectedFamilyChain = getCloneChain(selectedFamily);
+  const selectedIsHeavy = selectedFamilyChain === "heavy";
+
+  return {
+    heavyClone: selectedIsHeavy ? selectedFamily : pairedClone,
+    lightClone: selectedIsHeavy ? pairedClone : selectedFamily
+  };
+};

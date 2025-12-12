@@ -3,12 +3,13 @@ import React from "react";
 import Vega from "react-vega";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import { getPairedClone, getAllClonalFamilies } from "../../selectors/clonalFamilies";
+import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
 import { seqAlignSpec } from "./vega/clonalFamilyDetails";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadFasta";
 import { getNaiveVizData } from "./naive";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
+import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
 
 // Lineage focus viz
 // =================
@@ -25,10 +26,6 @@ const mapStateToProps = (state) => {
   const allClonalFamilies = getAllClonalFamilies(state);
   const treeCache = state.trees.cache;
 
-  // Determine the actual chain type of the selected family
-  const selectedFamilyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
-  const selectedIsHeavy = selectedFamilyChain === "heavy";
-
   // Look up paired clone if this is a paired family
   let pairedClone = null;
   let pairedTree = null;
@@ -40,9 +37,10 @@ const mapStateToProps = (state) => {
   }
 
   // Determine which clone/tree is heavy and which is light
-  const heavyClone = selectedIsHeavy ? selectedFamily : pairedClone;
+  const { heavyClone, lightClone } = getHeavyLightClones(selectedFamily, pairedClone);
+  const selectedFamilyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
+  const selectedIsHeavy = selectedFamilyChain === CHAIN_TYPES.HEAVY;
   const heavyTree = selectedIsHeavy ? selectedTree : pairedTree;
-  const lightClone = selectedIsHeavy ? pairedClone : selectedFamily;
   const lightTree = selectedIsHeavy ? pairedTree : selectedTree;
 
   return {
@@ -89,10 +87,10 @@ class Lineage extends React.Component {
 
     // When a new sequence is selected, infer the lineage chain from the tree's chain selection
     if (selectedSeq && selectedSeq !== prevProps.selectedSeq) {
-      let inferredChain = "heavy";
-      if (treeChain === "light") {
-        inferredChain = "light";
-      } else if (treeChain === "both-stacked" || treeChain === "both-side-by-side") {
+      let inferredChain = CHAIN_TYPES.HEAVY;
+      if (treeChain === CHAIN_TYPES.LIGHT) {
+        inferredChain = CHAIN_TYPES.LIGHT;
+      } else if (isBothChainsMode(treeChain)) {
         // In stacked/side-by-side mode, use the chain that was actually clicked
         inferredChain = lastClickedChain;
       }
