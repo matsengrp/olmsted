@@ -125,16 +125,22 @@ class Lineage extends React.Component {
             </div>
           )}
 
-          <h3>Amino acid sequence{lineageChain === "light" ? " (light chain)" : ""}:</h3>
+          <h3>Amino acid sequence:</h3>
           <p>{lineageChain === "light"
             ? (selectedSeq.sequence_alignment_light_aa || selectedSeq.sequence_alignment_aa)
             : selectedSeq.sequence_alignment_aa}</p>
-          <div style={{ marginTop: "10px", marginBottom: "8px" }}>
+          <div style={{ marginTop: "10px", marginBottom: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <Copy
               value={lineageChain === "light"
                 ? (selectedSeq.sequence_alignment_light || selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")
                 : (selectedSeq.sequence_alignment || "NO NUCLEOTIDE SEQUENCE")}
               buttonLabel="Copy nucleotide sequence to clipboard"
+            />
+            <Copy
+              value={lineageChain === "light"
+                ? (selectedSeq.sequence_alignment_light_aa || selectedSeq.sequence_alignment_aa || "NO AMINO ACID SEQUENCE")
+                : (selectedSeq.sequence_alignment_aa || "NO AMINO ACID SEQUENCE")}
+              buttonLabel="Copy amino acid sequence to clipboard"
             />
           </div>
           <div style={{ marginBottom: "8px" }}>

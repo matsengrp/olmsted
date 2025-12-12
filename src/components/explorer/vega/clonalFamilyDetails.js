@@ -424,7 +424,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // are all visible when fully zoomed out
       { name: "xrange", update: "[pie_chart_padding , tree_group_width - leaf_label_length_limit]" },
       // Add 5px buffer to ensure top/bottom pie charts don't touch clip boundary
-      { name: "yrange", update: "[pie_chart_padding + 5, height - pie_chart_padding - 5]" },
+      { name: "yrange", update: "[pie_chart_padding + 5, height - 5]" },
       // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
       // in the outer scope to allow scales/axes to update accordingly
       {
@@ -1025,6 +1025,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             orient: "bottom",
             grid: false,
             title: { signal: "branch_length_mode_text" },
+            titlePadding: 2,
+            offset: -43,
             labelFlush: true,
             labelOverlap: true,
             labelBound: true,
@@ -1057,9 +1059,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         encode: { update: { width: { signal: "alignment_group_width" } } },
         axes: [
           {
-            // Offset to align axis with the mutations_clip region
-            // yrange[0] accounts for pie_chart_padding plus any additional buffer
-            offset: { signal: "mutation_mark_padding-yrange[0]" },
+            offset: -43,
             scale: "aa_position",
             orient: "bottom",
             grid: false,
