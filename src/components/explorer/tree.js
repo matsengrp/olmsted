@@ -604,7 +604,7 @@ class TreeViz extends React.Component {
             </div>
           );
         })()}
-        {!isBothMode && !lightChainUnavailable && !completeData && (
+        {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
           <Vega
             onParseError={(...args) => console.error("parse error:", args)}
             onSignalPts_tuple={(...args) => {
