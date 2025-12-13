@@ -2,6 +2,8 @@
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
+import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
+
 // Defines the order in which we specify corresponding colors
 const aminoAcidDomain = [
   "-",
@@ -2110,9 +2112,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "naive_color",
         type: "ordinal",
-        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR1", "CDR2", "CDR3", "Sequence"],
-        // /COLORS - CDR1, CDR2, and CDR3 all use the same dark green (#1b7837), Sequence is grey
-        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837", "#1b7837", "#1b7837", "#cccccc"]
+        domain: GENE_REGION_DOMAIN,
+        range: GENE_REGION_RANGE
       },
       {
         name: "timepoint_multiplicities",
@@ -2397,9 +2398,8 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "naive_color",
         type: "ordinal",
-        domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR1", "CDR2", "CDR3", "Sequence"],
-        // COLORS - CDR1, CDR2, and CDR3 all use the same dark green (#1b7837), Sequence is grey
-        range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837", "#1b7837", "#1b7837", "#cccccc"]
+        domain: GENE_REGION_DOMAIN,
+        range: GENE_REGION_RANGE
       },
       {
         name: "aa_position",
