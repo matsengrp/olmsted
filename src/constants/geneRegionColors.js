@@ -13,10 +13,10 @@ export const GENE_REGION_COLORS = {
   THREE_PRIME_INSERTION: "#d9f0d3", // Very light green
   J_GENE: "#7fbf7b",        // Medium green
 
-  // CDR regions - distinct colors for each
-  CDR1: "#1864ab",          // Dark blue
-  CDR2: "#bd0026",          // Dark red
-  CDR3: "#1b7837",          // Dark green
+  // CDR regions - Dark2 palette blended ~50% with white
+  CDR1: "#8dcebb",          // Pastel teal (Dark2[0] + white)
+  CDR2: "#ecaf80",          // Pastel orange (Dark2[1] + white)
+  CDR3: "#bab7d9",          // Pastel purple (Dark2[2] + white)
 
   // Background sequence
   SEQUENCE: "#cccccc"       // Grey
