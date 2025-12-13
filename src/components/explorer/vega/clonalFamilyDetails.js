@@ -1854,7 +1854,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     strokeWidth: { value: 1 },
                     strokeDash: { value: [12, 4] },
                     strokeCap: { value: "butt" },
-                    opacity: { value: 1 }
+                    strokeOpacity: { value: 0.6 }
                   }
                 }
               },
@@ -2247,7 +2247,7 @@ const seqAlignSpec = (family, options = {}) => {
             strokeWidth: { value: 1 },
             strokeDash: { value: [12, 4] },
             strokeCap: { value: "butt" },
-            opacity: { value: 1 }
+            strokeOpacity: { value: 0.6 }
           }
         }
       },
