@@ -297,7 +297,7 @@ class App extends React.Component {
                     }}
                     aria-label="Filter by locus"
                   >
-                    {["IGH", "IGK", "IGL", "ALL"].map((locus_option) => (
+                    {["IGH", "IGK", "IGL", "All"].map((locus_option) => (
                       <option key={locus_option} value={locus_option}>
                         {locus_option}
                       </option>

@@ -33,7 +33,7 @@ const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
     });
   }
   // Case-insensitive locus filtering: IGH matches 'igh', 'IGH', 'Igh', etc.
-  return locus === "ALL"
+  return locus === "All"
     ? availableClonalFamilies
     : _.filter(availableClonalFamilies, (family) => {
         return (

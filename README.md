@@ -164,7 +164,7 @@ The *Clonal Families* section represents each clonal family as a point in a scat
 ![scatterplot](docs/clonal-families-section.png)
 
 Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
-In order to visualize all clonal families from all loci in the dataset at once, choose "ALL" in the locus selector.
+In order to visualize all clonal families from all loci in the dataset at once, choose "All" in the locus selector.
 By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
 However, you may configure both axes as well as the color and shape of the points to map to a range of fields, including sequence sampling time (see below).
 
