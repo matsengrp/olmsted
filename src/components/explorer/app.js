@@ -35,13 +35,14 @@ const sectionStyle = { paddingBottom: 10, marginBottom: 40, overflow: "auto" };
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length;
-  return { selectedFamily, nClonalFamiliesBrushed };
+  const nClonalFamiliesTotal = clonalFamiliesSelectors.getAvailableClonalFamilies(state).length;
+  return { selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal };
 };
 
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
   render() {
-    const { nClonalFamiliesBrushed } = this.props;
+    const { nClonalFamiliesBrushed, nClonalFamiliesTotal } = this.props;
     return (
       <div
         style={{
@@ -57,7 +58,7 @@ class SelectedFamiliesSummary extends React.Component {
           fontWeight: "bold"
         }}
       >
-        Number of families currently selected: {nClonalFamiliesBrushed}
+        Number of families currently selected: {nClonalFamiliesBrushed} out of {nClonalFamiliesTotal}
       </div>
     );
   }
@@ -296,7 +297,7 @@ class App extends React.Component {
                     }}
                     aria-label="Filter by locus"
                   >
-                    {["IGH", "IGK", "IGL", "ALL"].map((locus_option) => (
+                    {["IGH", "IGK", "IGL", "All"].map((locus_option) => (
                       <option key={locus_option} value={locus_option}>
                         {locus_option}
                       </option>

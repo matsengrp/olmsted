@@ -5,6 +5,9 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 
+// Store the last clear_selection_trigger value to detect changes
+let lastClearTrigger = 0;
+
 // Clonal Families Viz
 // ===================
 //
@@ -25,7 +28,8 @@ import * as explorerActions from "../../actions/explorer";
     updateBrushSelection: explorerActions.updateBrushSelection,
     filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
-    updateFacet: explorerActions.updateFacet
+    updateFacet: explorerActions.updateFacet,
+    clearBrushSelection: explorerActions.clearBrushSelection
   }
 )
 class ClonalFamiliesViz extends React.Component {
@@ -33,6 +37,7 @@ class ClonalFamiliesViz extends React.Component {
     super(props);
     this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
+    this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
   }
 
@@ -44,6 +49,7 @@ class ClonalFamiliesViz extends React.Component {
       updateFacet,
       updateBrushSelection,
       filterBrushSelection,
+      clearBrushSelection,
       selectedFamily,
       locus,
       datasets
@@ -146,6 +152,19 @@ class ClonalFamiliesViz extends React.Component {
                 if (keyVal) {
                   filterBrushSelection(keyVal[0], keyVal[1]);
                 }
+              }}
+              onSignalClear_selection_trigger={(...args) => {
+                const trigger = args.slice(1)[0];
+                // Only clear if the trigger value has changed (button was clicked)
+                if (trigger > lastClearTrigger) {
+                  lastClearTrigger = trigger;
+                  clearBrushSelection();
+                }
+              }}
+              onSignalMulti_select_mode={(...args) => {
+                const isMultiSelect = args.slice(1)[0];
+                // Store multi-select mode state on the component
+                this.multiSelectMode = isMultiSelect;
               }}
               onParseError={(...args) => console.error("parse error:", args)}
               debug

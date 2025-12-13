@@ -207,6 +207,47 @@ class DeleteButtonCell extends React.Component {
   }
 }
 
+// Helper function to handle dataset selection (load/unload)
+function handleDatasetSelect(dataset, dispatch) {
+  switch (dataset.loading) {
+    case "LOADING": {
+      // Do nothing while loading
+      break;
+    }
+    case "DONE": {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: false
+      });
+      break;
+    }
+    case "ERROR": {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: false
+      });
+      break;
+    }
+    default: {
+      dispatch({
+        type: types.LOADING_DATASET,
+        dataset_id: dataset.dataset_id,
+        loading: "LOADING"
+      });
+
+      // Try client-side data first, fallback to server
+      if (dataset.isClientSide) {
+        getClientClonalFamilies(dispatch, dataset.dataset_id);
+      } else {
+        getClonalFamilies(dispatch, dataset.dataset_id);
+      }
+      break;
+    }
+  }
+}
+
 export function DatasetsTable({ availableDatasets, dispatch }) {
   if (!availableDatasets) {
     return (
@@ -245,20 +286,20 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
     mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
   }
 
-  // Define column widths
-  const columnWidths = [
-    120, // Load (doubled from 60)
-    200, // Name
-    150, // ID
-    80, // Source
-    80, // Size (MB)
-    80, // Subjects
-    100, // Families
-    120, // Upload time
-    120, // Build time
-    ...(showCitation ? [150] : []),
-    ...(hasClientDatasets ? [80] : [])
-  ];
+  // Define column widths by name
+  const widthMap = {
+    "Load": 60,
+    "Name": 200,
+    "ID": 150,
+    "Source": 80,
+    "Size (MB)": 80,
+    "Subjects": 80,
+    "Families": 100,
+    "Upload Time": 120,
+    "Build Time": 120,
+    "Citation": 150,
+    "Actions": 80
+  };
 
   return (
     <div style={{ width: "100%" }}>
@@ -266,13 +307,14 @@ export function DatasetsTable({ availableDatasets, dispatch }) {
       <ResizableTable
         data={availableDatasets}
         mappings={mappings}
-        columnWidths={columnWidths}
+        widthMap={widthMap}
         containerHeight={200}
         itemName="datasets"
         componentProps={{ dispatch: dispatch }}
         getRowStyle={(dataset) => ({
           backgroundColor: dataset.loading ? "lightblue" : "white"
         })}
+        onRowClick={(dataset) => handleDatasetSelect(dataset, dispatch)}
       />
     </div>
   );

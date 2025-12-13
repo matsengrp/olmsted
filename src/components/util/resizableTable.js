@@ -6,17 +6,15 @@ export class ResizableTable extends React.Component {
   constructor(props) {
     super(props);
 
-    // Initialize column widths from props or use defaults
-    const defaultWidths = props.columnWidths || props.mappings.map(() => 120);
-
     this.state = {
       scrollTop: 0,
-      columnWidths: defaultWidths,
+      columnWidths: this.getDefaultWidths(props.mappings, props.widthMap, props.columnWidths),
       isResizing: false,
       resizingColumn: null,
       scrollbarWidth: 0,
       sortColumn: props.defaultSortColumn || null,
-      sortDesc: false
+      sortDesc: false,
+      hoveredRowId: null
     };
 
     this.headerRef = React.createRef();
@@ -28,14 +26,31 @@ export class ResizableTable extends React.Component {
     this.handleSort = this.handleSort.bind(this);
   }
 
+  // Generate default widths based on column names via widthMap, or use columnWidths array, or default to 120
+  getDefaultWidths(mappings, widthMap, columnWidths) {
+    if (columnWidths) {
+      return columnWidths;
+    }
+    if (widthMap) {
+      return mappings.map(([name]) => widthMap[name] || 120);
+    }
+    return mappings.map(() => 120);
+  }
+
   componentDidMount() {
     document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("mouseup", this.onMouseUp);
     this.updateScrollbarWidth();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     this.updateScrollbarWidth();
+    // Reset column widths when mappings change (e.g., toggling optional columns)
+    if (prevProps.mappings.length !== this.props.mappings.length) {
+      this.setState({
+        columnWidths: this.getDefaultWidths(this.props.mappings, this.props.widthMap, this.props.columnWidths)
+      });
+    }
   }
 
   updateScrollbarWidth() {
@@ -120,10 +135,23 @@ export class ResizableTable extends React.Component {
   }
 
   renderTableRow(datum, index) {
-    const { columnWidths } = this.state;
+    const { columnWidths, hoveredRowId } = this.state;
     const { onRowClick, getRowStyle, mappings, componentProps } = this.props;
 
+    const rowId = datum.id || datum.ident || datum.dataset_id || index;
     const rowStyle = getRowStyle ? getRowStyle(datum) : {};
+    const isHovered = hoveredRowId === rowId;
+
+    // Determine background color with hover effect
+    let backgroundColor = rowStyle.backgroundColor || "white";
+    if (isHovered) {
+      // Darken the background on hover
+      if (rowStyle.backgroundColor === "lightblue") {
+        backgroundColor = "#87CEEB"; // Darker lightblue
+      } else {
+        backgroundColor = "#e8e8e8"; // Light gray for hover
+      }
+    }
 
     /**
      * Keyboard handler for clickable table rows
@@ -140,30 +168,38 @@ export class ResizableTable extends React.Component {
 
     return (
       <div
-        key={datum.id || datum.ident || datum.dataset_id || index}
+        key={rowId}
         style={{
           display: "flex",
           alignItems: "center",
           borderBottom: "1px solid #eee",
           fontSize: 12,
           height: "40px",
-          backgroundColor: rowStyle.backgroundColor || "white",
-          minWidth: "fit-content",
+          minHeight: "40px",
+          maxHeight: "40px",
+          backgroundColor,
           cursor: onRowClick ? "pointer" : "default",
-          ...rowStyle
+          transition: "background-color 0.15s ease",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          ...rowStyle,
+          backgroundColor // Override rowStyle.backgroundColor with our computed value
         }}
         onClick={() => onRowClick && onRowClick(datum)}
         onKeyDown={handleRowKeyDown}
+        onMouseEnter={() => this.setState({ hoveredRowId: rowId })}
+        onMouseLeave={() => this.setState({ hoveredRowId: null })}
         role={onRowClick ? "button" : undefined}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={onRowClick ? 0 : undefined}
-        aria-label={onRowClick ? `Select row ${datum.id || datum.ident || datum.dataset_id}` : undefined}
+        aria-label={onRowClick ? `Select row ${rowId}` : undefined}
       >
         {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
           const key = (datum.id || datum.ident || datum.dataset_id || index) + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
 
+          const colWidth = columnWidths[colIndex] || 120;
           const style = {
             padding: 8,
             height: "100%",
@@ -172,15 +208,18 @@ export class ResizableTable extends React.Component {
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            width: columnWidths[colIndex],
-            minWidth: columnWidths[colIndex],
-            maxWidth: columnWidths[colIndex],
+            width: colWidth,
+            minWidth: colWidth,
+            maxWidth: colWidth,
+            flexShrink: 0,
+            flexGrow: 0,
             borderRight: "1px solid #eee",
             ...options.style
           };
 
-          // Apply alternating column shading only if row doesn't have custom background
-          if (!rowStyle.backgroundColor && isEvenColumn) {
+          // Apply alternating column shading only if row doesn't have custom background and is not hovered
+          const hasDefaultBackground = !rowStyle.backgroundColor || rowStyle.backgroundColor === "white";
+          if (hasDefaultBackground && !isHovered && isEvenColumn) {
             style.backgroundColor = "#f8f9fa";
           }
 
@@ -248,7 +287,8 @@ export class ResizableTable extends React.Component {
       mappings,
       showFooter = true,
       componentProps: _componentProps,
-      itemName
+      itemName,
+      footerAction
     } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth, sortColumn, sortDesc } = this.state;
     const rowHeight = 40;
@@ -288,8 +328,7 @@ export class ResizableTable extends React.Component {
               display: "flex",
               fontWeight: "bold",
               fontSize: 13,
-              height: "40px",
-              minWidth: "fit-content"
+              height: "40px"
             }}
           >
             {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
@@ -301,6 +340,7 @@ export class ResizableTable extends React.Component {
               const currentSortColumn = sortColumn;
               const currentSortDesc = sortDesc;
 
+              const colWidth = columnWidths[colIndex] || 120;
               const style = {
                 fontSize: 13,
                 padding: 8,
@@ -308,9 +348,11 @@ export class ResizableTable extends React.Component {
                 display: "flex",
                 alignItems: "center",
                 backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
-                width: columnWidths[colIndex],
-                minWidth: columnWidths[colIndex],
-                maxWidth: columnWidths[colIndex],
+                width: colWidth,
+                minWidth: colWidth,
+                maxWidth: colWidth,
+                flexShrink: 0,
+                flexGrow: 0,
                 borderRight: "1px solid #dee2e6",
                 position: "relative",
                 cursor: isSortable ? "pointer" : "default"
@@ -411,10 +453,14 @@ export class ResizableTable extends React.Component {
               color: "#666",
               padding: "0 8px",
               boxSizing: "border-box",
-              overflow: "hidden"
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
             }}
           >
-            Showing {sortedData.length} {itemName || "items"}
+            <span>Showing {sortedData.length} {itemName || "items"}</span>
+            {footerAction}
           </div>
         )}
       </div>
