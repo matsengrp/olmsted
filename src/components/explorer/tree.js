@@ -290,9 +290,17 @@ class TreeViz extends React.Component {
     this.treeDataFromProps = this.treeDataFromProps.bind(this);
     this.getChainData = this.getChainData.bind(this);
     this.handleLightChainSignal = this.handleLightChainSignal.bind(this);
-    // Refs to access Vega views for signal synchronization
+    this.handleWindowClick = this.handleWindowClick.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
+    // Container ref for click-outside detection
+    this.containerRef = React.createRef();
+    // Refs to access Vega views for signal synchronization and focus control
     this.heavyVegaRef = React.createRef();
     this.lightVegaRef = React.createRef();
+    // Ref for single-chain mode Vega view
+    this.singleVegaRef = null;
+    // Track focus state for scroll prevention
+    this.isFocused = false;
     // List of signals to synchronize between light and heavy chain
     this.syncedSignals = [
       "max_leaf_size", "leaf_size_by", "branch_width_by", "branch_color_by",
@@ -339,6 +347,10 @@ class TreeViz extends React.Component {
         this.handleLightChainSignal(name, value);
       });
     });
+    // Listen for focus changes to sync with React
+    lightView.addSignalListener("viz_focused", (name, value) => {
+      if (value) this.isFocused = true;
+    });
   }
 
   // Handle signal changes from heavy chain and propagate to light chain (for bidirectional signals)
@@ -359,6 +371,10 @@ class TreeViz extends React.Component {
       heavyView.addSignalListener(signalName, (name, value) => {
         this.handleHeavyChainSignal(name, value);
       });
+    });
+    // Listen for focus changes to sync with React
+    heavyView.addSignalListener("viz_focused", (name, value) => {
+      if (value) this.isFocused = true;
     });
   }
 
@@ -391,6 +407,58 @@ class TreeViz extends React.Component {
     const familyId = selectedFamily?.ident || selectedFamily?.clone_id;
     if (familyId) {
       dispatchSelectFamily(familyId);
+    }
+    // Add window click listener to detect clicks outside the plot
+    window.addEventListener("click", this.handleWindowClick);
+    // Add wheel event listener with passive: false to allow preventDefault
+    if (this.containerRef.current) {
+      this.containerRef.current.addEventListener("wheel", this.handleWheel, { passive: false });
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("click", this.handleWindowClick);
+    // Clean up wheel listener if it exists
+    if (this.containerRef.current) {
+      this.containerRef.current.removeEventListener("wheel", this.handleWheel);
+    }
+  }
+
+  handleWheel(event) {
+    // Prevent page scroll when visualization is focused
+    if (this.isFocused) {
+      event.preventDefault();
+    }
+  }
+
+  handleWindowClick(event) {
+    // If click was outside our container, unfocus all visualizations
+    if (this.containerRef.current && !this.containerRef.current.contains(event.target)) {
+      this.isFocused = false;
+      // Blur heavy chain view
+      if (this.heavyVegaRef.current) {
+        try {
+          this.heavyVegaRef.current.signal("viz_focused", false).run();
+        } catch (e) {
+          // View may not be ready
+        }
+      }
+      // Blur light chain view
+      if (this.lightVegaRef.current) {
+        try {
+          this.lightVegaRef.current.signal("viz_focused", false).run();
+        } catch (e) {
+          // View may not be ready
+        }
+      }
+      // Blur single-chain view
+      if (this.singleVegaRef) {
+        try {
+          this.singleVegaRef.signal("viz_focused", false).run();
+        } catch (e) {
+          // View may not be ready
+        }
+      }
     }
   }
 
@@ -476,7 +544,7 @@ class TreeViz extends React.Component {
     const downloadTree = isBothMode ? heavyTree : tree;
 
     return (
-      <div>
+      <div ref={this.containerRef}>
         {/* Tree still loading aka undefined */}
         {!incompleteFamily && treeLoading && (
           <div>
@@ -596,6 +664,13 @@ class TreeViz extends React.Component {
                     dispatchSelectedSeq(node.sequence_id);
                   }
                 }}
+                onNewView={(view) => {
+                  this.singleVegaRef = view;
+                  // Listen for focus changes to sync with React
+                  view.addSignalListener("viz_focused", (name, value) => {
+                    if (value) this.isFocused = true;
+                  });
+                }}
                 debug
                 // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
                 data={this.treeDataFromProps()}
@@ -612,6 +687,13 @@ class TreeViz extends React.Component {
               if (node && node.parent) {
                 dispatchSelectedSeq(node.sequence_id);
               }
+            }}
+            onNewView={(view) => {
+              this.singleVegaRef = view;
+              // Listen for focus changes to sync with React
+              view.addSignalListener("viz_focused", (name, value) => {
+                if (value) this.isFocused = true;
+              });
             }}
             debug
             data={this.tempVegaData}

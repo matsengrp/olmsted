@@ -340,6 +340,19 @@ const createZoomPanSignals = () => [
       input: "checkbox"
     }
   },
+  // Track whether the visualization is focused (user clicked on it)
+  // When focused, wheel events will zoom; when unfocused, page scrolls normally
+  {
+    name: "viz_focused",
+    value: false,
+    on: [
+      {
+        // Set to true when user clicks anywhere in the plot
+        events: { source: "scope", type: "mousedown" },
+        update: "true"
+      }
+    ]
+  },
   // Track which button is currently clicked (for visual feedback)
   // Resets to null on mouseup
   {
@@ -407,10 +420,10 @@ const createZoomPanSignals = () => [
         update: "clamp(zoom_level / 1.2, 0.1, 10)"
       },
       {
-        // Scroll to zoom when in zoom mode
-        // Only consume (prevent page scroll) when in zoom mode
-        events: { type: "wheel", consume: "interaction_mode === 'zoom'" },
-        update: "interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.1, 10) : zoom_level"
+        // Scroll to zoom when focused and in zoom mode
+        // Don't consume - let React handle scroll prevention based on focus state
+        events: { type: "wheel" },
+        update: "viz_focused && interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.1, 10) : zoom_level"
       },
       {
         // Doubleclick to reset zoom/pan (when in zoom mode)

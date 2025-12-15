@@ -39,6 +39,45 @@ class ClonalFamiliesViz extends React.Component {
     this.yField = "mean_mut_freq";
     this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
+    this.containerRef = React.createRef();
+    this.vegaView = null;
+    this.isFocused = false;
+    this.handleWindowClick = this.handleWindowClick.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
+  }
+
+  componentDidMount() {
+    // Add window click listener to detect clicks outside the plot
+    window.addEventListener("click", this.handleWindowClick);
+    // Add wheel event listener with passive: false to allow preventDefault
+    if (this.containerRef.current) {
+      this.containerRef.current.addEventListener("wheel", this.handleWheel, { passive: false });
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("click", this.handleWindowClick);
+    // Clean up wheel listener if it exists
+    if (this.containerRef.current) {
+      this.containerRef.current.removeEventListener("wheel", this.handleWheel);
+    }
+  }
+
+  handleWindowClick(event) {
+    // If click was outside our container, unfocus the visualization
+    if (this.containerRef.current && !this.containerRef.current.contains(event.target)) {
+      if (this.vegaView) {
+        this.vegaView.signal("viz_focused", false).run();
+      }
+    }
+  }
+
+  handleWheel(event) {
+    // Prevent page scroll when visualization is focused
+    // The Vega spec already handles only zooming when in zoom mode
+    if (this.isFocused) {
+      event.preventDefault();
+    }
   }
 
   render() {
@@ -56,10 +95,17 @@ class ClonalFamiliesViz extends React.Component {
     } = this.props;
     if (availableClonalFamilies) {
       return (
-        <div>
+        <div ref={this.containerRef}>
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <Vega
+              onNewView={(view) => {
+                this.vegaView = view;
+                // Listen for focus changes to sync with React
+                view.addSignalListener("viz_focused", (name, value) => {
+                  this.isFocused = value;
+                });
+              }}
               // TURN THESE ON TO DEBUG SIGNALS
               // SEE https://github.com/matsengrp/olmsted/issues/65
               // onSignalWidth={(...args) => {

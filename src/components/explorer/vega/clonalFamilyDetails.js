@@ -307,6 +307,19 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     // ---------------------------------------------------------------------------
 
     signals: [
+      // Track whether the visualization is focused (user clicked on it)
+      // When focused, wheel events will zoom; when unfocused, page scrolls normally
+      {
+        name: "viz_focused",
+        value: false,
+        on: [
+          {
+            // Set to true when user clicks anywhere in the plot
+            events: { source: "scope", type: "mousedown" },
+            update: "true"
+          }
+        ]
+      },
       // Track which button is currently clicked (for visual feedback)
       // Resets to null on mouseup
       {
@@ -646,13 +659,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             update: "clamp(alignment_zoom / 1.2, 1, 10)"
           },
           {
-            // Scroll to zoom when hovering over alignment group
-            // Always consume to prevent page scroll when hovering
+            // Scroll to zoom when focused and hovering over alignment group
+            // Don't consume - let React handle scroll prevention based on focus state
             events: [
-              { source: "scope", type: "wheel", markname: "alignment_zoom_area", consume: true },
-              { source: "scope", type: "wheel", markname: "naive_zoom_area", consume: true }
+              { source: "scope", type: "wheel", markname: "alignment_zoom_area" },
+              { source: "scope", type: "wheel", markname: "naive_zoom_area" }
             ],
-            update: "clamp(alignment_zoom * pow(1.001, -event.deltaY), 1, 10)"
+            update: "viz_focused ? clamp(alignment_zoom * pow(1.001, -event.deltaY), 1, 10) : alignment_zoom"
           },
           {
             // Double-click to reset zoom/pan
@@ -1203,11 +1216,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 update: "1.4"
               },
               {
-                // Always consume wheel events to prevent page scroll when hovering over tree
-                // Use source: "scope" to only capture wheel events within tree_group
-                events: { source: "scope", type: "wheel", consume: true },
+                // Scroll to zoom when focused
+                // Don't consume - let React handle scroll prevention based on focus state
+                events: { source: "scope", type: "wheel" },
                 force: true,
-                update: "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+                update: "viz_focused ? pow(1.001, event.deltaY * pow(16, event.deltaMode)) : 1"
               },
               {
                 events: { signal: "dist2" },
