@@ -1111,40 +1111,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ]
       },
 
-      // /ZOOM/PAN INDICATORS - positioned above tree plot in white space (outside clipped groups)
-      // Alignment zoom/pan info (single line)
-      {
-        name: "alignment_zoom_indicator",
-        type: "text",
-        encode: {
-          update: {
-            x: { value: 5 },
-            y: { value: -8 },
-            text: { signal: "show_controls && alignment_zoom > 1 ? 'Align:: Zoom: ' + format(alignment_zoom, '.2f') + 'x, Pan: ' + format(alignment_pan, '.2f') : ''" },
-            fontSize: { value: 11 },
-            fill: { value: "#555" },
-            align: { value: "left" },
-            baseline: { value: "bottom" }
-          }
-        }
-      },
-      // Tree zoom/pan info (single line)
-      {
-        name: "tree_zoom_indicator",
-        type: "text",
-        encode: {
-          update: {
-            x: { value: 5 },
-            y: { value: -22 },
-            text: { signal: "show_controls && tree_zoom_pan_active ? 'Tree:: Zoom: ' + format(tree_zoom_x, '.2f') + 'x, ' + format(tree_zoom_y, '.2f') + 'x, Pan: ' + format(tree_pan_x, '.2f') + ', ' + format(tree_pan_y, '.2f') : ''" },
-            fontSize: { value: 11 },
-            fill: { value: "#555" },
-            align: { value: "left" },
-            baseline: { value: "bottom" }
-          }
-        }
-      },
-
       // /TREE:
       // ---------------------------------------------------------------------------
 
@@ -1394,202 +1360,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           },
         ],
         marks: [
-          // /ZOOM CONTROL BUTTONS
-          // Zoom in button for tree
-          {
-            name: "tree_zoom_in_bg",
-            type: "rect",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 5 },
-                y: { value: 5 },
-                width: { value: 24 },
-                height: { value: 22 },
-                fill: { signal: "clicked_button === 'tree_zoom_in' ? '#5a9fd4' : '#fff'" },
-                stroke: { value: "#999" },
-                strokeWidth: { value: 1 },
-                cornerRadius: { value: 3 },
-                fillOpacity: { signal: "show_controls ? 1 : 0" },
-                strokeOpacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          {
-            name: "tree_zoom_in_text",
-            type: "text",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 17 },
-                y: { value: 16 },
-                text: { value: "+" },
-                fontSize: { value: 16 },
-                fontWeight: { value: "bold" },
-                fill: { signal: "clicked_button === 'tree_zoom_in' ? '#fff' : '#333'" },
-                align: { value: "center" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          // Zoom out button for tree
-          {
-            name: "tree_zoom_out_bg",
-            type: "rect",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 32 },
-                y: { value: 5 },
-                width: { value: 24 },
-                height: { value: 22 },
-                fill: { signal: "clicked_button === 'tree_zoom_out' ? '#5a9fd4' : '#fff'" },
-                stroke: { value: "#999" },
-                strokeWidth: { value: 1 },
-                cornerRadius: { value: 3 },
-                fillOpacity: { signal: "show_controls ? 1 : 0" },
-                strokeOpacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          {
-            name: "tree_zoom_out_text",
-            type: "text",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 44 },
-                y: { value: 16 },
-                text: { value: "−" },
-                fontSize: { value: 16 },
-                fontWeight: { value: "bold" },
-                fill: { signal: "clicked_button === 'tree_zoom_out' ? '#fff' : '#333'" },
-                align: { value: "center" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          // /ALIGNMENT ZOOM CONTROLS - positioned below tree controls
-          // Zoom in button for alignment
-          {
-            name: "alignment_zoom_in_bg",
-            type: "rect",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 5 },
-                y: { value: 30 },
-                width: { value: 24 },
-                height: { value: 22 },
-                fill: { signal: "clicked_button === 'alignment_zoom_in' ? '#5a9fd4' : '#fff'" },
-                stroke: { value: "#999" },
-                strokeWidth: { value: 1 },
-                cornerRadius: { value: 3 },
-                fillOpacity: { signal: "show_controls ? 1 : 0" },
-                strokeOpacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          {
-            name: "alignment_zoom_in_text",
-            type: "text",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 17 },
-                y: { value: 41 },
-                text: { value: "+" },
-                fontSize: { value: 16 },
-                fontWeight: { value: "bold" },
-                fill: { signal: "clicked_button === 'alignment_zoom_in' ? '#fff' : '#333'" },
-                align: { value: "center" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          // Zoom out button for alignment
-          {
-            name: "alignment_zoom_out_bg",
-            type: "rect",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 32 },
-                y: { value: 30 },
-                width: { value: 24 },
-                height: { value: 22 },
-                fill: { signal: "clicked_button === 'alignment_zoom_out' ? '#5a9fd4' : '#fff'" },
-                stroke: { value: "#999" },
-                strokeWidth: { value: 1 },
-                cornerRadius: { value: 3 },
-                fillOpacity: { signal: "show_controls ? 1 : 0" },
-                strokeOpacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          {
-            name: "alignment_zoom_out_text",
-            type: "text",
-            encode: {
-              enter: { cursor: { value: "pointer" } },
-              update: {
-                x: { value: 44 },
-                y: { value: 41 },
-                text: { value: "−" },
-                fontSize: { value: 16 },
-                fontWeight: { value: "bold" },
-                fill: { signal: "clicked_button === 'alignment_zoom_out' ? '#fff' : '#333'" },
-                align: { value: "center" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          // Labels for zoom controls
-          {
-            name: "tree_zoom_label",
-            type: "text",
-            encode: {
-              update: {
-                x: { value: 60 },
-                y: { value: 16 },
-                text: { value: "Tree" },
-                fontSize: { value: 11 },
-                fill: { value: "#666" },
-                align: { value: "left" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
-          {
-            name: "alignment_zoom_label",
-            type: "text",
-            encode: {
-              update: {
-                x: { value: 60 },
-                y: { value: 41 },
-                text: { value: "Align" },
-                fontSize: { value: 11 },
-                fill: { value: "#666" },
-                align: { value: "left" },
-                baseline: { value: "middle" },
-                opacity: { signal: "show_controls ? 1 : 0" }
-              }
-            }
-          },
+          // /HIGHLIGHT ROWS (drawn first, underneath buttons)
           // /SELECTED HIGHLIGHT ROW
-          // Persistent highlight bar for clicked/selected leaf
-          // Start at x=100 to avoid overlapping zoom control buttons
+          // Persistent highlight bar for clicked/selected leaf - spans full width
           {
             name: "tree_selected_highlight",
             type: "rect",
             encode: {
               update: {
-                x: { value: 100 },
+                x: { value: 0 },
                 x2: { signal: "tree_group_width" },
                 yc: { signal: "scale('yscale', selected_leaf_y_tree)" },
                 height: { signal: "mutation_mark_height + 4" },
@@ -1599,14 +1378,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             }
           },
           // /HOVER HIGHLIGHT ROW
-          // Horizontal highlight bar that appears when hovering over a leaf
-          // Start at x=100 to avoid overlapping zoom control buttons
+          // Horizontal highlight bar that appears when hovering over a leaf - spans full width
           {
             name: "tree_hover_highlight",
             type: "rect",
             encode: {
               update: {
-                x: { value: 100 },
+                x: { value: 0 },
                 x2: { signal: "tree_group_width" },
                 yc: { signal: "scale('yscale', hovered_leaf_y_tree)" },
                 height: { signal: "mutation_mark_height + 4" },
@@ -1763,6 +1541,225 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               }
             },
             from: { data: "leaves" }
+          },
+          // /ZOOM CONTROL BUTTONS AND LABELS (drawn on top of all tree content)
+          // Zoom in button for tree
+          {
+            name: "tree_zoom_in_bg",
+            type: "rect",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 5 },
+                y: { value: 5 },
+                width: { value: 24 },
+                height: { value: 22 },
+                fill: { signal: "clicked_button === 'tree_zoom_in' ? '#5a9fd4' : '#fff'" },
+                stroke: { value: "#999" },
+                strokeWidth: { value: 1 },
+                cornerRadius: { value: 3 },
+                fillOpacity: { signal: "show_controls ? 1 : 0" },
+                strokeOpacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          {
+            name: "tree_zoom_in_text",
+            type: "text",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 17 },
+                y: { value: 16 },
+                text: { value: "+" },
+                fontSize: { value: 16 },
+                fontWeight: { value: "bold" },
+                fill: { signal: "clicked_button === 'tree_zoom_in' ? '#fff' : '#333'" },
+                align: { value: "center" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // Zoom out button for tree
+          {
+            name: "tree_zoom_out_bg",
+            type: "rect",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 32 },
+                y: { value: 5 },
+                width: { value: 24 },
+                height: { value: 22 },
+                fill: { signal: "clicked_button === 'tree_zoom_out' ? '#5a9fd4' : '#fff'" },
+                stroke: { value: "#999" },
+                strokeWidth: { value: 1 },
+                cornerRadius: { value: 3 },
+                fillOpacity: { signal: "show_controls ? 1 : 0" },
+                strokeOpacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          {
+            name: "tree_zoom_out_text",
+            type: "text",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 44 },
+                y: { value: 16 },
+                text: { value: "−" },
+                fontSize: { value: 16 },
+                fontWeight: { value: "bold" },
+                fill: { signal: "clicked_button === 'tree_zoom_out' ? '#fff' : '#333'" },
+                align: { value: "center" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // /ALIGNMENT ZOOM CONTROLS - positioned below tree controls
+          // Zoom in button for alignment
+          {
+            name: "alignment_zoom_in_bg",
+            type: "rect",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 5 },
+                y: { value: 30 },
+                width: { value: 24 },
+                height: { value: 22 },
+                fill: { signal: "clicked_button === 'alignment_zoom_in' ? '#5a9fd4' : '#fff'" },
+                stroke: { value: "#999" },
+                strokeWidth: { value: 1 },
+                cornerRadius: { value: 3 },
+                fillOpacity: { signal: "show_controls ? 1 : 0" },
+                strokeOpacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          {
+            name: "alignment_zoom_in_text",
+            type: "text",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 17 },
+                y: { value: 41 },
+                text: { value: "+" },
+                fontSize: { value: 16 },
+                fontWeight: { value: "bold" },
+                fill: { signal: "clicked_button === 'alignment_zoom_in' ? '#fff' : '#333'" },
+                align: { value: "center" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // Zoom out button for alignment
+          {
+            name: "alignment_zoom_out_bg",
+            type: "rect",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 32 },
+                y: { value: 30 },
+                width: { value: 24 },
+                height: { value: 22 },
+                fill: { signal: "clicked_button === 'alignment_zoom_out' ? '#5a9fd4' : '#fff'" },
+                stroke: { value: "#999" },
+                strokeWidth: { value: 1 },
+                cornerRadius: { value: 3 },
+                fillOpacity: { signal: "show_controls ? 1 : 0" },
+                strokeOpacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          {
+            name: "alignment_zoom_out_text",
+            type: "text",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 44 },
+                y: { value: 41 },
+                text: { value: "−" },
+                fontSize: { value: 16 },
+                fontWeight: { value: "bold" },
+                fill: { signal: "clicked_button === 'alignment_zoom_out' ? '#fff' : '#333'" },
+                align: { value: "center" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // Labels for zoom controls with backgrounds
+          // Background for tree label
+          {
+            name: "tree_zoom_label_bg",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 58 },
+                y: { value: 10 },
+                width: { value: 32 },
+                height: { value: 14 },
+                fill: { value: "#fff" },
+                fillOpacity: { signal: "show_controls ? 0.7 : 0" },
+                cornerRadius: { value: 3 }
+              }
+            }
+          },
+          {
+            name: "tree_zoom_label",
+            type: "text",
+            encode: {
+              update: {
+                x: { value: 60 },
+                y: { value: 16 },
+                text: { value: "Tree" },
+                fontSize: { value: 11 },
+                fill: { value: "#666" },
+                align: { value: "left" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // Background for alignment label
+          {
+            name: "alignment_zoom_label_bg",
+            type: "rect",
+            encode: {
+              update: {
+                x: { value: 58 },
+                y: { value: 35 },
+                width: { value: 38 },
+                height: { value: 14 },
+                fill: { value: "#fff" },
+                fillOpacity: { signal: "show_controls ? 0.7 : 0" },
+                cornerRadius: { value: 3 }
+              }
+            }
+          },
+          {
+            name: "alignment_zoom_label",
+            type: "text",
+            encode: {
+              update: {
+                x: { value: 60 },
+                y: { value: 41 },
+                text: { value: "Align" },
+                fontSize: { value: 11 },
+                fill: { value: "#666" },
+                align: { value: "left" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
           },
           // /DRAGGABLE DIVIDER (vertical - tree/alignment width)
           // Vertical bar at the right edge of tree_group that can be dragged to resize
@@ -2261,6 +2258,72 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             }
           },
         ]
+      },
+
+      // /ZOOM/PAN INDICATOR TEXT AND BACKGROUNDS (drawn last, on top of everything)
+      // Background for tree zoom indicator
+      {
+        name: "tree_zoom_indicator_bg",
+        type: "rect",
+        encode: {
+          update: {
+            x: { value: 3 },
+            y: { value: -34 },
+            width: { value: 370 },
+            height: { value: 14 },
+            fill: { value: "#fff" },
+            fillOpacity: { signal: "show_controls && tree_zoom_pan_active ? 0.7 : 0" },
+            cornerRadius: { value: 3 }
+          }
+        }
+      },
+      // Tree zoom/pan info (single line)
+      {
+        name: "tree_zoom_indicator",
+        type: "text",
+        encode: {
+          update: {
+            x: { value: 5 },
+            y: { value: -22 },
+            text: { signal: "show_controls && tree_zoom_pan_active ? 'Tree:: Zoom: ' + format(tree_zoom_x, '.2f') + 'x, ' + format(tree_zoom_y, '.2f') + 'x, Pan: ' + format(tree_pan_x, '.2f') + ', ' + format(tree_pan_y, '.2f') : ''" },
+            fontSize: { value: 11 },
+            fill: { value: "#555" },
+            align: { value: "left" },
+            baseline: { value: "bottom" }
+          }
+        }
+      },
+      // Background for alignment zoom indicator
+      {
+        name: "alignment_zoom_indicator_bg",
+        type: "rect",
+        encode: {
+          update: {
+            x: { value: 3 },
+            y: { value: -20 },
+            width: { value: 250 },
+            height: { value: 14 },
+            fill: { value: "#fff" },
+            fillOpacity: { signal: "show_controls && alignment_zoom > 1 ? 0.7 : 0" },
+            cornerRadius: { value: 3 }
+          }
+        }
+      },
+      // Alignment zoom/pan info (single line)
+      {
+        name: "alignment_zoom_indicator",
+        type: "text",
+        encode: {
+          update: {
+            x: { value: 5 },
+            y: { value: -8 },
+            text: { signal: "show_controls && alignment_zoom > 1 ? 'Align:: Zoom: ' + format(alignment_zoom, '.2f') + 'x, Pan: ' + format(alignment_pan, '.2f') : ''" },
+            fontSize: { value: 11 },
+            fill: { value: "#555" },
+            align: { value: "left" },
+            baseline: { value: "bottom" }
+          }
+        }
       }
     ],
 

@@ -545,27 +545,29 @@ class TreeViz extends React.Component {
 
     return (
       <div ref={this.containerRef}>
-        {/* Tree still loading aka undefined */}
-        {!incompleteFamily && treeLoading && (
-          <div>
-            <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <SimpleInProgress />
-              Loading data for clonal family: {selectedFamily.clone_id}
-            </h2>
-          </div>
-        )}
-        {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-        {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
-        {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
-        {/* Show tree header if complete family, tree */}
-        {completeData && (
-          <TreeHeader
-            selectedFamily={selectedFamily}
-            selectedTree={selectedTree}
-            selectedSeq={selectedSeq}
-            tree={isBothMode ? heavyTree : tree}
-          />
-        )}
+        <div style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
+          {/* Show tree header if complete family, tree */}
+          {completeData && (
+            <TreeHeader
+              selectedFamily={selectedFamily}
+              selectedTree={selectedTree}
+              selectedSeq={selectedSeq}
+              tree={isBothMode ? heavyTree : tree}
+            />
+          )}
+
+          {/* Tree still loading aka undefined */}
+          {!incompleteFamily && treeLoading && (
+            <div>
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <SimpleInProgress />
+                Loading data for clonal family: {selectedFamily.clone_id}
+              </h2>
+            </div>
+          )}
+          {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
+          {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
+          {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
 
         {/* Stacked mode: render two separate tree/alignment visualizations */}
         {/* Light chain has controls, heavy chain mirrors light chain settings */}
@@ -729,6 +731,7 @@ class TreeViz extends React.Component {
             </div>
           </div>
         )}
+        </div>
       </div>
     );
   }

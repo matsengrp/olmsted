@@ -178,14 +178,15 @@ class Lineage extends React.Component {
 
       return (
         <div>
-          <CollapseHelpTitle
-            titleText={`Ancestral sequences for ${selectedSeq.sequence_id} lineage`}
-            helpText={`The Ancestral Sequences section displays an alignment of the selected sequence
-          with its ancestral lineage starting from the naive sequence. Mutations from the naive sequence
-          are shown as in the Clonal Family Details section.`}
-          />
+          <div style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
+            <CollapseHelpTitle
+              titleText={`Ancestral sequences for ${selectedSeq.sequence_id} lineage`}
+              helpText={`The Ancestral Sequences section displays an alignment of the selected sequence
+            with its ancestral lineage starting from the naive sequence. Mutations from the naive sequence
+            are shown as in the Clonal Family Details section.`}
+            />
 
-          {selectedFamily.is_paired && (
+            {selectedFamily.is_paired && (
             <div style={{ marginBottom: "12px" }}>
               <span style={{ marginRight: 8 }}>Chain:</span>
               <select
@@ -272,29 +273,30 @@ class Lineage extends React.Component {
                 spec={seqAlignSpec(lineageData, { showMutationBorders })}
               />
             </>
-          )}
+            )}
 
-          <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label htmlFor="show-mutation-borders" style={{ cursor: 'pointer' }}>
-              <input
-                id="show-mutation-borders"
-                type="checkbox"
-                checked={showMutationBorders}
-                onChange={this.handleMutationBordersChange}
-                style={{ marginRight: '6px' }}
-              />
-              Show mutation borders
-            </label>
-            <label htmlFor="show-entire-lineage" style={{ cursor: 'pointer' }}>
-              <input
-                id="show-entire-lineage"
-                type="checkbox"
-                checked={showEntireLineage}
-                onChange={this.handleEntireLineageChange}
-                style={{ marginRight: '6px' }}
-              />
-              Show entire lineage (include nodes without mutations)
-            </label>
+            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label htmlFor="show-mutation-borders" style={{ cursor: 'pointer' }}>
+                <input
+                  id="show-mutation-borders"
+                  type="checkbox"
+                  checked={showMutationBorders}
+                  onChange={this.handleMutationBordersChange}
+                  style={{ marginRight: '6px' }}
+                />
+                Show mutation borders
+              </label>
+              <label htmlFor="show-entire-lineage" style={{ cursor: 'pointer' }}>
+                <input
+                  id="show-entire-lineage"
+                  type="checkbox"
+                  checked={showEntireLineage}
+                  onChange={this.handleEntireLineageChange}
+                  style={{ marginRight: '6px' }}
+                />
+                Show entire lineage (include nodes without mutations)
+              </label>
+            </div>
           </div>
         </div>
       );
