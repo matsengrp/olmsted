@@ -400,9 +400,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       { name: "yrange", update: "[pie_chart_padding + 5, height - 5]" },
       // These xdom and ydom signals come from the inner tree zoom signals but need to be updated
       // in the outer scope to allow scales/axes to update accordingly
+      // Use 'on' with xext signal instead of 'update' to avoid resetting on every re-render
       {
         name: "xdom",
-        update: "slice(xext)"
+        value: null,
+        on: [
+          {
+            // Only initialize when xdom is null (first load) or when xext changes significantly
+            // This prevents resetting zoom when just selecting a node
+            events: { signal: "xext" },
+            update: "xdom === null ? slice(xext) : xdom"
+          }
+        ]
       },
       {
         name: "branch_length_mode_text",
@@ -416,13 +425,22 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "ydom",
-        update: "slice(yext_fencepost)"
+        value: null,
+        on: [
+          {
+            // Only initialize when ydom is null (first load)
+            // This prevents resetting zoom when just selecting a node
+            events: { signal: "yext_fencepost" },
+            update: "ydom === null ? slice(yext_fencepost) : ydom"
+          }
+        ]
       },
       // Tree zoom/pan indicator signals (computed at top level from xdom/ydom/xext/yext)
-      { name: "tree_zoom_x", update: "span(xext) / span(xdom)" },
-      { name: "tree_zoom_y", update: "span(yext_fencepost) / span(ydom)" },
-      { name: "tree_pan_x", update: "((xdom[0] + xdom[1])/2 - (xext[0] + xext[1])/2) / span(xext)" },
-      { name: "tree_pan_y", update: "((ydom[0] + ydom[1])/2 - (yext_fencepost[0] + yext_fencepost[1])/2) / span(yext_fencepost)" },
+      // Handle null xdom/ydom during initialization
+      { name: "tree_zoom_x", update: "xdom ? span(xext) / span(xdom) : 1" },
+      { name: "tree_zoom_y", update: "ydom ? span(yext_fencepost) / span(ydom) : 1" },
+      { name: "tree_pan_x", update: "xdom ? ((xdom[0] + xdom[1])/2 - (xext[0] + xext[1])/2) / span(xext) : 0" },
+      { name: "tree_pan_y", update: "ydom ? ((ydom[0] + ydom[1])/2 - (yext_fencepost[0] + yext_fencepost[1])/2) / span(yext_fencepost) : 0" },
       { name: "tree_zoom_pan_active", update: "abs(tree_zoom_x - 1) > 0.01 || abs(tree_zoom_y - 1) > 0.01 || abs(tree_pan_x) > 0.01 || abs(tree_pan_y) > 0.01" },
 
       // /TREE SIGNALS:
@@ -1170,9 +1188,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   type: "mousedown",
                   filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                 },
-                update: "slice(xdom)"
+                update: "slice(xdom || xext)"
               },
-              { events: "touchstart, touchend", update: "slice(xdom)" }
+              { events: "touchstart, touchend", update: "slice(xdom || xext)" }
             ]
           },
           {
@@ -1184,9 +1202,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   type: "mousedown",
                   filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                 },
-                update: "slice(ydom)"
+                update: "slice(ydom || yext_fencepost)"
               },
-              { events: "touchstart, touchend", update: "slice(ydom)" }
+              { events: "touchstart, touchend", update: "slice(ydom || yext_fencepost)" }
             ]
           },
           // Dragging / panning
@@ -1228,7 +1246,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               },
               {
                 events: { type: "touchstart", filter: "event.touches.length===2" },
-                update: "[(xdom[0] + xdom[1]) / 2, (ydom[0] + ydom[1]) / 2]"
+                update: "[((xdom || xext)[0] + (xdom || xext)[1]) / 2, ((ydom || yext_fencepost)[0] + (ydom || yext_fencepost)[1]) / 2]"
               }
             ]
           },
@@ -1326,17 +1344,17 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 events: { signal: "delta" },
                 // Original values
                 // "update": "[xcur[0] + span(xcur) * delta[0] / tree_group_width,   xcur[1] + span(xcur) * delta[0] / tree_group_width]"
-                // Limiting dragging to the boundaries of the tree
-                update: "xdom_delta[0] < xext[0] || xdom_delta[1] > xext[1] ? slice(xdom) : slice(xdom_delta)"
+                // Limiting dragging to the boundaries of the tree (use xext as fallback if xdom is null)
+                update: "xdom_delta[0] < xext[0] || xdom_delta[1] > xext[1] ? slice(xdom || xext) : slice(xdom_delta)"
               },
               // Update shown x values when zooming
               {
                 events: { signal: "zoom" },
                 // Original values
                 // "update": "[(anchor[0] + (xdom[0] - anchor[0]) * zoom) ,  (anchor[0] + (xdom[1] - anchor[0]) * zoom) ]"
-                // Limiting zoom to the boundaries of the tree
+                // Limiting zoom to the boundaries of the tree (use xext as fallback if xdom is null)
                 update:
-                  "[ max( (anchor[0] + (xdom[0] - anchor[0]) * zoom) , xext[0] ),   min( (anchor[0] + (xdom[1] - anchor[0]) * zoom), xext[1]) ]"
+                  "[ max( (anchor[0] + ((xdom || xext)[0] - anchor[0]) * zoom) , xext[0] ),   min( (anchor[0] + ((xdom || xext)[1] - anchor[0]) * zoom), xext[1]) ]"
               },
               // Reset to full extent on double-click
               {
@@ -1354,18 +1372,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 events: { signal: "delta" },
                 // Original values
                 // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
-                // Limiting dragging so tree stays at least at the midpoint of the view
+                // Limiting dragging so tree stays at least at the midpoint of the view (use yext_fencepost as fallback)
                 // Top branch (yext[0]) cannot go below midpoint, bottom branch (yext[1]) cannot go above midpoint
-                update: "yext[0] > (ydom_delta[0] + ydom_delta[1])/2 || yext[1] < (ydom_delta[0] + ydom_delta[1])/2 ? slice(ydom) : slice(ydom_delta)"
+                update: "yext[0] > (ydom_delta[0] + ydom_delta[1])/2 || yext[1] < (ydom_delta[0] + ydom_delta[1])/2 ? slice(ydom || yext_fencepost) : slice(ydom_delta)"
               },
               // Update shown y values when zooming
               {
                 events: { signal: "zoom" },
                 // Original values
                 // "update": "[(anchor[1] + (ydom[0] - anchor[1]) * zoom), (anchor[1] + (ydom[1] - anchor[1]) * zoom) ]"
-                // Limiting zoom so tree stays at least at the midpoint of the view
+                // Limiting zoom so tree stays at least at the midpoint of the view (use yext_fencepost as fallback)
                 update:
-                  "[ max( (anchor[1] + (ydom[0] - anchor[1]) * zoom), yext[0] - span(yext)/2), min( (anchor[1] + (ydom[1] - anchor[1]) * zoom), yext[1] + span(yext)/2 ) ] "
+                  "[ max( (anchor[1] + ((ydom || yext_fencepost)[0] - anchor[1]) * zoom), yext[0] - span(yext)/2), min( (anchor[1] + ((ydom || yext_fencepost)[1] - anchor[1]) * zoom), yext[1] + span(yext)/2 ) ] "
               },
               // Reset to full extent on double-click (with fence-post spacing)
               {
@@ -2296,18 +2314,19 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         domain: { data: "leaves", field: { signal: "leaf_size_by" } },
         range: [0, { signal: "max_leaf_size" }]
       },
-      // Tree x scale
+      // Tree x scale (use xext as fallback when xdom is null during initialization)
       {
         name: "time",
         zero: false,
-        domain: { signal: "xdom" },
+        domain: { signal: "xdom || xext" },
         range: { signal: "xrange" }
       },
       // Global y scale (leaves and alignment are on the same y scale)
+      // Use yext_fencepost as fallback when ydom is null during initialization
       {
         name: "yscale",
         zero: false,
-        domain: { signal: "ydom" },
+        domain: { signal: "ydom || yext_fencepost" },
         range: { signal: "yrange" }
       },
       // Alignment x scale (with zoom/pan support)
