@@ -26,6 +26,7 @@ authors:
     orcid: 0000-0002-2527-8610
     affiliation: 1
   - name: Amrit Dhar
+    orcid: 0000-0003-4573-596X
     affiliation: 1
   - name: Mackenzie S. Kopp
     orcid: 0000-0002-7436-5622
@@ -92,7 +93,7 @@ Datasets persist across browser sessions, combining the convenience of a web app
 The [olmsted-cli](https://github.com/matsengrp/olmsted-cli) command-line tool converts data into Olmsted's JSON format.
 It supports two input formats:
 
-- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]
+- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are not aware of any tools currently producing output in the newer schema versions, but are committed to supporting them as they become formalized.
 - **PCP (Parent-Child Pair) format**: A CSV-based format with explicit parent-child relationships
 
 Example usage:
