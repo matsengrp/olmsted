@@ -95,7 +95,7 @@ class ClonalFamiliesViz extends React.Component {
     } = this.props;
     if (availableClonalFamilies) {
       return (
-        <div ref={this.containerRef}>
+        <div ref={this.containerRef} style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <Vega
