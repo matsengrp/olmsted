@@ -66,10 +66,16 @@ const mapStateToProps = (state) => {
 class Lineage extends React.Component {
   constructor(props) {
     super(props);
+    // Initialize lineageChain based on the selected family's actual chain
+    let initialChain = CHAIN_TYPES.HEAVY;
+    if (props.selectedFamily && !props.selectedFamily.is_paired) {
+      initialChain = clonalFamiliesSelectors.getCloneChain(props.selectedFamily);
+    }
+
     this.state = {
       showEntireLineage: false,
       showMutationBorders: false,
-      lineageChain: "heavy"
+      lineageChain: initialChain
     };
   }
 
@@ -77,24 +83,35 @@ class Lineage extends React.Component {
     const { selectedSeq, selectedFamily, treeChain, lastClickedChain } = this.props;
     const { lineageChain } = this.state;
 
-    // When family changes to non-paired, reset lineageChain to heavy if it was light
+    // When family changes, infer the appropriate chain
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
-      if (!selectedFamily.is_paired && lineageChain === "light") {
-        this.setState({ lineageChain: "heavy" });
-        return;
+      // For non-paired families, use the family's actual chain
+      if (!selectedFamily.is_paired) {
+        const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
+        if (familyChain !== lineageChain) {
+          this.setState({ lineageChain: familyChain });
+          return;
+        }
       }
     }
 
     // When a new sequence is selected, infer the lineage chain from the tree's chain selection
     if (selectedSeq && selectedSeq !== prevProps.selectedSeq) {
-      let inferredChain = CHAIN_TYPES.HEAVY;
-      if (treeChain === CHAIN_TYPES.LIGHT) {
-        inferredChain = CHAIN_TYPES.LIGHT;
-      } else if (isBothChainsMode(treeChain)) {
-        // In stacked/side-by-side mode, use the chain that was actually clicked
-        inferredChain = lastClickedChain;
+      // For non-paired families, always use the family's actual chain
+      if (selectedFamily && !selectedFamily.is_paired) {
+        const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
+        this.setState({ lineageChain: familyChain });
+      } else {
+        // For paired families, infer from tree selection
+        let inferredChain = CHAIN_TYPES.HEAVY;
+        if (treeChain === CHAIN_TYPES.LIGHT) {
+          inferredChain = CHAIN_TYPES.LIGHT;
+        } else if (isBothChainsMode(treeChain)) {
+          // In stacked/side-by-side mode, use the chain that was actually clicked
+          inferredChain = lastClickedChain;
+        }
+        this.setState({ lineageChain: inferredChain });
       }
-      this.setState({ lineageChain: inferredChain });
     }
   }
 
@@ -138,7 +155,11 @@ class Lineage extends React.Component {
         showEntireLineage
       );
 
+      // Check if lineageData is valid (has required properties)
+      const hasLineageData = lineageData && lineageData.lineage_alignment && lineageData.download_lineage_seqs;
+
       // Get naive viz data for the appropriate clone
+      // Will return empty source array if clone is null
       const naiveData = getNaiveVizData(cloneToUse);
 
       // Create boundary markers for all CDR regions
@@ -151,6 +172,9 @@ class Lineage extends React.Component {
 
       // Check if the requested chain data is available
       const chainDataAvailable = !isLightMode ? (heavyClone && heavyTree) : (lightClone && lightTree);
+
+      // Also check if we have the clone data needed for naive visualization
+      const hasCloneData = cloneToUse !== null && cloneToUse !== undefined;
 
       return (
         <div>
@@ -177,43 +201,78 @@ class Lineage extends React.Component {
           )}
 
           {!chainDataAvailable && (
-            <p style={{ fontStyle: "italic", color: "#666", marginBottom: "12px" }}>
-              {isLightMode ? "Light" : "Heavy"} chain data not available. The paired clone may not be loaded yet.
-            </p>
+            <div
+              style={{
+                marginTop: "10px",
+                marginBottom: "12px",
+                padding: "12px",
+                backgroundColor: "#f8d7da",
+                border: "1px solid #dc3545",
+                borderRadius: "4px",
+                color: "#721c24"
+              }}
+            >
+              <p style={{ margin: 0, fontSize: "14px" }}>
+                {isLightMode ? "Light" : "Heavy"} chain data not found. The paired clone is not available in this dataset.
+              </p>
+            </div>
           )}
 
-          <h3>Amino acid sequence:</h3>
-          <p>{seqToUse.sequence_alignment_aa || "N/A"}</p>
-          <div style={{ marginTop: "10px", marginBottom: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            <Copy
-              value={seqToUse.sequence_alignment || "NO NUCLEOTIDE SEQUENCE"}
-              buttonLabel="Copy nucleotide sequence to clipboard"
-            />
-            <Copy
-              value={seqToUse.sequence_alignment_aa || "NO AMINO ACID SEQUENCE"}
-              buttonLabel="Copy amino acid sequence to clipboard"
-            />
-          </div>
-          <div style={{ marginBottom: "8px" }}>
-            <DownloadFasta
-              sequencesSet={lineageData.download_lineage_seqs.slice()}
-              filename={selectedSeq.sequence_id.concat("-lineage.fasta")}
-              label="Download Fasta: Lineage Sequences"
-            />
-          </div>
+          {(!hasLineageData || !hasCloneData) && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "16px",
+                backgroundColor: "#f8d7da",
+                border: "1px solid #dc3545",
+                borderRadius: "4px",
+                color: "#721c24"
+              }}
+            >
+              <p style={{ margin: 0, fontSize: "14px" }}>
+                {!hasCloneData
+                  ? "Clone data not found. The selected chain's data may not be available."
+                  : "Tree data not found or incomplete. The lineage visualization cannot be displayed."}
+              </p>
+            </div>
+          )}
 
-          <h3>Lineage</h3>
-          <Vega
-            key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
-            onParseError={(...args) => console.error("parse error:", args)}
-            debug
-            data={{
-              naive_data: naiveData.source,
-              cdr_bounds: cdrBounds,
-              source_0: lineageData.lineage_alignment
-            }}
-            spec={seqAlignSpec(lineageData, { showMutationBorders })}
-          />
+          {hasLineageData && hasCloneData && (
+            <>
+              <h3>Amino acid sequence:</h3>
+              <p>{seqToUse.sequence_alignment_aa || "N/A"}</p>
+              <div style={{ marginTop: "10px", marginBottom: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <Copy
+                  value={seqToUse.sequence_alignment || "NO NUCLEOTIDE SEQUENCE"}
+                  buttonLabel="Copy nucleotide sequence to clipboard"
+                />
+                <Copy
+                  value={seqToUse.sequence_alignment_aa || "NO AMINO ACID SEQUENCE"}
+                  buttonLabel="Copy amino acid sequence to clipboard"
+                />
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <DownloadFasta
+                  sequencesSet={lineageData.download_lineage_seqs.slice()}
+                  filename={selectedSeq.sequence_id.concat("-lineage.fasta")}
+                  label="Download Fasta: Lineage Sequences"
+                />
+              </div>
+
+              <h3>Lineage</h3>
+              <Vega
+                key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                onParseError={(...args) => console.error("parse error:", args)}
+                debug
+                data={{
+                  naive_data: naiveData.source,
+                  cdr_bounds: cdrBounds,
+                  source_0: lineageData.lineage_alignment
+                }}
+                spec={seqAlignSpec(lineageData, { showMutationBorders })}
+              />
+            </>
+          )}
 
           <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label htmlFor="show-mutation-borders" style={{ cursor: 'pointer' }}>

@@ -26,9 +26,13 @@ export const getSelectedTree = createSelector(
 
 const getSelectedSeqId = (state) => state.clonalFamilies.selectedSeq;
 
-export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) =>
-  _.find(tree.nodes, { sequence_id: seq_id })
-);
+export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree], (seq_id, tree) => {
+  // Return null if tree is not loaded yet or doesn't have nodes
+  if (!tree || !tree.nodes) {
+    return null;
+  }
+  return _.find(tree.nodes, { sequence_id: seq_id });
+});
 
 // computing mutations for tree node records relative to naive_seq
 
@@ -187,11 +191,18 @@ const dissoc = (d, key) => {
 };
 
 export const computeTreeData = (tree) => {
+  // Return empty object if tree is null or undefined
+  if (!tree) {
+    return {};
+  }
+
   const treeData = _.clone(tree); // clone for assign by value
   // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
-  treeData.nodes = _.map(treeData.nodes, (x) =>
-    x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
-  );
+  if (treeData.nodes) {
+    treeData.nodes = _.map(treeData.nodes, (x) =>
+      x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
+    );
+  }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);
@@ -212,6 +223,11 @@ export const computeTreeData = (tree) => {
 // Create an alignment for the lineage of a particular sequence from naive
 // and find lineage sequences, removing repeat sequences but preserving back mutations.
 const computeLineageData = (tree, seq, includeAllNodes = false) => {
+  // Return empty object if tree is null or undefined
+  if (!tree) {
+    return {};
+  }
+
   const treeData = _.clone(tree); // clone for assign by value
   if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {
     const data = treeData["nodes"].slice(0);

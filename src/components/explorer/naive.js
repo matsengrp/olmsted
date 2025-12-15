@@ -15,6 +15,11 @@ import { CHAIN_TYPES } from "../../constants/chainTypes";
  * @returns {Array} Array of region objects
  */
 const buildCloneRegions = (clone, familyLabel) => {
+  // Return empty array if clone is null or undefined
+  if (!clone) {
+    return [];
+  }
+
   // Determine if this is a light chain clone (no D gene)
   const chain = getCloneChain(clone);
   const isLight = chain === CHAIN_TYPES.LIGHT;

@@ -331,15 +331,86 @@ const createZoomPanSignals = () => [
       }
     ]
   },
-  // Zoom level signal (0.9 = slight zoom out for padding, 1.0 = no zoom, >1.0 = zoomed in)
+  // Show/hide all in-plot controls (buttons and zoom/pan info)
+  {
+    name: "show_controls",
+    value: true,
+    bind: {
+      name: "Show controls",
+      input: "checkbox"
+    }
+  },
+  // Track which button is currently clicked (for visual feedback)
+  // Resets to null on mouseup
+  {
+    name: "clicked_button",
+    value: null,
+    on: [
+      {
+        events: { source: "scope", type: "mousedown", markname: "reset_button_bg" },
+        update: "'reset'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "reset_button_text" },
+        update: "'reset'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "clear_button_bg" },
+        update: "'clear'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "clear_button_text" },
+        update: "'clear'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "zoom_in_button_bg" },
+        update: "'zoom_in'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "zoom_in_button_text" },
+        update: "'zoom_in'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "zoom_out_button_bg" },
+        update: "'zoom_out'"
+      },
+      {
+        events: { source: "scope", type: "mousedown", markname: "zoom_out_button_text" },
+        update: "'zoom_out'"
+      },
+      {
+        events: { source: "window", type: "mouseup" },
+        update: "null"
+      }
+    ]
+  },
+  // Zoom level signal (1.0 = no zoom, <1 = zoomed out, >1 = zoomed in)
+  // Range is 0.1 to 10 (1/10x to 10x), default 0.9
   {
     name: "zoom_level",
     value: 0.9,
     on: [
       {
-        // Scroll to zoom when in zoom mode (consume event to prevent page scroll)
-        events: { type: "wheel", consume: true },
-        update: "interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.5, 100) : zoom_level"
+        // Zoom in button clicked (~20% per click, similar to 2 wheel scrolls)
+        events: [
+          { source: "scope", type: "click", markname: "zoom_in_button_bg" },
+          { source: "scope", type: "click", markname: "zoom_in_button_text" }
+        ],
+        update: "clamp(zoom_level * 1.2, 0.1, 10)"
+      },
+      {
+        // Zoom out button clicked (~20% per click, similar to 2 wheel scrolls)
+        events: [
+          { source: "scope", type: "click", markname: "zoom_out_button_bg" },
+          { source: "scope", type: "click", markname: "zoom_out_button_text" }
+        ],
+        update: "clamp(zoom_level / 1.2, 0.1, 10)"
+      },
+      {
+        // Scroll to zoom when in zoom mode
+        // Only consume (prevent page scroll) when in zoom mode
+        events: { type: "wheel", consume: "interaction_mode === 'zoom'" },
+        update: "interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.1, 10) : zoom_level"
       },
       {
         // Doubleclick to reset zoom/pan (when in zoom mode)
@@ -440,7 +511,7 @@ const createZoomPanSignals = () => [
   // Signal to track if zoom/pan is active (different from default state)
   {
     name: "zoom_pan_active",
-    update: "zoom_level !== 0.9 || pan_x !== 0 || pan_y !== 0"
+    update: "zoom_level !== 1 || pan_x !== 0 || pan_y !== 0"
   }
 ];
 
@@ -826,6 +897,7 @@ const createBrushMarks = () => [
     name: "brush_brush",
     type: "rect",
     clip: true,
+    interactive: false,
     encode: {
       enter: { fill: { value: "transparent" } },
       update: {
@@ -853,7 +925,9 @@ const createBrushMarks = () => [
         fill: { signal: "interaction_mode === 'select' ? '#4682b4' : '#fff'" },
         stroke: { value: "#999" },
         strokeWidth: { value: 1 },
-        cornerRadius: { value: 3 }
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -872,7 +946,8 @@ const createBrushMarks = () => [
         fontWeight: { value: "normal" },
         fill: { signal: "interaction_mode === 'select' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" }
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -892,7 +967,9 @@ const createBrushMarks = () => [
         fill: { signal: "interaction_mode === 'zoom' ? '#4682b4' : '#fff'" },
         stroke: { value: "#999" },
         strokeWidth: { value: 1 },
-        cornerRadius: { value: 3 }
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -911,7 +988,8 @@ const createBrushMarks = () => [
         fontWeight: { value: "normal" },
         fill: { signal: "interaction_mode === 'zoom' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" }
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -929,10 +1007,12 @@ const createBrushMarks = () => [
         y: { value: 80 },
         width: { value: 105 },
         height: { value: 22 },
-        fill: { value: "#fff" },
+        fill: { signal: "clicked_button === 'reset' ? '#5a9fd4' : '#fff'" },
         stroke: { value: "#999" },
         strokeWidth: { value: 1 },
-        cornerRadius: { value: 3 }
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -949,9 +1029,10 @@ const createBrushMarks = () => [
         text: { value: "Reset View" },
         fontSize: { value: 12 },
         fontWeight: { value: "normal" },
-        fill: { value: "#333" },
+        fill: { signal: "clicked_button === 'reset' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" }
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -968,10 +1049,12 @@ const createBrushMarks = () => [
         y: { value: 105 },
         width: { value: 105 },
         height: { value: 22 },
-        fill: { value: "#fff" },
+        fill: { signal: "clicked_button === 'clear' ? '#5a9fd4' : '#fff'" },
         stroke: { value: "#999" },
         strokeWidth: { value: 1 },
-        cornerRadius: { value: 3 }
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -988,13 +1071,102 @@ const createBrushMarks = () => [
         text: { value: "Clear Selection" },
         fontSize: { value: 12 },
         fontWeight: { value: "normal" },
-        fill: { value: "#333" },
+        fill: { signal: "clicked_button === 'clear' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" }
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
+      }
+    }
+  },
+  // Zoom in button background
+  // Positioned between Pan/Zoom Mode button (y=52) and Reset View button (y=80)
+  // Centered vertically: (80 - 52 - 22) / 2 = 3, so y = 52 + 3 = 55
+  // Horizontally centered within the button column
+  {
+    name: "zoom_in_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 90" },
+        y: { value: 55 },
+        width: { value: 26 },
+        height: { value: 22 },
+        fill: { signal: "clicked_button === 'zoom_in' ? '#5a9fd4' : '#fff'" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
+      }
+    }
+  },
+  {
+    name: "zoom_in_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 77" },
+        y: { value: 72 },
+        text: { value: "+" },
+        fontSize: { value: 16 },
+        fontWeight: { value: "bold" },
+        fill: { signal: "clicked_button === 'zoom_in' ? '#fff' : '#333'" },
+        align: { value: "center" },
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
+      }
+    }
+  },
+  // Zoom out button background
+  {
+    name: "zoom_out_button_bg",
+    type: "rect",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 62" },
+        y: { value: 55 },
+        width: { value: 26 },
+        height: { value: 22 },
+        fill: { signal: "clicked_button === 'zoom_out' ? '#5a9fd4' : '#fff'" },
+        stroke: { value: "#999" },
+        strokeWidth: { value: 1 },
+        cornerRadius: { value: 3 },
+        fillOpacity: { signal: "show_controls ? 1 : 0" },
+        strokeOpacity: { signal: "show_controls ? 1 : 0" }
+      }
+    }
+  },
+  {
+    name: "zoom_out_button_text",
+    type: "text",
+    encode: {
+      enter: {
+        cursor: { value: "pointer" }
+      },
+      update: {
+        x: { signal: "child_width - 49" },
+        y: { value: 70 },
+        text: { value: "−" },
+        fontSize: { value: 16 },
+        fontWeight: { value: "bold" },
+        fill: { signal: "clicked_button === 'zoom_out' ? '#fff' : '#333'" },
+        align: { value: "center" },
+        baseline: { value: "bottom" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
   // Zoom level indicator background
+  // Positioned below Clear Selection button (y=127)
   {
     name: "zoom_indicator_bg",
     type: "rect",
@@ -1005,7 +1177,7 @@ const createBrushMarks = () => [
         width: { value: 105 },
         height: { value: 32 },
         fill: { value: "#fff" },
-        fillOpacity: { value: 0.7 },
+        fillOpacity: { signal: "show_controls ? 0.7 : 0" },
         cornerRadius: { value: 3 }
       }
     }
@@ -1025,7 +1197,8 @@ const createBrushMarks = () => [
       update: {
         x: { signal: "child_width - 62" },
         y: { value: 135 },
-        text: { signal: "'Zoom: ' + format(zoom_level, '.1f') + 'x'" }
+        text: { signal: "'Zoom: ' + format(zoom_level, '.2f') + 'x'" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   },
@@ -1044,7 +1217,8 @@ const createBrushMarks = () => [
       update: {
         x: { signal: "child_width - 62" },
         y: { value: 148 },
-        text: { signal: "'Pan: ' + format(pan_x, '.2f') + ', ' + format(pan_y, '.2f')" }
+        text: { signal: "'Pan: ' + format(pan_x, '.2f') + ', ' + format(pan_y, '.2f')" },
+        opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
   }
@@ -1133,7 +1307,7 @@ const createCellMark = () => ({
       width: { signal: "child_width" },
       height: { signal: "child_height" },
       // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
-      cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'default'" }
+      cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'crosshair'" }
     }
   },
   signals: createCellSignals(),

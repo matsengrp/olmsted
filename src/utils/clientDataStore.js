@@ -173,9 +173,11 @@ class ClientDataStore {
 
     try {
       // Try direct lookup by tree identifier first
+      console.log(`ClientDataStore: Looking up tree by ident: ${treeIdent}`);
       let fullTree = await olmstedDB.getTreeByIdent(treeIdent);
 
       if (!fullTree) {
+        console.log(`ClientDataStore: Direct ident lookup failed, trying fallback for: ${treeIdent}`);
         // Fallback: Extract clone_id from tree identifier
         // Tree idents follow patterns like "tree_clone_0099_ident" → "clone_0099"
         let cloneId = treeIdent;
@@ -194,7 +196,10 @@ class ClientDataStore {
           }
         }
 
+        console.log(`ClientDataStore: Trying getTreeForClone with cloneId: ${cloneId}`);
         fullTree = await olmstedDB.getTreeForClone(cloneId);
+      } else {
+        console.log(`ClientDataStore: Found tree by direct ident lookup`);
       }
 
       if (fullTree) {
@@ -203,7 +208,7 @@ class ClientDataStore {
         return fullTree;
       }
 
-      console.warn(`ClientDataStore: Tree not found: ${treeIdent}`);
+      console.warn(`ClientDataStore: Tree not found after all attempts: ${treeIdent}`);
       return null;
     } catch (error) {
       console.error("ClientDataStore: Failed to get tree:", error);
