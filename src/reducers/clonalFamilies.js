@@ -18,7 +18,7 @@ const initialState = {
   // EH:facet field is no longer required to update the spec but
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
-  locus: "IGH",
+  locus: "All",
   // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
   selectedChain: "heavy",
   // Track which chain was last clicked in stacked mode (for lineage inference)

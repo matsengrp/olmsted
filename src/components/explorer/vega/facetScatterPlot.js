@@ -1125,13 +1125,13 @@ const createBrushMarks = () => [
       },
       update: {
         x: { signal: "child_width - 77" },
-        y: { value: 72 },
+        y: { value: 66 },
         text: { value: "+" },
         fontSize: { value: 16 },
         fontWeight: { value: "bold" },
         fill: { signal: "clicked_button === 'zoom_in' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" },
+        baseline: { value: "middle" },
         opacity: { signal: "show_controls ? 1 : 0" }
       }
     }
@@ -1167,13 +1167,13 @@ const createBrushMarks = () => [
       },
       update: {
         x: { signal: "child_width - 49" },
-        y: { value: 70 },
+        y: { value: 66 },
         text: { value: "−" },
         fontSize: { value: 16 },
         fontWeight: { value: "bold" },
         fill: { signal: "clicked_button === 'zoom_out' ? '#fff' : '#333'" },
         align: { value: "center" },
-        baseline: { value: "bottom" },
+        baseline: { value: "middle" },
         opacity: { signal: "show_controls ? 1 : 0" }
       }
     }

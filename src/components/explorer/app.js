@@ -36,29 +36,45 @@ const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length;
   const nClonalFamiliesTotal = clonalFamiliesSelectors.getAvailableClonalFamilies(state).length;
-  return { selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal };
+  const nClonalFamiliesAll = clonalFamiliesSelectors.getAllClonalFamilies(state).length;
+  return { selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll };
 };
 
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
   render() {
-    const { nClonalFamiliesBrushed, nClonalFamiliesTotal } = this.props;
+    const { nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll } = this.props;
+    const nFiltered = nClonalFamiliesAll - nClonalFamiliesTotal;
+    const showFilterInfo = nFiltered > 0;
+    const infoBoxStyle = {
+      marginTop: "10px",
+      marginBottom: "10px",
+      padding: "12px",
+      backgroundColor: "#d4edda",
+      border: "1px solid #28a745",
+      borderRadius: "4px",
+      color: "#155724",
+      fontSize: "14px",
+      textAlign: "center",
+      fontWeight: "bold"
+    };
     return (
-      <div
-        style={{
-          marginTop: "10px",
-          marginBottom: "10px",
-          padding: "12px",
-          backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
-          border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
-          borderRadius: "4px",
-          color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724",
-          fontSize: "14px",
-          textAlign: "center",
-          fontWeight: "bold"
-        }}
-      >
-        Number of families currently selected: {nClonalFamiliesBrushed} out of {nClonalFamiliesTotal}
+      <div>
+        {showFilterInfo && (
+          <div style={infoBoxStyle}>
+            Number of clonal families passing filter: {nClonalFamiliesTotal} out of {nClonalFamiliesAll}
+          </div>
+        )}
+        <div
+          style={{
+            ...infoBoxStyle,
+            backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
+            border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
+            color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724"
+          }}
+        >
+          Number of clonal families currently selected: {nClonalFamiliesBrushed} out of {nClonalFamiliesTotal}
+        </div>
       </div>
     );
   }
