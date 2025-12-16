@@ -25,13 +25,9 @@ export const GENE_REGION_COLORS = {
 /**
  * Domain array for Vega color scale (ordinal scale domain)
  * Order must match the range array
+ * Note: Only CDR regions and Sequence are shown in legend
  */
 export const GENE_REGION_DOMAIN = [
-  "V gene",
-  "5' Insertion",
-  "D gene",
-  "3' Insertion",
-  "J gene",
   "CDR1",
   "CDR2",
   "CDR3",
@@ -41,13 +37,9 @@ export const GENE_REGION_DOMAIN = [
 /**
  * Range array for Vega color scale (ordinal scale range)
  * Order must match the domain array
+ * Note: Only CDR regions and Sequence are shown in legend
  */
 export const GENE_REGION_RANGE = [
-  GENE_REGION_COLORS.V_GENE,
-  GENE_REGION_COLORS.FIVE_PRIME_INSERTION,
-  GENE_REGION_COLORS.D_GENE,
-  GENE_REGION_COLORS.THREE_PRIME_INSERTION,
-  GENE_REGION_COLORS.J_GENE,
   GENE_REGION_COLORS.CDR1,
   GENE_REGION_COLORS.CDR2,
   GENE_REGION_COLORS.CDR3,
