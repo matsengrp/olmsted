@@ -42,42 +42,55 @@ class TreeHeader extends React.Component {
               For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
               details section. Select among any alternate phylogenies using the Ancestral reconstruction method menu.
               Note that these ancestral reconstruction methods are according to those specified in the input data
-              according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral
-              reconstruction (or any phylogenetic inference at all).
+              according to the phylogenetic inference tool used to produce them.
               <br />
               <br />
               Alongside the tree is an alignment of the sequences at the tree&apos;s tips. Colors indicate amino acid
               mutations at each position that differs from the sequence at the root of the tree (typically the
-              family&apos;s inferred naive antibody sequence). Scroll while hovering over the tree to zoom in and out.
-              Click and drag the zoomed view to pan in a traditional map-style interface. The alignment view on the
-              right zooms in the vertical dimension according to the zoom status of the tree. The tree&apos;s leaves use
-              pie charts to show the multiplicity (i.e. the number of downsampled and deduplicated sequences)
-              represented by a given sequence, colored according to sampling timepoint. See{" "}
-              <a href="http://www.olmstedviz.org/schema.html">the schema</a> for more detailed field descriptions.
+              family&apos;s inferred naive antibody sequence). The tree&apos;s leaves are displayed as scaled markers
+              showing the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given
+              sequence, with wedges colored according to sampling timepoint. See the{" "}
+              <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
               <br />
               <br />
-              Note that often in example data the number of sequences in a clonal family has been downsampled to build a
-              tree (see downsampled_count, downsampling_strategy in{" "}
-              <a href="http://www.olmstedviz.org/schema.html">the schema</a>
-              ), which explains why a clonal family might be listed in the table as having a few thousand unique
-              sequences, but upon selecting the clonal family, the corresponding tree visualization only contains 10s or
-              100s of sequences.
-              <br />
-              <br />
-              Use the interface below the tree to configure:
-              <br />
-              <ul>
-                <li>Maximum width of the tree window with respect to the alignment window (Tree width ratio)</li>
-                <li>Field mapped to the size of pie charts at the tree&apos; leaves (leaf_size_by)</li>
-                <li>Maximum size of pie charts at the tree&apos; leaves (max_leaf_size)</li>
-                <li>Tree tip labels toggle on and off (show_labels)</li>
-                <li>
-                  Fields mapped to branch width and color (branch_width_by, branch_color_by, branch_color_scheme,
-                  min_color_value)
-                </li>
+              <strong>Mouse + Keyboard Controls:</strong>
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li><strong>Click</strong> on leaf labels or markers to select sequences for lineage analysis</li>
+                <li><strong>Scroll</strong> over tree section to zoom vertically</li>
+                <li><strong>Scroll</strong> over alignment section to zoom horizontally</li>
+                <li><strong>Drag</strong> to pan the view</li>
+                <li><strong>Drag scrollbar:</strong> When the alignment is zoomed, a draggable scrollbar appears at the bottom for horizontal panning</li>
+                <li><strong>Hold Shift:</strong> Temporarily switch between Select and Pan/Zoom modes</li>
+                <li><strong>Double-click:</strong> Reset zoom and pan to default view</li>
               </ul>
-              In order to get more details about a particular lineage in the tree, click on a leaf&apos;s label (or on
-              the dot at the center of the pie chart) - the Ancestral Sequences section will appear below the tree.
+              <strong>Note:</strong> Clicking on the plot enters focused mode, where scroll events will zoom the plot
+              instead of scrolling the page. Click outside the plot to exit focused mode and restore normal page scrolling.
+              <br />
+              <br />
+              <strong>Button Controls:</strong>
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li><strong>Tree +/−:</strong> Zoom tree section vertically</li>
+                <li><strong>Align +/−:</strong> Zoom alignment section horizontally</li>
+                <li><strong>Reset View:</strong> Reset all zoom and pan to default view</li>
+              </ul>
+              <strong>Plot Customization:</strong> Use the controls below the tree to configure:
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li><strong>Tree width ratio:</strong> Adjust the relative width of the tree vs. alignment panels</li>
+                <li><strong>Leaf size by:</strong> Scale leaf marker size by a continuous field</li>
+                <li><strong>Max leaf size:</strong> Set maximum leaf marker diameter</li>
+                <li><strong>Show labels:</strong> Toggle tree tip labels on and off</li>
+                <li><strong>Branch width and color:</strong> Map branch visual properties to continuous fields</li>
+                <li><strong>Color scheme:</strong> Choose color palette for branch coloring</li>
+              </ul>
+              <strong>Branch Metrics:</strong> The following phylogenetic metrics can be used to color or size branches:
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li><strong>LBI (Local Branching Index):</strong> Measures the local tree imbalance around each branch, useful for identifying rapidly expanding lineages</li>
+                <li><strong>LBR (Local Branching Ratio):</strong> Ratio-based measure of local branching patterns</li>
+                <li><strong>Parent:</strong> Colors branches by parentage; sibling branches share a common color</li>
+              </ul>
+              <strong>Lineage Selection:</strong> To view the ancestral sequence lineage for a specific sequence, click on a
+              leaf&apos;s label (or on the center of the leaf marker). The Ancestral Sequences section will appear
+              below the tree showing the mutational history from naive to the selected sequence.
               <br />
               <br />
             </div>

@@ -181,9 +181,27 @@ class Lineage extends React.Component {
           <div style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
             <CollapseHelpTitle
               titleText={`Ancestral sequences for ${selectedSeq.sequence_id} lineage`}
-              helpText={`The Ancestral Sequences section displays an alignment of the selected sequence
-            with its ancestral lineage starting from the naive sequence. Mutations from the naive sequence
-            are shown as in the Clonal Family Details section.`}
+              helpText={
+                <div>
+                  The Ancestral Sequences section displays an alignment showing the mutational path from the naive
+                  sequence to the selected sequence. Each row represents a node along the lineage, with mutations
+                  highlighted using the same color scheme as the Clonal Family Details alignment view. CDR regions
+                  (CDR1, CDR2, CDR3) are marked with colored background bars.
+                  <br />
+                  <br />
+                  <strong>Features:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                    <li><strong>Copy sequences:</strong> Use the copy buttons to copy nucleotide or amino acid sequences to clipboard</li>
+                    <li><strong>Download FASTA:</strong> Download all sequences in the lineage as a FASTA file</li>
+                    <li><strong>Chain selection:</strong> For paired heavy/light chain data, choose which chain&apos;s lineage to display</li>
+                  </ul>
+                  <strong>Display Options:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                    <li><strong>Show mutation borders:</strong> Draw borders around mutated positions for easier identification</li>
+                    <li><strong>Show entire lineage:</strong> Include all ancestral nodes (default shows only nodes with mutations)</li>
+                  </ul>
+                </div>
+              }
             />
 
             {selectedFamily.is_paired && (

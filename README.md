@@ -191,7 +191,7 @@ For a selected clonal family, its phylogenetic tree is visualized below the tabl
 
 
 Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
-Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
+Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them.
 Alongside the tree is an alignment of the sequences at the tree's tips.
 Colors indicate amino acid mutations at each position that differs from the sequence at the root of the tree (typically the family's inferred naive antibody sequence).
 Scroll while hovering over the tree to zoom in and out.

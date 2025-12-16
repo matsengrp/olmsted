@@ -359,6 +359,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             update: "'alignment_zoom_out'"
           },
           {
+            events: { source: "scope", type: "mousedown", markname: "reset_view_bg" },
+            update: "'reset_view'"
+          },
+          {
+            events: { source: "scope", type: "mousedown", markname: "reset_view_text" },
+            update: "'reset_view'"
+          },
+          {
             events: { source: "window", type: "mouseup" },
             update: "null"
           }
@@ -410,6 +418,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             // This prevents resetting zoom when just selecting a node
             events: { signal: "xext" },
             update: "xdom === null ? slice(xext) : xdom"
+          },
+          {
+            // Reset zoom when reset view button is clicked
+            events: [
+              { source: "scope", type: "click", markname: "reset_view_bg" },
+              { source: "scope", type: "click", markname: "reset_view_text" }
+            ],
+            update: "slice(xext)"
           }
         ]
       },
@@ -432,6 +448,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             // This prevents resetting zoom when just selecting a node
             events: { signal: "yext_fencepost" },
             update: "ydom === null ? slice(yext_fencepost) : ydom"
+          },
+          {
+            // Reset zoom when reset view button is clicked
+            events: [
+              { source: "scope", type: "click", markname: "reset_view_bg" },
+              { source: "scope", type: "click", markname: "reset_view_text" }
+            ],
+            update: "slice(yext_fencepost)"
           }
         ]
       },
@@ -698,6 +722,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               { source: "scope", type: "dblclick", markname: "naive_zoom_area" }
             ],
             update: "1"
+          },
+          {
+            // Reset view button clicked
+            events: [
+              { source: "scope", type: "click", markname: "reset_view_bg" },
+              { source: "scope", type: "click", markname: "reset_view_text" }
+            ],
+            update: "1"
           }
         ]
       },
@@ -740,6 +772,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             events: [
               { source: "scope", type: "dblclick", markname: "alignment_zoom_area" },
               { source: "scope", type: "dblclick", markname: "naive_zoom_area" }
+            ],
+            update: "0"
+          },
+          {
+            // Reset view button clicked
+            events: [
+              { source: "scope", type: "click", markname: "reset_view_bg" },
+              { source: "scope", type: "click", markname: "reset_view_text" }
             ],
             update: "0"
           }
@@ -1690,6 +1730,44 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 fontSize: { value: 16 },
                 fontWeight: { value: "bold" },
                 fill: { signal: "clicked_button === 'alignment_zoom_out' ? '#fff' : '#333'" },
+                align: { value: "center" },
+                baseline: { value: "middle" },
+                opacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          // Reset View button - positioned below alignment zoom buttons
+          {
+            name: "reset_view_bg",
+            type: "rect",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 5 },
+                y: { value: 55 },
+                width: { value: 80 },
+                height: { value: 22 },
+                fill: { signal: "clicked_button === 'reset_view' ? '#5a9fd4' : '#fff'" },
+                stroke: { value: "#999" },
+                strokeWidth: { value: 1 },
+                cornerRadius: { value: 3 },
+                fillOpacity: { signal: "show_controls ? 1 : 0" },
+                strokeOpacity: { signal: "show_controls ? 1 : 0" }
+              }
+            }
+          },
+          {
+            name: "reset_view_text",
+            type: "text",
+            encode: {
+              enter: { cursor: { value: "pointer" } },
+              update: {
+                x: { value: 45 },
+                y: { value: 66 },
+                text: { value: "Reset View" },
+                fontSize: { value: 12 },
+                fontWeight: { value: "normal" },
+                fill: { signal: "clicked_button === 'reset_view' ? '#fff' : '#333'" },
                 align: { value: "center" },
                 baseline: { value: "middle" },
                 opacity: { signal: "show_controls ? 1 : 0" }

@@ -25,7 +25,15 @@ export const GENE_REGION_COLORS = {
 /**
  * Domain array for Vega color scale (ordinal scale domain)
  * Order must match the range array
- * Note: Only CDR regions and Sequence are shown in legend
+ * Note: Only CDR regions and Sequence are shown in legend and visualization
+ *
+ * V/D/J genes and insertions are omitted from both legend and visualization.
+ * Historical color palette (for reference if re-adding in future):
+ * - "V gene" → #762a83 (purple)
+ * - "5' Insertion" → #af8dc3 (light purple)
+ * - "D gene" → #000000 (black)
+ * - "3' Insertion" → #d9f0d3 (very light green)
+ * - "J gene" → #7fbf7b (medium green)
  */
 export const GENE_REGION_DOMAIN = [
   "CDR1",
