@@ -180,7 +180,7 @@ class Lineage extends React.Component {
         <div>
           <div style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
             <CollapseHelpTitle
-              titleText={`Ancestral sequences for ${selectedSeq.sequence_id} lineage`}
+              titleText={`Ancestral Sequences for: "${selectedSeq.sequence_id}" Lineage`}
               helpText={
                 <div>
                   The Ancestral Sequences section displays an alignment showing the mutational path from the naive
@@ -189,11 +189,13 @@ class Lineage extends React.Component {
                   (CDR1, CDR2, CDR3) are marked with colored background bars.
                   <br />
                   <br />
+                  <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below, allowing you to select which chain&apos;s lineage to display: heavy chain or light chain.
+                  <br />
+                  <br />
                   <strong>Features:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li><strong>Copy sequences:</strong> Use the copy buttons to copy nucleotide or amino acid sequences to clipboard</li>
                     <li><strong>Download FASTA:</strong> Download all sequences in the lineage as a FASTA file</li>
-                    <li><strong>Chain selection:</strong> For paired heavy/light chain data, choose which chain&apos;s lineage to display</li>
                   </ul>
                   <strong>Display Options:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>

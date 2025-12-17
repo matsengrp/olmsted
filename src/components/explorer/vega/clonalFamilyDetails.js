@@ -2724,7 +2724,7 @@ const seqAlignSpec = (family, options = {}) => {
         type: "linear",
         domain: [0, { signal: "max_aa_seq_length" }],
         range: [5, { signal: "width" }],
-        nice: true,
+        nice: false,
         zero: true
       },
       {

@@ -36,21 +36,24 @@ class TreeHeader extends React.Component {
     return (
       <div>
         <CollapseHelpTitle
-          titleText={`Clonal family details for ${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}`}
+          titleText={`Clonal Family Details for: "${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}"`}
           helpText={
             <div>
-              For a selected clonal family, its phylogenetic tree is visualized below the table in the Clonal family
-              details section. Select among any alternate phylogenies using the Ancestral reconstruction method menu.
-              Note that these ancestral reconstruction methods are according to those specified in the input data
-              according to the phylogenetic inference tool used to produce them.
-              <br />
-              <br />
-              Alongside the tree is an alignment of the sequences at the tree&apos;s tips. Colors indicate amino acid
+              For a selected clonal family, its phylogenetic tree is visualized below. Alongside the tree is an alignment
+              of the sequences at the tree&apos;s tips. Colors indicate amino acid
               mutations at each position that differs from the sequence at the root of the tree (typically the
               family&apos;s inferred naive antibody sequence). The tree&apos;s leaves are displayed as scaled markers
               showing the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given
               sequence, with wedges colored according to sampling timepoint. See the{" "}
               <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
+              <br />
+              <br />
+              <strong>Ancestral Reconstruction Method:</strong> Select among alternate phylogenies using the Ancestral reconstruction method dropdown menu.
+              These methods are specified in the input data according to the phylogenetic inference tool used.
+              <br />
+              <br />
+              <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below, allowing you to select which chain to visualize: heavy chain only,
+              light chain only, or both chains stacked.
               <br />
               <br />
               <strong>Mouse + Keyboard Controls:</strong>

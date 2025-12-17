@@ -298,7 +298,7 @@ class App extends React.Component {
                       See the <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
                       <br />
                       <br />
-                      Use the locus filter to restrict the scatterplot to clonal families from a specific immunoglobulin locus:
+                      <strong>Locus Filter:</strong> Restrict the scatterplot to clonal families from a specific immunoglobulin locus:
                       heavy chain (IGH), light chain lambda (IGL), or light chain kappa (IGK). Choose &quot;All&quot; to visualize
                       clonal families from all loci simultaneously.
                       <br />
@@ -402,7 +402,7 @@ class App extends React.Component {
             )}
             {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
-                <CollapsibleSection titleText="Ancestral sequences">
+                <CollapsibleSection titleText="Ancestral Sequences">
                   <Lineage />
                 </CollapsibleSection>
               </div>
