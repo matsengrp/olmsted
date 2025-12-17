@@ -3,6 +3,7 @@ import * as types from "./types";
 import * as loadData from "./loadData";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
+import { getPairedClone, getAllClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
 
 export const pageDown = { type: types.PAGE_DOWN };
 export const pageUp = { type: types.PAGE_UP };
@@ -17,7 +18,8 @@ export const toggleSort = (attribute) => {
 export const selectFamily = (ident, updateBrushSelection = false) => {
   return (dispatch, getState) => {
     dispatch({ type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection });
-    const { clonalFamilies, datasets } = getState();
+    const state = getState();
+    const { clonalFamilies, datasets } = state;
     const clonalFamily = clonalFamilies.byIdent[ident];
     const clonalFamilyTrees = clonalFamily ? clonalFamily.trees || [] : [];
 
@@ -34,6 +36,31 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
         loadData.getTree(dispatch, tree.ident);
       }
     });
+
+    // For paired families, also load the paired clone's trees
+    // This ensures light chain data is available for "both" and "light" modes
+    // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
+    // even when they're filtered out of the scatterplot
+    if (clonalFamily && clonalFamily.is_paired && clonalFamily.pair_id) {
+      const allClonalFamilies = getAllClonalFamilies(state);
+      const pairedClone = getPairedClone(allClonalFamilies, clonalFamily);
+      if (pairedClone) {
+        const pairedTrees = pairedClone.trees || [];
+        _.forEach(pairedTrees, (tree) => {
+          if (isClientSide) {
+            getClientTree(dispatch, tree.ident);
+          } else {
+            loadData.getTree(dispatch, tree.ident);
+          }
+        });
+      }
+
+      // Auto-switch chain selection based on which chain was selected
+      // If user selected a light chain clone, switch to "light" mode
+      // If user selected a heavy chain clone, switch to "heavy" mode
+      const selectedChain = getCloneChain(clonalFamily);
+      dispatch({ type: types.UPDATE_SELECTED_CHAIN, chain: selectedChain });
+    }
   };
 };
 
@@ -72,6 +99,10 @@ export const filterBrushSelection = (key, value) => {
   return { type: types.FILTER_BRUSH_SELECTION, key, value };
 };
 
+export const clearBrushSelection = () => {
+  return { type: types.CLEAR_BRUSH_SELECTION };
+};
+
 export const updateFacet = (facetByField) => {
   return { type: types.UPDATE_FACET, facetByField };
 };
@@ -95,4 +126,16 @@ export const clearDatasetSelections = () => {
 
 export const batchUpdateDatasets = () => {
   return { type: types.BATCH_UPDATE_DATASETS };
+};
+
+// Chain selection for paired heavy/light chain data
+// Options: 'heavy', 'light', 'both'
+export const updateSelectedChain = (chain) => {
+  return { type: types.UPDATE_SELECTED_CHAIN, chain };
+};
+
+// Track which chain was last clicked (for stacked mode lineage inference)
+// Options: 'heavy', 'light'
+export const updateLastClickedChain = (chain) => {
+  return { type: types.UPDATE_LAST_CLICKED_CHAIN, chain };
 };

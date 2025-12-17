@@ -164,7 +164,7 @@ The *Clonal Families* section represents each clonal family as a point in a scat
 ![scatterplot](docs/clonal-families-section.png)
 
 Choose an immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the default is immunoglobulin gamma, or *igh* (where *h* stands for heavy chain).
-In order to visualize all clonal families from all loci in the dataset at once, choose "ALL" in the locus selector.
+In order to visualize all clonal families from all loci in the dataset at once, choose "All" in the locus selector.
 By default, the scatterplot maps the number of unique members in a clonal family, `unique_seqs_count`, to the x-axis, and the average mutation frequency among members of that clonal family, `mean_mut_freq`, to the y-axis.
 However, you may configure both axes as well as the color and shape of the points to map to a range of fields, including sequence sampling time (see below).
 
@@ -191,7 +191,7 @@ For a selected clonal family, its phylogenetic tree is visualized below the tabl
 
 
 Select among any alternate phylogenies using the *Ancestral reconstruction method* menu.
-Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them - Olmsted does not perform ancestral reconstruction (or any phylogenetic inference at all).
+Note that these ancestral reconstruction methods are according to those specified in the input data according to the phylogenetic inference tool used to produce them.
 Alongside the tree is an alignment of the sequences at the tree's tips.
 Colors indicate amino acid mutations at each position that differs from the sequence at the root of the tree (typically the family's inferred naive antibody sequence).
 Scroll while hovering over the tree to zoom in and out.
@@ -251,10 +251,36 @@ git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
 git submodule update --init
 
-npm install --legacy-peer-deps --ignore-scripts
-mkdir -p _data
-./bin/olmsted-server-local.sh _data/ 3999
+npm install --legacy-peer-deps
+npm run start
 ```
+
+### With Local Data
+
+The server's `localData` mode requires data in **split format** (separate files for datasets, clones, and trees), as opposed to the consolidated single-file format used for browser uploads. The split format allows the server to serve individual files on demand via the charon API.
+
+Split format structure:
+```
+data/
+  datasets.json                          # List of available datasets
+  clones.{dataset_id}.json              # Clonal families for each dataset
+  tree.{tree_id}.json                   # Individual tree files
+```
+
+To run with example data from [olmsted-cli](https://github.com/matsengrp/olmsted-cli):
+
+```bash
+# Clone olmsted-cli if you haven't already
+git clone https://github.com/matsengrp/olmsted-cli.git ../olmsted-cli
+
+# Copy pre-split example data to data/ (gitignored)
+cp ../olmsted-cli/example_data/pcp/split_golden_data/* data/
+
+# Start server with local data
+BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
+```
+
+The `data/` directory is gitignored, so local data files won't be committed.
 
 ### Static Build
 

@@ -130,13 +130,8 @@ class ClientDataStore {
       // Convert to format expected by existing code
       const cloneList = cloneMeta.map((clone) => ({
         ...clone,
-        // Add tree references in expected format
-        trees: clone.tree_ids
-          ? clone.tree_ids.map((tree_id) => ({
-              ident: tree_id,
-              tree_id: tree_id
-            }))
-          : []
+        // Add tree references in expected format (use trees_meta which has type, downsampling_strategy, etc.)
+        trees: clone.trees_meta || []
       }));
 
       ErrorLogger.info(`ClientDataStore: Retrieved ${cloneList.length} clone metadata entries`);
@@ -178,9 +173,11 @@ class ClientDataStore {
 
     try {
       // Try direct lookup by tree identifier first
+      console.log(`ClientDataStore: Looking up tree by ident: ${treeIdent}`);
       let fullTree = await olmstedDB.getTreeByIdent(treeIdent);
 
       if (!fullTree) {
+        console.log(`ClientDataStore: Direct ident lookup failed, trying fallback for: ${treeIdent}`);
         // Fallback: Extract clone_id from tree identifier
         // Tree idents follow patterns like "tree_clone_0099_ident" → "clone_0099"
         let cloneId = treeIdent;
@@ -199,7 +196,10 @@ class ClientDataStore {
           }
         }
 
+        console.log(`ClientDataStore: Trying getTreeForClone with cloneId: ${cloneId}`);
         fullTree = await olmstedDB.getTreeForClone(cloneId);
+      } else {
+        console.log(`ClientDataStore: Found tree by direct ident lookup`);
       }
 
       if (fullTree) {
@@ -208,7 +208,7 @@ class ClientDataStore {
         return fullTree;
       }
 
-      console.warn(`ClientDataStore: Tree not found: ${treeIdent}`);
+      console.warn(`ClientDataStore: Tree not found after all attempts: ${treeIdent}`);
       return null;
     } catch (error) {
       console.error("ClientDataStore: Failed to get tree:", error);

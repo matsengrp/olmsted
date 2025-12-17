@@ -1,99 +1,166 @@
 import React from "react";
 import { createClassFromSpec } from "react-vega";
 import naiveVegaSpec from "./vega/naive";
+import { getCloneChain } from "../../selectors/clonalFamilies";
+import { CHAIN_TYPES } from "../../constants/chainTypes";
 
 // Naive gene reassortment viz component
 // =====================================
 
-const getNaiveVizData = (datum) => {
-  // Calculate full sequence length - use germline_alignment length if available,
-  // otherwise use the maximum end position across all regions
-  const germlineLength = datum.germline_alignment ? datum.germline_alignment.length : 0;
+/**
+ * Build gene region data from a clone's own data
+ * With the two-clone model, each clone only has its own chain data
+ * @param {Object} clone - Clone data
+ * @param {string} familyLabel - Label for display (e.g., "5p", "Heavy", "Light")
+ * @returns {Array} Array of region objects
+ */
+const buildCloneRegions = (clone, familyLabel) => {
+  // Return empty array if clone is null or undefined
+  if (!clone) {
+    return [];
+  }
+
+  // Determine if this is a light chain clone (no D gene)
+  const chain = getCloneChain(clone);
+  const isLight = chain === CHAIN_TYPES.LIGHT;
+
+  // Get field values directly from the clone (no _light suffixes needed)
+  const germlineAlignment = clone.germline_alignment;
+  const vAlignmentStart = clone.v_alignment_start;
+  const vAlignmentEnd = clone.v_alignment_end;
+  const dAlignmentStart = clone.d_alignment_start;
+  const dAlignmentEnd = clone.d_alignment_end;
+  const jAlignmentStart = clone.j_alignment_start;
+  const jAlignmentEnd = clone.j_alignment_end;
+  const junctionStart = clone.junction_start;
+  const junctionLength = clone.junction_length;
+  const cdr1Start = clone.cdr1_alignment_start;
+  const cdr1End = clone.cdr1_alignment_end;
+  const cdr2Start = clone.cdr2_alignment_start;
+  const cdr2End = clone.cdr2_alignment_end;
+  const vCall = clone.v_call;
+  const dCall = clone.d_call;
+  const jCall = clone.j_call;
+
+  // Calculate sequence length
+  const germlineLength = germlineAlignment ? germlineAlignment.length : 0;
   const maxEndPosition = Math.max(
-    datum.v_alignment_end || 0,
-    datum.d_alignment_end || 0,
-    datum.j_alignment_end || 0,
-    (datum.junction_start || 0) + (datum.junction_length || 0),
-    datum.cdr1_alignment_end || 0,
-    datum.cdr2_alignment_end || 0,
-    datum.cdr3_alignment_end || 0
+    vAlignmentEnd || 0,
+    dAlignmentEnd || 0,
+    jAlignmentEnd || 0,
+    (junctionStart || 0) + (junctionLength || 0),
+    cdr1End || 0,
+    cdr2End || 0
   );
   const sequenceLength = Math.max(germlineLength, maxEndPosition);
 
   const regions = [
-    // Layer 1 (bottom): CDR regions (only include if they have valid positions)
+    // Layer 1 (bottom): CDR regions
     {
-      family: "5p",
+      family: familyLabel,
       region: "CDR1",
-      start: datum.cdr1_alignment_start,
-      end: datum.cdr1_alignment_end
+      start: cdr1Start,
+      end: cdr1End
     },
     {
-      family: "5p",
+      family: familyLabel,
       region: "CDR2",
-      start: datum.cdr2_alignment_start,
-      end: datum.cdr2_alignment_end
+      start: cdr2Start,
+      end: cdr2End
     },
     {
-      family: "5p",
+      family: familyLabel,
       region: "CDR3",
-      start: datum.junction_start,
-      end: datum.junction_start + datum.junction_length
+      start: junctionStart,
+      end: junctionStart !== null && junctionStart !== undefined && junctionLength !== null && junctionLength !== undefined
+        ? junctionStart + junctionLength
+        : null
     },
-    // Layer 2 (middle): Grey background bar - full sequence length (always include)
+    // Layer 2 (middle): Grey background bar
     {
-      family: "5p",
+      family: familyLabel,
       region: "Sequence",
       start: 0,
       end: sequenceLength
     },
-    // Layer 3 (top): V/D/J genes and insertions (only include if they have valid positions)
+    // Layer 3 (top): V/D/J genes
     {
-      family: "5p",
+      family: familyLabel,
       region: "V gene",
-      gene: datum.v_call,
-      start: datum.v_alignment_start,
-      end: datum.v_alignment_end
-    },
-    {
-      family: "5p",
-      region: "5' Insertion",
-      start: datum.v_alignment_end,
-      end: datum.d_alignment_start
-    },
-    {
-      family: "5p",
-      region: "D gene",
-      gene: datum.d_call,
-      start: datum.d_alignment_start,
-      end: datum.d_alignment_end
-    },
-    {
-      family: "5p",
-      region: "3' Insertion",
-      start: datum.d_alignment_end,
-      end: datum.j_alignment_start
-    },
-    {
-      family: "5p",
-      region: "J gene",
-      gene: datum.j_call,
-      start: datum.j_alignment_start,
-      end: datum.j_alignment_end
+      gene: vCall,
+      start: vAlignmentStart,
+      end: vAlignmentEnd
     }
   ];
 
-  // Filter out regions with invalid positions (undefined/null values, or start >= end)
-  // But always keep the Sequence region
-  const validRegions = regions.filter((region) => {
-    if (region.region === "Sequence") return true; // Always keep the grey bar
-    const { start, end } = region;
-    // Check for valid positions: start and end must be defined (not null/undefined) and start < end
-    // Note: position 0 is valid (AIRR data uses 0-based indexing after conversion)
-    return start != null && end != null && start >= 0 && end > 0 && start < end;
+  // Light chains have no D gene - show V-J insertion instead
+  if (isLight || !dAlignmentStart || !dAlignmentEnd) {
+    regions.push({
+      family: familyLabel,
+      region: "V-J Insertion",
+      start: vAlignmentEnd,
+      end: jAlignmentStart
+    });
+  } else {
+    // Heavy chain: D gene with 5' and 3' insertions
+    regions.push(
+      {
+        family: familyLabel,
+        region: "5' Insertion",
+        start: vAlignmentEnd,
+        end: dAlignmentStart
+      },
+      {
+        family: familyLabel,
+        region: "D gene",
+        gene: dCall,
+        start: dAlignmentStart,
+        end: dAlignmentEnd
+      },
+      {
+        family: familyLabel,
+        region: "3' Insertion",
+        start: dAlignmentEnd,
+        end: jAlignmentStart
+      }
+    );
+  }
+
+  regions.push({
+    family: familyLabel,
+    region: "J gene",
+    gene: jCall,
+    start: jAlignmentStart,
+    end: jAlignmentEnd
   });
 
-  return { source: validRegions };
+  return regions;
+};
+
+/**
+ * Filter regions to only include valid ones
+ */
+const filterValidRegions = (regions) => {
+  return regions.filter((region) => {
+    if (region.region === "Sequence") return true;
+    const { start, end } = region;
+    return start !== null && start !== undefined &&
+           end !== null && end !== undefined &&
+           start >= 0 && end > 0 && start < end;
+  });
+};
+
+/**
+ * Get naive visualization data for a clone
+ * With the two-clone model, just pass the clone you want to visualize
+ * For "both" modes, call this separately for heavy and light clones
+ * @param {Object} clone - Clone data (can be heavy or light chain)
+ * @param {string} label - Optional label override (default: "5p")
+ * @returns {Object} Object with source array for Vega
+ */
+const getNaiveVizData = (clone, label = "5p") => {
+  const regions = buildCloneRegions(clone, label);
+  return { source: filterValidRegions(regions) };
 };
 
 const NaiveViz = createClassFromSpec(naiveVegaSpec);

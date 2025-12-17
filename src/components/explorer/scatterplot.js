@@ -5,6 +5,9 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 
+// Store the last clear_selection_trigger value to detect changes
+let lastClearTrigger = 0;
+
 // Clonal Families Viz
 // ===================
 //
@@ -25,7 +28,8 @@ import * as explorerActions from "../../actions/explorer";
     updateBrushSelection: explorerActions.updateBrushSelection,
     filterBrushSelection: explorerActions.filterBrushSelection,
     updateSelectingStatus: explorerActions.updateSelectingStatus,
-    updateFacet: explorerActions.updateFacet
+    updateFacet: explorerActions.updateFacet,
+    clearBrushSelection: explorerActions.clearBrushSelection
   }
 )
 class ClonalFamiliesViz extends React.Component {
@@ -33,7 +37,47 @@ class ClonalFamiliesViz extends React.Component {
     super(props);
     this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
+    this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
+    this.containerRef = React.createRef();
+    this.vegaView = null;
+    this.isFocused = false;
+    this.handleWindowClick = this.handleWindowClick.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
+  }
+
+  componentDidMount() {
+    // Add window click listener to detect clicks outside the plot
+    window.addEventListener("click", this.handleWindowClick);
+    // Add wheel event listener with passive: false to allow preventDefault
+    if (this.containerRef.current) {
+      this.containerRef.current.addEventListener("wheel", this.handleWheel, { passive: false });
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("click", this.handleWindowClick);
+    // Clean up wheel listener if it exists
+    if (this.containerRef.current) {
+      this.containerRef.current.removeEventListener("wheel", this.handleWheel);
+    }
+  }
+
+  handleWindowClick(event) {
+    // If click was outside our container, unfocus the visualization
+    if (this.containerRef.current && !this.containerRef.current.contains(event.target)) {
+      if (this.vegaView) {
+        this.vegaView.signal("viz_focused", false).run();
+      }
+    }
+  }
+
+  handleWheel(event) {
+    // Prevent page scroll when visualization is focused
+    // The Vega spec already handles only zooming when in zoom mode
+    if (this.isFocused) {
+      event.preventDefault();
+    }
   }
 
   render() {
@@ -44,16 +88,24 @@ class ClonalFamiliesViz extends React.Component {
       updateFacet,
       updateBrushSelection,
       filterBrushSelection,
+      clearBrushSelection,
       selectedFamily,
       locus,
       datasets
     } = this.props;
     if (availableClonalFamilies) {
       return (
-        <div>
+        <div ref={this.containerRef} style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <Vega
+              onNewView={(view) => {
+                this.vegaView = view;
+                // Listen for focus changes to sync with React
+                view.addSignalListener("viz_focused", (name, value) => {
+                  this.isFocused = value;
+                });
+              }}
               // TURN THESE ON TO DEBUG SIGNALS
               // SEE https://github.com/matsengrp/olmsted/issues/65
               // onSignalWidth={(...args) => {
@@ -146,6 +198,19 @@ class ClonalFamiliesViz extends React.Component {
                 if (keyVal) {
                   filterBrushSelection(keyVal[0], keyVal[1]);
                 }
+              }}
+              onSignalClear_selection_trigger={(...args) => {
+                const trigger = args.slice(1)[0];
+                // Only clear if the trigger value has changed (button was clicked)
+                if (trigger > lastClearTrigger) {
+                  lastClearTrigger = trigger;
+                  clearBrushSelection();
+                }
+              }}
+              onSignalMulti_select_mode={(...args) => {
+                const isMultiSelect = args.slice(1)[0];
+                // Store multi-select mode state on the component
+                this.multiSelectMode = isMultiSelect;
               }}
               onParseError={(...args) => console.error("parse error:", args)}
               debug

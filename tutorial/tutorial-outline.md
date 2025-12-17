@@ -85,7 +85,7 @@
 
 - **Locus selection**:
   - Dropdown selector (default: IGH)
-  - Choose "ALL" to see all loci
+  - Choose "All" to see all loci
   - Filter by specific locus (IGH, IGK, IGL)
 
 - **Axis configuration**:

@@ -2,117 +2,26 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import * as explorerActions from "../../actions/explorer";
-import { getBrushedClonalFamilies } from "../../selectors/clonalFamilies";
+import { getBrushedClonalFamilies, getCloneChain } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
+import DownloadCSV from "../util/downloadCsv";
+import { ResizableTable } from "../util/resizableTable";
 
-// Resizable virtual scrolling table component
-class ResizableVirtualTable extends React.Component {
-  constructor(props) {
-    super(props);
-
-    // Initialize column widths
-    const defaultWidths = [
-      60, // Select
-      260, // Naive sequence
-      120, // ID
-      100, // Unique seqs
-      80, // V gene
-      80, // D gene
-      80, // J gene
-      80, // Locus
-      100, // Junction length
-      80, // Seed run
-      100, // Subject
-      100, // Sample
-      100, // Timepoint
-      80, // Mut freq
-      120, // Dataset
-      120 // Ident
-    ];
-
-    this.state = {
-      scrollTop: 0,
-      columnWidths: defaultWidths.slice(0, props.mappings.length),
-      isResizing: false,
-      resizingColumn: null,
-      scrollbarWidth: 0
-    };
-
-    this.headerRef = React.createRef();
-    this.bodyRef = React.createRef();
-    this.onScroll = this.onScroll.bind(this);
-    this.onMouseDown = this.onMouseDown.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
-  }
-
-  componentDidMount() {
-    document.addEventListener("mousemove", this.onMouseMove);
-    document.addEventListener("mouseup", this.onMouseUp);
-    this.updateScrollbarWidth();
-  }
-
-  componentDidUpdate() {
-    this.updateScrollbarWidth();
-  }
-
-  updateScrollbarWidth() {
-    const { scrollbarWidth: currentScrollbarWidth } = this.state;
-    if (this.bodyRef.current) {
-      const newScrollbarWidth = this.bodyRef.current.offsetWidth - this.bodyRef.current.clientWidth;
-      if (newScrollbarWidth !== currentScrollbarWidth) {
-        this.setState({ scrollbarWidth: newScrollbarWidth });
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("mousemove", this.onMouseMove);
-    document.removeEventListener("mouseup", this.onMouseUp);
-  }
-
-  onScroll(e) {
-    this.setState({ scrollTop: e.target.scrollTop });
-    // Sync header scroll with body scroll
-    if (this.headerRef.current) {
-      this.headerRef.current.scrollLeft = e.target.scrollLeft;
-    }
-  }
-
-  onMouseDown(e, columnIndex) {
-    const { columnWidths } = this.state;
-    e.preventDefault();
-    this.setState({
-      isResizing: true,
-      resizingColumn: columnIndex,
-      startX: e.clientX,
-      startWidth: columnWidths[columnIndex]
-    });
-  }
-
-  onMouseMove(e) {
-    const { isResizing, startX, startWidth, resizingColumn, columnWidths } = this.state;
-    if (!isResizing) return;
-    const deltaX = e.clientX - startX;
-    const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
-
-    const newWidths = [...columnWidths];
-    newWidths[resizingColumn] = newWidth;
-
-    this.setState({ columnWidths: newWidths });
-  }
-
-  onMouseUp() {
-    this.setState({
-      isResizing: false,
-      resizingColumn: null
-    });
-  }
-
+// Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
+class ResizableVirtualTable extends ResizableTable {
   renderTableRow(datum, _index) {
-    const { selectedFamily, mappings } = this.props;
+    const { selectedFamily, mappings, dispatch } = this.props;
     const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
-    const { columnWidths } = this.state;
+    const { columnWidths, hoveredRowId } = this.state;
+    const isHovered = hoveredRowId === datum.ident;
+
+    // Determine background color with hover effect
+    let backgroundColor = isSelected ? "lightblue" : "white";
+    if (isHovered && !isSelected) {
+      backgroundColor = "#e8e8e8"; // Light gray for hover
+    } else if (isHovered && isSelected) {
+      backgroundColor = "#87CEEB"; // Darker lightblue for selected + hover
+    }
 
     return (
       <div
@@ -123,9 +32,18 @@ class ResizableVirtualTable extends React.Component {
           borderBottom: "1px solid #eee",
           fontSize: 12,
           height: "40px",
-          backgroundColor: isSelected ? "lightblue" : "white",
-          minWidth: "fit-content"
+          minHeight: "40px",
+          maxHeight: "40px",
+          backgroundColor,
+          minWidth: "fit-content",
+          cursor: "pointer",
+          transition: "background-color 0.15s ease",
+          overflow: "hidden",
+          boxSizing: "border-box"
         }}
+        onClick={() => dispatch(explorerActions.selectFamily(datum.ident || datum.clone_id))}
+        onMouseEnter={() => this.setState({ hoveredRowId: datum.ident })}
+        onMouseLeave={() => this.setState({ hoveredRowId: null })}
       >
         {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
@@ -146,8 +64,8 @@ class ResizableVirtualTable extends React.Component {
             borderRight: "1px solid #eee"
           };
 
-          // Apply alternating column shading only if row is not selected
-          if (!isSelected && isEvenColumn) {
+          // Apply alternating column shading only if row is not selected or hovered
+          if (!isSelected && !isHovered && isEvenColumn) {
             style.backgroundColor = "#f8f9fa";
           }
 
@@ -164,8 +82,11 @@ class ResizableVirtualTable extends React.Component {
                 >
                   {(() => {
                     const value = _.get(datum, AttrOrComponent);
-                    // Show "—" only for null/undefined, not for 0 or other falsy values
-                    return value !== null && value !== undefined ? value : "—";
+                    // Show "—" for null, undefined, or empty string
+                    if (value === null || value === undefined || value === "") return "—";
+                    // Convert booleans to Yes/No for display (React doesn't render raw booleans)
+                    if (typeof value === "boolean") return value ? "Yes" : "No";
+                    return value;
                   })()}
                 </div>
               ) : (
@@ -179,7 +100,7 @@ class ResizableVirtualTable extends React.Component {
   }
 
   render() {
-    const { data, containerHeight = 500, mappings, dispatch } = this.props;
+    const { data, containerHeight = 500, mappings, dispatch, footerAction } = this.props;
     const { scrollTop, columnWidths, scrollbarWidth } = this.state;
     const rowHeight = 40;
 
@@ -219,9 +140,11 @@ class ResizableVirtualTable extends React.Component {
               minWidth: "fit-content"
             }}
           >
-            {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
+            {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
               const isEvenColumn = colIndex % 2 === 0;
               const isAttr = typeof AttrOrComponent === "string";
+              const isSortable = options.sortable !== false && (isAttr || options.sortKey);
+              const sortKey = isAttr ? AttrOrComponent : options.sortKey;
 
               const style = {
                 fontSize: 13,
@@ -235,11 +158,11 @@ class ResizableVirtualTable extends React.Component {
                 maxWidth: columnWidths[colIndex],
                 borderRight: "1px solid #dee2e6",
                 position: "relative",
-                cursor: isAttr ? "pointer" : "default"
+                cursor: isSortable ? "pointer" : "default"
               };
 
               const { pagination } = this.props;
-              const isCurrentSort = isAttr && pagination && pagination.order_by === AttrOrComponent;
+              const isCurrentSort = isSortable && pagination && pagination.order_by === sortKey;
               const sortDesc = pagination && pagination.desc;
 
               /**
@@ -248,9 +171,9 @@ class ResizableVirtualTable extends React.Component {
                * Using button role as this performs an action (sorting)
                */
               const handleHeaderKeyDown = (e) => {
-                if ((e.key === "Enter" || e.key === " ") && isAttr) {
+                if ((e.key === "Enter" || e.key === " ") && isSortable) {
                   e.preventDefault();
-                  dispatch(explorerActions.toggleSort(AttrOrComponent));
+                  dispatch(explorerActions.toggleSort(sortKey));
                 }
               };
 
@@ -259,16 +182,16 @@ class ResizableVirtualTable extends React.Component {
                   key={name}
                   style={style}
                   onClick={() => {
-                    if (isAttr) {
-                      dispatch(explorerActions.toggleSort(AttrOrComponent));
+                    if (isSortable) {
+                      dispatch(explorerActions.toggleSort(sortKey));
                     }
                   }}
                   onKeyDown={handleHeaderKeyDown}
-                  role={isAttr ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
+                  role={isSortable ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
                   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                  tabIndex={isAttr ? 0 : undefined} // Only sortable columns are focusable
+                  tabIndex={isSortable ? 0 : undefined} // Only sortable columns are focusable
                   aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
-                  aria-label={isAttr ? `Sort by ${name}` : undefined}
+                  aria-label={isSortable ? `Sort by ${name}` : undefined}
                 >
                   <span
                     style={{
@@ -279,7 +202,7 @@ class ResizableVirtualTable extends React.Component {
                     }}
                   >
                     {name}
-                    {isAttr && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
+                    {isSortable && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
                   </span>
                   {/* Resize handle */}
                   <div
@@ -331,10 +254,14 @@ class ResizableVirtualTable extends React.Component {
             color: "#666",
             padding: "0 8px",
             boxSizing: "border-box",
-            overflow: "hidden"
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
           }}
         >
-          Showing {data.length} families
+          <span>Showing {data.length} families</span>
+          {footerAction}
         </div>
       </div>
     );
@@ -344,15 +271,17 @@ class ResizableVirtualTable extends React.Component {
 @connect()
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap } = this.props;
     return (
       <ResizableVirtualTable
         data={data}
         mappings={mappings}
+        widthMap={widthMap}
         selectedFamily={selectedFamily}
         dispatch={dispatch}
         pagination={pagination}
         containerHeight={500}
+        footerAction={footerAction}
       />
     );
   }
@@ -368,6 +297,15 @@ class DatasetName extends React.Component {
     const displayName = dataset ? dataset.name || dataset.dataset_id : datum.dataset_id || "—";
 
     return <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</div>;
+  }
+}
+
+// Chain column component - displays "heavy" or "light" based on locus
+class ChainDisplay extends React.Component {
+  render() {
+    const { datum } = this.props;
+    const chain = getCloneChain(datum);
+    return <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chain}</div>;
   }
 }
 
@@ -429,19 +367,78 @@ class ClonalFamiliesTable extends React.Component {
   render() {
     const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
+
+    // CSV columns for export (excludes non-exportable columns like Select, Naive sequence, Dataset component)
+    const csvColumns = [
+      { header: "Family ID", accessor: "clone_id" },
+      { header: "Unique seqs", accessor: "unique_seqs_count" },
+      { header: "V gene", accessor: "v_call" },
+      { header: "D gene", accessor: "d_call" },
+      { header: "J gene", accessor: "j_call" },
+      { header: "Locus", accessor: "sample.locus" },
+      { header: "Chain", accessor: (d) => getCloneChain(d) },
+      { header: "Paired", accessor: "is_paired" },
+      { header: "Pair ID", accessor: "pair_id" },
+      { header: "Junction length", accessor: "junction_length" },
+      { header: "Mut freq", accessor: "mean_mut_freq" },
+      { header: "Seed run", accessor: "has_seed" },
+      { header: "Subject", accessor: "subject_id" },
+      { header: "Sample", accessor: "sample_id" },
+      { header: "Timepoint", accessor: "sample.timepoint_id" },
+      { header: "Dataset", accessor: "dataset_id" },
+      { header: "Ident", accessor: "ident" }
+    ];
+
+    const footerAction = visibleClonalFamilies.length > 0 ? (
+      <DownloadCSV
+        data={visibleClonalFamilies}
+        columns={csvColumns}
+        filename="clonal_families.csv"
+        label="Download Table as CSV"
+        compact
+      />
+    ) : null;
+
+    // Column width map for this table
+    const columnWidthMap = {
+      "Select": 60,
+      "Naive sequence": 260,
+      "Family ID": 120,
+      "Unique seqs": 100,
+      "V gene": 80,
+      "D gene": 80,
+      "J gene": 80,
+      "Locus": 80,
+      "Chain": 60,
+      "Paired": 60,
+      "Pair ID": 150,
+      "Junction length": 100,
+      "Mut freq": 80,
+      "Seed run": 80,
+      "Subject": 100,
+      "Sample": 100,
+      "Timepoint": 100,
+      "Dataset": 120,
+      "Ident": 120
+    };
+
     return (
       <Table
         data={visibleClonalFamilies}
+        widthMap={columnWidthMap}
         mappings={[
           ["Select", SelectAttribute],
           ["Naive sequence", NaiveSequence],
-          ["ID", "clone_id"],
+          ["Family ID", "clone_id"],
           // TODO decide on language for unique seqs vs rearrangement count
           ["Unique seqs", "unique_seqs_count"],
           ["V gene", "v_call"],
           ["D gene", "d_call"],
           ["J gene", "j_call"],
           ["Locus", "sample.locus"],
+          ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
+          ["Paired", "is_paired"],
+          ["Pair ID", "pair_id"],
           ["Junction length", "junction_length"],
           ["Mut freq", "mean_mut_freq"],
           ["Seed run", "has_seed"],
@@ -450,11 +447,12 @@ class ClonalFamiliesTable extends React.Component {
           ["Timepoint", "sample.timepoint_id"],
           // ["Path", 'path'],
           // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-          ["Dataset", DatasetName],
+          ["Dataset", DatasetName, { sortKey: "dataset_id" }],
           ["Ident", "ident"]
         ]}
         selectedFamily={this.selectedFamily}
         pagination={pagination}
+        footerAction={footerAction}
       />
     );
   }

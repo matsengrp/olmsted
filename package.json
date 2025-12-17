@@ -86,6 +86,7 @@
     "react-vega": "^4.0.2",
     "redux": "^3.7.2",
     "redux-thunk": "^2.3.0",
+    "request": "^2.88.2",
     "reselect": "^3.0.1",
     "terser-webpack-plugin": "^5.3.10",
     "uuid": "^9.0.0",

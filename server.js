@@ -3,6 +3,7 @@ const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
+const charon = require("./src/server/charon");
 const { execFile } = require('child_process');
 
 /* documentation in the static site! */
@@ -12,7 +13,7 @@ const devServer = process.argv.indexOf("dev") !== -1;
 let localDataIndex = process.argv.indexOf("localData")
 let localData = localDataIndex !== -1;
 let localDataPath = localData ? (process.argv[localDataIndex + 1]) || "example_data/build_data" : undefined
-let port = (process.argv[localDataIndex + 2]) || 3999
+let port = (localData && process.argv[localDataIndex + 2]) || 3999
 globals.setGlobals({localData, localDataPath})
 
 
@@ -72,6 +73,8 @@ app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
 
+/* apply charon API routes for data fetching */
+charon.applyCharonToApp(app);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));

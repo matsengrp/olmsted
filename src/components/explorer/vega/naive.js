@@ -2,6 +2,8 @@
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
+import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
+
 const naiveVegaSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   autosize: "pad",
@@ -35,15 +37,15 @@ const naiveVegaSpec = {
           ],
           tooltip: {
             signal:
-              '{"region": \'\'+datum["region"], "start": format(datum["start"], ""), "end": format(datum["end"], ""),  "gene": \'\'+datum["gene"]}'
+              '{"region": \'\'+datum["region"], "start (NT)": format(datum["start"], ""), "start (AA)": format(floor(datum["start"]/3), ""), "end (NT)": format(datum["end"], ""), "end (AA)": format(floor(datum["end"]/3), ""), "gene": \'\'+datum["gene"]}'
           },
           x: {
             scale: "x",
-            field: "start"
+            signal: "floor(datum['start']/3)"
           },
           x2: {
             scale: "x",
-            field: "end"
+            signal: "floor(datum['end']/3)"
           },
           yc: {
             scale: "y",
@@ -69,7 +71,7 @@ const naiveVegaSpec = {
     {
       name: "x",
       type: "linear",
-      domain: [0, 400],
+      domain: [0, 150],
       range: [0, { signal: "width" }],
       nice: true,
       zero: false
@@ -85,9 +87,8 @@ const naiveVegaSpec = {
     {
       name: "color",
       type: "ordinal",
-      domain: ["V gene", "5' Insertion", "D gene", "3' Insertion", "J gene", "CDR1", "CDR2", "CDR3", "Sequence"],
-      // COLORS - CDR1, CDR2, and CDR3 all use the same dark green (#1b7837), Sequence is grey
-      range: ["#762a83", "#af8dc3", "black", "#d9f0d3", "#7fbf7b", "#1b7837", "#1b7837", "#1b7837", "#cccccc"]
+      domain: GENE_REGION_DOMAIN,
+      range: GENE_REGION_RANGE
     }
   ],
   config: {

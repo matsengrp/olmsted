@@ -18,7 +18,11 @@ const initialState = {
   // EH:facet field is no longer required to update the spec but
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
-  locus: "IGH"
+  locus: "All",
+  // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
+  selectedChain: "heavy",
+  // Track which chain was last clicked in stacked mode (for lineage inference)
+  lastClickedChain: "heavy"
 };
 
 // eslint-disable-next-line default-param-last
@@ -93,6 +97,15 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
         pagination: new_pagination
       };
     }
+    case types.CLEAR_BRUSH_SELECTION: {
+      // Clear all brush selection state
+      const new_pagination = { ...state.pagination, page: 0 };
+      return {
+        ...state,
+        brushSelection: undefined,
+        pagination: new_pagination
+      };
+    }
     case types.PAGE_DOWN: {
       // Note that this DOES NOT check that this page down operation is legal
       // We check that whether it is a legal page down inside the table
@@ -141,6 +154,12 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.FILTER_LOCUS: {
       return { ...state, locus: action.locus };
+    }
+    case types.UPDATE_SELECTED_CHAIN: {
+      return { ...state, selectedChain: action.chain };
+    }
+    case types.UPDATE_LAST_CLICKED_CHAIN: {
+      return { ...state, lastClickedChain: action.chain };
     }
     default: {
       return state;

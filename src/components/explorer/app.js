@@ -35,29 +35,46 @@ const sectionStyle = { paddingBottom: 10, marginBottom: 40, overflow: "auto" };
 const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const nClonalFamiliesBrushed = clonalFamiliesSelectors.getBrushedClonalFamilies(state).length;
-  return { selectedFamily, nClonalFamiliesBrushed };
+  const nClonalFamiliesTotal = clonalFamiliesSelectors.getAvailableClonalFamilies(state).length;
+  const nClonalFamiliesAll = clonalFamiliesSelectors.getAllClonalFamilies(state).length;
+  return { selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll };
 };
 
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
   render() {
-    const { nClonalFamiliesBrushed } = this.props;
+    const { nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll } = this.props;
+    const nFiltered = nClonalFamiliesAll - nClonalFamiliesTotal;
+    const showFilterInfo = nFiltered > 0;
+    const infoBoxStyle = {
+      marginTop: "10px",
+      marginBottom: "10px",
+      padding: "12px",
+      backgroundColor: "#d4edda",
+      border: "1px solid #28a745",
+      borderRadius: "4px",
+      color: "#155724",
+      fontSize: "14px",
+      textAlign: "center",
+      fontWeight: "bold"
+    };
     return (
-      <div
-        style={{
-          marginTop: "10px",
-          marginBottom: "10px",
-          padding: "12px",
-          backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
-          border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
-          borderRadius: "4px",
-          color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724",
-          fontSize: "14px",
-          textAlign: "center",
-          fontWeight: "bold"
-        }}
-      >
-        Number of families currently selected: {nClonalFamiliesBrushed}
+      <div>
+        {showFilterInfo && (
+          <div style={infoBoxStyle}>
+            Number of clonal families passed filter: {nClonalFamiliesTotal} out of {nClonalFamiliesAll}
+          </div>
+        )}
+        <div
+          style={{
+            ...infoBoxStyle,
+            backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
+            border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
+            color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724"
+          }}
+        >
+          Number of clonal families currently selected: {nClonalFamiliesBrushed} out of {nClonalFamiliesTotal}
+        </div>
       </div>
     );
   }
@@ -241,10 +258,27 @@ class App extends React.Component {
               <CollapsibleSection titleText="Datasets">
                 <CollapseHelpTitle
                   titleText="Datasets"
-                  helpText={`The Datasets section allows you to manage and load your B-cell repertoire datasets. Select
-                  datasets from the table by checking the "Select" column checkboxes, then click the "Update Visualization"
-                  button to load or unload datasets. To upload new datasets or delete existing ones,
-                  click the "Manage Datasets" button to return to the main page.`}
+                  helpText={
+                    <div>
+                      The Datasets section allows you to manage and load your B-cell repertoire datasets. The table displays
+                      all available datasets stored in your browser&apos;s local storage (IndexedDB), including dataset name,
+                      number of clonal families, and loading status.
+                      <br />
+                      <br />
+                      <strong>Loading Datasets:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Select datasets:</strong> Check the boxes in the "Select" column for datasets you want to visualize</li>
+                        <li><strong>Update Visualization:</strong> Click this button to load selected datasets or unload unselected ones</li>
+                        <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded, loading, or unloaded</li>
+                      </ul>
+                      <strong>Managing Datasets:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                        <li><strong>Upload new data:</strong> Click "Manage Datasets" to return to the main page where you can upload new datasets</li>
+                        <li><strong>Delete datasets:</strong> Use the "Manage Datasets" page to remove datasets from local storage</li>
+                      </ul>
+                      Multiple datasets can be loaded simultaneously for comparative analysis across different samples or subjects.
+                    </div>
+                  }
                 />
                 <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
@@ -256,31 +290,50 @@ class App extends React.Component {
                   titleText="Clonal Families"
                   helpText={
                     <div>
-                      The Clonal Families section represents each clonal family as a point in a scatterplot. Choose an
-                      immunoglobulin locus to restrict the clonal families in the scatterplot to that locus - the
-                      default is immunoglobulin gamma, or IGH (where H stands for heavy chain). In order to visualize
-                      all clonal families from all loci in the dataset at once, choose &quot;ALL&quot; in the locus
-                      selector. By default, the scatterplot maps the number of unique members in a clonal family,
-                      unique_seqs_count, to the x-axis, and the average mutation frequency among members of that clonal
-                      family, mean_mut_freq, to the y-axis. However, you may configure both axes as well as the color
-                      and shape of the points to map to a range of fields, including sequence sampling time
-                      (sample.timepoint_id). See
-                      <a href="http://www.olmstedviz.org/schema.html">the schema</a> for field descriptions.
+                      The Clonal Families section represents each clonal family as a point in a scatterplot. Each point
+                      corresponds to a single clonal family, with axes, size, color, and shape customizable to display different
+                      family-level metrics and metadata. For paired heavy/light chain data, each chain is represented as a
+                      separate data point. Interact with the plot by clicking individual points or dragging to brush-select
+                      multiple clones, which filters the clonal families displayed in the Selected Clonal Families table below.
+                      See the <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
                       <br />
                       <br />
-                      For comparison of subsets, you may facet the plot into separated panels according to data values
-                      for a range of fields. Interact with the plot by clicking and dragging across a subset of points
-                      or clicking individual points to filter the resulting clonal families in the Selected Clonal
-                      Families table below.
+                      <strong>Locus Filter:</strong> Restrict the scatterplot to clonal families from a specific immunoglobulin locus:
+                      heavy chain (IGH), light chain lambda (IGL), or light chain kappa (IGK). Choose &quot;All&quot; to visualize
+                      clonal families from all loci simultaneously.
                       <br />
                       <br />
-                      <strong>Scatterplot Controls:</strong>
-                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
-                        <li><strong>Click:</strong> Select single clone</li>
-                        <li><strong>Drag:</strong> Brush select multiple clones</li>
-                        <li><strong>Shift + Scroll:</strong> Zoom in/out (0.5x to 10x)</li>
-                        <li><strong>Shift + Drag:</strong> Pan plot in any direction</li>
-                        <li><strong>Shift + Double-click:</strong> Reset zoom and pan to default view</li>
+                      <strong>Control Modes:</strong> The scatterplot has two interaction modes accessible via buttons in the upper right:
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Select Mode:</strong> Click to select individual clones or drag to brush-select multiple clones</li>
+                        <li><strong>Pan/Zoom Mode:</strong> Drag to pan the view and scroll to zoom in/out</li>
+                      </ul>
+                      <strong>Note:</strong> The active mode is highlighted in blue. Clicking on the plot enters focused mode, where scroll events will zoom the plot
+                      instead of scrolling the page. Click outside the plot to exit focused mode and restore normal page scrolling.
+                      <br />
+                      <br />
+                      <strong>Mouse + Keyboard Controls:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Click</strong> to select individual clones (Select Mode)</li>
+                        <li><strong>Drag</strong> to brush-select multiple clones (Select Mode) or pan the view (Pan/Zoom Mode)</li>
+                        <li><strong>Scroll</strong> to zoom in/out (Pan/Zoom Mode)</li>
+                        <li><strong>Hold Shift:</strong> Temporarily switch to the opposite mode (Select ↔ Pan/Zoom)</li>
+                        <li><strong>Double-click:</strong> Reset zoom and pan to default view (Pan/Zoom Mode)</li>
+                      </ul>
+                      <strong>Button Controls:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Select / Pan-Zoom:</strong> Toggle between interaction modes</li>
+                        <li><strong>+/−:</strong> Zoom in or out</li>
+                        <li><strong>Reset View:</strong> Reset zoom and pan to default view</li>
+                        <li><strong>Clear Selection:</strong> Deselect all selected clones</li>
+                      </ul>
+                      <strong>Plot Customization:</strong> Use the dropdown menus below the plot to customize the visualization:
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>X and Y axes:</strong> Map continuous variables to the x and y axes</li>
+                        <li><strong>Size by:</strong> Scale point size by a continuous variable</li>
+                        <li><strong>Color by:</strong> Color points by categorical variables</li>
+                        <li><strong>Shape by:</strong> Change point shape by categorical variables</li>
+                        <li><strong>Facet by:</strong> Split the plot into separate panels by categorical variables</li>
                       </ul>
                     </div>
                   }
@@ -296,7 +349,7 @@ class App extends React.Component {
                     }}
                     aria-label="Filter by locus"
                   >
-                    {["IGH", "IGK", "IGL", "ALL"].map((locus_option) => (
+                    {["IGH", "IGK", "IGL", "All"].map((locus_option) => (
                       <option key={locus_option} value={locus_option}>
                         {locus_option}
                       </option>
@@ -314,13 +367,24 @@ class App extends React.Component {
                 <CollapsibleSection titleText="Selected Clonal Families">
                 <CollapseHelpTitle
                   titleText="Selected Clonal Families"
-                  helpText={`Below the scatterplot, the full collection or selected subset of clonal families
-                   appears in a table including a visualization of the recombination event resulting in the naive
-                   antibody sequence and a subset of clonal family metadata. Each row in the table represents one clonal
-                   family. The table automatically selects the top clonal family according to the sorting column. Click on
-                   the checkbox in the "Select" column in the table to select a clonal family for further visualization.
-                   Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family
-                   (as specified in the input JSON) is visualized below the table in the Clonal Family Details section.`}
+                  helpText={
+                    <div>
+                      The Selected Clonal Families table displays the full collection or selected subset of clonal families
+                      (based on scatterplot selection). Each row represents one clonal family and includes:
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Naive sequence visualization:</strong> Graphical representation of V(D)J recombination showing gene segments and CDR regions</li>
+                        <li><strong>Metadata:</strong> Clone ID, unique sequence count, mutation frequency, and other family-level statistics</li>
+                      </ul>
+                      <strong>Interactions:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Sorting:</strong> Click on column headers to sort the table by that field</li>
+                        <li><strong>Selection:</strong> Click the checkbox in the "Select" column to choose a clonal family for detailed visualization</li>
+                        <li><strong>Auto-selection:</strong> The table automatically selects the top clonal family according to the current sort order</li>
+                      </ul>
+                      When you select a clonal family from the table, its phylogenetic tree and alignment are displayed below
+                      in the Clonal Family Details section. For paired heavy/light chain data, trees for both chains will be available.
+                    </div>
+                  }
                 />
                 <div style={tableStyle}>
                   <ClonalFamiliesTable />
@@ -338,7 +402,7 @@ class App extends React.Component {
             )}
             {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
               <div style={sectionStyle}>
-                <CollapsibleSection titleText="Ancestral sequences">
+                <CollapsibleSection titleText="Ancestral Sequences">
                   <Lineage />
                 </CollapsibleSection>
               </div>
