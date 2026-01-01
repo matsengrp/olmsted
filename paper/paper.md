@@ -88,6 +88,8 @@ Users simply visit [olmstedviz.org](http://olmstedviz.org) and load data via dra
 All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
 Datasets persist across browser sessions, combining the convenience of a web application with the privacy of local software.
 
+![Landing page at www.olmstedviz.org](./images/1-01-landing-page.png){height="3in"}
+
 ## Data Preparation with olmsted-cli
 
 The [olmsted-cli](https://github.com/matsengrp/olmsted-cli) command-line tool converts data into Olmsted's JSON format.
@@ -108,11 +110,19 @@ The visualization interface consists of four linked sections:
 
 1. **Clonal Families Scatterplot**: Each clonal family appears as a point, with configurable axes, colors, and faceting. Users can brush-select regions or click individual points.
 
+![Example scatterplot.](./images/2-02-scatterplot.png){height="3in"}
+
 2. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
+
+![Example selected clonal families table.](./images/2-03-selected-clonal-families.png){height="3in"}
 
 3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment. Colors indicate amino acid mutations relative to the naive sequence. The tree supports zooming and panning.
 
+![Example tree and alignment clonal family visualization.](./images/2-06-tree-alignment-clonal-families.png){height="3in"}
+
 4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
+
+![Example ancestral sequence visualization](./images/2-07-ancestral-sequences.png){height="3in"}
 
 # Implementation
 
