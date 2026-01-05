@@ -90,6 +90,8 @@ Datasets persist across browser sessions, combining the convenience of a web app
 
 ![Landing page at www.olmstedviz.org](./images/1-01-landing-page.png){height="3in"}
 
+![Dataset management interface.](./images/1-02-database-manager.png){height="3in"}
+
 ## Data Preparation with olmsted-cli
 
 The [olmsted-cli](https://github.com/matsengrp/olmsted-cli) command-line tool converts data into Olmsted's JSON format.
@@ -122,7 +124,7 @@ The visualization interface consists of four linked sections:
 
 4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
 
-![Example ancestral sequence visualization](./images/2-07-ancestral-sequences.png){height="3in"}
+![Example ancestral sequence visualization.](./images/2-07-ancestral-sequences.png){height="3in"}
 
 # Implementation
 
