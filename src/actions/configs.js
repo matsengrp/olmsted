@@ -80,3 +80,45 @@ export const openConfigModal = () => ({
 export const closeConfigModal = () => ({
   type: types.CONFIG_MODAL_CLOSE
 });
+
+/**
+ * Update an existing config with new settings (preserves id, name, createdAt)
+ * @param {string} configId - Config ID to update
+ * @param {Object} newSettings - New settings object
+ */
+export const updateConfig = (configId, newSettings) => async (dispatch, getState) => {
+  try {
+    const { configs } = getState();
+    const existingConfig = configs.savedConfigs.find((c) => c.id === configId);
+
+    if (!existingConfig) {
+      throw new Error(`Config with id ${configId} not found`);
+    }
+
+    const updatedConfig = {
+      ...existingConfig,
+      settings: newSettings,
+      updatedAt: Date.now()
+    };
+
+    await olmstedDB.ready;
+    await olmstedDB.saveConfig(updatedConfig);
+    dispatch({
+      type: types.CONFIG_SAVED,
+      config: updatedConfig
+    });
+
+    return updatedConfig;
+  } catch (error) {
+    console.error("Failed to update config:", error);
+    throw error;
+  }
+};
+
+/**
+ * Clear the active config (reset to defaults state)
+ */
+export const clearActiveConfig = () => ({
+  type: types.CONFIG_APPLIED,
+  configId: null
+});

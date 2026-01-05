@@ -85,6 +85,12 @@ const deleteButtonStyle = {
   borderColor: "#dc3545"
 };
 
+const updateButtonStyle = {
+  ...actionButtonStyle,
+  backgroundColor: "#28a745",
+  borderColor: "#28a745"
+};
+
 const badgeStyle = {
   display: "inline-block",
   padding: "2px 6px",
@@ -147,6 +153,13 @@ class ConfigList extends React.Component {
     }
   };
 
+  handleUpdate = (config) => {
+    const { onUpdate } = this.props;
+    if (onUpdate) {
+      onUpdate(config);
+    }
+  };
+
   renderConfigItem = (config) => {
     const { activeConfigId } = this.props;
     const isActive = config.id === activeConfigId;
@@ -175,6 +188,15 @@ class ConfigList extends React.Component {
         </div>
 
         <div style={actionsContainerStyle}>
+          {isActive && (
+            <button
+              style={updateButtonStyle}
+              onClick={() => this.handleUpdate(config)}
+              title="Update this configuration with current settings"
+            >
+              Update
+            </button>
+          )}
           <button
             style={actionButtonStyle}
             onClick={() => this.handleApply(config)}

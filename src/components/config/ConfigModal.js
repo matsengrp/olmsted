@@ -14,7 +14,10 @@ import {
   importConfigFromJson,
   applyScatterplotSettings,
   applyTreeSettings,
+  extractCurrentSettings,
   resolveValue,
+  DEFAULT_SCATTERPLOT_SETTINGS,
+  DEFAULT_TREE_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
   DEFAULT_LINEAGE_SETTINGS
 } from "../../utils/configManager";
@@ -121,6 +124,12 @@ const secondaryButtonStyle = {
   color: "#4a90a4"
 };
 
+const resetButtonStyle = {
+  ...buttonStyle,
+  backgroundColor: "#6c757d",
+  borderColor: "#6c757d"
+};
+
 const fileInputStyle = {
   display: "none"
 };
@@ -222,6 +231,59 @@ class ConfigModal extends React.Component {
     setTimeout(() => this.setState({ applySuccess: null }), 2000);
   };
 
+  /**
+   * Update an existing config with current visualization settings
+   */
+  handleUpdateConfig = async (config) => {
+    const { dispatch, reduxState } = this.props;
+    const { scatterplotView, treeView } = this.context || {};
+
+    // Get current settings using the same extraction as ConfigSaveForm
+    const newSettings = extractCurrentSettings(scatterplotView, treeView, reduxState);
+
+    try {
+      await dispatch(configActions.updateConfig(config.id, newSettings));
+      this.setState({ applySuccess: `Updated "${config.name}"` });
+      setTimeout(() => this.setState({ applySuccess: null }), 2000);
+    } catch (error) {
+      console.error("Failed to update config:", error);
+    }
+  };
+
+  /**
+   * Reset all visualization settings to application defaults
+   */
+  handleResetToDefaults = () => {
+    const { dispatch } = this.props;
+    const { scatterplotView, treeView } = this.context || {};
+
+    // Apply default scatterplot settings
+    if (scatterplotView) {
+      applyScatterplotSettings(scatterplotView, DEFAULT_SCATTERPLOT_SETTINGS);
+    }
+
+    // Apply default tree settings
+    if (treeView) {
+      applyTreeSettings(treeView, DEFAULT_TREE_SETTINGS);
+    }
+
+    // Apply default global settings
+    dispatch(explorerActions.filterLocus(DEFAULT_GLOBAL_SETTINGS.locus));
+    dispatch(explorerActions.updateSelectedChain(DEFAULT_GLOBAL_SETTINGS.selectedChain));
+
+    // Apply default lineage settings
+    dispatch(explorerActions.updateLineageShowEntire(DEFAULT_LINEAGE_SETTINGS.showEntire));
+    dispatch(explorerActions.updateLineageShowBorders(DEFAULT_LINEAGE_SETTINGS.showBorders));
+    dispatch(explorerActions.updateLineageChain(DEFAULT_LINEAGE_SETTINGS.chain));
+
+    // Clear active config
+    dispatch(configActions.clearActiveConfig());
+
+    // Show success message
+    this.setState({ applySuccess: "Reset to defaults" });
+    setTimeout(() => this.setState({ applySuccess: null }), 2000);
+  };
+
   handleClose = () => {
     const { dispatch } = this.props;
     dispatch(configActions.closeConfigModal());
@@ -289,10 +351,20 @@ class ConfigModal extends React.Component {
         return (
           <div>
             {applySuccess && <div style={successMessageStyle}>{applySuccess}</div>}
+            <div style={{ marginBottom: "16px" }}>
+              <button
+                style={resetButtonStyle}
+                onClick={this.handleResetToDefaults}
+                title="Reset all visualization settings to application defaults"
+              >
+                Reset to Defaults
+              </button>
+            </div>
             <ConfigList
               configs={savedConfigs}
               onApply={this.handleApplyConfig}
               onExport={this.handleExportConfig}
+              onUpdate={this.handleUpdateConfig}
             />
           </div>
         );
@@ -403,7 +475,8 @@ class ConfigModal extends React.Component {
 
 const mapStateToProps = (state) => ({
   isOpen: state.configs.isModalOpen,
-  savedConfigs: state.configs.savedConfigs
+  savedConfigs: state.configs.savedConfigs,
+  reduxState: state
 });
 
 export default connect(mapStateToProps)(ConfigModal);
