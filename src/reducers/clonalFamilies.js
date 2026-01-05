@@ -22,7 +22,11 @@ const initialState = {
   // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
   selectedChain: "heavy",
   // Track which chain was last clicked in stacked mode (for lineage inference)
-  lastClickedChain: "heavy"
+  lastClickedChain: "heavy",
+  // Lineage (ancestral sequence) visualization settings
+  lineageShowEntire: false,
+  lineageShowBorders: false,
+  lineageChain: "heavy"
 };
 
 // eslint-disable-next-line default-param-last
@@ -160,6 +164,15 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_LAST_CLICKED_CHAIN: {
       return { ...state, lastClickedChain: action.chain };
+    }
+    case types.UPDATE_LINEAGE_SHOW_ENTIRE: {
+      return { ...state, lineageShowEntire: action.showEntire };
+    }
+    case types.UPDATE_LINEAGE_SHOW_BORDERS: {
+      return { ...state, lineageShowBorders: action.showBorders };
+    }
+    case types.UPDATE_LINEAGE_CHAIN: {
+      return { ...state, lineageChain: action.chain };
     }
     default: {
       return state;

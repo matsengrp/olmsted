@@ -139,3 +139,16 @@ export const updateSelectedChain = (chain) => {
 export const updateLastClickedChain = (chain) => {
   return { type: types.UPDATE_LAST_CLICKED_CHAIN, chain };
 };
+
+// Lineage (ancestral sequence) settings
+export const updateLineageShowEntire = (showEntire) => {
+  return { type: types.UPDATE_LINEAGE_SHOW_ENTIRE, showEntire };
+};
+
+export const updateLineageShowBorders = (showBorders) => {
+  return { type: types.UPDATE_LINEAGE_SHOW_BORDERS, showBorders };
+};
+
+export const updateLineageChain = (chain) => {
+  return { type: types.UPDATE_LINEAGE_CHAIN, chain };
+};

@@ -13,6 +13,7 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
 import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
+import VegaViewContext from "../config/VegaViewContext";
 
 // Tree header component
 // =================================
@@ -296,6 +297,8 @@ const mapStateToProps = (state) => {
   }
 }))
 class TreeViz extends React.Component {
+  static contextType = VegaViewContext;
+
   constructor(props) {
     super(props);
     // Spec with controls (for light chain in stacked mode, or single chain mode)
@@ -350,6 +353,11 @@ class TreeViz extends React.Component {
   // Set up signal listeners on the light chain view to sync with heavy chain
   setupLightChainSignalSync(lightView, initialHeightRatio = null) {
     this.lightVegaRef.current = lightView;
+
+    // Register view with context for config management (use light chain since it has controls)
+    if (this.context && this.context.setTreeView) {
+      this.context.setTreeView(lightView);
+    }
 
     // Set initial height ratio for stacked mode
     if (initialHeightRatio !== null) {
@@ -684,6 +692,10 @@ class TreeViz extends React.Component {
                 }}
                 onNewView={(view) => {
                   this.singleVegaRef = view;
+                  // Register view with context for config management
+                  if (this.context && this.context.setTreeView) {
+                    this.context.setTreeView(view);
+                  }
                   // Listen for focus changes to sync with React
                   view.addSignalListener("viz_focused", (name, value) => {
                     if (value) this.isFocused = true;
@@ -708,6 +720,10 @@ class TreeViz extends React.Component {
             }}
             onNewView={(view) => {
               this.singleVegaRef = view;
+              // Register view with context for config management
+              if (this.context && this.context.setTreeView) {
+                this.context.setTreeView(view);
+              }
               // Listen for focus changes to sync with React
               view.addSignalListener("viz_focused", (name, value) => {
                 if (value) this.isFocused = true;

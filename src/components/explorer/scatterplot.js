@@ -4,6 +4,7 @@ import Vega from "react-vega";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
+import VegaViewContext from "../config/VegaViewContext";
 
 // Store the last clear_selection_trigger value to detect changes
 let lastClearTrigger = 0;
@@ -33,6 +34,8 @@ let lastClearTrigger = 0;
   }
 )
 class ClonalFamiliesViz extends React.Component {
+  static contextType = VegaViewContext;
+
   constructor(props) {
     super(props);
     this.xField = "unique_seqs_count";
@@ -101,6 +104,10 @@ class ClonalFamiliesViz extends React.Component {
             <Vega
               onNewView={(view) => {
                 this.vegaView = view;
+                // Register view with context for config management
+                if (this.context && this.context.setScatterplotView) {
+                  this.context.setScatterplotView(view);
+                }
                 // Listen for focus changes to sync with React
                 view.addSignalListener("viz_focused", (name, value) => {
                   this.isFocused = value;

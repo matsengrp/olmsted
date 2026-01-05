@@ -10,6 +10,7 @@ import DownloadFasta from "./downloadFasta";
 import { getNaiveVizData } from "./naive";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
+import * as explorerActions from "../../actions/explorer";
 
 // Lineage focus viz
 // =================
@@ -56,32 +57,24 @@ const mapStateToProps = (state) => {
     // Tree/alignment chain selection - used to infer lineage chain when leaf is clicked
     treeChain: state.clonalFamilies.selectedChain || "heavy",
     // Track which chain was clicked in stacked mode
-    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy"
+    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy",
+    // Lineage settings from Redux
+    lineageShowEntire: state.clonalFamilies.lineageShowEntire,
+    lineageShowBorders: state.clonalFamilies.lineageShowBorders,
+    lineageChain: state.clonalFamilies.lineageChain
   };
 };
 
 // Component definition
 
-@connect(mapStateToProps)
+@connect(mapStateToProps, {
+  updateLineageShowEntire: explorerActions.updateLineageShowEntire,
+  updateLineageShowBorders: explorerActions.updateLineageShowBorders,
+  updateLineageChain: explorerActions.updateLineageChain
+})
 class Lineage extends React.Component {
-  constructor(props) {
-    super(props);
-    // Initialize lineageChain based on the selected family's actual chain
-    let initialChain = CHAIN_TYPES.HEAVY;
-    if (props.selectedFamily && !props.selectedFamily.is_paired) {
-      initialChain = clonalFamiliesSelectors.getCloneChain(props.selectedFamily);
-    }
-
-    this.state = {
-      showEntireLineage: false,
-      showMutationBorders: false,
-      lineageChain: initialChain
-    };
-  }
-
   componentDidUpdate(prevProps) {
-    const { selectedSeq, selectedFamily, treeChain, lastClickedChain } = this.props;
-    const { lineageChain } = this.state;
+    const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
 
     // When family changes, infer the appropriate chain
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
@@ -89,7 +82,7 @@ class Lineage extends React.Component {
       if (!selectedFamily.is_paired) {
         const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
         if (familyChain !== lineageChain) {
-          this.setState({ lineageChain: familyChain });
+          updateLineageChain(familyChain);
           return;
         }
       }
@@ -100,7 +93,7 @@ class Lineage extends React.Component {
       // For non-paired families, always use the family's actual chain
       if (selectedFamily && !selectedFamily.is_paired) {
         const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
-        this.setState({ lineageChain: familyChain });
+        updateLineageChain(familyChain);
       } else {
         // For paired families, infer from tree selection
         let inferredChain = CHAIN_TYPES.HEAVY;
@@ -110,26 +103,27 @@ class Lineage extends React.Component {
           // In stacked/side-by-side mode, use the chain that was actually clicked
           inferredChain = lastClickedChain;
         }
-        this.setState({ lineageChain: inferredChain });
+        updateLineageChain(inferredChain);
       }
     }
   }
 
   handleEntireLineageChange = (event) => {
-    this.setState({ showEntireLineage: event.target.checked });
+    this.props.updateLineageShowEntire(event.target.checked);
   }
 
   handleMutationBordersChange = (event) => {
-    this.setState({ showMutationBorders: event.target.checked });
+    this.props.updateLineageShowBorders(event.target.checked);
   }
 
   handleLineageChainChange = (event) => {
-    this.setState({ lineageChain: event.target.value });
+    this.props.updateLineageChain(event.target.value);
   }
 
   render() {
-    const { selectedFamily, selectedSeq, selectedTree, heavyClone, heavyTree, lightClone, lightTree } = this.props;
-    const { showEntireLineage, showMutationBorders, lineageChain } = this.state;
+    const { selectedFamily, selectedSeq, selectedTree, heavyClone, heavyTree, lightClone, lightTree, lineageShowEntire, lineageShowBorders, lineageChain } = this.props;
+    const showEntireLineage = lineageShowEntire;
+    const showMutationBorders = lineageShowBorders;
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Determine which tree and clone to use based on chain selection

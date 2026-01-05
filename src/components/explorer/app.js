@@ -12,6 +12,9 @@ import { ClonalFamiliesViz } from "./scatterplot";
 import { Lineage } from "./lineage";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CollapsibleSection } from "../util/collapsibleSection";
+import ConfigButton from "../config/ConfigButton";
+import ConfigModal from "../config/ConfigModal";
+import { VegaViewProvider } from "../config/VegaViewContext";
 
 // STYLES
 const PADDING_FRACTION = 0.03;
@@ -249,10 +252,13 @@ class App extends React.Component {
     };
 
     return (
-      <span>
-        {/* <DownloadModal/> */}
-        {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
-        <div>
+      <VegaViewProvider>
+        <span>
+          {/* Config management UI */}
+          <ConfigButton />
+          <ConfigModal />
+          {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
+          <div>
           <div style={usableWidthStyle(availableWidth)}>
             <div style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
@@ -415,7 +421,8 @@ class App extends React.Component {
           // mobileDisplay={this.state.mobileDisplay}
           // handler={() => {this.setState({sidebarOpen: false});}}
         />
-      </span>
+        </span>
+      </VegaViewProvider>
     );
   }
 }
