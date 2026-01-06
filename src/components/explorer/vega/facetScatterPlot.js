@@ -1273,7 +1273,7 @@ const createSymbolEncoding = () => ({
   ],
   size: [
     { test: "sizeBy === '<none>'", signal: "60 * symbolSize * symbolSize" },
-    { scale: "size", field: { signal: "sizeBy" } }
+    { signal: "scale('size', datum[sizeBy]) * symbolSize * symbolSize" }
   ]
 });
 

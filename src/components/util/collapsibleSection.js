@@ -32,7 +32,7 @@ class CollapsibleSection extends React.Component {
         trigger={
           <div
             style={{
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
               cursor: "pointer",
               userSelect: "none",
