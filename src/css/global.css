@@ -245,3 +245,16 @@ button:focus {
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
 }
+
+/* Informational box for help text and tips */
+.info-box {
+  margin-top: 10px;
+  margin-bottom: 15px;
+  padding: 16px;
+  background-color: #e7f3ff;
+  border: 1px solid #b3d7ff;
+  border-radius: 6px;
+  color: #0a4a7c;
+  font-size: 14px;
+  line-height: 1.5;
+}
