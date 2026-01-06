@@ -28,7 +28,9 @@ const initialState = {
   lineageShowBorders: false,
   lineageChain: "heavy",
   // Current visible section (for nav bar display)
-  currentSection: ""
+  currentSection: "",
+  // Starred families (pinned for easy reference)
+  starredFamilies: []
 };
 
 // eslint-disable-next-line default-param-last
@@ -178,6 +180,31 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_CURRENT_SECTION: {
       return { ...state, currentSection: action.section };
+    }
+    case types.TOGGLE_STARRED_FAMILY: {
+      const { ident } = action;
+      const isStarred = state.starredFamilies.includes(ident);
+      const newStarredFamilies = isStarred
+        ? state.starredFamilies.filter((id) => id !== ident)
+        : [...state.starredFamilies, ident];
+      // Persist to sessionStorage
+      try {
+        sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarredFamilies));
+      } catch (e) {
+        console.warn("Failed to persist starred families to sessionStorage:", e);
+      }
+      return { ...state, starredFamilies: newStarredFamilies };
+    }
+    case types.CLEAR_STARRED_FAMILIES: {
+      try {
+        sessionStorage.removeItem("olmsted_starred_families");
+      } catch (e) {
+        console.warn("Failed to clear starred families from sessionStorage:", e);
+      }
+      return { ...state, starredFamilies: [] };
+    }
+    case types.SET_STARRED_FAMILIES: {
+      return { ...state, starredFamilies: action.starredFamilies || [] };
     }
     default: {
       return state;

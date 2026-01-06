@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
+import { FiStar } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
 import { getBrushedClonalFamilies, getCloneChain } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
@@ -10,17 +11,21 @@ import { ResizableTable } from "../util/resizableTable";
 // Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
 class ResizableVirtualTable extends ResizableTable {
   renderTableRow(datum, _index) {
-    const { selectedFamily, mappings, dispatch } = this.props;
+    const { selectedFamily, mappings, dispatch, starredFamilies } = this.props;
     const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
+    const isStarred = starredFamilies && starredFamilies.includes(datum.ident);
     const { columnWidths, hoveredRowId } = this.state;
     const isHovered = hoveredRowId === datum.ident;
 
     // Determine background color with hover effect
-    let backgroundColor = isSelected ? "lightblue" : "white";
-    if (isHovered && !isSelected) {
+    // Priority: selected > starred > normal
+    let backgroundColor = "white";
+    if (isSelected) {
+      backgroundColor = isHovered ? "#87CEEB" : "lightblue";
+    } else if (isStarred) {
+      backgroundColor = isHovered ? "#fff0c2" : "#fffaeb"; // Light gold for starred
+    } else if (isHovered) {
       backgroundColor = "#e8e8e8"; // Light gray for hover
-    } else if (isHovered && isSelected) {
-      backgroundColor = "#87CEEB"; // Darker lightblue for selected + hover
     }
 
     return (
@@ -268,10 +273,12 @@ class ResizableVirtualTable extends ResizableTable {
   }
 }
 
-@connect()
+@connect((state) => ({
+  starredFamilies: state.clonalFamilies.starredFamilies
+}))
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap, starredFamilies } = this.props;
     return (
       <ResizableVirtualTable
         data={data}
@@ -282,6 +289,7 @@ class Table extends React.Component {
         pagination={pagination}
         containerHeight={500}
         footerAction={footerAction}
+        starredFamilies={starredFamilies}
       />
     );
   }
@@ -306,6 +314,56 @@ class ChainDisplay extends React.Component {
     const { datum } = this.props;
     const chain = getCloneChain(datum);
     return <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chain}</div>;
+  }
+}
+
+// Star cell component - click to toggle starred status
+@connect(
+  (state) => ({
+    starredFamilies: state.clonalFamilies.starredFamilies
+  }),
+  (dispatch) => ({
+    toggleStarred: (ident) => dispatch(explorerActions.toggleStarredFamily(ident))
+  })
+)
+class StarCell extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hovered: false };
+  }
+
+  render() {
+    const { datum, starredFamilies, toggleStarred } = this.props;
+    const { hovered } = this.state;
+    const isStarred = starredFamilies && starredFamilies.includes(datum.ident);
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          cursor: "pointer"
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleStarred(datum.ident);
+        }}
+        onMouseEnter={() => this.setState({ hovered: true })}
+        onMouseLeave={() => this.setState({ hovered: false })}
+        title={isStarred ? "Unstar this family" : "Star this family"}
+      >
+        <FiStar
+          size={16}
+          style={{
+            fill: isStarred ? "#ffc107" : "none",
+            color: isStarred ? "#ffc107" : (hovered ? "#ffc107" : "#999"),
+            transition: "all 0.15s ease"
+          }}
+        />
+      </div>
+    );
   }
 }
 
@@ -337,39 +395,88 @@ class SelectAttribute extends React.Component {
 
 const mapStateToProps = (state) => {
   const brushedClonalFamilies = getBrushedClonalFamilies(state);
-  // Apply sorting to all families instead of just a page
-  const { pagination } = state.clonalFamilies;
-  const sortedFamilies = _.orderBy(brushedClonalFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
+  const { pagination, starredFamilies } = state.clonalFamilies;
 
   return {
-    visibleClonalFamilies: sortedFamilies,
+    brushedClonalFamilies: brushedClonalFamilies,
     pagination: pagination,
     selectedFamily: state.clonalFamilies.selectedFamily,
-    selectingStatus: state.clonalFamilies.brushSelecting
+    selectingStatus: state.clonalFamilies.brushSelecting,
+    starredFamilies: starredFamilies
   };
 };
 
 @connect(mapStateToProps, {
-  selectFamily: explorerActions.selectFamily
+  selectFamily: explorerActions.selectFamily,
+  starAllFamilies: explorerActions.starAllFamilies,
+  unstarAllFamilies: explorerActions.unstarAllFamilies,
+  clearStarredFamilies: explorerActions.clearStarredFamilies
 })
 class ClonalFamiliesTable extends React.Component {
+  constructor(props) {
+    super(props);
+    // Load sortStarredFirst preference from sessionStorage
+    let sortStarredFirst = true;
+    try {
+      const saved = sessionStorage.getItem("olmsted_sort_starred_first");
+      if (saved !== null) {
+        sortStarredFirst = JSON.parse(saved);
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.state = {
+      starAllHovered: false,
+      unstarAllHovered: false,
+      clearStarsHovered: false,
+      sortStarredFirst
+    };
+  }
+
+  toggleSortStarredFirst = () => {
+    this.setState((prevState) => {
+      const newValue = !prevState.sortStarredFirst;
+      try {
+        sessionStorage.setItem("olmsted_sort_starred_first", JSON.stringify(newValue));
+      } catch (e) {
+        // ignore
+      }
+      return { sortStarredFirst: newValue };
+    });
+  };
+
   componentDidUpdate(prevProps) {
-    const { selectingStatus, visibleClonalFamilies, selectFamily } = this.props;
+    const { selectingStatus, brushedClonalFamilies, selectFamily } = this.props;
     // Checks:
     // 1. prevProps.selectingStatus: We were previously doing a brush selection
     // 2. !this.props.selectingStatus: We are done doing the brush selection
-    // 3. this.props.visibleClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
-    if (prevProps.selectingStatus && !selectingStatus && visibleClonalFamilies.length > 0) {
-      selectFamily(visibleClonalFamilies[0].ident);
+    // 3. this.props.brushedClonalFamilies.length > 0: There is at least one clonal family in the selection to autoselect for detail view
+    if (prevProps.selectingStatus && !selectingStatus && brushedClonalFamilies.length > 0) {
+      selectFamily(brushedClonalFamilies[0].ident);
     }
   }
 
   render() {
-    const { visibleClonalFamilies, selectedFamily, pagination } = this.props;
+    const { brushedClonalFamilies, selectedFamily, pagination, starredFamilies, starAllFamilies, unstarAllFamilies, clearStarredFamilies } = this.props;
+    const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst } = this.state;
+
+    // Sort families - optionally with starred items first
+    const visibleClonalFamilies = sortStarredFirst
+      ? _.orderBy(
+          brushedClonalFamilies,
+          [
+            (family) => (starredFamilies.includes(family.ident) ? 1 : 0),
+            pagination.order_by
+          ],
+          ["desc", pagination.desc ? "desc" : "asc"]
+        )
+      : _.orderBy(brushedClonalFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
+
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
 
     // CSV columns for export (excludes non-exportable columns like Select, Naive sequence, Dataset component)
     const csvColumns = [
+      { header: "Starred", accessor: (d) => (starredFamilies.includes(d.ident) ? "Yes" : "No") },
       { header: "Family ID", accessor: "clone_id" },
       { header: "Unique seqs", accessor: "unique_seqs_count" },
       { header: "V gene", accessor: "v_call" },
@@ -389,18 +496,108 @@ class ClonalFamiliesTable extends React.Component {
       { header: "Ident", accessor: "ident" }
     ];
 
+    // Count how many visible families are starred
+    const visibleIdents = visibleClonalFamilies.map((f) => f.ident);
+    const visibleStarredCount = visibleIdents.filter((id) => starredFamilies.includes(id)).length;
+    const allVisibleStarred = visibleStarredCount === visibleClonalFamilies.length && visibleClonalFamilies.length > 0;
+
+    const starButtonStyle = {
+      background: "none",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      padding: "4px 8px",
+      fontSize: "11px",
+      cursor: "pointer",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      transition: "all 0.15s ease",
+      marginRight: "8px"
+    };
+
     const footerAction = visibleClonalFamilies.length > 0 ? (
-      <DownloadCSV
-        data={visibleClonalFamilies}
-        columns={csvColumns}
-        filename="clonal_families.csv"
-        label="Download Table as CSV"
-        compact
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <label
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            fontSize: "11px",
+            cursor: "pointer",
+            marginRight: "8px"
+          }}
+          title="When enabled, starred families appear at the top of the table"
+        >
+          <input
+            type="checkbox"
+            checked={sortStarredFirst}
+            onChange={this.toggleSortStarredFirst}
+            style={{ cursor: "pointer" }}
+          />
+          Starred first
+        </label>
+        <button
+          type="button"
+          onClick={() => starAllFamilies(visibleIdents)}
+          onMouseEnter={() => this.setState({ starAllHovered: true })}
+          onMouseLeave={() => this.setState({ starAllHovered: false })}
+          style={{
+            ...starButtonStyle,
+            background: starAllHovered ? "#fff8e1" : "none",
+            borderColor: starAllHovered ? "#ffc107" : "#ccc"
+          }}
+          title="Star all visible families"
+          disabled={allVisibleStarred}
+        >
+          <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
+          Star All
+        </button>
+        <button
+          type="button"
+          onClick={() => unstarAllFamilies(visibleIdents)}
+          onMouseEnter={() => this.setState({ unstarAllHovered: true })}
+          onMouseLeave={() => this.setState({ unstarAllHovered: false })}
+          style={{
+            ...starButtonStyle,
+            background: unstarAllHovered ? "#f5f5f5" : "none",
+            borderColor: unstarAllHovered ? "#999" : "#ccc"
+          }}
+          title="Unstar all visible families"
+          disabled={visibleStarredCount === 0}
+        >
+          <FiStar size={12} />
+          Unstar All
+        </button>
+        {starredFamilies.length > 0 && (
+          <button
+            type="button"
+            onClick={() => clearStarredFamilies()}
+            onMouseEnter={() => this.setState({ clearStarsHovered: true })}
+            onMouseLeave={() => this.setState({ clearStarsHovered: false })}
+            style={{
+              ...starButtonStyle,
+              background: clearStarsHovered ? "#ffebee" : "none",
+              borderColor: clearStarsHovered ? "#f44336" : "#ccc",
+              color: clearStarsHovered ? "#f44336" : "inherit"
+            }}
+            title={`Clear all ${starredFamilies.length} starred families`}
+          >
+            Clear Stars ({starredFamilies.length})
+          </button>
+        )}
+        <DownloadCSV
+          data={visibleClonalFamilies}
+          columns={csvColumns}
+          filename="clonal_families.csv"
+          label="Download Table as CSV"
+          compact
+        />
+      </div>
     ) : null;
 
     // Column width map for this table
     const columnWidthMap = {
+      "Star": 50,
       "Select": 60,
       "Naive sequence": 260,
       "Family ID": 120,
@@ -427,6 +624,7 @@ class ClonalFamiliesTable extends React.Component {
         data={visibleClonalFamilies}
         widthMap={columnWidthMap}
         mappings={[
+          ["Star", StarCell, { sortable: false }],
           ["Select", SelectAttribute],
           ["Naive sequence", NaiveSequence],
           ["Family ID", "clone_id"],

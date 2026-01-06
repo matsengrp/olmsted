@@ -170,6 +170,19 @@ class App extends React.Component {
     // Set up IntersectionObserver to track visible section
     this.setupSectionObserver(updateCurrentSection);
 
+    // Load starred families from sessionStorage
+    try {
+      const savedStarred = sessionStorage.getItem("olmsted_starred_families");
+      if (savedStarred) {
+        const starredFamilies = JSON.parse(savedStarred);
+        if (Array.isArray(starredFamilies) && starredFamilies.length > 0) {
+          dispatch(explorerActions.setStarredFamilies(starredFamilies));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load starred families from sessionStorage:", e);
+    }
+
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
     if (availableDatasets.length === 0 && !this._datasetsLoading) {

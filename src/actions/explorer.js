@@ -157,3 +157,48 @@ export const updateLineageChain = (chain) => {
 export const updateCurrentSection = (section) => {
   return { type: types.UPDATE_CURRENT_SECTION, section };
 };
+
+// Starred families actions
+export const toggleStarredFamily = (ident) => {
+  return { type: types.TOGGLE_STARRED_FAMILY, ident };
+};
+
+export const clearStarredFamilies = () => {
+  return { type: types.CLEAR_STARRED_FAMILIES };
+};
+
+export const setStarredFamilies = (starredFamilies) => {
+  return { type: types.SET_STARRED_FAMILIES, starredFamilies };
+};
+
+// Bulk star all visible families
+export const starAllFamilies = (idents) => {
+  return (dispatch, getState) => {
+    const { starredFamilies } = getState().clonalFamilies;
+    // Add all idents that aren't already starred
+    const newStarred = [...new Set([...starredFamilies, ...idents])];
+    dispatch({ type: types.SET_STARRED_FAMILIES, starredFamilies: newStarred });
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarred));
+    } catch (e) {
+      console.warn("Failed to persist starred families to sessionStorage:", e);
+    }
+  };
+};
+
+// Unstar all visible families
+export const unstarAllFamilies = (idents) => {
+  return (dispatch, getState) => {
+    const { starredFamilies } = getState().clonalFamilies;
+    // Remove all provided idents
+    const newStarred = starredFamilies.filter((id) => !idents.includes(id));
+    dispatch({ type: types.SET_STARRED_FAMILIES, starredFamilies: newStarred });
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarred));
+    } catch (e) {
+      console.warn("Failed to persist starred families to sessionStorage:", e);
+    }
+  };
+};
