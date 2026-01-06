@@ -7,8 +7,17 @@ import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import { LoadingStatus } from "../util/loading";
 import { ResizableTable } from "../util/resizableTable";
+import DownloadCSV from "../util/downloadCsv";
+import {
+  CitationCell,
+  SizeCell,
+  UploadTimeCell,
+  BuildTimeCell,
+  getDatasetCsvColumns,
+  datasetColumnWidths
+} from "../tables/DatasetTableCells";
 
-// Component for the load status column
+// Component for the load status column (clickable to load/unload)
 class LoadStatusCell extends React.Component {
   constructor(props) {
     super(props);
@@ -87,74 +96,6 @@ class LoadStatusCell extends React.Component {
     );
   }
 }
-
-// Component for the citation column
-function CitationCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const { paper } = datum;
-  if (!paper) return <span>—</span>;
-
-  if (paper.url) {
-    return (
-      <a href={paper.url} onClick={(e) => e.stopPropagation()}>
-        {paper.authorstring}
-      </a>
-    );
-  }
-  return <span>{paper.authorstring}</span>;
-}
-
-// Component for the size column
-function SizeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const dataset = datum;
-  const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
-
-  if (sizeInBytes === 0) {
-    return <span>—</span>;
-  }
-
-  const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-  return <span>{sizeInMB} MB</span>;
-}
-
-// Component for the upload time column
-function UploadTimeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const uploadTime = datum.upload_time;
-  if (!uploadTime) {
-    return <span>—</span>;
-  }
-
-  // Display in YYYY-MM-DD HH:MM:SS format (remove T and Z from ISO format)
-  const formattedTime = uploadTime.replace('T', ' ').replace('Z', '');
-  return <span>{formattedTime}</span>;
-}
-
-// Component for the build time column
-function BuildTimeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const buildTime = datum.build ? datum.build.time || "—" : "—";
-  return <span>{buildTime}</span>;
-}
-
-// Mark these as React components for production builds where names are minified
-CitationCell.isReactComponent = true;
-SizeCell.isReactComponent = true;
-UploadTimeCell.isReactComponent = true;
-BuildTimeCell.isReactComponent = true;
 
 // Component for the delete button
 class DeleteButtonCell extends React.Component {
@@ -286,28 +227,25 @@ export function DatasetManagementTable({ availableDatasets, dispatch }) {
     mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
   }
 
-  // Define column widths by name
-  const widthMap = {
-    "Load": 60,
-    "Name": 200,
-    "ID": 150,
-    "Source": 80,
-    "Size (MB)": 80,
-    "Subjects": 80,
-    "Families": 100,
-    "Upload Time": 120,
-    "Build Time": 120,
-    "Citation": 150,
-    "Actions": 80
-  };
+  // CSV columns for export
+  const csvColumns = getDatasetCsvColumns(showCitation);
+
+  const footerAction = availableDatasets.length > 0 ? (
+    <DownloadCSV
+      data={availableDatasets}
+      columns={csvColumns}
+      filename="datasets.csv"
+      label="Download Table as CSV"
+      compact
+    />
+  ) : null;
 
   return (
     <div style={{ width: "100%" }}>
-      <div style={{ fontSize: "26px", marginBottom: "10px" }}>Available Datasets:</div>
       <ResizableTable
         data={availableDatasets}
         mappings={mappings}
-        widthMap={widthMap}
+        widthMap={datasetColumnWidths}
         containerHeight={200}
         itemName="datasets"
         componentProps={{ dispatch: dispatch }}
@@ -315,6 +253,7 @@ export function DatasetManagementTable({ availableDatasets, dispatch }) {
           backgroundColor: dataset.loading ? "lightblue" : "white"
         })}
         onRowClick={(dataset) => handleDatasetSelect(dataset, dispatch)}
+        footerAction={footerAction}
       />
     </div>
   );

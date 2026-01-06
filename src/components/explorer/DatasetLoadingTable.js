@@ -9,71 +9,16 @@ import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
+import {
+  CitationCell,
+  SizeCell,
+  UploadTimeCell,
+  BuildTimeCell,
+  getDatasetCsvColumns,
+  datasetColumnWidths
+} from "../tables/DatasetTableCells";
 
-
-// Component for the citation column
-function CitationCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const { paper } = datum;
-  if (!paper) return <span>—</span>;
-
-  if (paper.url) {
-    return (
-      <a href={paper.url} onClick={(e) => e.stopPropagation()}>
-        {paper.authorstring}
-      </a>
-    );
-  }
-  return <span>{paper.authorstring}</span>;
-}
-
-// Component for the size column
-function SizeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const dataset = datum;
-  const sizeInBytes = dataset.file_size || dataset.fileSize || 0;
-
-  if (sizeInBytes === 0) {
-    return <span>—</span>;
-  }
-
-  const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(1);
-  return <span>{sizeInMB} MB</span>;
-}
-
-// Component for the upload time column
-function UploadTimeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const uploadTime = datum.upload_time;
-  if (!uploadTime) {
-    return <span>—</span>;
-  }
-
-  // Display in YYYY-MM-DD HH:MM:SS format (remove T and Z from ISO format)
-  const formattedTime = uploadTime.replace('T', ' ').replace('Z', '');
-  return <span>{formattedTime}</span>;
-}
-
-// Component for the build time column
-function BuildTimeCell({ datum }) {
-  if (!datum) {
-    return <span>—</span>;
-  }
-
-  const buildTime = datum.build ? datum.build.time || "—" : "—";
-  return <span>{buildTime}</span>;
-}
-
-// Component for non-selectable load status
+// Component for non-selectable load status display
 function LoadStatusDisplay({ datum }) {
   if (!datum) {
     return (
@@ -118,10 +63,6 @@ function SelectionCell({ datum, selectedDatasets, dispatch }) {
 // Mark these as React components for production builds where names are minified
 SelectionCell.isReactComponent = true;
 LoadStatusDisplay.isReactComponent = true;
-CitationCell.isReactComponent = true;
-SizeCell.isReactComponent = true;
-UploadTimeCell.isReactComponent = true;
-BuildTimeCell.isReactComponent = true;
 
 @connect((state) => ({
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
@@ -203,7 +144,7 @@ export default class DatasetLoadingTable extends React.Component {
     // Check if we need citation column
     const showCitation = _.some(allDatasetsToUse, (d) => d.paper !== undefined);
 
-    // Build mappings for the table - same as Available Datasets but with selection checkboxes
+    // Build mappings for the table - same as DatasetManagementTable but with selection checkboxes
     const mappings = [
       ["Select", SelectionCell, { sortable: false }],
       ["Status", LoadStatusDisplay, { sortable: false }],
@@ -226,34 +167,8 @@ export default class DatasetLoadingTable extends React.Component {
       mappings.push(["Citation", CitationCell, { sortable: false }]);
     }
 
-    // Define column widths by name
-    const widthMap = {
-      "Select": 60,
-      "Status": 60,
-      "Name": 200,
-      "ID": 150,
-      "Source": 80,
-      "Size (MB)": 80,
-      "Subjects": 80,
-      "Families": 100,
-      "Upload Time": 120,
-      "Build Time": 120,
-      "Citation": 150
-    };
-
     // CSV columns for export
-    const csvColumns = [
-      { header: "Status", accessor: "loading" },
-      { header: "Name", accessor: (d) => d.name || d.dataset_id },
-      { header: "ID", accessor: "dataset_id" },
-      { header: "Source", accessor: (d) => (d.isClientSide || d.temporary ? "Local" : "Server") },
-      { header: "Size (bytes)", accessor: "file_size" },
-      { header: "Subjects", accessor: "subjects_count" },
-      { header: "Families", accessor: "clone_count" },
-      { header: "Upload Time", accessor: "upload_time" },
-      { header: "Build Time", accessor: (d) => (d.build ? d.build.time : "") },
-      ...(showCitation ? [{ header: "Citation", accessor: (d) => (d.paper ? d.paper.authorstring : "") }] : [])
-    ];
+    const csvColumns = getDatasetCsvColumns(showCitation);
 
     const footerAction = allDatasetsToUse.length > 0 ? (
       <DownloadCSV
@@ -274,7 +189,7 @@ export default class DatasetLoadingTable extends React.Component {
         <ResizableTable
           data={allDatasetsToUse}
           mappings={mappings}
-          widthMap={widthMap}
+          widthMap={datasetColumnWidths}
           containerHeight={200}
           itemName="available datasets"
           componentProps={{
