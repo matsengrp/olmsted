@@ -17,7 +17,8 @@ class FileUpload extends React.Component {
       error: null,
       loadingStage: "",
       loadingProgress: 0,
-      dropzoneHovered: false
+      dropzoneHovered: false,
+      removeHoveredId: null
     };
 
     this.processFile = this.processFile.bind(this);
@@ -446,14 +447,17 @@ class FileUpload extends React.Component {
                     <button
                       type="button"
                       onClick={() => this.removeFile(file.datasetId)}
+                      onMouseEnter={() => this.setState({ removeHoveredId: file.datasetId })}
+                      onMouseLeave={() => this.setState({ removeHoveredId: null })}
                       style={{
                         padding: "5px 10px",
-                        backgroundColor: "#dc3545",
+                        backgroundColor: this.state.removeHoveredId === file.datasetId ? "#bb2d3b" : "#dc3545",
                         color: "white",
                         border: "none",
                         borderRadius: 3,
                         cursor: "pointer",
-                        fontSize: 12
+                        fontSize: 12,
+                        transition: "background-color 0.15s ease"
                       }}
                     >
                       Remove

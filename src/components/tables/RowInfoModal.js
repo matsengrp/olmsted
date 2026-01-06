@@ -106,23 +106,15 @@ const valueCellStyle = {
   fontSize: "13px"
 };
 
-const closeButtonStyle = {
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  padding: "4px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#666",
-  borderRadius: "4px"
-};
+// closeButtonStyle is now generated dynamically in the component for hover support
 
 /**
  * RowInfoModal component
  * Displays all fields from a data row in a scrollable modal
  */
 export function RowInfoModal({ datum, isOpen, onClose, title }) {
+  const [closeHovered, setCloseHovered] = useState(false);
+
   if (!isOpen || !datum) {
     return null;
   }
@@ -148,6 +140,19 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
     }
   };
 
+  const closeButtonStyle = {
+    background: closeHovered ? "#e9ecef" : "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: closeHovered ? "#333" : "#666",
+    borderRadius: "4px",
+    transition: "all 0.15s ease"
+  };
+
   return (
     <div
       style={overlayStyle}
@@ -165,6 +170,8 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
           <button
             type="button"
             onClick={onClose}
+            onMouseEnter={() => setCloseHovered(true)}
+            onMouseLeave={() => setCloseHovered(false)}
             style={closeButtonStyle}
             aria-label="Close modal"
           >

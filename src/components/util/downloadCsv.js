@@ -2,25 +2,6 @@ import React from "react";
 import * as _ from "lodash";
 import { FiDownload } from "react-icons/fi";
 
-const buttonStyle = {
-  padding: "6px 12px",
-  color: "#333",
-  cursor: "pointer"
-};
-
-const compactButtonStyle = {
-  padding: "2px 6px",
-  color: "#666",
-  cursor: "pointer",
-  background: "none",
-  border: "1px solid #ccc",
-  borderRadius: "3px",
-  fontSize: "11px",
-  display: "inline-flex",
-  alignItems: "center",
-  verticalAlign: "middle"
-};
-
 const linkStyle = {
   textDecoration: "none"
 };
@@ -40,6 +21,9 @@ class DownloadCSV extends React.Component {
   constructor(props) {
     super(props);
     this.csvFile = null;
+    this.state = {
+      hovered: false
+    };
   }
 
   escapeCSVValue(value) {
@@ -93,11 +77,41 @@ class DownloadCSV extends React.Component {
 
   render() {
     const { filename, label, compact } = this.props;
+    const { hovered } = this.state;
+
+    const compactButtonStyle = {
+      padding: "2px 6px",
+      color: hovered ? "#333" : "#666",
+      cursor: "pointer",
+      background: hovered ? "#f0f0f0" : "none",
+      border: hovered ? "1px solid #999" : "1px solid #ccc",
+      borderRadius: "3px",
+      fontSize: "11px",
+      display: "inline-flex",
+      alignItems: "center",
+      verticalAlign: "middle",
+      transition: "all 0.15s ease"
+    };
+
+    const buttonStyle = {
+      padding: "6px 12px",
+      color: hovered ? "#000" : "#333",
+      cursor: "pointer",
+      background: hovered ? "#e9ecef" : "none",
+      border: hovered ? "1px solid #999" : "1px solid #ccc",
+      borderRadius: "4px",
+      transition: "all 0.15s ease"
+    };
 
     if (compact) {
       return (
         <a href={this.createCSVDownload()} download={filename || "table.csv"} style={linkStyle} title={label || "Download CSV"}>
-          <button type="button" style={compactButtonStyle}>
+          <button
+            type="button"
+            style={compactButtonStyle}
+            onMouseEnter={() => this.setState({ hovered: true })}
+            onMouseLeave={() => this.setState({ hovered: false })}
+          >
             <FiDownload style={{ fontSize: "12px", marginRight: "4px" }} />
             <span>CSV</span>
           </button>
@@ -107,7 +121,12 @@ class DownloadCSV extends React.Component {
 
     return (
       <a href={this.createCSVDownload()} download={filename || "table.csv"} style={linkStyle}>
-        <button type="button" style={buttonStyle}>
+        <button
+          type="button"
+          style={buttonStyle}
+          onMouseEnter={() => this.setState({ hovered: true })}
+          onMouseLeave={() => this.setState({ hovered: false })}
+        >
           <FiDownload style={{ marginRight: "6px", verticalAlign: "middle" }} />
           {label || "Download CSV"}
         </button>

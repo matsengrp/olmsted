@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
+import { FiRefreshCw, FiDatabase } from "react-icons/fi";
 import { LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
@@ -74,6 +75,10 @@ export default class DatasetLoadingTable extends React.Component {
   constructor(props) {
     super(props);
     this.handleBatchUpdate = this.handleBatchUpdate.bind(this);
+    this.state = {
+      updateHovered: false,
+      manageHovered: false
+    };
   }
 
   componentDidMount() {
@@ -212,18 +217,27 @@ export default class DatasetLoadingTable extends React.Component {
             type="button"
             onClick={this.handleBatchUpdate}
             disabled={pendingChanges === 0}
+            onMouseEnter={() => this.setState({ updateHovered: true })}
+            onMouseLeave={() => this.setState({ updateHovered: false })}
             style={{
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "bold",
-              backgroundColor: pendingChanges > 0 ? "#007bff" : "#6c757d",
+              backgroundColor: pendingChanges > 0
+                ? (this.state.updateHovered ? "#0069d9" : "#007bff")
+                : "#6c757d",
               color: "white",
               border: "none",
               borderRadius: "4px",
               cursor: pendingChanges > 0 ? "pointer" : "not-allowed",
-              marginRight: "10px"
+              marginRight: "10px",
+              transition: "background-color 0.15s ease",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px"
             }}
           >
+            <FiRefreshCw size={16} />
             Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
           </button>
 
@@ -232,17 +246,24 @@ export default class DatasetLoadingTable extends React.Component {
             onClick={() => {
               window.location.href = "/";
             }}
+            onMouseEnter={() => this.setState({ manageHovered: true })}
+            onMouseLeave={() => this.setState({ manageHovered: false })}
             style={{
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "bold",
-              backgroundColor: "#28a745",
+              backgroundColor: this.state.manageHovered ? "#218838" : "#28a745",
               color: "white",
               border: "none",
               borderRadius: "4px",
-              cursor: "pointer"
+              cursor: "pointer",
+              transition: "background-color 0.15s ease",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px"
             }}
           >
+            <FiDatabase size={16} />
             Manage Datasets
           </button>
         </div>
