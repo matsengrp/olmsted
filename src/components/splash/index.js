@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Title from "../framework/title";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
 import { DatasetsTable } from "./availableDatasets";
@@ -9,6 +8,7 @@ import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
 import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
+import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -46,7 +46,7 @@ class Splash extends React.Component {
   render() {
     const { errorMessage, availableDatasets, dispatch } = this.props;
     return (
-      <div style={{ justifyContent: "space-around", display: "flex", marginRight: 50 }}>
+      <div style={{ justifyContent: "space-around", display: "flex", marginRight: 50, paddingTop: NAV_BAR_HEIGHT + 20 }}>
         <div className="static container">
           <div style={{ marginBottom: 35 }}>
             <Flex justifyContent="center">
@@ -54,11 +54,8 @@ class Splash extends React.Component {
               <img alt="logo" src={require("../../images/olmsted.svg")} />
             </Flex>
           </div>
-          <Flex justifyContent="center">
-            <Title />
-          </Flex>
           <div className="row">
-            <h1 style={{ textAlign: "center", marginTop: "-10px", fontSize: "29px" }}>
+            <h1 style={{ textAlign: "center", marginTop: "10px", fontSize: "29px" }}>
               {" "}
               B-cell repertoire and clonal family tree explorer{" "}
             </h1>

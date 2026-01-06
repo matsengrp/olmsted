@@ -12,7 +12,7 @@ import { ClonalFamiliesViz } from "./scatterplot";
 import { Lineage } from "./lineage";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CollapsibleSection } from "../util/collapsibleSection";
-import ConfigButton from "../config/ConfigButton";
+import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import ConfigModal from "../config/ConfigModal";
 import { VegaViewProvider } from "../config/VegaViewContext";
 
@@ -26,7 +26,7 @@ const usableWidthStyle = (availableWidth) => {
     width: availableWidth * (1 - 2 * PADDING_FRACTION),
     paddingLeft: availableWidth * PADDING_FRACTION,
     paddingRight: availableWidth * PADDING_FRACTION,
-    paddingTop: 40,
+    paddingTop: NAV_BAR_HEIGHT + 20, // Account for sticky nav bar
     paddingBottom: 20
   };
 };
@@ -130,19 +130,35 @@ function Overlay({ styles, mobileDisplay, handler }) {
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus))
+    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus)),
+    updateCurrentSection: (section) => dispatch(explorerActions.updateCurrentSection(section))
   })
 )
 class App extends React.Component {
   constructor(props) {
     super(props);
+    // Refs for section visibility tracking
+    this.sectionRefs = {
+      datasets: React.createRef(),
+      clonalFamilies: React.createRef(),
+      selectedClonalFamilies: React.createRef(),
+      clonalFamilyDetails: React.createRef(),
+      ancestralSequences: React.createRef()
+    };
+    this.sectionNames = {
+      datasets: "Datasets",
+      clonalFamilies: "Clonal Families",
+      selectedClonalFamilies: "Selected Clonal Families",
+      clonalFamilyDetails: "Clonal Family Details",
+      ancestralSequences: "Ancestral Sequences"
+    };
   }
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
   // }
   async componentDidMount() {
-    const { availableDatasets, dispatch } = this.props;
+    const { availableDatasets, dispatch, updateCurrentSection } = this.props;
     document.addEventListener(
       "dragover",
       (e) => {
@@ -150,6 +166,9 @@ class App extends React.Component {
       },
       false
     );
+
+    // Set up IntersectionObserver to track visible section
+    this.setupSectionObserver(updateCurrentSection);
 
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
@@ -169,8 +188,58 @@ class App extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    // Clean up the IntersectionObserver
+    if (this.sectionObserver) {
+      this.sectionObserver.disconnect();
+    }
+  }
+
+  setupSectionObserver = (updateCurrentSection) => {
+    // Use IntersectionObserver to detect which section is in view
+    // Trigger when section header is near the top of the viewport
+    const options = {
+      root: null,
+      rootMargin: `-${NAV_BAR_HEIGHT + 20}px 0px -70% 0px`,
+      threshold: 0
+    };
+
+    this.sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionKey = entry.target.dataset.section;
+          if (sectionKey && this.sectionNames[sectionKey]) {
+            updateCurrentSection(this.sectionNames[sectionKey]);
+          }
+        }
+      });
+    }, options);
+
+    // Observe all section refs
+    Object.keys(this.sectionRefs).forEach((key) => {
+      const ref = this.sectionRefs[key];
+      if (ref.current) {
+        ref.current.dataset.section = key;
+        this.sectionObserver.observe(ref.current);
+      }
+    });
+  };
+
   componentDidUpdate(prevProps) {
-    const { availableDatasets, pendingDatasetLoads, dispatch } = this.props;
+    const { availableDatasets, pendingDatasetLoads, dispatch, updateCurrentSection, loadedClonalFamilies, selectedFamily, selectedSeq } = this.props;
+
+    // Re-observe sections when they become visible
+    if (
+      prevProps.loadedClonalFamilies !== loadedClonalFamilies ||
+      prevProps.selectedFamily !== selectedFamily ||
+      prevProps.selectedSeq !== selectedSeq
+    ) {
+      // Re-setup observer to include newly visible sections
+      if (this.sectionObserver) {
+        this.sectionObserver.disconnect();
+      }
+      this.setupSectionObserver(updateCurrentSection);
+    }
     // Check if datasets were just loaded and we have pending dataset loads from URL
     if (
       prevProps.availableDatasets.length === 0 &&
@@ -254,13 +323,11 @@ class App extends React.Component {
     return (
       <VegaViewProvider>
         <span>
-          {/* Config management UI */}
-          <ConfigButton />
           <ConfigModal />
           {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
           <div>
           <div style={usableWidthStyle(availableWidth)}>
-            <div style={sectionStyle}>
+            <div ref={this.sectionRefs.datasets} style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
                 <CollapseHelpTitle
                   titleText="Datasets"
@@ -290,7 +357,7 @@ class App extends React.Component {
               </CollapsibleSection>
             </div>
             {loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.clonalFamilies} style={sectionStyle}>
                 <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
@@ -369,7 +436,7 @@ class App extends React.Component {
             )}
 
             {loadedClonalFamilies > 0 && (
-              <div style={{ paddingBottom: 40, ...sectionStyle }}>
+              <div ref={this.sectionRefs.selectedClonalFamilies} style={{ paddingBottom: 40, ...sectionStyle }}>
                 <CollapsibleSection titleText="Selected Clonal Families">
                 <CollapseHelpTitle
                   titleText="Selected Clonal Families"
@@ -400,14 +467,14 @@ class App extends React.Component {
             )}
 
             {selectedFamily && loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.clonalFamilyDetails} style={sectionStyle}>
                 <CollapsibleSection titleText="Clonal Family Details">
                   <TreeViz availableHeight={availableHeight} />
                 </CollapsibleSection>
               </div>
             )}
             {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.ancestralSequences} style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral Sequences">
                   <Lineage />
                 </CollapsibleSection>

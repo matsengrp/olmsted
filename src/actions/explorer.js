@@ -152,3 +152,8 @@ export const updateLineageShowBorders = (showBorders) => {
 export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };
+
+// Current section (for nav bar display)
+export const updateCurrentSection = (section) => {
+  return { type: types.UPDATE_CURRENT_SECTION, section };
+};

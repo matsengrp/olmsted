@@ -42,7 +42,19 @@ class CollapseHelpTitle extends React.Component {
           </div>
         }
       >
-        <div style={{ paddingBottom: "15px" }}>
+        <div
+          style={{
+            marginTop: "10px",
+            marginBottom: "15px",
+            padding: "16px",
+            backgroundColor: "#e7f3ff",
+            border: "1px solid #b3d7ff",
+            borderRadius: "6px",
+            color: "#0a4a7c",
+            fontSize: "14px",
+            lineHeight: "1.5"
+          }}
+        >
           {helpText}
         </div>
       </Collapsible>

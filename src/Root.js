@@ -26,6 +26,17 @@ class MainComponentSwitch extends React.Component {
   }
 }
 
+// Connect to get displayComponent for NavBar settings visibility
+@connect((state) => ({ displayComponent: state.datasets.displayComponent }))
+class NavBarWrapper extends React.Component {
+  render() {
+    const { displayComponent } = this.props;
+    // Only show settings button on the app page, not on splash
+    const showSettings = displayComponent === "app";
+    return <NavBar showSettings={showSettings} />;
+  }
+}
+
 class Root extends React.Component {
   constructor(props) {
     super(props);
@@ -63,7 +74,7 @@ class Root extends React.Component {
     return (
       <div>
         <Monitor />
-        <NavBar />
+        <NavBarWrapper />
         <MainComponentSwitch />
         <div className="static" style={{ marginTop: 50 }}>
           <CenterContent>

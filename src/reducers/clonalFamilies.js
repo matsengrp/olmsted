@@ -26,7 +26,9 @@ const initialState = {
   // Lineage (ancestral sequence) visualization settings
   lineageShowEntire: false,
   lineageShowBorders: false,
-  lineageChain: "heavy"
+  lineageChain: "heavy",
+  // Current visible section (for nav bar display)
+  currentSection: ""
 };
 
 // eslint-disable-next-line default-param-last
@@ -173,6 +175,9 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_LINEAGE_CHAIN: {
       return { ...state, lineageChain: action.chain };
+    }
+    case types.UPDATE_CURRENT_SECTION: {
+      return { ...state, currentSection: action.section };
     }
     default: {
       return state;
