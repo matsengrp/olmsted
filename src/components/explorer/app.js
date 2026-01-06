@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import ClonalFamiliesTable from "./table";
-import LoadingTable from "./loadingTable";
+import DatasetLoadingTable from "./DatasetLoadingTable";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
 import { getClientDatasets, getClientClonalFamilies } from "../../actions/clientDataLoader";
@@ -353,7 +353,7 @@ class App extends React.Component {
                     </div>
                   }
                 />
-                <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
+                <DatasetLoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
             </div>
             {loadedClonalFamilies > 0 && (

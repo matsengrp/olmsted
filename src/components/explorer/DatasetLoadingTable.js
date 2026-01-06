@@ -128,7 +128,7 @@ BuildTimeCell.isReactComponent = true;
   selectedDatasets: state.datasets.selectedDatasets,
   allDatasets: state.datasets.availableDatasets
 }))
-export default class LoadingTable extends React.Component {
+export default class DatasetLoadingTable extends React.Component {
   constructor(props) {
     super(props);
     this.handleBatchUpdate = this.handleBatchUpdate.bind(this);

@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
-import { DatasetsTable } from "./availableDatasets";
+import { DatasetManagementTable } from "./DatasetManagementTable";
 import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
@@ -140,7 +140,7 @@ class Splash extends React.Component {
 
           {/* Full width table section */}
           <div style={{ marginLeft: "-15px", marginRight: "-15px", marginBottom: 20 }}>
-            <DatasetsTable availableDatasets={availableDatasets} dispatch={dispatch} />
+            <DatasetManagementTable availableDatasets={availableDatasets} dispatch={dispatch} />
           </div>
 
           <CenterContent>

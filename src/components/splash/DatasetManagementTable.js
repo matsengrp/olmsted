@@ -248,7 +248,7 @@ function handleDatasetSelect(dataset, dispatch) {
   }
 }
 
-export function DatasetsTable({ availableDatasets, dispatch }) {
+export function DatasetManagementTable({ availableDatasets, dispatch }) {
   if (!availableDatasets) {
     return (
       <div style={{ fontSize: "20px", fontWeight: 400, color: red }}>There was an error fetching the datasets</div>
