@@ -16,6 +16,7 @@ import {
   getDatasetCsvColumns,
   datasetColumnWidths
 } from "../tables/DatasetTableCells";
+import { DatasetActionsCell } from "../tables/RowInfoModal";
 
 // Component for the load status column (clickable to load/unload)
 class LoadStatusCell extends React.Component {
@@ -97,54 +98,17 @@ class LoadStatusCell extends React.Component {
   }
 }
 
-// Component for the delete button
-class DeleteButtonCell extends React.Component {
-  constructor(props) {
-    super(props);
-    this.deleteDataset = this.deleteDataset.bind(this);
-  }
+// Helper function to handle dataset deletion
+function handleDatasetDelete(dataset, dispatch) {
+  const datasetName = dataset.name || dataset.dataset_id;
 
-  deleteDataset(e) {
-    const { datum, dispatch } = this.props;
-    e.stopPropagation();
-    const dataset = datum;
-    const datasetName = dataset.name || dataset.dataset_id;
-
-    if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
-      clientDataStore.removeDataset(dataset.dataset_id);
-      dispatch({
-        type: types.REMOVE_DATASET,
-        dataset_id: dataset.dataset_id
-      });
-      console.log("Deleted client-side dataset:", dataset.dataset_id);
-    }
-  }
-
-  render() {
-    const { datum } = this.props;
-    const isClientSide = datum.isClientSide || datum.temporary;
-
-    if (!isClientSide) {
-      return <span>—</span>;
-    }
-
-    return (
-      <button
-        type="button"
-        onClick={this.deleteDataset}
-        style={{
-          padding: "2px 8px",
-          fontSize: "12px",
-          backgroundColor: "#dc3545",
-          color: "white",
-          border: "none",
-          borderRadius: "3px",
-          cursor: "pointer"
-        }}
-      >
-        Delete
-      </button>
-    );
+  if (window.confirm(`Are you sure you want to delete dataset "${datasetName}"?`)) {
+    clientDataStore.removeDataset(dataset.dataset_id);
+    dispatch({
+      type: types.REMOVE_DATASET,
+      dataset_id: dataset.dataset_id
+    });
+    console.log("Deleted client-side dataset:", dataset.dataset_id);
   }
 }
 
@@ -198,8 +162,6 @@ export function DatasetManagementTable({ availableDatasets, dispatch }) {
 
   // Check if we need citation column
   const showCitation = _.some(availableDatasets, (d) => d.paper !== undefined);
-  // Check if we need delete button column
-  const hasClientDatasets = _.some(availableDatasets, (d) => d.isClientSide || d.temporary);
 
   // Build mappings for the table
   const mappings = [
@@ -223,9 +185,8 @@ export function DatasetManagementTable({ availableDatasets, dispatch }) {
     mappings.push(["Citation", CitationCell, { sortable: false }]);
   }
 
-  if (hasClientDatasets) {
-    mappings.push(["Actions", DeleteButtonCell, { sortable: false }]);
-  }
+  // Actions column always present (info for all, delete for client-side)
+  mappings.push(["Actions", DatasetActionsCell, { sortable: false }]);
 
   // CSV columns for export
   const csvColumns = getDatasetCsvColumns(showCitation);
@@ -248,7 +209,10 @@ export function DatasetManagementTable({ availableDatasets, dispatch }) {
         widthMap={datasetColumnWidths}
         containerHeight={200}
         itemName="datasets"
-        componentProps={{ dispatch: dispatch }}
+        componentProps={{
+          dispatch: dispatch,
+          onDelete: (dataset) => handleDatasetDelete(dataset, dispatch)
+        }}
         getRowStyle={(dataset) => ({
           backgroundColor: dataset.loading ? "lightblue" : "white"
         })}

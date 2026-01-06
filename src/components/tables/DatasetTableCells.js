@@ -123,5 +123,5 @@ export const datasetColumnWidths = {
   "Upload Time": 120,
   "Build Time": 120,
   "Citation": 150,
-  "Actions": 80
+  "Actions": 110
 };

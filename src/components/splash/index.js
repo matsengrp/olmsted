@@ -10,7 +10,7 @@ import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
-import { FiHelpCircle } from "react-icons/fi";
+import { FiHelpCircle, FiCompass, FiUpload, FiTrash2 } from "react-icons/fi";
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -20,6 +20,11 @@ class Splash extends React.Component {
   constructor(props) {
     super(props);
     this.fileUploadRef = React.createRef();
+    this.state = {
+      exploreHovered: false,
+      uploadHovered: false,
+      clearHovered: false
+    };
   }
 
   handleClearAll = async () => {
@@ -98,6 +103,9 @@ class Splash extends React.Component {
             }}
           >
             To get started, upload your dataset below and click &quot;Explore!&quot; to visualize your data.
+            Click the{" "}
+            <FiHelpCircle style={{ verticalAlign: "middle", marginBottom: "2px" }} />
+            {" "}icons next to sectional headers for detailed usage descriptions.
             For information on data formats and usage, see the{" "}
             <a
               href="https://github.com/matsengrp/olmsted#readme"
@@ -116,9 +124,7 @@ class Splash extends React.Component {
             >
               olmsted-cli README
             </a>
-            , or click the{" "}
-            <FiHelpCircle style={{ verticalAlign: "middle", marginBottom: "2px" }} />
-            {" "}icons next to sectional headers for detailed descriptions.
+          .
           </p>
 
           {/* Dataset Manager Section */}
@@ -194,7 +200,7 @@ class Splash extends React.Component {
                 type="button"
                 style={{
                   border: "0px",
-                  backgroundColor: "#05337f",
+                  backgroundColor: this.state.exploreHovered ? "#042a6b" : "#05337f",
                   borderRadius: 5,
                   cursor: "pointer",
                   padding: 20,
@@ -202,8 +208,14 @@ class Splash extends React.Component {
                   color: "white",
                   fontWeight: 400,
                   fontSize: 18,
-                  outline: 0
+                  outline: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background-color 0.15s ease"
                 }}
+                onMouseEnter={() => this.setState({ exploreHovered: true })}
+                onMouseLeave={() => this.setState({ exploreHovered: false })}
                 onClick={(_e) =>
                   dispatch(
                     changePage({
@@ -215,13 +227,14 @@ class Splash extends React.Component {
                   )
                 }
               >
+                <FiCompass size={20} />
                 Explore!
               </button>
               <button
                 type="button"
                 style={{
                   border: "2px solid #05337f",
-                  backgroundColor: "transparent",
+                  backgroundColor: this.state.uploadHovered ? "rgba(5, 51, 127, 0.1)" : "transparent",
                   borderRadius: 5,
                   cursor: "pointer",
                   padding: 20,
@@ -229,8 +242,14 @@ class Splash extends React.Component {
                   color: "#05337f",
                   fontWeight: 400,
                   fontSize: 18,
-                  outline: 0
+                  outline: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background-color 0.15s ease"
                 }}
+                onMouseEnter={() => this.setState({ uploadHovered: true })}
+                onMouseLeave={() => this.setState({ uploadHovered: false })}
                 onClick={() => {
                   // Trigger file selection
                   if (this.fileUploadRef.current) {
@@ -238,13 +257,14 @@ class Splash extends React.Component {
                   }
                 }}
               >
+                <FiUpload size={20} />
                 Upload Data
               </button>
               <button
                 type="button"
                 style={{
                   border: "2px solid #dc3545",
-                  backgroundColor: "transparent",
+                  backgroundColor: this.state.clearHovered ? "rgba(220, 53, 69, 0.1)" : "transparent",
                   borderRadius: 5,
                   cursor: "pointer",
                   padding: 20,
@@ -252,10 +272,17 @@ class Splash extends React.Component {
                   color: "#dc3545",
                   fontWeight: 400,
                   fontSize: 18,
-                  outline: 0
+                  outline: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background-color 0.15s ease"
                 }}
+                onMouseEnter={() => this.setState({ clearHovered: true })}
+                onMouseLeave={() => this.setState({ clearHovered: false })}
                 onClick={this.handleClearAll}
               >
+                <FiTrash2 size={20} />
                 Clear All Datasets
               </button>
             </div>

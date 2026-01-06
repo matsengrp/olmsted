@@ -17,6 +17,7 @@ import {
   getDatasetCsvColumns,
   datasetColumnWidths
 } from "../tables/DatasetTableCells";
+import { DatasetActionsCell } from "../tables/RowInfoModal";
 
 // Component for non-selectable load status display
 function LoadStatusDisplay({ datum }) {
@@ -166,6 +167,9 @@ export default class DatasetLoadingTable extends React.Component {
     if (showCitation) {
       mappings.push(["Citation", CitationCell, { sortable: false }]);
     }
+
+    // Actions column (info only - no delete in loading table)
+    mappings.push(["Actions", DatasetActionsCell, { sortable: false }]);
 
     // CSV columns for export
     const csvColumns = getDatasetCsvColumns(showCitation);

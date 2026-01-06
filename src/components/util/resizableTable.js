@@ -198,6 +198,7 @@ export class ResizableTable extends React.Component {
           const isAttr = typeof AttrOrComponent === "string";
           const key = (datum.id || datum.ident || datum.dataset_id || index) + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
+          const isSticky = options.sticky === true;
 
           const colWidth = columnWidths[colIndex] || 120;
           const style = {
@@ -217,9 +218,20 @@ export class ResizableTable extends React.Component {
             ...options.style
           };
 
+          // Apply sticky positioning for sticky columns
+          if (isSticky) {
+            style.position = "sticky";
+            style.right = 0;
+            style.zIndex = 1;
+            style.borderLeft = "1px solid #dee2e6";
+            style.borderRight = "none";
+            // Ensure solid background for sticky columns
+            style.backgroundColor = backgroundColor;
+          }
+
           // Apply alternating column shading only if row doesn't have custom background and is not hovered
           const hasDefaultBackground = !rowStyle.backgroundColor || rowStyle.backgroundColor === "white";
-          if (hasDefaultBackground && !isHovered && isEvenColumn) {
+          if (!isSticky && hasDefaultBackground && !isHovered && isEvenColumn) {
             style.backgroundColor = "#f8f9fa";
           }
 
@@ -295,6 +307,9 @@ export class ResizableTable extends React.Component {
 
     const sortedData = this.getSortedData();
 
+    // Calculate total width for horizontal scrolling
+    const totalWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+
     // Calculate which items are visible
     const startIndex = Math.floor(scrollTop / rowHeight);
     const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 1, sortedData.length);
@@ -328,7 +343,8 @@ export class ResizableTable extends React.Component {
               display: "flex",
               fontWeight: "bold",
               fontSize: 13,
-              height: "40px"
+              height: "40px",
+              minWidth: totalWidth
             }}
           >
             {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
@@ -336,6 +352,7 @@ export class ResizableTable extends React.Component {
               const isAttr = typeof AttrOrComponent === "string";
               const isSortable = options.sortable !== false && (isAttr || options.sortKey);
               const columnKey = isAttr ? AttrOrComponent : options.sortKey;
+              const isSticky = options.sticky === true;
               // Explicitly capture sort state from parent scope for accessibility attributes
               const currentSortColumn = sortColumn;
               const currentSortDesc = sortDesc;
@@ -357,6 +374,16 @@ export class ResizableTable extends React.Component {
                 position: "relative",
                 cursor: isSortable ? "pointer" : "default"
               };
+
+              // Apply sticky positioning for sticky columns
+              if (isSticky) {
+                style.position = "sticky";
+                style.right = 0;
+                style.zIndex = 2;
+                style.borderLeft = "1px solid #dee2e6";
+                style.borderRight = "none";
+                style.backgroundColor = "#e9ecef";
+              }
 
               /**
                * Keyboard handler for sortable column headers
@@ -433,9 +460,9 @@ export class ResizableTable extends React.Component {
           onScroll={this.onScroll}
         >
           {/* Total height spacer */}
-          <div style={{ height: sortedData.length * rowHeight, position: "relative" }}>
+          <div style={{ height: sortedData.length * rowHeight, position: "relative", minWidth: totalWidth }}>
             {/* Visible items positioned absolutely */}
-            <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%" }}>
+            <div style={{ position: "absolute", top: startIndex * rowHeight, width: "100%", minWidth: totalWidth }}>
               {visibleItems.map((item, index) => (
                 <div key={item.id || item.ident || item.dataset_id || startIndex + index} style={{ height: rowHeight }}>
                   {this.renderTableRow(item, startIndex + index)}
