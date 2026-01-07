@@ -209,6 +209,7 @@ class Lineage extends React.Component {
                   <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
                     <li><strong>Export PNG/SVG:</strong> Save the lineage visualization as an image</li>
                   </ul>
+                  <strong>Tip:</strong> Display options can be saved as configurations via the Settings menu in the header.
                 </div>
               }
             />

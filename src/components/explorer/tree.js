@@ -104,6 +104,7 @@ class TreeHeader extends React.Component {
                 <li><strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view</li>
                 <li><strong>Export PNG/SVG:</strong> Save the tree visualization as an image</li>
               </ul>
+              <strong>Tip:</strong> Plot settings can be saved as configurations via the Settings menu in the header.
             </div>
           }
         />
