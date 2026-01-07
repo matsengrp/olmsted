@@ -5,6 +5,7 @@
 
 import React from "react";
 import { connect } from "react-redux";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { changePage } from "../../actions/navigation";
 import * as configActions from "../../actions/configs";
 
@@ -37,9 +38,76 @@ class NavBar extends React.Component {
     super(props);
     this.state = {
       isConfigHovered: false,
-      isScrolled: false
+      isScrolled: false,
+      isUpHovered: false,
+      isDownHovered: false
     };
   }
+
+  getSectionElements = () => {
+    // Get all section elements with data-section attribute, in DOM order
+    return Array.from(document.querySelectorAll("[data-section]"));
+  };
+
+  // Get current section index based on actual scroll position (more reliable than IntersectionObserver state)
+  getScrollBasedSectionIndex = () => {
+    const sections = this.getSectionElements();
+    if (sections.length === 0) return -1;
+
+    const scrollTop = window.scrollY + NAV_BAR_HEIGHT + 30;
+
+    // Find the last section whose top is at or above our scroll position
+    let currentIndex = 0;
+    for (let i = 0; i < sections.length; i++) {
+      const sectionTop = sections[i].getBoundingClientRect().top + window.scrollY;
+      if (sectionTop <= scrollTop) {
+        currentIndex = i;
+      }
+    }
+    return currentIndex;
+  };
+
+  getCurrentSectionIndex = () => {
+    const sections = this.getSectionElements();
+    const { currentSection } = this.props;
+
+    // Find current section by matching the display name
+    const sectionNames = {
+      datasets: "Datasets",
+      clonalFamilies: "Clonal Families",
+      selectedClonalFamilies: "Selected Clonal Families",
+      clonalFamilyDetails: "Clonal Family Details",
+      ancestralSequences: "Ancestral Sequences"
+    };
+
+    return sections.findIndex((el) => sectionNames[el.dataset.section] === currentSection);
+  };
+
+  scrollToSection = (index) => {
+    const sections = this.getSectionElements();
+    if (index >= 0 && index < sections.length) {
+      const targetSection = sections[index];
+      const offsetTop = targetSection.getBoundingClientRect().top + window.scrollY - NAV_BAR_HEIGHT - 10;
+      window.scrollTo({ top: offsetTop, behavior: "smooth" });
+    }
+  };
+
+  handlePrevSection = () => {
+    // Use scroll-based index for more reliable upward navigation
+    const currentIndex = this.getScrollBasedSectionIndex();
+    if (currentIndex > 0) {
+      this.scrollToSection(currentIndex - 1);
+    }
+  };
+
+  handleNextSection = () => {
+    const sections = this.getSectionElements();
+    // Use scroll-based index for consistency
+    const currentIndex = this.getScrollBasedSectionIndex();
+    if (currentIndex < sections.length - 1) {
+      this.scrollToSection(currentIndex + 1);
+    }
+  };
 
   componentDidMount() {
     window.addEventListener("scroll", this.handleScroll);
@@ -70,7 +138,13 @@ class NavBar extends React.Component {
 
   render() {
     const { showSettings = true, currentSection = "" } = this.props;
-    const { isConfigHovered, isScrolled } = this.state;
+    const { isConfigHovered, isScrolled, isUpHovered, isDownHovered } = this.state;
+
+    // Determine if we can navigate up or down using scroll-based index
+    const sections = this.getSectionElements();
+    const scrollBasedIndex = this.getScrollBasedSectionIndex();
+    const canGoUp = currentSection && scrollBasedIndex > 0;
+    const canGoDown = currentSection && scrollBasedIndex < sections.length - 1 && scrollBasedIndex >= 0;
 
     const currentHeight = isScrolled ? NAV_BAR_HEIGHT : EXPANDED_NAV_BAR_HEIGHT;
     const logoSize = isScrolled ? 32 : 44;
@@ -125,6 +199,9 @@ class NavBar extends React.Component {
       position: "absolute",
       left: "50%",
       transform: "translateX(-50%)",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
       fontSize: isScrolled ? "14px" : "16px",
       fontWeight: "500",
       color: "#666",
@@ -132,6 +209,19 @@ class NavBar extends React.Component {
       opacity: currentSection ? 1 : 0,
       whiteSpace: "nowrap"
     };
+
+    const navButtonStyle = (isHovered, isEnabled) => ({
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "4px",
+      border: "none",
+      borderRadius: "4px",
+      backgroundColor: isHovered && isEnabled ? "#e0e0e0" : "transparent",
+      color: isEnabled ? "#666" : "#ccc",
+      cursor: isEnabled ? "pointer" : "default",
+      transition: "background-color 0.15s ease"
+    });
 
     const configButtonStyle = {
       display: "flex",
@@ -168,8 +258,32 @@ class NavBar extends React.Component {
           <h1 style={titleStyle}>Olmsted</h1>
         </div>
 
-        {/* Centered section name */}
-        <div style={centerSectionStyle}>{currentSection}</div>
+        {/* Centered section name with navigation */}
+        <div style={centerSectionStyle}>
+          <button
+            style={navButtonStyle(isUpHovered, canGoUp)}
+            onClick={this.handlePrevSection}
+            onMouseEnter={() => this.setState({ isUpHovered: true })}
+            onMouseLeave={() => this.setState({ isUpHovered: false })}
+            disabled={!canGoUp}
+            title="Previous section"
+            aria-label="Go to previous section"
+          >
+            <FiChevronUp size={isScrolled ? 16 : 18} />
+          </button>
+          <span>{currentSection}</span>
+          <button
+            style={navButtonStyle(isDownHovered, canGoDown)}
+            onClick={this.handleNextSection}
+            onMouseEnter={() => this.setState({ isDownHovered: true })}
+            onMouseLeave={() => this.setState({ isDownHovered: false })}
+            disabled={!canGoDown}
+            title="Next section"
+            aria-label="Go to next section"
+          >
+            <FiChevronDown size={isScrolled ? 16 : 18} />
+          </button>
+        </div>
 
         <div style={rightSectionStyle}>
           {showSettings && (
