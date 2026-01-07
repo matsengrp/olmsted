@@ -596,7 +596,7 @@ class ClonalFamiliesTable extends React.Component {
             borderColor: starAllHovered ? "#ffc107" : "#ccc"
           }}
           title="Star all visible families"
-          disabled={allVisibleStarred}
+          disabled={allVisibleStarred || visibleClonalFamilies.length === 0}
         >
           <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
           Star All

@@ -292,7 +292,7 @@ class DatasetManagementTableComponent extends React.Component {
           onMouseLeave={() => this.setState({ starAllHovered: false })}
           style={{ ...starButtonStyle, background: starAllHovered ? "#fff8e1" : "none", borderColor: starAllHovered ? "#ffc107" : "#ccc" }}
           title="Star all visible datasets"
-          disabled={allVisibleStarred}
+          disabled={allVisibleStarred || sortedDatasets.length === 0}
         >
           <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
           Star All

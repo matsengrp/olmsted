@@ -257,7 +257,7 @@ export default class DatasetLoadingTable extends React.Component {
       transition: "all 0.15s ease"
     };
 
-    const footerAction = allDatasetsToUse.length > 0 ? (
+    const footerAction = allDatasetsRaw.length > 0 ? (
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
         <label style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}>
           <input type="checkbox" checked={sortStarredFirst} onChange={this.toggleSortStarredFirst} style={{ cursor: "pointer" }} />
@@ -278,7 +278,7 @@ export default class DatasetLoadingTable extends React.Component {
           onMouseLeave={() => this.setState({ starAllHovered: false })}
           style={{ ...starButtonStyle, background: starAllHovered ? "#fff8e1" : "none", borderColor: starAllHovered ? "#ffc107" : "#ccc" }}
           title="Star all visible datasets"
-          disabled={allVisibleStarred}
+          disabled={allVisibleStarred || allDatasetsToUse.length === 0}
         >
           <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
           Star All
