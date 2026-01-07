@@ -202,3 +202,16 @@ export const unstarAllFamilies = (idents) => {
     }
   };
 };
+
+// Starred datasets actions
+export const toggleStarredDataset = (dataset_id) => {
+  return { type: types.TOGGLE_STARRED_DATASET, dataset_id };
+};
+
+export const clearStarredDatasets = () => {
+  return { type: types.CLEAR_STARRED_DATASETS };
+};
+
+export const setStarredDatasets = (starredDatasets) => {
+  return { type: types.SET_STARRED_DATASETS, starredDatasets };
+};

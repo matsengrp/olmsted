@@ -183,6 +183,19 @@ class App extends React.Component {
       console.warn("Failed to load starred families from sessionStorage:", e);
     }
 
+    // Load starred datasets from sessionStorage
+    try {
+      const savedStarredDatasets = sessionStorage.getItem("olmsted_starred_datasets");
+      if (savedStarredDatasets) {
+        const starredDatasets = JSON.parse(savedStarredDatasets);
+        if (Array.isArray(starredDatasets) && starredDatasets.length > 0) {
+          dispatch(explorerActions.setStarredDatasets(starredDatasets));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load starred datasets from sessionStorage:", e);
+    }
+
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
     if (availableDatasets.length === 0 && !this._datasetsLoading) {

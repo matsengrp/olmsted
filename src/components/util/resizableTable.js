@@ -144,10 +144,13 @@ export class ResizableTable extends React.Component {
 
     // Determine background color with hover effect
     let backgroundColor = rowStyle.backgroundColor || "white";
+    const isStarredRow = rowStyle.backgroundColor === "#fffaeb";
     if (isHovered) {
       // Darken the background on hover
       if (rowStyle.backgroundColor === "lightblue") {
         backgroundColor = "#87CEEB"; // Darker lightblue
+      } else if (isStarredRow) {
+        backgroundColor = "#ffe599"; // Darker yellow for starred row hover
       } else {
         backgroundColor = "#e8e8e8"; // Light gray for hover
       }
@@ -229,10 +232,16 @@ export class ResizableTable extends React.Component {
             style.backgroundColor = backgroundColor;
           }
 
-          // Apply alternating column shading only if row doesn't have custom background and is not hovered
+          // Apply alternating column shading
+          // - Gray for normal rows (not starred, loading, or hovered)
+          // - Darker yellow for starred rows
           const hasDefaultBackground = !rowStyle.backgroundColor || rowStyle.backgroundColor === "white";
-          if (!isSticky && hasDefaultBackground && !isHovered && isEvenColumn) {
-            style.backgroundColor = "#f8f9fa";
+          if (!isSticky && !isHovered && isEvenColumn) {
+            if (isStarredRow) {
+              style.backgroundColor = "#fff0c2"; // Darker yellow for starred rows
+            } else if (hasDefaultBackground) {
+              style.backgroundColor = "#f8f9fa"; // Gray for normal rows
+            }
           }
 
           // Handle different types of components/attributes

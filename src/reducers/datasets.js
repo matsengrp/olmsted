@@ -13,6 +13,7 @@ const datasets = (
     availableDatasets: [],
     selectedDatasets: [], // Array of dataset IDs selected for batch loading
     pendingDatasetLoads: [], // Array of dataset IDs that need to be loaded from URL query string
+    starredDatasets: [], // Array of dataset IDs that are starred/favorited
     // TODO: remove
     splash: undefined,
     datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
@@ -93,6 +94,31 @@ const datasets = (
     }
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: {
       return { ...state, pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads };
+    }
+    case types.TOGGLE_STARRED_DATASET: {
+      const { dataset_id } = action;
+      const isStarred = state.starredDatasets.includes(dataset_id);
+      const newStarredDatasets = isStarred
+        ? state.starredDatasets.filter((id) => id !== dataset_id)
+        : [...state.starredDatasets, dataset_id];
+      // Persist to sessionStorage
+      try {
+        sessionStorage.setItem("olmsted_starred_datasets", JSON.stringify(newStarredDatasets));
+      } catch (e) {
+        console.warn("Failed to persist starred datasets to sessionStorage:", e);
+      }
+      return { ...state, starredDatasets: newStarredDatasets };
+    }
+    case types.CLEAR_STARRED_DATASETS: {
+      try {
+        sessionStorage.removeItem("olmsted_starred_datasets");
+      } catch (e) {
+        console.warn("Failed to clear starred datasets from sessionStorage:", e);
+      }
+      return { ...state, starredDatasets: [] };
+    }
+    case types.SET_STARRED_DATASETS: {
+      return { ...state, starredDatasets: action.starredDatasets || [] };
     }
     default: {
       return state;

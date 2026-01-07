@@ -7,6 +7,7 @@ import { getBrushedClonalFamilies, getCloneChain } from "../../selectors/clonalF
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
 import { ResizableTable } from "../util/resizableTable";
+import { InfoButtonCell } from "../tables/RowInfoModal";
 
 // Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
 class ResizableVirtualTable extends ResizableTable {
@@ -23,7 +24,7 @@ class ResizableVirtualTable extends ResizableTable {
     if (isSelected) {
       backgroundColor = isHovered ? "#87CEEB" : "lightblue";
     } else if (isStarred) {
-      backgroundColor = isHovered ? "#fff0c2" : "#fffaeb"; // Light gold for starred
+      backgroundColor = isHovered ? "#ffe599" : "#fffaeb"; // Light gold for starred, darker on hover
     } else if (isHovered) {
       backgroundColor = "#e8e8e8"; // Light gray for hover
     }
@@ -69,9 +70,15 @@ class ResizableVirtualTable extends ResizableTable {
             borderRight: "1px solid #eee"
           };
 
-          // Apply alternating column shading only if row is not selected or hovered
+          // Apply alternating column shading
+          // - Gray for normal rows (not selected, starred, or hovered)
+          // - Darker yellow for starred rows
           if (!isSelected && !isHovered && isEvenColumn) {
-            style.backgroundColor = "#f8f9fa";
+            if (isStarred) {
+              style.backgroundColor = "#fff0c2"; // Darker yellow for starred rows
+            } else {
+              style.backgroundColor = "#f8f9fa"; // Gray for normal rows
+            }
           }
 
           return (
@@ -415,12 +422,17 @@ const mapStateToProps = (state) => {
 class ClonalFamiliesTable extends React.Component {
   constructor(props) {
     super(props);
-    // Load sortStarredFirst preference from sessionStorage
+    // Load preferences from sessionStorage
     let sortStarredFirst = true;
+    let showOnlyStarred = false;
     try {
-      const saved = sessionStorage.getItem("olmsted_sort_starred_first");
-      if (saved !== null) {
-        sortStarredFirst = JSON.parse(saved);
+      const savedSort = sessionStorage.getItem("olmsted_sort_starred_first");
+      if (savedSort !== null) {
+        sortStarredFirst = JSON.parse(savedSort);
+      }
+      const savedFilter = sessionStorage.getItem("olmsted_families_show_only_starred");
+      if (savedFilter !== null) {
+        showOnlyStarred = JSON.parse(savedFilter);
       }
     } catch (e) {
       // ignore
@@ -429,7 +441,8 @@ class ClonalFamiliesTable extends React.Component {
       starAllHovered: false,
       unstarAllHovered: false,
       clearStarsHovered: false,
-      sortStarredFirst
+      sortStarredFirst,
+      showOnlyStarred
     };
   }
 
@@ -442,6 +455,18 @@ class ClonalFamiliesTable extends React.Component {
         // ignore
       }
       return { sortStarredFirst: newValue };
+    });
+  };
+
+  toggleShowOnlyStarred = () => {
+    this.setState((prevState) => {
+      const newValue = !prevState.showOnlyStarred;
+      try {
+        sessionStorage.setItem("olmsted_families_show_only_starred", JSON.stringify(newValue));
+      } catch (e) {
+        // ignore
+      }
+      return { showOnlyStarred: newValue };
     });
   };
 
@@ -458,19 +483,24 @@ class ClonalFamiliesTable extends React.Component {
 
   render() {
     const { brushedClonalFamilies, selectedFamily, pagination, starredFamilies, starAllFamilies, unstarAllFamilies, clearStarredFamilies } = this.props;
-    const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst } = this.state;
+    const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst, showOnlyStarred } = this.state;
+
+    // Filter to only starred if enabled
+    const filteredFamilies = showOnlyStarred
+      ? brushedClonalFamilies.filter((f) => starredFamilies.includes(f.ident))
+      : brushedClonalFamilies;
 
     // Sort families - optionally with starred items first
     const visibleClonalFamilies = sortStarredFirst
       ? _.orderBy(
-          brushedClonalFamilies,
+          filteredFamilies,
           [
             (family) => (starredFamilies.includes(family.ident) ? 1 : 0),
             pagination.order_by
           ],
           ["desc", pagination.desc ? "desc" : "asc"]
         )
-      : _.orderBy(brushedClonalFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
+      : _.orderBy(filteredFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
 
     this.selectedFamily = _.find(visibleClonalFamilies, { ident: selectedFamily });
 
@@ -515,7 +545,7 @@ class ClonalFamiliesTable extends React.Component {
       marginRight: "8px"
     };
 
-    const footerAction = visibleClonalFamilies.length > 0 ? (
+    const footerAction = visibleClonalFamilies.length > 0 || showOnlyStarred ? (
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <label
           style={{
@@ -535,6 +565,25 @@ class ClonalFamiliesTable extends React.Component {
             style={{ cursor: "pointer" }}
           />
           Starred first
+        </label>
+        <label
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            fontSize: "11px",
+            cursor: "pointer",
+            marginRight: "8px"
+          }}
+          title="When enabled, only starred families are shown"
+        >
+          <input
+            type="checkbox"
+            checked={showOnlyStarred}
+            onChange={this.toggleShowOnlyStarred}
+            style={{ cursor: "pointer" }}
+          />
+          Only starred
         </label>
         <button
           type="button"
@@ -599,6 +648,7 @@ class ClonalFamiliesTable extends React.Component {
     const columnWidthMap = {
       "Star": 50,
       "Select": 60,
+      "Info": 60,
       "Naive sequence": 260,
       "Family ID": 120,
       "Unique seqs": 100,
@@ -626,6 +676,7 @@ class ClonalFamiliesTable extends React.Component {
         mappings={[
           ["Star", StarCell, { sortable: false }],
           ["Select", SelectAttribute],
+          ["Info", InfoButtonCell, { sortable: false }],
           ["Naive sequence", NaiveSequence],
           ["Family ID", "clone_id"],
           // TODO decide on language for unique seqs vs rearrangement count

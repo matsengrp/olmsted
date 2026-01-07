@@ -214,6 +214,7 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
  */
 export function InfoButtonCell({ datum }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   if (!datum) {
     return <span>—</span>;
@@ -233,20 +234,23 @@ export function InfoButtonCell({ datum }) {
   };
 
   return (
-    <>
+    <div style={{ width: "100%", textAlign: "center" }}>
       <button
         type="button"
         onClick={handleClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
-          background: "none",
-          border: "1px solid #0d6efd",
-          borderRadius: "4px",
+          border: "none",
           cursor: "pointer",
-          padding: "4px 8px",
-          display: "flex",
+          padding: "5px 7px",
+          display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#0d6efd"
+          borderRadius: "4px",
+          transition: "background-color 0.15s ease",
+          backgroundColor: hovered ? "#0b5ed7" : "#0d6efd",
+          color: "#fff"
         }}
         title="View all row data"
         aria-label="View row details"
@@ -259,7 +263,7 @@ export function InfoButtonCell({ datum }) {
         onClose={() => setIsModalOpen(false)}
         title={getTitle()}
       />
-    </>
+    </div>
   );
 }
 
@@ -267,7 +271,123 @@ export function InfoButtonCell({ datum }) {
 InfoButtonCell.isReactComponent = true;
 
 /**
- * DatasetActionsCell component
+ * DatasetInfoCell component
+ * Info button cell for dataset tables - opens row details modal
+ */
+export function DatasetInfoCell({ datum }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    setIsModalOpen(true);
+  };
+
+  const getTitle = () => {
+    if (datum.name) return datum.name;
+    if (datum.dataset_id) return `Dataset: ${datum.dataset_id}`;
+    return "Row Details";
+  };
+
+  return (
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <button
+        type="button"
+        onClick={handleClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          border: "none",
+          cursor: "pointer",
+          padding: "5px 7px",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "4px",
+          transition: "background-color 0.15s ease",
+          backgroundColor: hovered ? "#0b5ed7" : "#0d6efd",
+          color: "#fff"
+        }}
+        title="View all row data"
+        aria-label="View row details"
+      >
+        <FiInfo size={14} />
+      </button>
+      <RowInfoModal
+        datum={datum}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={getTitle()}
+      />
+    </div>
+  );
+}
+
+// Mark as React component for ResizableTable detection
+DatasetInfoCell.isReactComponent = true;
+
+/**
+ * DatasetDeleteCell component
+ * Delete button cell for dataset tables - only shows for client-side datasets
+ */
+export function DatasetDeleteCell({ datum, onDelete }) {
+  const [hovered, setHovered] = useState(false);
+
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const isClientSide = datum.isClientSide || datum.temporary;
+
+  // Don't show delete button for server-side datasets
+  if (!isClientSide) {
+    return <div style={{ width: "100%", textAlign: "center" }}>—</div>;
+  }
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(datum);
+    }
+  };
+
+  return (
+    <div style={{ width: "100%", textAlign: "center" }}>
+      <button
+        type="button"
+        onClick={handleClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          border: "none",
+          cursor: "pointer",
+          padding: "5px 7px",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "4px",
+          transition: "background-color 0.15s ease",
+          backgroundColor: hovered ? "#bb2d3b" : "#dc3545",
+          color: "#fff"
+        }}
+        title="Delete dataset"
+        aria-label="Delete dataset"
+      >
+        <FiTrash2 size={14} />
+      </button>
+    </div>
+  );
+}
+
+// Mark as React component for ResizableTable detection
+DatasetDeleteCell.isReactComponent = true;
+
+/**
+ * DatasetActionsCell component (DEPRECATED - use DatasetInfoCell and DatasetDeleteCell instead)
  * Combined actions cell with info and delete buttons for dataset tables
  * Only shows delete button if onDelete prop is provided
  */

@@ -1,7 +1,8 @@
 /**
  * Shared cell components for dataset tables (DatasetManagementTable and DatasetLoadingTable)
  */
-import React from "react";
+import React, { useState } from "react";
+import { FiStar } from "react-icons/fi";
 
 /**
  * Component for the citation column
@@ -84,6 +85,52 @@ UploadTimeCell.isReactComponent = true;
 BuildTimeCell.isReactComponent = true;
 
 /**
+ * Star cell component for datasets
+ * Requires starredDatasets and onToggleStar props from componentProps
+ */
+export function DatasetStarCell({ datum, starredDatasets, onToggleStar }) {
+  const [hovered, setHovered] = useState(false);
+
+  if (!datum) {
+    return <span>—</span>;
+  }
+
+  const isStarred = starredDatasets && starredDatasets.includes(datum.dataset_id);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        cursor: "pointer"
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onToggleStar) {
+          onToggleStar(datum.dataset_id);
+        }
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title={isStarred ? "Unstar this dataset" : "Star this dataset"}
+    >
+      <FiStar
+        size={16}
+        style={{
+          fill: isStarred ? "#ffc107" : "none",
+          color: isStarred ? "#ffc107" : (hovered ? "#ffc107" : "#999"),
+          transition: "all 0.15s ease"
+        }}
+      />
+    </div>
+  );
+}
+
+DatasetStarCell.isReactComponent = true;
+
+/**
  * CSV column definitions for dataset export
  * Used by both DatasetManagementTable and DatasetLoadingTable
  */
@@ -111,9 +158,12 @@ export function getDatasetCsvColumns(showCitation = false) {
  * Standard column width map for dataset tables
  */
 export const datasetColumnWidths = {
-  "Select": 60,
-  "Load": 60,
-  "Status": 60,
+  "Star": 50,
+  "Select": 50,
+  "Load": 50,
+  "Status": 50,
+  "Info": 60,
+  "Delete": 60,
   "Name": 200,
   "ID": 150,
   "Source": 80,
@@ -122,6 +172,5 @@ export const datasetColumnWidths = {
   "Families": 100,
   "Upload Time": 120,
   "Build Time": 120,
-  "Citation": 150,
-  "Actions": 110
+  "Citation": 150
 };

@@ -11,6 +11,7 @@ import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { FiHelpCircle, FiCompass, FiUpload, FiTrash2 } from "react-icons/fi";
+import * as explorerActions from "../../actions/explorer";
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -25,6 +26,22 @@ class Splash extends React.Component {
       uploadHovered: false,
       clearHovered: false
     };
+  }
+
+  componentDidMount() {
+    const { dispatch } = this.props;
+    // Load starred datasets from sessionStorage
+    try {
+      const savedStarred = sessionStorage.getItem("olmsted_starred_datasets");
+      if (savedStarred) {
+        const starredDatasets = JSON.parse(savedStarred);
+        if (Array.isArray(starredDatasets) && starredDatasets.length > 0) {
+          dispatch(explorerActions.setStarredDatasets(starredDatasets));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load starred datasets from sessionStorage:", e);
+    }
   }
 
   handleClearAll = async () => {
