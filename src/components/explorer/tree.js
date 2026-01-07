@@ -14,6 +14,8 @@ import { SimpleInProgress } from "../util/loading";
 import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
 import VegaViewContext from "../config/VegaViewContext";
+import { VegaExportToolbar } from "../util/VegaExportButton";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 // Tree header component
 // =================================
@@ -301,6 +303,12 @@ class TreeViz extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      // Track the current Vega view for export functionality
+      currentVegaView: null,
+      // Toggle to hide/show Vega control bindings
+      hideControls: false
+    };
     // Spec with controls (for light chain in stacked mode, or single chain mode)
     this.spec = concatTreeWithAlignmentSpec({ showControls: true });
     // Spec without controls (for heavy chain in stacked mode - mirrors light chain settings)
@@ -339,6 +347,10 @@ class TreeViz extends React.Component {
     };
   }
 
+  toggleHideControls = () => {
+    this.setState((prevState) => ({ hideControls: !prevState.hideControls }));
+  };
+
   // Handle signal changes from light chain and propagate to heavy chain
   handleLightChainSignal(signalName, value) {
     if (this.heavyVegaRef.current) {
@@ -353,6 +365,9 @@ class TreeViz extends React.Component {
   // Set up signal listeners on the light chain view to sync with heavy chain
   setupLightChainSignalSync(lightView, initialHeightRatio = null) {
     this.lightVegaRef.current = lightView;
+
+    // Update state for export functionality
+    this.setState({ currentVegaView: lightView });
 
     // Register view with context for config management (use light chain since it has controls)
     if (this.context && this.context.setTreeView) {
@@ -567,9 +582,20 @@ class TreeViz extends React.Component {
     // Use heavyTree for downloads in both mode, otherwise use tree
     const downloadTree = isBothMode ? heavyTree : tree;
 
+    const { hideControls } = this.state;
+
     return (
       <div ref={this.containerRef}>
-        <div style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
+        <div
+          className={hideControls ? "hide-vega-controls" : ""}
+          style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}
+        >
+          {/* Hide controls CSS - only applied when hideControls is true */}
+          {hideControls && (
+            <style>{`
+              .hide-vega-controls .vega-bindings { display: none !important; }
+            `}</style>
+          )}
           {/* Show tree header if complete family, tree */}
           {completeData && (
             <TreeHeader
@@ -692,6 +718,8 @@ class TreeViz extends React.Component {
                 }}
                 onNewView={(view) => {
                   this.singleVegaRef = view;
+                  // Update state for export functionality
+                  this.setState({ currentVegaView: view });
                   // Register view with context for config management
                   if (this.context && this.context.setTreeView) {
                     this.context.setTreeView(view);
@@ -720,6 +748,8 @@ class TreeViz extends React.Component {
             }}
             onNewView={(view) => {
               this.singleVegaRef = view;
+              // Update state for export functionality
+              this.setState({ currentVegaView: view });
               // Register view with context for config management
               if (this.context && this.context.setTreeView) {
                 this.context.setTreeView(view);
@@ -735,7 +765,37 @@ class TreeViz extends React.Component {
           />
         )}
 
-        {/* Show downloads if complete family, tree */}
+        {/* Export and download options */}
+        {completeData && (
+          <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            <button
+              onClick={this.toggleHideControls}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "4px 8px",
+                fontSize: 12,
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                backgroundColor: hideControls ? "#e3f2fd" : "#fff",
+                color: "#333",
+                cursor: "pointer",
+                transition: "all 0.15s ease"
+              }}
+              title={hideControls ? "Show plot controls" : "Hide plot controls"}
+              onMouseEnter={(e) => { e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5"; }}
+              onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
+            >
+              {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+              <span>{hideControls ? "Show Controls" : "Hide Controls"}</span>
+            </button>
+            <VegaExportToolbar
+              vegaView={this.state.currentVegaView}
+              filename={`olmsted-tree-${selectedFamily.clone_id || "family"}`}
+            />
+          </div>
+        )}
         {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
           <div style={{ marginTop: "10px" }}>
             <div style={{ marginBottom: "8px" }}>
