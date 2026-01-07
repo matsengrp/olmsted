@@ -4,7 +4,7 @@
 
 import React from "react";
 import { connect } from "react-redux";
-import { FiHelpCircle } from "react-icons/fi";
+import { FiHelpCircle, FiX } from "react-icons/fi";
 import * as configActions from "../../actions/configs";
 import * as explorerActions from "../../actions/explorer";
 import ConfigList from "./ConfigList";
@@ -44,7 +44,8 @@ const modalContentStyle = {
   maxHeight: "80vh",
   display: "flex",
   flexDirection: "column",
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+  transition: "height 0.2s ease"
 };
 
 const modalHeaderStyle = {
@@ -99,7 +100,8 @@ const activeTabStyle = {
 const tabContentStyle = {
   padding: "20px",
   overflowY: "auto",
-  flex: 1
+  flex: 1,
+  transition: "all 0.2s ease"
 };
 
 const importExportContainerStyle = {
@@ -165,7 +167,8 @@ class ConfigModal extends React.Component {
       importError: null,
       importSuccess: null,
       applySuccess: null,
-      showHelp: false
+      showHelp: false,
+      helpCloseHovered: false
     };
     this.fileInputRef = React.createRef();
   }
@@ -454,11 +457,30 @@ class ConfigModal extends React.Component {
 
     const helpContentStyle = {
       padding: "12px 16px",
+      paddingRight: "40px",
       backgroundColor: "#e7f3ff",
       borderBottom: "1px solid #b3d7ff",
       fontSize: "13px",
       color: "#0a4a7c",
-      lineHeight: "1.5"
+      lineHeight: "1.5",
+      position: "relative",
+      transition: "all 0.2s ease"
+    };
+
+    const helpCloseButtonStyle = {
+      position: "absolute",
+      top: "8px",
+      right: "8px",
+      background: this.state.helpCloseHovered ? "#cce5ff" : "none",
+      border: "none",
+      cursor: "pointer",
+      padding: "4px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: this.state.helpCloseHovered ? "#0a4a7c" : "#4a90a4",
+      borderRadius: "4px",
+      transition: "all 0.15s ease"
     };
 
     return (
@@ -495,6 +517,16 @@ class ConfigModal extends React.Component {
 
           {showHelp && (
             <div style={helpContentStyle}>
+              <button
+                type="button"
+                onClick={() => this.setState({ showHelp: false })}
+                onMouseEnter={() => this.setState({ helpCloseHovered: true })}
+                onMouseLeave={() => this.setState({ helpCloseHovered: false })}
+                style={helpCloseButtonStyle}
+                aria-label="Close help"
+              >
+                <FiX size={16} />
+              </button>
               <strong>Configuration Management</strong>
               <p style={{ margin: "8px 0 0 0" }}>
                 Save and restore your visualization settings to quickly switch between different views or share setups with collaborators.

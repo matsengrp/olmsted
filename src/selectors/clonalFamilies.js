@@ -59,8 +59,8 @@ const applyHighLevelFilters = (families, filters, datasets) => {
         const fieldValues = _.at(family, fieldName);
         familyValue = fieldValues.length ? fieldValues[0] : undefined;
       } else if (fieldName === "subject_id" || fieldName === "sample_id") {
-        // These are commonly nested under sample
-        familyValue = family.sample ? family.sample[fieldName] : undefined;
+        // Check top-level first, then nested under sample
+        familyValue = family[fieldName] || (family.sample ? family.sample[fieldName] : undefined);
       } else {
         familyValue = family[fieldName];
       }
