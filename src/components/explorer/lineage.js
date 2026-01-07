@@ -11,6 +11,7 @@ import { getNaiveVizData } from "./naive";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
 import * as explorerActions from "../../actions/explorer";
+import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Lineage focus viz
 // =================
@@ -73,6 +74,14 @@ const mapStateToProps = (state) => {
   updateLineageChain: explorerActions.updateLineageChain
 })
 class Lineage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      vegaViewReady: false
+    };
+    this.vegaViewRef = null;
+  }
+
   componentDidUpdate(prevProps) {
     const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
 
@@ -275,17 +284,28 @@ class Lineage extends React.Component {
               </div>
 
               <h3>Lineage</h3>
-              <Vega
-                key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
-                onParseError={(...args) => console.error("parse error:", args)}
-                debug
-                data={{
-                  naive_data: naiveData.source,
-                  cdr_bounds: cdrBounds,
-                  source_0: lineageData.lineage_alignment
-                }}
-                spec={seqAlignSpec(lineageData, { showMutationBorders })}
-              />
+              <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+                <Vega
+                  key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                  onNewView={(view) => {
+                    this.vegaViewRef = view;
+                    if (!this.state.vegaViewReady) {
+                      this.setState({ vegaViewReady: true });
+                    }
+                  }}
+                  onParseError={(...args) => console.error("parse error:", args)}
+                  debug
+                  data={{
+                    naive_data: naiveData.source,
+                    cdr_bounds: cdrBounds,
+                    source_0: lineageData.lineage_alignment
+                  }}
+                  spec={seqAlignSpec(lineageData, { showMutationBorders })}
+                />
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <VegaExportToolbar vegaView={this.vegaViewRef} filename={`olmsted-lineage-${selectedSeq.sequence_id}`} />
+              </div>
             </>
             )}
 

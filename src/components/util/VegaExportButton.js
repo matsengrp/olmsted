@@ -33,7 +33,24 @@ class VegaExportButton extends React.Component {
 
     this.setState({ exporting: true });
 
+    // Check if view has show_controls signal and temporarily hide controls for export
+    let originalShowControls = null;
+    let hasShowControls = false;
     try {
+      originalShowControls = vegaView.signal("show_controls");
+      hasShowControls = originalShowControls !== undefined;
+    } catch (e) {
+      // Signal doesn't exist, ignore
+    }
+
+    try {
+      // Hide controls before export if the signal exists
+      if (hasShowControls) {
+        vegaView.signal("show_controls", false).run();
+        // Small delay to ensure view updates
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
       const timestamp = new Date().toISOString().slice(0, 10);
       const fullFilename = `${filename}_${timestamp}`;
 
@@ -50,6 +67,14 @@ class VegaExportButton extends React.Component {
     } catch (error) {
       console.error("Export failed:", error);
     } finally {
+      // Restore original show_controls value
+      if (hasShowControls && originalShowControls !== null) {
+        try {
+          vegaView.signal("show_controls", originalShowControls).run();
+        } catch (e) {
+          // Ignore restore errors
+        }
+      }
       this.setState({ exporting: false });
     }
   };

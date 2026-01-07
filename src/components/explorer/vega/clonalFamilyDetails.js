@@ -830,11 +830,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // Generate ALL integers in visible range for vertical gridlines (step = 1)
         update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, 1)"
       },
-      // Size of mutation marks vertically, clamped to max 20;
+      // Size of mutation marks vertically, scales with tree vertical zoom;
       // with scale factor to give space between each mark
+      // Using sqrt for slower growth rate when zooming
       {
         name: "mutation_mark_height",
-        update: "clamp(leaf_size*0.75, 0, 20)"
+        update: "clamp(leaf_size*0.75*sqrt(tree_zoom_y), 0, 20*sqrt(tree_zoom_y))"
       },
       // Padding value to not cut off marks on fully zoomed out
       {
@@ -2242,7 +2243,28 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   }
                 }
               },
-              // /GAP character labels
+              // /GAP and X character background (black rect)
+              {
+                name: "x_and_gaps_bg",
+                type: "rect",
+                from: { data: "x_and_gaps" },
+                encode: {
+                  update: {
+                    xc: { scale: "aa_position", field: "position" },
+                    yc: { field: "y" },
+                    width: { signal: "mutation_mark_width" },
+                    height: { signal: "mutation_mark_height" },
+                    fill: { value: "#000000" },
+                    stroke: { signal: "show_mutation_borders ? '#333' : null" },
+                    strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
+                    tooltip: {
+                      signal:
+                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                    }
+                  }
+                }
+              },
+              // /GAP and X character labels (white text on black background)
               {
                 name: "x_and_gaps_labels",
                 type: "text",
@@ -2250,24 +2272,17 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 encode: {
                   enter: {
                     text: { field: "mut_to" },
-                    fill: { value: "#000" }
-                    // fontSize must be increased for gap character '-' to make it visible
+                    fill: { value: "#ffffff" }
                   },
                   update: {
-                    // center the text on x, y properties
                     align: { value: "center" },
                     baseline: { value: "middle" },
-                    // Style the '-' and 'X' differently to make them equally visible
-                    fontWeight: { signal: "datum.mut_to == \"-\" ? 'bold' : 'normal'" },
-                    font: { signal: "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'" },
+                    fontWeight: { value: "bold" },
+                    font: { value: "sans-serif" },
                     fontSize: {
-                      signal:
-                        'datum.mut_to == "-" ? clamp(mutation_mark_height*2, 0, mutation_mark_width*2) : clamp(mutation_mark_height*1.5, 0, mutation_mark_width*2)'
+                      signal: "clamp(mutation_mark_height * 0.8, 6, mutation_mark_width * 1.2)"
                     },
-                    opacity: { value: 0.9 },
-                    y: {
-                      field: "y"
-                    },
+                    y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal:
@@ -2518,9 +2533,9 @@ const seqAlignSpec = (family, options = {}) => {
 
   return {
     $schema: "https://vega.github.io/schema/vega/v5.json",
+    autosize: { type: "pad", resize: true },
     padding: 5,
     height: height,
-    width: 1000,
     style: "cell",
     data: [
       {
@@ -2564,6 +2579,16 @@ const seqAlignSpec = (family, options = {}) => {
       }
     ],
     signals: [
+      {
+        name: "width",
+        update: "floor(windowSize()[0]*0.7)",
+        on: [
+          {
+            events: { source: "window", type: "resize" },
+            update: "floor(windowSize()[0]*0.7)"
+          }
+        ]
+      },
       {
         name: "max_aa_seq_length",
         update: "max(ceil(dna_j_gene_end[1]/3), position_extent ? position_extent[1] + 1 : 0)"
@@ -2684,7 +2709,28 @@ const seqAlignSpec = (family, options = {}) => {
           }
         }
       },
-      // Gap character labels
+      // Gap and X character background (black rect)
+      {
+        name: "x_and_gaps_bg",
+        type: "rect",
+        from: { data: "x_and_gaps" },
+        encode: {
+          update: {
+            xc: { scale: "aa_position", field: "position" },
+            yc: { scale: "y", field: "seq_id" },
+            width: { signal: "mark_width" },
+            height: { signal: "mutation_mark_height" },
+            fill: { value: "#000000" },
+            stroke: { signal: "show_mutation_borders ? '#333' : null" },
+            strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
+            tooltip: {
+              signal:
+                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+            }
+          }
+        }
+      },
+      // Gap and X character labels (white text on black background)
       {
         name: "x_and_gap_labels",
         type: "text",
@@ -2692,21 +2738,19 @@ const seqAlignSpec = (family, options = {}) => {
         encode: {
           enter: {
             text: { field: "mut_to" },
-            fill: { value: "#000" }
+            fill: { value: "#ffffff" }
           },
           update: {
             align: { value: "center" },
             baseline: { value: "middle" },
-            // Style the '-' and 'X' differently to make them equally visible
-            fontSize: { signal: 'datum.mut_to == "-" ? mutation_mark_height*2 : mutation_mark_height*1.5' },
-            fontWeight: { signal: "datum.mut_to == \"-\" ? 'bold' : 'normal'" },
-            font: { signal: "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'" },
-            opacity: { value: 0.7 },
+            fontWeight: { value: "bold" },
+            font: { value: "sans-serif" },
+            fontSize: { signal: "clamp(mutation_mark_height * 0.8, 6, mark_width * 1.2)" },
             y: { scale: "y", field: "seq_id" },
             x: { scale: "aa_position", field: "position" },
             tooltip: {
               signal:
-                '{"position": format(datum["position"], ""),  "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
             }
           }
         }
