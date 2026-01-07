@@ -92,6 +92,9 @@ const datasets = (
     case types.CLEAR_PENDING_DATASET_LOADS: {
       return { ...state, pendingDatasetLoads: [] };
     }
+    case types.SET_PENDING_DATASET_LOADS: {
+      return { ...state, pendingDatasetLoads: action.datasetIds || [] };
+    }
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: {
       return { ...state, pendingDatasetLoads: action.pendingDatasetLoads || state.pendingDatasetLoads };
     }

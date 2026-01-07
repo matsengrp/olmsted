@@ -43,17 +43,6 @@ const textareaStyle = {
   resize: "vertical"
 };
 
-const checkboxContainerStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"
-};
-
-const checkboxLabelStyle = {
-  fontSize: "14px",
-  color: "#333"
-};
-
 const buttonStyle = {
   padding: "12px 20px",
   borderRadius: "4px",
@@ -107,7 +96,6 @@ class ConfigSaveForm extends React.Component {
     this.state = {
       name: "",
       description: "",
-      isDatasetSpecific: false,
       isSaving: false,
       error: null,
       success: null
@@ -120,10 +108,6 @@ class ConfigSaveForm extends React.Component {
 
   handleDescriptionChange = (e) => {
     this.setState({ description: e.target.value });
-  };
-
-  handleDatasetSpecificChange = (e) => {
-    this.setState({ isDatasetSpecific: e.target.checked });
   };
 
   getCurrentSettings = () => {
@@ -140,7 +124,7 @@ class ConfigSaveForm extends React.Component {
   handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, description, isDatasetSpecific } = this.state;
+    const { name, description } = this.state;
 
     if (!name.trim()) {
       this.setState({ error: "Please enter a name for this configuration" });
@@ -150,15 +134,14 @@ class ConfigSaveForm extends React.Component {
     this.setState({ isSaving: true, error: null, success: null });
 
     try {
-      const { dispatch, onSave, currentDatasetId } = this.props;
+      const { dispatch, onSave } = this.props;
 
       // Get current settings
       const settings = this.getCurrentSettings();
 
       // Create config object
       const config = createConfig(name.trim(), settings, {
-        description: description.trim(),
-        datasetId: isDatasetSpecific ? currentDatasetId : null
+        description: description.trim()
       });
 
       // Save to IndexedDB and Redux
@@ -167,7 +150,6 @@ class ConfigSaveForm extends React.Component {
       this.setState({
         name: "",
         description: "",
-        isDatasetSpecific: false,
         isSaving: false,
         success: `Configuration "${name}" saved successfully!`
       });
@@ -185,8 +167,7 @@ class ConfigSaveForm extends React.Component {
   };
 
   render() {
-    const { name, description, isDatasetSpecific, isSaving, error, success } = this.state;
-    const { currentDatasetId } = this.props;
+    const { name, description, isSaving, error, success } = this.state;
 
     const canSubmit = name.trim().length > 0 && !isSaving;
 
@@ -224,24 +205,9 @@ class ConfigSaveForm extends React.Component {
           />
         </div>
 
-        {currentDatasetId && (
-          <div style={checkboxContainerStyle}>
-            <input
-              id="dataset-specific"
-              type="checkbox"
-              checked={isDatasetSpecific}
-              onChange={this.handleDatasetSpecificChange}
-              disabled={isSaving}
-            />
-            <label style={checkboxLabelStyle} htmlFor="dataset-specific">
-              Save for current dataset only
-            </label>
-          </div>
-        )}
-
         <div style={hintStyle}>
           This will save your current scatterplot, tree, and ancestral sequence visualization settings,
-          including axis selections, colors, sizes, and display options.
+          including axis selections, colors, sizes, zoom/pan state, and display options.
         </div>
 
         <button
@@ -257,12 +223,7 @@ class ConfigSaveForm extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-  reduxState: state,
-  // Get current dataset ID if only one is loaded
-  currentDatasetId:
-    state.datasets.availableDatasets.filter((d) => d.loading === "LOADED").length === 1
-      ? state.datasets.availableDatasets.find((d) => d.loading === "LOADED")?.dataset_id
-      : null
+  reduxState: state
 });
 
 export default connect(mapStateToProps)(ConfigSaveForm);

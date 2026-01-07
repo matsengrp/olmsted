@@ -4,7 +4,7 @@
  */
 
 // Current config schema version
-export const CONFIG_VERSION = "1.0";
+export const CONFIG_VERSION = "1.2";
 
 // Reserved keyword for "use application default"
 export const DEFAULT_KEYWORD = "<default>";
@@ -19,7 +19,11 @@ export const SCATTERPLOT_SIGNALS = [
   "sizeBy",
   "symbolSize",
   "symbolOpacity",
-  "filledShapes"
+  "filledShapes",
+  // Zoom/pan state
+  "zoom_level",
+  "pan_x",
+  "pan_y"
 ];
 
 // Tree signal names that can be persisted
@@ -36,7 +40,10 @@ export const TREE_SIGNALS = [
   "viz_height_ratio",
   "show_alignment",
   "show_mutation_borders",
-  "show_controls"
+  "show_controls",
+  // Alignment zoom/pan state (tree zoom/pan are computed signals, not directly settable)
+  "alignment_zoom",
+  "alignment_pan"
 ];
 
 // Default scatterplot settings
@@ -49,7 +56,11 @@ export const DEFAULT_SCATTERPLOT_SETTINGS = {
   sizeBy: "<none>",
   symbolSize: 1,
   symbolOpacity: 0.4,
-  filledShapes: false
+  filledShapes: false,
+  // Zoom/pan defaults
+  zoom_level: 0.9,
+  pan_x: 0,
+  pan_y: 0
 };
 
 // Default tree settings
@@ -66,12 +77,15 @@ export const DEFAULT_TREE_SETTINGS = {
   viz_height_ratio: 0.8,
   show_alignment: true,
   show_mutation_borders: false,
-  show_controls: true
+  show_controls: true,
+  // Alignment zoom/pan defaults
+  alignment_zoom: 1,
+  alignment_pan: 0
 };
 
 // Default global settings
 export const DEFAULT_GLOBAL_SETTINGS = {
-  locus: "All",
+  filters: {},
   selectedChain: "heavy"
 };
 
@@ -162,7 +176,7 @@ export const extractGlobalSettings = (reduxState) => {
   }
 
   return {
-    locus: reduxState.clonalFamilies.locus || DEFAULT_GLOBAL_SETTINGS.locus,
+    filters: reduxState.clonalFamilies.filters || DEFAULT_GLOBAL_SETTINGS.filters,
     selectedChain: reduxState.clonalFamilies.selectedChain || DEFAULT_GLOBAL_SETTINGS.selectedChain
   };
 };
@@ -248,14 +262,33 @@ export const applyTreeSettings = (vegaView, settings) => {
  * Apply global settings via Redux dispatch
  * @param {Function} dispatch - Redux dispatch function
  * @param {Object} settings - Global settings to apply
- * @param {Object} actions - Action creators { filterLocus, updateSelectedChain }
+ * @param {Object} actions - Action creators { setFilter, clearAllFilters, updateSelectedChain }
  */
 export const applyGlobalSettings = (dispatch, settings, actions) => {
   if (!dispatch || !settings || !actions) return;
 
-  if (settings.locus !== undefined && actions.filterLocus) {
-    const resolvedLocus = resolveValue(settings.locus, DEFAULT_GLOBAL_SETTINGS.locus);
-    dispatch(actions.filterLocus(resolvedLocus));
+  // Handle filters
+  if (settings.filters !== undefined && actions.setFilter && actions.clearAllFilters) {
+    // First clear all existing filters
+    dispatch(actions.clearAllFilters());
+
+    // Then apply each filter from the config
+    const filters = resolveValue(settings.filters, DEFAULT_GLOBAL_SETTINGS.filters);
+    if (filters && typeof filters === "object") {
+      Object.entries(filters).forEach(([field, values]) => {
+        if (Array.isArray(values) && values.length > 0) {
+          dispatch(actions.setFilter(field, values));
+        }
+      });
+    }
+  }
+
+  // Handle legacy locus field for backward compatibility
+  if (settings.locus !== undefined && settings.filters === undefined && actions.setFilter) {
+    const locus = settings.locus;
+    if (locus && locus !== "All") {
+      dispatch(actions.setFilter("sample.locus", [locus]));
+    }
   }
 
   if (settings.selectedChain !== undefined && actions.updateSelectedChain) {

@@ -139,6 +139,10 @@ export const clearDatasetSelections = () => {
   return { type: types.CLEAR_DATASET_SELECTIONS };
 };
 
+export const setPendingDatasetLoads = (datasetIds) => {
+  return { type: types.SET_PENDING_DATASET_LOADS, datasetIds };
+};
+
 export const batchUpdateDatasets = () => {
   return { type: types.BATCH_UPDATE_DATASETS };
 };

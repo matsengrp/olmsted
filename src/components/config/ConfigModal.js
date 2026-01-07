@@ -4,6 +4,7 @@
 
 import React from "react";
 import { connect } from "react-redux";
+import { FiHelpCircle } from "react-icons/fi";
 import * as configActions from "../../actions/configs";
 import * as explorerActions from "../../actions/explorer";
 import ConfigList from "./ConfigList";
@@ -163,7 +164,8 @@ class ConfigModal extends React.Component {
       activeTab: "saved", // 'saved', 'save', 'importExport'
       importError: null,
       importSuccess: null,
-      applySuccess: null
+      applySuccess: null,
+      showHelp: false
     };
     this.fileInputRef = React.createRef();
   }
@@ -197,9 +199,26 @@ class ConfigModal extends React.Component {
 
     // Apply global settings via Redux
     if (config.settings.global) {
-      if (config.settings.global.locus !== undefined) {
-        const locus = resolveValue(config.settings.global.locus, DEFAULT_GLOBAL_SETTINGS.locus);
-        dispatch(explorerActions.filterLocus(locus));
+      // Handle filters
+      if (config.settings.global.filters !== undefined) {
+        // First clear all existing filters
+        dispatch(explorerActions.clearAllFilters());
+        // Then apply each filter from the config
+        const filters = resolveValue(config.settings.global.filters, DEFAULT_GLOBAL_SETTINGS.filters);
+        if (filters && typeof filters === "object") {
+          Object.entries(filters).forEach(([field, values]) => {
+            if (Array.isArray(values) && values.length > 0) {
+              dispatch(explorerActions.setFilter(field, values));
+            }
+          });
+        }
+      }
+      // Handle legacy locus field for backward compatibility
+      if (config.settings.global.locus !== undefined && config.settings.global.filters === undefined) {
+        const locus = config.settings.global.locus;
+        if (locus && locus !== "All") {
+          dispatch(explorerActions.setFilter("sample.locus", [locus]));
+        }
       }
       if (config.settings.global.selectedChain !== undefined) {
         const chain = resolveValue(config.settings.global.selectedChain, DEFAULT_GLOBAL_SETTINGS.selectedChain);
@@ -268,7 +287,7 @@ class ConfigModal extends React.Component {
     }
 
     // Apply default global settings
-    dispatch(explorerActions.filterLocus(DEFAULT_GLOBAL_SETTINGS.locus));
+    dispatch(explorerActions.clearAllFilters());
     dispatch(explorerActions.updateSelectedChain(DEFAULT_GLOBAL_SETTINGS.selectedChain));
 
     // Apply default lineage settings
@@ -415,11 +434,32 @@ class ConfigModal extends React.Component {
     }
   }
 
+  toggleHelp = () => {
+    this.setState((prevState) => ({ showHelp: !prevState.showHelp }));
+  };
+
   render() {
     const { isOpen } = this.props;
-    const { activeTab } = this.state;
+    const { activeTab, showHelp } = this.state;
 
     if (!isOpen) return null;
+
+    const helpIconStyle = {
+      marginLeft: "8px",
+      cursor: "pointer",
+      color: showHelp ? "#4a90a4" : "#999",
+      transition: "color 0.15s ease",
+      verticalAlign: "middle"
+    };
+
+    const helpContentStyle = {
+      padding: "12px 16px",
+      backgroundColor: "#e7f3ff",
+      borderBottom: "1px solid #b3d7ff",
+      fontSize: "13px",
+      color: "#0a4a7c",
+      lineHeight: "1.5"
+    };
 
     return (
       <div
@@ -435,6 +475,14 @@ class ConfigModal extends React.Component {
           <div style={modalHeaderStyle}>
             <h2 id="config-modal-title" style={modalTitleStyle}>
               Visualization Settings
+              <FiHelpCircle
+                size={18}
+                style={helpIconStyle}
+                onClick={this.toggleHelp}
+                onMouseEnter={(e) => { e.target.style.color = "#4a90a4"; }}
+                onMouseLeave={(e) => { e.target.style.color = showHelp ? "#4a90a4" : "#999"; }}
+                title="Click for help"
+              />
             </h2>
             <button
               style={closeButtonStyle}
@@ -444,6 +492,22 @@ class ConfigModal extends React.Component {
               &times;
             </button>
           </div>
+
+          {showHelp && (
+            <div style={helpContentStyle}>
+              <strong>Configuration Management</strong>
+              <p style={{ margin: "8px 0 0 0" }}>
+                Save and restore your visualization settings including scatterplot options (axes, colors, shapes, faceting, zoom/pan),
+                tree view settings (display options, alignment zoom/pan), lineage display preferences, and optionally your current selections.
+              </p>
+              <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                <li><strong>Saved Configs:</strong> View, apply, update, or delete your saved configurations</li>
+                <li><strong>Save Current:</strong> Save your current visualization settings as a new configuration</li>
+                <li><strong>Import/Export:</strong> Share configurations as JSON files between sessions or users</li>
+                <li><strong>Reset to Defaults:</strong> Restore all settings to their original values</li>
+              </ul>
+            </div>
+          )}
 
           <div style={tabContainerStyle}>
             <button
