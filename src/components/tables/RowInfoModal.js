@@ -92,18 +92,21 @@ const rowStyle = {
 const labelCellStyle = {
   color: "#666",
   fontWeight: "500",
-  padding: "8px 12px 8px 0",
+  padding: "8px 12px",
   verticalAlign: "top",
   whiteSpace: "nowrap",
-  width: "40%"
+  width: "40%",
+  textAlign: "right",
+  borderRight: "1px solid #dee2e6"
 };
 
 const valueCellStyle = {
-  padding: "8px 0",
+  padding: "8px 12px",
   verticalAlign: "top",
   wordBreak: "break-word",
   fontFamily: "monospace",
-  fontSize: "13px"
+  fontSize: "13px",
+  textAlign: "left"
 };
 
 // closeButtonStyle is now generated dynamically in the component for hover support
@@ -120,13 +123,37 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
   }
 
   // Get all keys from the datum, excluding internal/complex fields
-  const excludeKeys = ["trees", "nodes", "seqs", "sequences", "__typename"];
-  const entries = Object.entries(datum).filter(([key, value]) => {
-    if (excludeKeys.includes(key)) return false;
-    // Exclude very large arrays
-    if (Array.isArray(value) && value.length > 10) return false;
-    return true;
-  });
+  const excludeKeys = ["trees", "nodes", "seqs", "sequences", "__typename", "trees_meta"];
+  const omittedFields = [];
+
+  // Flatten nested objects (like sample) for better display
+  const flattenObject = (obj, prefix = "") => {
+    const result = [];
+    for (const [key, value] of Object.entries(obj)) {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      if (excludeKeys.includes(key)) {
+        omittedFields.push(fullKey);
+        continue;
+      }
+      // Exclude very large arrays
+      if (Array.isArray(value) && value.length > 10) {
+        omittedFields.push(`${fullKey} (${value.length} items)`);
+        continue;
+      }
+      // Flatten nested plain objects (but not arrays or null)
+      if (value && typeof value === "object" && !Array.isArray(value) && key !== "sample") {
+        result.push(...flattenObject(value, fullKey));
+      } else if (key === "sample" && value && typeof value === "object") {
+        // Special handling for sample - flatten it with "sample." prefix
+        result.push(...flattenObject(value, "sample"));
+      } else {
+        result.push([fullKey, value]);
+      }
+    }
+    return result;
+  };
+
+  const entries = flattenObject(datum);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -197,9 +224,9 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
               ))}
             </tbody>
           </table>
-          {Object.keys(datum).length > entries.length && (
+          {omittedFields.length > 0 && (
             <div style={{ marginTop: "12px", color: "#888", fontStyle: "italic", fontSize: "13px" }}>
-              {Object.keys(datum).length - entries.length} additional fields not shown (large arrays or internal data)
+              Fields not shown: {omittedFields.join(", ")}
             </div>
           )}
         </div>
