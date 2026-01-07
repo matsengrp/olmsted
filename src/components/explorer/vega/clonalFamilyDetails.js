@@ -1055,7 +1055,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "show_controls",
         value: true,
         ...maybeAddBind({
-          name: "Show controls",
+          name: "Show zoom/pan controls",
           input: "checkbox"
         })
       }

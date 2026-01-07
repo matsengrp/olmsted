@@ -278,7 +278,7 @@ class ClonalFamiliesViz extends React.Component {
                 onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
               >
                 {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
-                <span>{hideControls ? "Show Controls" : "Hide Controls"}</span>
+                <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>
               </button>
               <VegaExportToolbar vegaView={this.state.vegaView} filename="olmsted-scatterplot" />
             </div>

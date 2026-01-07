@@ -336,7 +336,7 @@ const createZoomPanSignals = () => [
     name: "show_controls",
     value: true,
     bind: {
-      name: "Show controls",
+      name: "Show zoom/pan controls",
       input: "checkbox"
     }
   },

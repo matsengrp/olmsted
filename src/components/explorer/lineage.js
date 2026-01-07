@@ -201,9 +201,13 @@ class Lineage extends React.Component {
                     <li><strong>Download FASTA:</strong> Download all sequences in the lineage as a FASTA file</li>
                   </ul>
                   <strong>Display Options:</strong>
-                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li><strong>Show mutation borders:</strong> Draw borders around mutated positions for easier identification</li>
                     <li><strong>Show entire lineage:</strong> Include all ancestral nodes (default shows only nodes with mutations)</li>
+                  </ul>
+                  <strong>Export:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                    <li><strong>Export PNG/SVG:</strong> Save the lineage visualization as an image</li>
                   </ul>
                 </div>
               }

@@ -99,6 +99,11 @@ class TreeHeader extends React.Component {
               below the tree showing the mutational history from naive to the selected sequence.
               <br />
               <br />
+              <strong>Export &amp; Display Options:</strong>
+              <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                <li><strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view</li>
+                <li><strong>Export PNG/SVG:</strong> Save the tree visualization as an image</li>
+              </ul>
             </div>
           }
         />
@@ -788,7 +793,7 @@ class TreeViz extends React.Component {
               onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
             >
               {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
-              <span>{hideControls ? "Show Controls" : "Hide Controls"}</span>
+              <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>
             </button>
             <VegaExportToolbar
               vegaView={this.state.currentVegaView}

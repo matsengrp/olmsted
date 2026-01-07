@@ -497,15 +497,25 @@ class ConfigModal extends React.Component {
             <div style={helpContentStyle}>
               <strong>Configuration Management</strong>
               <p style={{ margin: "8px 0 0 0" }}>
-                Save and restore your visualization settings including scatterplot options (axes, colors, shapes, faceting, zoom/pan),
-                tree view settings (display options, alignment zoom/pan), lineage display preferences, and optionally your current selections.
+                Save and restore your visualization settings to quickly switch between different views or share setups with collaborators.
               </p>
-              <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
-                <li><strong>Saved Configs:</strong> View, apply, update, or delete your saved configurations</li>
-                <li><strong>Save Current:</strong> Save your current visualization settings as a new configuration</li>
-                <li><strong>Import/Export:</strong> Share configurations as JSON files between sessions or users</li>
-                <li><strong>Reset to Defaults:</strong> Restore all settings to their original values</li>
+              <p style={{ margin: "8px 0 0 0" }}><strong>What gets saved:</strong></p>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
+                <li><strong>Scatterplot:</strong> X/Y axes, color/shape/size mappings, faceting, symbol size &amp; opacity, zoom/pan state</li>
+                <li><strong>Tree view:</strong> Branch coloring, leaf sizing, display options, alignment zoom/pan</li>
+                <li><strong>Lineage:</strong> Show entire lineage, mutation borders, chain selection</li>
+                <li><strong>Filters:</strong> Active filter selections (locus, subject, sample, V/J genes, dataset)</li>
               </ul>
+              <p style={{ margin: "8px 0 0 0" }}><strong>How to use:</strong></p>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
+                <li><strong>Saved Configs:</strong> Click the checkmark to apply a config. The green refresh button updates the active config with current settings</li>
+                <li><strong>Save Current:</strong> Give your current view a name and optional description to save it</li>
+                <li><strong>Import/Export:</strong> Download configs as JSON files to share or backup. Import previously exported configs</li>
+                <li><strong>Reset to Defaults:</strong> Restore all visualization settings to their original application defaults</li>
+              </ul>
+              <p style={{ margin: "8px 0 0 0", fontStyle: "italic" }}>
+                Tip: Configurations are stored in your browser and persist across sessions. Export important configs as JSON files for backup.
+              </p>
             </div>
           )}
 

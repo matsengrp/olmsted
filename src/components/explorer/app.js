@@ -363,14 +363,21 @@ class App extends React.Component {
                       <br />
                       <strong>Loading Datasets:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                        <li><strong>Select datasets:</strong> Check the boxes in the "Select" column for datasets you want to visualize</li>
+                        <li><strong>Select datasets:</strong> Check the boxes in the &quot;Select&quot; column for datasets you want to visualize</li>
                         <li><strong>Update Visualization:</strong> Click this button to load selected datasets or unload unselected ones</li>
-                        <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded, loading, or unloaded</li>
+                        <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded (green), loading (blue), or unloaded (gray)</li>
+                      </ul>
+                      <strong>Table Features:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Star datasets:</strong> Click the star icon to mark datasets for easy reference</li>
+                        <li><strong>Info button:</strong> Click the blue info icon to view all metadata fields for a dataset</li>
+                        <li><strong>Sorting:</strong> Click column headers to sort. Click again to reverse order</li>
+                        <li><strong>Resize columns:</strong> Drag column borders to adjust width</li>
                       </ul>
                       <strong>Managing Datasets:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
-                        <li><strong>Upload new data:</strong> Click "Manage Datasets" to return to the main page where you can upload new datasets</li>
-                        <li><strong>Delete datasets:</strong> Use the "Manage Datasets" page to remove datasets from local storage</li>
+                        <li><strong>Upload new data:</strong> Click &quot;Manage Datasets&quot; to return to the main page where you can upload new datasets</li>
+                        <li><strong>Delete datasets:</strong> Use the &quot;Manage Datasets&quot; page to remove datasets from local storage</li>
                       </ul>
                       Multiple datasets can be loaded simultaneously for comparative analysis across different samples or subjects.
                     </div>
@@ -431,6 +438,11 @@ class App extends React.Component {
                         <li><strong>Shape by:</strong> Change point shape by categorical variables</li>
                         <li><strong>Facet by:</strong> Split the plot into separate panels by categorical variables</li>
                       </ul>
+                      <strong>Export &amp; Display Options:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                        <li><strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view</li>
+                        <li><strong>Export PNG/SVG:</strong> Save the scatterplot as an image</li>
+                      </ul>
                     </div>
                   }
                 />
@@ -459,12 +471,24 @@ class App extends React.Component {
                         <li><strong>Naive sequence visualization:</strong> Graphical representation of V(D)J recombination showing gene segments and CDR regions</li>
                         <li><strong>Metadata:</strong> Clone ID, unique sequence count, mutation frequency, and other family-level statistics</li>
                       </ul>
-                      <strong>Interactions:</strong>
+                      <strong>Table Interactions:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                        <li><strong>Sorting:</strong> Click on column headers to sort the table by that field</li>
-                        <li><strong>Selection:</strong> Click the checkbox in the "Select" column to choose a clonal family for detailed visualization</li>
-                        <li><strong>Auto-selection:</strong> The table automatically selects the top clonal family according to the current sort order</li>
+                        <li><strong>Selection:</strong> Click a row or the checkbox in the &quot;Select&quot; column to choose a clonal family for detailed visualization</li>
+                        <li><strong>Sorting:</strong> Click column headers to sort. Click again to reverse order</li>
+                        <li><strong>Info button:</strong> Click the blue info icon to view all available data fields for a clonal family in a modal dialog</li>
+                        <li><strong>Resize columns:</strong> Drag column borders to adjust width</li>
                       </ul>
+                      <strong>Starring Clonal Families:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
+                        <li><strong>Persistence:</strong> Stars persist when the scatterplot selection changes, allowing you to track families across multiple selections</li>
+                        <li><strong>Starred first:</strong> Check this option to sort starred families to the top of the table</li>
+                        <li><strong>Only starred:</strong> Check this option to filter and show only starred families</li>
+                        <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible families. Use &quot;Clear Stars&quot; to remove all stars from the entire dataset</li>
+                      </ul>
+                      <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with applied filters and sorting) to a CSV file.
+                      <br />
+                      <br />
                       When you select a clonal family from the table, its phylogenetic tree and alignment are displayed below
                       in the Clonal Family Details section. For paired heavy/light chain data, trees for both chains will be available.
                     </div>

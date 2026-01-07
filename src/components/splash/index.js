@@ -178,16 +178,31 @@ class Splash extends React.Component {
                   <strong>Managing Datasets:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
-                      <strong>Loading datasets:</strong> Click the status indicator in the &quot;Load&quot; column to
-                      load or unload a dataset. Loaded datasets appear with a blue background.
+                      <strong>Loading datasets:</strong> Click the row to load or unload a dataset.  The Load column indicates the status of the dataset.
                     </li>
                     <li>
-                      <strong>Deleting datasets:</strong> Click the &quot;Delete&quot; button in the Actions column to
+                      <strong>Starring datasets:</strong> Click the star icon to mark important datasets. Starred
+                      datasets appear at the top of the table.
+                    </li>
+                    <li>
+                      <strong>Info button:</strong> Click the info button to view all dataset metadata in a modal.
+                    </li>
+                    <li>
+                      <strong>Deleting datasets:</strong> Click the delete button in the Actions column to
                       remove a dataset from your local storage. This action cannot be undone.
                     </li>
                     <li>
-                      <strong>Clear All:</strong> Use the &quot;Clear All Datasets&quot; button to remove all datasets
+                      <strong>Delete All:</strong> Use the &quot;Delete All Datasets&quot; button to remove all datasets
                       at once. You will be prompted to confirm this action.
+                    </li>
+                  </ul>
+                  <strong>Table Controls:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                    <li>
+                      <strong>Sorting:</strong> Click column headers to sort. Click again to toggle ascending/descending order.
+                    </li>
+                    <li>
+                      <strong>Resizing columns:</strong> Drag column borders to resize. Double-click to auto-fit content.
                     </li>
                   </ul>
                   <strong>Exploring Data:</strong>
@@ -300,7 +315,7 @@ class Splash extends React.Component {
                 onClick={this.handleClearAll}
               >
                 <FiTrash2 size={20} />
-                Clear All Datasets
+                Delete All Datasets
               </button>
             </div>
           </CenterContent>
