@@ -367,9 +367,15 @@ class App extends React.Component {
                         <li><strong>Update Visualization:</strong> Click this button to load selected datasets or unload unselected ones</li>
                         <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded (green), loading (blue), or unloaded (gray)</li>
                       </ul>
+                      <strong>Starring Datasets:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
+                        <li><strong>Starred first:</strong> Check this option to sort starred datasets to the top of the table</li>
+                        <li><strong>Only starred:</strong> Check this option to filter and show only starred datasets</li>
+                        <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars</li>
+                      </ul>
                       <strong>Table Features:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                        <li><strong>Star datasets:</strong> Click the star icon to mark datasets for easy reference</li>
                         <li><strong>Info button:</strong> Click the blue info icon to view all metadata fields for a dataset</li>
                         <li><strong>Sorting:</strong> Click column headers to sort. Click again to reverse order</li>
                         <li><strong>Resize columns:</strong> Drag column borders to adjust width</li>
