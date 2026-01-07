@@ -173,7 +173,7 @@ const createControlSignals = () => [
     name: "facet_by_signal",
     value: "<none>",
     bind: {
-      name: "Facet by field ",
+      name: "Facet columns",
       input: "select",
       options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]
     }
