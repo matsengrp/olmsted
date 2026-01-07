@@ -12,6 +12,8 @@ const getDatasets = (state) => state.datasets.availableDatasets;
 
 const getLocusFilter = (state) => state.clonalFamilies.locus;
 
+const getHighLevelFilters = (state) => state.clonalFamilies.filters;
+
 export const countLoadedClonalFamilies = (datasets) => {
   let clones = 0;
   if (datasets.length > 0) {
@@ -23,7 +25,56 @@ export const countLoadedClonalFamilies = (datasets) => {
   return clones;
 };
 
-const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
+/**
+ * Apply high-level filters to a list of clonal families.
+ * Filters is an object like: { fieldName: [selectedValues], ... }
+ * A family passes if ALL filter fields match (AND logic).
+ * For each field, the family passes if its value is in the selected values (OR logic within field).
+ */
+const applyHighLevelFilters = (families, filters, datasets) => {
+  if (!filters || Object.keys(filters).length === 0) {
+    return families;
+  }
+
+  return _.filter(families, (family) => {
+    // Check each filter field
+    for (const [fieldName, selectedValues] of Object.entries(filters)) {
+      if (!selectedValues || selectedValues.length === 0) {
+        continue; // No filter for this field
+      }
+
+      let familyValue;
+
+      // Handle special field names that need resolution
+      if (fieldName === "dataset_name") {
+        const dataset = datasets.find((d) => d.dataset_id === family.dataset_id);
+        familyValue = dataset ? dataset.name || dataset.dataset_id : family.dataset_id;
+      } else if (fieldName === "sample.locus") {
+        // Special case-insensitive handling for locus
+        familyValue = family.sample && family.sample.locus
+          ? family.sample.locus.toUpperCase()
+          : undefined;
+      } else if (fieldName.includes(".")) {
+        // Handle nested fields like "sample.subject_id"
+        const fieldValues = _.at(family, fieldName);
+        familyValue = fieldValues.length ? fieldValues[0] : undefined;
+      } else if (fieldName === "subject_id" || fieldName === "sample_id") {
+        // These are commonly nested under sample
+        familyValue = family.sample ? family.sample[fieldName] : undefined;
+      } else {
+        familyValue = family[fieldName];
+      }
+
+      // Check if family value is in selected values
+      if (!selectedValues.includes(familyValue)) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
+
+const computeAvailableClonalFamilies = (byDatasetId, datasets, filters) => {
   let availableClonalFamilies = [];
   if (datasets.length > 0) {
     _.forEach(datasets, (dataset) => {
@@ -32,20 +83,13 @@ const computeAvailableClonalFamilies = (byDatasetId, datasets, locus) => {
       }
     });
   }
-  // Case-insensitive locus filtering: IGH matches 'igh', 'IGH', 'Igh', etc.
-  return locus === "All"
-    ? availableClonalFamilies
-    : _.filter(availableClonalFamilies, (family) => {
-        return (
-          family.sample &&
-          family.sample.locus &&
-          family.sample.locus.toUpperCase() === locus.toUpperCase()
-        );
-      });
+
+  // Apply high-level filters (including locus filter)
+  return applyHighLevelFilters(availableClonalFamilies, filters, datasets);
 };
 
 export const getAvailableClonalFamilies = createDeepEqualSelector(
-  [getClonalFamiliesDict, getDatasets, getLocusFilter],
+  [getClonalFamiliesDict, getDatasets, getHighLevelFilters],
   computeAvailableClonalFamilies
 );
 

@@ -14,6 +14,7 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CollapsibleSection } from "../util/collapsibleSection";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import ConfigModal from "../config/ConfigModal";
+import FilterPanel from "./FilterPanel";
 import { VegaViewProvider } from "../config/VegaViewContext";
 
 // STYLES
@@ -125,12 +126,10 @@ function Overlay({ styles, mobileDisplay, handler }) {
     pendingDatasetLoads: state.datasets.pendingDatasetLoads,
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     selectedSeq: state.clonalFamilies.selectedSeq,
-    locus: state.clonalFamilies.locus,
     loadedClonalFamilies: clonalFamiliesSelectors.countLoadedClonalFamilies(state.datasets.availableDatasets)
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus)),
     updateCurrentSection: (section) => dispatch(explorerActions.updateCurrentSection(section))
   })
 )
@@ -300,8 +299,6 @@ class App extends React.Component {
       browserDimensions,
       availableDatasets,
       dispatch,
-      locus,
-      filterLocus,
       selectedFamily,
       selectedSeq,
       loadedClonalFamilies
@@ -397,9 +394,9 @@ class App extends React.Component {
                       See the <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
                       <br />
                       <br />
-                      <strong>Locus Filter:</strong> Restrict the scatterplot to clonal families from a specific immunoglobulin locus:
-                      heavy chain (IGH), light chain lambda (IGL), or light chain kappa (IGK). Choose &quot;All&quot; to visualize
-                      clonal families from all loci simultaneously.
+                      <strong>Filters:</strong> Use the &quot;Filters&quot; panel below to restrict which clonal families are displayed.
+                      Filter by locus (IGH, IGK, IGL), subject, sample, V gene, J gene, or dataset. Multiple values can be
+                      selected for each filter field. Active filters are shown as chips that can be individually removed.
                       <br />
                       <br />
                       <strong>Control Modes:</strong> The scatterplot has two interaction modes accessible via buttons in the upper right:
@@ -437,24 +434,12 @@ class App extends React.Component {
                     </div>
                   }
                 />
-                <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
-                <div style={{ marginBottom: 5 }}>
-                  <span style={{ fontSize: 14, fontWeight: "bold", marginRight: 8 }}>Filter by locus:</span>
-                  <select
-                    id="locus-select"
-                    value={locus}
-                    onChange={(event) => {
-                      filterLocus(event.target.value);
-                    }}
-                    aria-label="Filter by locus"
-                  >
-                    {["IGH", "IGK", "IGL", "All"].map((locus_option) => (
-                      <option key={locus_option} value={locus_option}>
-                        {locus_option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CollapsibleSection
+                  titleText="Filters"
+                  defaultOpen={false}
+                >
+                  <FilterPanel />
+                </CollapsibleSection>
                 <SelectedFamiliesSummary />
                 <ClonalFamiliesViz />
               </CollapsibleSection>

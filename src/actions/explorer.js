@@ -111,6 +111,21 @@ export const filterLocus = (locus) => {
   return { type: types.FILTER_LOCUS, locus };
 };
 
+// High-level filtering actions
+// field: the field name to filter on (e.g., "subject_id", "sample_id", "v_call")
+// values: array of values to include (empty array means no filter)
+export const setFilter = (field, values) => {
+  return { type: types.SET_FILTER, field, values };
+};
+
+export const clearFilter = (field) => {
+  return { type: types.CLEAR_FILTER, field };
+};
+
+export const clearAllFilters = () => {
+  return { type: types.CLEAR_ALL_FILTERS };
+};
+
 export const resetState = () => {
   return { type: types.RESET_CLONAL_FAMILIES_STATE };
 };
