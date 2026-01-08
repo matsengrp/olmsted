@@ -1,3 +1,16 @@
+## version 2.2.9 - 2026/01/08
+[PR236](https://github.com/matsengrp/olmsted/pull/236) Changed:
+* Configuration management: Save, load, and share visualization settings via Settings menu
+* Unified filtering system with multi-select filters for locus, subject, sample, V/J genes, and dataset
+* Row starring: Mark important rows in tables for easy tracking across selections
+* Row info modals: View complete row metadata via info button
+* Sticky navigation header with section tracking and settings access
+* Export visualizations: PNG/SVG export for all plots with hide-settings option
+* Scatterplot enhancements: Faceting (by variable and direction), adjustable plot height with draggable divider
+* Clickable alignment rows in tree view to open ancestral lineage data
+* Table refactoring: Consistent features across all tables
+* UI polish: Button icons, hover effects, consistent styling, comprehensive help documentation
+
 ## version 2.2.8 - 2025/12/13
 [PR235](https://github.com/matsengrp/olmsted/pull/235) Changed:
 * Paired sequence data support
