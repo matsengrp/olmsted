@@ -297,6 +297,41 @@ const createControlSignals = () => [
     }
   },
   // Plot height ratio control - allows adjusting plot height as fraction of window
+  // Also controlled by dragging the bottom divider
+  {
+    name: "bottom_divider_dragging",
+    value: false,
+    on: [
+      {
+        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+        update: "true"
+      },
+      {
+        events: "window:mouseup, window:touchend",
+        update: "false"
+      }
+    ]
+  },
+  {
+    name: "bottom_divider_drag_start_y",
+    value: 0,
+    on: [
+      {
+        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+        update: "event.clientY"
+      }
+    ]
+  },
+  {
+    name: "bottom_divider_drag_start_ratio",
+    value: 1.0,
+    on: [
+      {
+        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+        update: "plot_height_ratio"
+      }
+    ]
+  },
   {
     name: "plot_height_ratio",
     value: 1.0,
@@ -306,7 +341,33 @@ const createControlSignals = () => [
       min: 0.75,
       max: 1.5,
       step: 0.05
-    }
+    },
+    on: [
+      {
+        events: {
+          source: "window",
+          type: "mousemove",
+          between: [
+            { source: "scope", type: "mousedown", markname: "bottom_divider" },
+            { source: "window", type: "mouseup" }
+          ]
+        },
+        // Calculate new ratio based on drag distance relative to window height
+        // Round to 0.05 increments for cleaner values
+        update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+      },
+      {
+        events: {
+          type: "touchmove",
+          between: [
+            { source: "scope", type: "touchstart", markname: "bottom_divider" },
+            { source: "window", type: "touchend" }
+          ]
+        },
+        // Round to 0.05 increments for cleaner values
+        update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+      }
+    ]
   },
   {
     name: "brush_x_field",
@@ -1424,8 +1485,28 @@ const createCellMark = () => ({
   axes: createCellAxes()
 });
 
+// Helper function to create bottom divider for height resizing
+const createBottomDivider = () => ({
+  name: "bottom_divider",
+  type: "rect",
+  encode: {
+    enter: {
+      cursor: { value: "row-resize" }
+    },
+    update: {
+      x: { value: 0 },
+      y: { signal: "height + 45" },
+      width: { signal: "width" },
+      height: { value: 14 },
+      fill: { signal: "bottom_divider_dragging ? '#666' : '#ccc'" },
+      fillOpacity: { signal: "bottom_divider_dragging ? 0.9 : 0.6" },
+      cornerRadius: { value: 2 }
+    }
+  }
+});
+
 // Helper function to create all marks
-const createMarks = () => [...createHeaderMarks(), createCellMark()];
+const createMarks = () => [...createHeaderMarks(), createCellMark(), createBottomDivider()];
 
 // Main function that composes the complete spec
 const facetClonalFamiliesVizSpec = () => {
