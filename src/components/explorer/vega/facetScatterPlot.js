@@ -12,8 +12,7 @@ const createDataConfiguration = () => [
     name: "brush_store",
     on: [
       { trigger: "brush_selection", insert: "brush_selection", remove: true },
-      { trigger: "facet_col_signal", remove: true },
-      { trigger: "facet_row_signal", remove: true }
+      { trigger: "facet_col_signal", remove: true }
     ]
   },
   { name: "source" },
@@ -34,14 +33,6 @@ const createDataConfiguration = () => [
     transform: [
       { type: "aggregate", groupby: [{ signal: "facet_col_signal" }] },
       { type: "formula", expr: "datum[facet_col_signal]", as: "facet_col_field" }
-    ]
-  },
-  {
-    name: "row_domain",
-    source: "data_0",
-    transform: [
-      { type: "aggregate", groupby: [{ signal: "facet_row_signal" }] },
-      { type: "formula", expr: "datum[facet_row_signal]", as: "facet_row_field" }
     ]
   }
 ];
@@ -80,22 +71,16 @@ const createDataTransforms = () => [
     type: "filter",
     expr: 'datum["unique_seqs_count"] !== null && !isNaN(datum["unique_seqs_count"]) && datum["mean_mut_freq"] !== null && !isNaN(datum["mean_mut_freq"])'
   },
-  // Add the facet column/row field work around
-  { type: "formula", expr: "datum[facet_col_signal]", as: "facet_col_field" },
-  { type: "formula", expr: "datum[facet_row_signal]", as: "facet_row_field" }
+  // Add the facet column field work around
+  { type: "formula", expr: "datum[facet_col_signal]", as: "facet_col_field" }
 ];
 
 // Helper function to create layout signals
 const createLayoutSignals = () => [
   { name: "PADDING_FRACTION", value: 0.05 },
   { name: "PADDING_BUFFER_WIDTH", value: 150 },
-  { name: "PADDING_BUFFER_HEIGHT_BASE", value: 125 },
-  // Extra buffer per additional row to account for row header space
-  { name: "PADDING_BUFFER_HEIGHT_PER_ROW", value: 20 },
+  { name: "PADDING_BUFFER_HEIGHT", value: 125 },
   { name: "len_col_domain", update: "clamp(length(data('column_domain')), 1, 100)" },
-  { name: "len_row_domain", update: "clamp(length(data('row_domain')), 1, 100)" },
-  // Dynamic height buffer that accounts for row faceting
-  { name: "PADDING_BUFFER_HEIGHT", update: "PADDING_BUFFER_HEIGHT_BASE + max(0, len_row_domain - 1) * PADDING_BUFFER_HEIGHT_PER_ROW" },
   {
     name: "width",
     update: "floor(windowSize()[0]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_WIDTH",
@@ -117,17 +102,13 @@ const createLayoutSignals = () => [
       {
         events: { signal: "plot_height_ratio" },
         update: "floor(windowSize()[1]*plot_height_ratio)-PADDING_BUFFER_HEIGHT"
-      },
-      {
-        events: { signal: "len_row_domain" },
-        update: "floor(windowSize()[1]*plot_height_ratio)-PADDING_BUFFER_HEIGHT"
       }
     ]
   },
   { name: "layout_padding", value: 10 },
-  // Account for padding between all columns/rows: (total - gaps) / count
+  // Account for padding between columns: (total - gaps) / count
   { name: "child_width", update: "(width - layout_padding * (len_col_domain - 1)) / len_col_domain" },
-  { name: "child_height", update: "(height - layout_padding * (len_row_domain - 1)) / len_row_domain" }
+  { name: "child_height", update: "height" }
 ];
 
 // Helper function to create selection signals
@@ -193,33 +174,15 @@ const createSelectionSignals = () => [
 
 // Helper function to create control signals (dropdowns)
 const createControlSignals = () => [
-  // Facet controls - variable selection and direction are separate to prevent multi-facet issues
+  // Facet control - columns only (row faceting deferred to future PR due to gridline clipping issues)
   {
-    name: "facet_variable",
+    name: "facet_col_signal",
     value: "<none>",
     bind: {
       name: "Facet by",
       input: "select",
       options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]
     }
-  },
-  {
-    name: "facet_direction",
-    value: "columns",
-    bind: {
-      name: "Facet direction",
-      input: "select",
-      options: ["columns", "rows"]
-    }
-  },
-  // Computed signals for column/row faceting based on variable and direction
-  {
-    name: "facet_col_signal",
-    update: "facet_direction === 'columns' ? facet_variable : '<none>'"
-  },
-  {
-    name: "facet_row_signal",
-    update: "facet_direction === 'rows' ? facet_variable : '<none>'"
   },
   {
     name: "yField",
@@ -372,18 +335,12 @@ const createControlSignals = () => [
   {
     name: "brush_x_field",
     value: null,
-    on: [
-      { events: { signal: "facet_col_signal" }, update: "null" },
-      { events: { signal: "facet_row_signal" }, update: "null" }
-    ]
+    on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
   },
   {
     name: "brush_y_field",
     value: null,
-    on: [
-      { events: { signal: "facet_col_signal" }, update: "null" },
-      { events: { signal: "facet_row_signal" }, update: "null" }
-    ]
+    on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
   },
   {
     name: "locus_value",
@@ -558,11 +515,6 @@ const createZoomPanSignals = () => [
         update: "0.9"
       },
       {
-        // Reset zoom when row facet changes
-        events: { signal: "facet_row_signal" },
-        update: "0.9"
-      },
-      {
         // Reset button clicked
         events: [
           { source: "scope", type: "click", markname: "reset_button_bg" },
@@ -593,11 +545,6 @@ const createZoomPanSignals = () => [
         update: "0"
       },
       {
-        // Reset pan when row facet changes
-        events: { signal: "facet_row_signal" },
-        update: "0"
-      },
-      {
         // Reset button clicked
         events: [
           { source: "scope", type: "click", markname: "reset_button_bg" },
@@ -624,11 +571,6 @@ const createZoomPanSignals = () => [
       {
         // Reset pan when facet changes
         events: { signal: "facet_col_signal" },
-        update: "0"
-      },
-      {
-        // Reset pan when row facet changes
-        events: { signal: "facet_row_signal" },
         update: "0"
       },
       {
@@ -768,28 +710,9 @@ const createHeaderMarks = () => [
     }
   },
   {
-    name: "row-title",
-    type: "group",
-    role: "row-title",
-    title: {
-      text: { signal: "facet_row_signal == '<none>' ? '' : facet_row_signal" },
-      offset: 10,
-      orient: "left",
-      style: "guide-title"
-    }
-  },
-  {
     name: "row_header",
     type: "group",
     role: "row-header",
-    from: { data: "row_domain" },
-    sort: { field: 'datum["facet_row_field"]', order: "ascending" },
-    title: {
-      text: { signal: "facet_row_signal == '<none>' ? '' : ('' + (toString(parent[\"facet_row_field\"]) ? parent[\"facet_row_field\"] : ''))" },
-      offset: 10,
-      orient: "left",
-      style: "guide-label"
-    },
     encode: { update: { height: { signal: "child_height" } } },
     axes: [
       {
@@ -1469,9 +1392,9 @@ const createCellMark = () => ({
   style: "cell",
   clip: true,
   from: {
-    facet: { name: "facet", data: "data_0", groupby: ["facet_row_field", "facet_col_field"] }
+    facet: { name: "facet", data: "data_0", groupby: ["facet_col_field"] }
   },
-  sort: { field: ["datum.facet_row_field", "datum.facet_col_field"], order: "ascending" },
+  sort: { field: ["datum.facet_col_field"], order: "ascending" },
   encode: {
     update: {
       width: { signal: "child_width" },

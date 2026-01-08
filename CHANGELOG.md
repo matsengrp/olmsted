@@ -6,7 +6,7 @@
 * Row info modals: View complete row metadata via info button
 * Sticky navigation header with section tracking and settings access
 * Export visualizations: PNG/SVG export for all plots with hide-settings option
-* Scatterplot enhancements: Faceting (by variable and direction), adjustable plot height with draggable divider
+* Scatterplot enhancements: Adjustable plot height with draggable divider
 * Clickable alignment rows in tree view to open ancestral lineage data
 * Table refactoring: Consistent features across all tables
 * UI polish: Button icons, hover effects, consistent styling, comprehensive help documentation
