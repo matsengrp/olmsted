@@ -178,11 +178,7 @@ class Splash extends React.Component {
                   <strong>Managing Datasets:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
-                      <strong>Loading datasets:</strong> Click the row to load or unload a dataset.  The Load column indicates the status of the dataset.
-                    </li>
-                    <li>
-                      <strong>Starring datasets:</strong> Click the star icon to mark important datasets. Starred
-                      datasets appear at the top of the table.
+                      <strong>Loading datasets:</strong> Click the row to load or unload a dataset. The Load column indicates the status of the dataset.
                     </li>
                     <li>
                       <strong>Info button:</strong> Click the info button to view all dataset metadata in a modal.
@@ -206,13 +202,21 @@ class Splash extends React.Component {
                     </li>
                   </ul>
                   <strong>Exploring Data:</strong>
-                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
                       Load one or more datasets, then click &quot;Explore!&quot; to visualize clonal families in the
                       interactive explorer.
                     </li>
                     <li>You can modify which datasets are loaded from the exploration page as well.</li>
                   </ul>
+                  <strong>Starring Datasets:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                    <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
+                    <li><strong>Starred first:</strong> Check this option to sort starred datasets to the top of the table</li>
+                    <li><strong>Only starred:</strong> Check this option to filter and show only starred datasets</li>
+                    <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars</li>
+                  </ul>
+                  <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with applied filters and sorting) to a CSV file.
                 </div>
               }
             />
