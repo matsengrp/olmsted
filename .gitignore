@@ -26,5 +26,8 @@ proddata
 **/_claude*/
 **/_test*/
 **/_backup*/
+**/_*.*
 
 .claude/
+paper/other_papers/
+paper/paper.pdf

@@ -111,6 +111,21 @@ export const filterLocus = (locus) => {
   return { type: types.FILTER_LOCUS, locus };
 };
 
+// High-level filtering actions
+// field: the field name to filter on (e.g., "subject_id", "sample_id", "v_call")
+// values: array of values to include (empty array means no filter)
+export const setFilter = (field, values) => {
+  return { type: types.SET_FILTER, field, values };
+};
+
+export const clearFilter = (field) => {
+  return { type: types.CLEAR_FILTER, field };
+};
+
+export const clearAllFilters = () => {
+  return { type: types.CLEAR_ALL_FILTERS };
+};
+
 export const resetState = () => {
   return { type: types.RESET_CLONAL_FAMILIES_STATE };
 };
@@ -122,6 +137,10 @@ export const toggleDatasetSelection = (dataset_id) => {
 
 export const clearDatasetSelections = () => {
   return { type: types.CLEAR_DATASET_SELECTIONS };
+};
+
+export const setPendingDatasetLoads = (datasetIds) => {
+  return { type: types.SET_PENDING_DATASET_LOADS, datasetIds };
 };
 
 export const batchUpdateDatasets = () => {
@@ -138,4 +157,80 @@ export const updateSelectedChain = (chain) => {
 // Options: 'heavy', 'light'
 export const updateLastClickedChain = (chain) => {
   return { type: types.UPDATE_LAST_CLICKED_CHAIN, chain };
+};
+
+// Lineage (ancestral sequence) settings
+export const updateLineageShowEntire = (showEntire) => {
+  return { type: types.UPDATE_LINEAGE_SHOW_ENTIRE, showEntire };
+};
+
+export const updateLineageShowBorders = (showBorders) => {
+  return { type: types.UPDATE_LINEAGE_SHOW_BORDERS, showBorders };
+};
+
+export const updateLineageChain = (chain) => {
+  return { type: types.UPDATE_LINEAGE_CHAIN, chain };
+};
+
+// Current section (for nav bar display)
+export const updateCurrentSection = (section) => {
+  return { type: types.UPDATE_CURRENT_SECTION, section };
+};
+
+// Starred families actions
+export const toggleStarredFamily = (ident) => {
+  return { type: types.TOGGLE_STARRED_FAMILY, ident };
+};
+
+export const clearStarredFamilies = () => {
+  return { type: types.CLEAR_STARRED_FAMILIES };
+};
+
+export const setStarredFamilies = (starredFamilies) => {
+  return { type: types.SET_STARRED_FAMILIES, starredFamilies };
+};
+
+// Bulk star all visible families
+export const starAllFamilies = (idents) => {
+  return (dispatch, getState) => {
+    const { starredFamilies } = getState().clonalFamilies;
+    // Add all idents that aren't already starred
+    const newStarred = [...new Set([...starredFamilies, ...idents])];
+    dispatch({ type: types.SET_STARRED_FAMILIES, starredFamilies: newStarred });
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarred));
+    } catch (e) {
+      console.warn("Failed to persist starred families to sessionStorage:", e);
+    }
+  };
+};
+
+// Unstar all visible families
+export const unstarAllFamilies = (idents) => {
+  return (dispatch, getState) => {
+    const { starredFamilies } = getState().clonalFamilies;
+    // Remove all provided idents
+    const newStarred = starredFamilies.filter((id) => !idents.includes(id));
+    dispatch({ type: types.SET_STARRED_FAMILIES, starredFamilies: newStarred });
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarred));
+    } catch (e) {
+      console.warn("Failed to persist starred families to sessionStorage:", e);
+    }
+  };
+};
+
+// Starred datasets actions
+export const toggleStarredDataset = (dataset_id) => {
+  return { type: types.TOGGLE_STARRED_DATASET, dataset_id };
+};
+
+export const clearStarredDatasets = () => {
+  return { type: types.CLEAR_STARRED_DATASETS };
+};
+
+export const setStarredDatasets = (starredDatasets) => {
+  return { type: types.SET_STARRED_DATASETS, starredDatasets };
 };

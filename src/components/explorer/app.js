@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import ClonalFamiliesTable from "./table";
-import LoadingTable from "./loadingTable";
+import DatasetLoadingTable from "./DatasetLoadingTable";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
 import { getClientDatasets, getClientClonalFamilies } from "../../actions/clientDataLoader";
@@ -12,6 +12,10 @@ import { ClonalFamiliesViz } from "./scatterplot";
 import { Lineage } from "./lineage";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CollapsibleSection } from "../util/collapsibleSection";
+import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
+import ConfigModal from "../config/ConfigModal";
+import FilterPanel from "./FilterPanel";
+import { VegaViewProvider } from "../config/VegaViewContext";
 
 // STYLES
 const PADDING_FRACTION = 0.03;
@@ -23,7 +27,7 @@ const usableWidthStyle = (availableWidth) => {
     width: availableWidth * (1 - 2 * PADDING_FRACTION),
     paddingLeft: availableWidth * PADDING_FRACTION,
     paddingRight: availableWidth * PADDING_FRACTION,
-    paddingTop: 40,
+    paddingTop: NAV_BAR_HEIGHT + 20, // Account for sticky nav bar
     paddingBottom: 20
   };
 };
@@ -122,24 +126,38 @@ function Overlay({ styles, mobileDisplay, handler }) {
     pendingDatasetLoads: state.datasets.pendingDatasetLoads,
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     selectedSeq: state.clonalFamilies.selectedSeq,
-    locus: state.clonalFamilies.locus,
     loadedClonalFamilies: clonalFamiliesSelectors.countLoadedClonalFamilies(state.datasets.availableDatasets)
   }),
   (dispatch) => ({
     dispatch,
-    filterLocus: (locus) => dispatch(explorerActions.filterLocus(locus))
+    updateCurrentSection: (section) => dispatch(explorerActions.updateCurrentSection(section))
   })
 )
 class App extends React.Component {
   constructor(props) {
     super(props);
+    // Refs for section visibility tracking
+    this.sectionRefs = {
+      datasets: React.createRef(),
+      clonalFamilies: React.createRef(),
+      selectedClonalFamilies: React.createRef(),
+      clonalFamilyDetails: React.createRef(),
+      ancestralSequences: React.createRef()
+    };
+    this.sectionNames = {
+      datasets: "Datasets",
+      clonalFamilies: "Clonal Families",
+      selectedClonalFamilies: "Selected Clonal Families",
+      clonalFamilyDetails: "Clonal Family Details",
+      ancestralSequences: "Ancestral Sequences"
+    };
   }
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
   // }
   async componentDidMount() {
-    const { availableDatasets, dispatch } = this.props;
+    const { availableDatasets, dispatch, updateCurrentSection } = this.props;
     document.addEventListener(
       "dragover",
       (e) => {
@@ -147,6 +165,35 @@ class App extends React.Component {
       },
       false
     );
+
+    // Set up IntersectionObserver to track visible section
+    this.setupSectionObserver(updateCurrentSection);
+
+    // Load starred families from sessionStorage
+    try {
+      const savedStarred = sessionStorage.getItem("olmsted_starred_families");
+      if (savedStarred) {
+        const starredFamilies = JSON.parse(savedStarred);
+        if (Array.isArray(starredFamilies) && starredFamilies.length > 0) {
+          dispatch(explorerActions.setStarredFamilies(starredFamilies));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load starred families from sessionStorage:", e);
+    }
+
+    // Load starred datasets from sessionStorage
+    try {
+      const savedStarredDatasets = sessionStorage.getItem("olmsted_starred_datasets");
+      if (savedStarredDatasets) {
+        const starredDatasets = JSON.parse(savedStarredDatasets);
+        if (Array.isArray(starredDatasets) && starredDatasets.length > 0) {
+          dispatch(explorerActions.setStarredDatasets(starredDatasets));
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load starred datasets from sessionStorage:", e);
+    }
 
     // Ensure datasets are loaded when app component mounts
     // This fixes the refresh issue where datasets don't reload properly
@@ -166,8 +213,58 @@ class App extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    // Clean up the IntersectionObserver
+    if (this.sectionObserver) {
+      this.sectionObserver.disconnect();
+    }
+  }
+
+  setupSectionObserver = (updateCurrentSection) => {
+    // Use IntersectionObserver to detect which section is in view
+    // Trigger when section header is near the top of the viewport
+    const options = {
+      root: null,
+      rootMargin: `-${NAV_BAR_HEIGHT + 20}px 0px -70% 0px`,
+      threshold: 0
+    };
+
+    this.sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionKey = entry.target.dataset.section;
+          if (sectionKey && this.sectionNames[sectionKey]) {
+            updateCurrentSection(this.sectionNames[sectionKey]);
+          }
+        }
+      });
+    }, options);
+
+    // Observe all section refs
+    Object.keys(this.sectionRefs).forEach((key) => {
+      const ref = this.sectionRefs[key];
+      if (ref.current) {
+        ref.current.dataset.section = key;
+        this.sectionObserver.observe(ref.current);
+      }
+    });
+  };
+
   componentDidUpdate(prevProps) {
-    const { availableDatasets, pendingDatasetLoads, dispatch } = this.props;
+    const { availableDatasets, pendingDatasetLoads, dispatch, updateCurrentSection, loadedClonalFamilies, selectedFamily, selectedSeq } = this.props;
+
+    // Re-observe sections when they become visible
+    if (
+      prevProps.loadedClonalFamilies !== loadedClonalFamilies ||
+      prevProps.selectedFamily !== selectedFamily ||
+      prevProps.selectedSeq !== selectedSeq
+    ) {
+      // Re-setup observer to include newly visible sections
+      if (this.sectionObserver) {
+        this.sectionObserver.disconnect();
+      }
+      this.setupSectionObserver(updateCurrentSection);
+    }
     // Check if datasets were just loaded and we have pending dataset loads from URL
     if (
       prevProps.availableDatasets.length === 0 &&
@@ -202,8 +299,6 @@ class App extends React.Component {
       browserDimensions,
       availableDatasets,
       dispatch,
-      locus,
-      filterLocus,
       selectedFamily,
       selectedSeq,
       loadedClonalFamilies
@@ -249,12 +344,13 @@ class App extends React.Component {
     };
 
     return (
-      <span>
-        {/* <DownloadModal/> */}
-        {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
-        <div>
+      <VegaViewProvider>
+        <span>
+          <ConfigModal />
+          {/* App Contents - TODO: break this into smaller components like SelectedFamiliesSummary */}
+          <div>
           <div style={usableWidthStyle(availableWidth)}>
-            <div style={sectionStyle}>
+            <div ref={this.sectionRefs.datasets} style={sectionStyle}>
               <CollapsibleSection titleText="Datasets">
                 <CollapseHelpTitle
                   titleText="Datasets"
@@ -267,24 +363,40 @@ class App extends React.Component {
                       <br />
                       <strong>Loading Datasets:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                        <li><strong>Select datasets:</strong> Check the boxes in the "Select" column for datasets you want to visualize</li>
+                        <li><strong>Select datasets:</strong> Check the boxes in the &quot;Select&quot; column for datasets you want to visualize</li>
                         <li><strong>Update Visualization:</strong> Click this button to load selected datasets or unload unselected ones</li>
-                        <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded, loading, or unloaded</li>
+                        <li><strong>Status indicators:</strong> Color-coded labels show whether each dataset is loaded (green), loading (blue), or unloaded (gray)</li>
+                      </ul>
+                      <strong>Table Features:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Info button:</strong> Click the blue info icon to view all metadata fields for a dataset</li>
+                        <li><strong>Sorting:</strong> Click column headers to sort. Click again to reverse order</li>
+                        <li><strong>Resize columns:</strong> Drag column borders to adjust width</li>
                       </ul>
                       <strong>Managing Datasets:</strong>
-                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
-                        <li><strong>Upload new data:</strong> Click "Manage Datasets" to return to the main page where you can upload new datasets</li>
-                        <li><strong>Delete datasets:</strong> Use the "Manage Datasets" page to remove datasets from local storage</li>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Upload new data:</strong> Click &quot;Manage Datasets&quot; to return to the main page where you can upload new datasets</li>
+                        <li><strong>Delete datasets:</strong> Use the &quot;Manage Datasets&quot; page to remove datasets from local storage</li>
                       </ul>
+                      <strong>Starring Datasets:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
+                        <li><strong>Starred first:</strong> Check this option to sort starred datasets to the top of the table</li>
+                        <li><strong>Only starred:</strong> Check this option to filter and show only starred datasets</li>
+                        <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars</li>
+                      </ul>
+                      <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with applied filters and sorting) to a CSV file.
+                      <br />
+                      <br />
                       Multiple datasets can be loaded simultaneously for comparative analysis across different samples or subjects.
                     </div>
                   }
                 />
-                <LoadingTable datasets={availableDatasets} dispatch={dispatch} />
+                <DatasetLoadingTable datasets={availableDatasets} dispatch={dispatch} />
               </CollapsibleSection>
             </div>
             {loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.clonalFamilies} style={sectionStyle}>
                 <CollapsibleSection titleText="Clonal Families">
                 <CollapseHelpTitle
                   titleText="Clonal Families"
@@ -298,9 +410,9 @@ class App extends React.Component {
                       See the <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
                       <br />
                       <br />
-                      <strong>Locus Filter:</strong> Restrict the scatterplot to clonal families from a specific immunoglobulin locus:
-                      heavy chain (IGH), light chain lambda (IGL), or light chain kappa (IGK). Choose &quot;All&quot; to visualize
-                      clonal families from all loci simultaneously.
+                      <strong>Filters:</strong> Use the &quot;Filters&quot; panel below to restrict which clonal families are displayed.
+                      Filter by locus (IGH, IGK, IGL), subject, sample, V gene, J gene, or dataset. Multiple values can be
+                      selected for each filter field. Active filters are shown as chips that can be individually removed.
                       <br />
                       <br />
                       <strong>Control Modes:</strong> The scatterplot has two interaction modes accessible via buttons in the upper right:
@@ -335,27 +447,21 @@ class App extends React.Component {
                         <li><strong>Shape by:</strong> Change point shape by categorical variables</li>
                         <li><strong>Facet by:</strong> Split the plot into separate panels by categorical variables</li>
                       </ul>
+                      <strong>Export &amp; Display Options:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                        <li><strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view</li>
+                        <li><strong>Export PNG/SVG:</strong> Save the scatterplot as an image</li>
+                      </ul>
+                      <strong>Tip:</strong> Plot settings can be saved as configurations via the Settings menu in the header.
                     </div>
                   }
                 />
-                <p>Choose a gene locus to explore clonal families with sequences sampled from that locus.</p>
-                <div style={{ marginBottom: 5 }}>
-                  <span style={{ fontSize: 14, fontWeight: "bold", marginRight: 8 }}>Filter by locus:</span>
-                  <select
-                    id="locus-select"
-                    value={locus}
-                    onChange={(event) => {
-                      filterLocus(event.target.value);
-                    }}
-                    aria-label="Filter by locus"
-                  >
-                    {["IGH", "IGK", "IGL", "All"].map((locus_option) => (
-                      <option key={locus_option} value={locus_option}>
-                        {locus_option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CollapsibleSection
+                  titleText="Filters"
+                  defaultOpen={false}
+                >
+                  <FilterPanel />
+                </CollapsibleSection>
                 <SelectedFamiliesSummary />
                 <ClonalFamiliesViz />
               </CollapsibleSection>
@@ -363,7 +469,7 @@ class App extends React.Component {
             )}
 
             {loadedClonalFamilies > 0 && (
-              <div style={{ paddingBottom: 40, ...sectionStyle }}>
+              <div ref={this.sectionRefs.selectedClonalFamilies} style={{ paddingBottom: 40, ...sectionStyle }}>
                 <CollapsibleSection titleText="Selected Clonal Families">
                 <CollapseHelpTitle
                   titleText="Selected Clonal Families"
@@ -375,12 +481,24 @@ class App extends React.Component {
                         <li><strong>Naive sequence visualization:</strong> Graphical representation of V(D)J recombination showing gene segments and CDR regions</li>
                         <li><strong>Metadata:</strong> Clone ID, unique sequence count, mutation frequency, and other family-level statistics</li>
                       </ul>
-                      <strong>Interactions:</strong>
+                      <strong>Table Interactions:</strong>
                       <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                        <li><strong>Sorting:</strong> Click on column headers to sort the table by that field</li>
-                        <li><strong>Selection:</strong> Click the checkbox in the "Select" column to choose a clonal family for detailed visualization</li>
-                        <li><strong>Auto-selection:</strong> The table automatically selects the top clonal family according to the current sort order</li>
+                        <li><strong>Selection:</strong> Click a row or the checkbox in the &quot;Select&quot; column to choose a clonal family for detailed visualization</li>
+                        <li><strong>Sorting:</strong> Click column headers to sort. Click again to reverse order</li>
+                        <li><strong>Info button:</strong> Click the blue info icon to view all available data fields for a clonal family in a modal dialog</li>
+                        <li><strong>Resize columns:</strong> Drag column borders to adjust width</li>
                       </ul>
+                      <strong>Starring Clonal Families:</strong>
+                      <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                        <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
+                        <li><strong>Persistence:</strong> Stars persist when the scatterplot selection changes, allowing you to track families across multiple selections</li>
+                        <li><strong>Starred first:</strong> Check this option to sort starred families to the top of the table</li>
+                        <li><strong>Only starred:</strong> Check this option to filter and show only starred families</li>
+                        <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible families. Use &quot;Clear Stars&quot; to remove all stars from the entire dataset</li>
+                      </ul>
+                      <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with applied filters and sorting) to a CSV file.
+                      <br />
+                      <br />
                       When you select a clonal family from the table, its phylogenetic tree and alignment are displayed below
                       in the Clonal Family Details section. For paired heavy/light chain data, trees for both chains will be available.
                     </div>
@@ -394,14 +512,14 @@ class App extends React.Component {
             )}
 
             {selectedFamily && loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.clonalFamilyDetails} style={sectionStyle}>
                 <CollapsibleSection titleText="Clonal Family Details">
                   <TreeViz availableHeight={availableHeight} />
                 </CollapsibleSection>
               </div>
             )}
             {selectedSeq && Object.keys(selectedSeq).length > 0 && loadedClonalFamilies > 0 && (
-              <div style={sectionStyle}>
+              <div ref={this.sectionRefs.ancestralSequences} style={sectionStyle}>
                 <CollapsibleSection titleText="Ancestral Sequences">
                   <Lineage />
                 </CollapsibleSection>
@@ -415,7 +533,8 @@ class App extends React.Component {
           // mobileDisplay={this.state.mobileDisplay}
           // handler={() => {this.setState({sidebarOpen: false});}}
         />
-      </span>
+        </span>
+      </VegaViewProvider>
     );
   }
 }

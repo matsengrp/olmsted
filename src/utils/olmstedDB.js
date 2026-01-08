@@ -21,6 +21,15 @@ class OlmstedDB extends Dexie {
       trees: "ident, tree_id, clone_id"
     });
 
+    // Version 2: Add configs store for visualization settings persistence
+    this.version(2).stores({
+      datasets: "dataset_id, name, clone_count",
+      clones: "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
+      trees: "ident, tree_id, clone_id",
+      // Visualization configs (user-saved settings)
+      configs: "id, name, datasetId, createdAt"
+    });
+
     // Create a ready promise that resolves when database is open
     this.ready = this.open()
       .then(() => {
@@ -295,13 +304,89 @@ class OlmstedDB extends Dexie {
    */
   async clearAll() {
     try {
-      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
+      await this.transaction("rw", this.datasets, this.clones, this.trees, this.configs, async () => {
         await this.datasets.clear();
         await this.clones.clear();
         await this.trees.clear();
+        await this.configs.clear();
       });
     } catch (error) {
       console.error("OlmstedDB: Failed to clear all data:", error);
+    }
+  }
+
+  // ============================================
+  // Config CRUD Operations
+  // ============================================
+
+  /**
+   * Get all saved configs
+   * @param {string|null} datasetId - Optional filter by dataset (null returns global configs)
+   * @returns {Promise<Array>} Array of config objects
+   */
+  async getAllConfigs(datasetId = undefined) {
+    try {
+      let configs;
+      if (datasetId === undefined) {
+        // Return all configs
+        configs = await this.configs.orderBy("createdAt").reverse().toArray();
+      } else {
+        // Filter by datasetId (null = global configs, string = dataset-specific)
+        configs = await this.configs.where("datasetId").equals(datasetId).toArray();
+      }
+      return configs;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to get configs:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get a single config by ID
+   * @param {string} configId - The config ID
+   * @returns {Promise<Object|null>} Config object or null
+   */
+  async getConfig(configId) {
+    try {
+      const config = await this.configs.get(configId);
+      return config || null;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to get config:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Save a config (create or update)
+   * @param {Object} config - Config object with id, name, settings, etc.
+   * @returns {Promise<string>} The config ID
+   */
+  async saveConfig(config) {
+    try {
+      const now = Date.now();
+      const configToSave = {
+        ...config,
+        updatedAt: now,
+        createdAt: config.createdAt || now
+      };
+      await this.configs.put(configToSave);
+      return configToSave.id;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to save config:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a config by ID
+   * @param {string} configId - The config ID to delete
+   */
+  async deleteConfig(configId) {
+    try {
+      await this.configs.delete(configId);
+    } catch (error) {
+      console.error("OlmstedDB: Failed to delete config:", error);
+      throw error;
     }
   }
 
@@ -328,15 +413,17 @@ class OlmstedDB extends Dexie {
    */
   async getStats() {
     try {
-      const stats = await this.transaction("r", this.datasets, this.clones, this.trees, async () => {
+      const stats = await this.transaction("r", this.datasets, this.clones, this.trees, this.configs, async () => {
         const datasetCount = await this.datasets.count();
         const cloneCount = await this.clones.count();
         const treeCount = await this.trees.count();
+        const configCount = await this.configs.count();
 
         return {
           datasets: datasetCount,
           clones: cloneCount,
-          trees: treeCount
+          trees: treeCount,
+          configs: configCount
         };
       });
 

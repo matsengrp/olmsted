@@ -22,7 +22,18 @@ const initialState = {
   // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
   selectedChain: "heavy",
   // Track which chain was last clicked in stacked mode (for lineage inference)
-  lastClickedChain: "heavy"
+  lastClickedChain: "heavy",
+  // Lineage (ancestral sequence) visualization settings
+  lineageShowEntire: false,
+  lineageShowBorders: false,
+  lineageChain: "heavy",
+  // Current visible section (for nav bar display)
+  currentSection: "",
+  // Starred families (pinned for easy reference)
+  starredFamilies: [],
+  // High-level filters: { fieldName: [selectedValues], ... }
+  // Empty object means no filters applied
+  filters: {}
 };
 
 // eslint-disable-next-line default-param-last
@@ -160,6 +171,65 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_LAST_CLICKED_CHAIN: {
       return { ...state, lastClickedChain: action.chain };
+    }
+    case types.UPDATE_LINEAGE_SHOW_ENTIRE: {
+      return { ...state, lineageShowEntire: action.showEntire };
+    }
+    case types.UPDATE_LINEAGE_SHOW_BORDERS: {
+      return { ...state, lineageShowBorders: action.showBorders };
+    }
+    case types.UPDATE_LINEAGE_CHAIN: {
+      return { ...state, lineageChain: action.chain };
+    }
+    case types.UPDATE_CURRENT_SECTION: {
+      return { ...state, currentSection: action.section };
+    }
+    case types.TOGGLE_STARRED_FAMILY: {
+      const { ident } = action;
+      const isStarred = state.starredFamilies.includes(ident);
+      const newStarredFamilies = isStarred
+        ? state.starredFamilies.filter((id) => id !== ident)
+        : [...state.starredFamilies, ident];
+      // Persist to sessionStorage
+      try {
+        sessionStorage.setItem("olmsted_starred_families", JSON.stringify(newStarredFamilies));
+      } catch (e) {
+        console.warn("Failed to persist starred families to sessionStorage:", e);
+      }
+      return { ...state, starredFamilies: newStarredFamilies };
+    }
+    case types.CLEAR_STARRED_FAMILIES: {
+      try {
+        sessionStorage.removeItem("olmsted_starred_families");
+      } catch (e) {
+        console.warn("Failed to clear starred families from sessionStorage:", e);
+      }
+      return { ...state, starredFamilies: [] };
+    }
+    case types.SET_STARRED_FAMILIES: {
+      return { ...state, starredFamilies: action.starredFamilies || [] };
+    }
+    case types.SET_FILTER: {
+      const newFilters = { ...state.filters };
+      // If values array is empty or null, remove the filter; otherwise set it
+      if (!action.values || action.values.length === 0) {
+        delete newFilters[action.field];
+      } else {
+        newFilters[action.field] = action.values;
+      }
+      // Reset pagination when filters change
+      const new_pagination = { ...state.pagination, page: 0 };
+      return { ...state, filters: newFilters, pagination: new_pagination };
+    }
+    case types.CLEAR_FILTER: {
+      const newFilters = { ...state.filters };
+      delete newFilters[action.field];
+      const new_pagination = { ...state.pagination, page: 0 };
+      return { ...state, filters: newFilters, pagination: new_pagination };
+    }
+    case types.CLEAR_ALL_FILTERS: {
+      const new_pagination = { ...state.pagination, page: 0 };
+      return { ...state, filters: {}, pagination: new_pagination };
     }
     default: {
       return state;

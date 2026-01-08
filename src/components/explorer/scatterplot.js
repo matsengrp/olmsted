@@ -1,9 +1,12 @@
 import { connect } from "react-redux";
 import React from "react";
 import Vega from "react-vega";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
+import VegaViewContext from "../config/VegaViewContext";
+import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Store the last clear_selection_trigger value to detect changes
 let lastClearTrigger = 0;
@@ -33,18 +36,27 @@ let lastClearTrigger = 0;
   }
 )
 class ClonalFamiliesViz extends React.Component {
+  static contextType = VegaViewContext;
+
   constructor(props) {
     super(props);
+    this.state = {
+      vegaView: null,
+      hideControls: false
+    };
     this.xField = "unique_seqs_count";
     this.yField = "mean_mut_freq";
     this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
     this.containerRef = React.createRef();
-    this.vegaView = null;
     this.isFocused = false;
     this.handleWindowClick = this.handleWindowClick.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
   }
+
+  toggleHideControls = () => {
+    this.setState((prevState) => ({ hideControls: !prevState.hideControls }));
+  };
 
   componentDidMount() {
     // Add window click listener to detect clicks outside the plot
@@ -66,8 +78,8 @@ class ClonalFamiliesViz extends React.Component {
   handleWindowClick(event) {
     // If click was outside our container, unfocus the visualization
     if (this.containerRef.current && !this.containerRef.current.contains(event.target)) {
-      if (this.vegaView) {
-        this.vegaView.signal("viz_focused", false).run();
+      if (this.state.vegaView) {
+        this.state.vegaView.signal("viz_focused", false).run();
       }
     }
   }
@@ -93,14 +105,30 @@ class ClonalFamiliesViz extends React.Component {
       locus,
       datasets
     } = this.props;
+    const { hideControls } = this.state;
+
     if (availableClonalFamilies) {
       return (
-        <div ref={this.containerRef} style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}>
+        <div
+          ref={this.containerRef}
+          className={hideControls ? "hide-vega-controls" : ""}
+          style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}
+        >
+          {/* Hide controls CSS - only applied when hideControls is true */}
+          {hideControls && (
+            <style>{`
+              .hide-vega-controls .vega-bindings { display: none !important; }
+            `}</style>
+          )}
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <Vega
               onNewView={(view) => {
-                this.vegaView = view;
+                this.setState({ vegaView: view });
+                // Register view with context for config management
+                if (this.context && this.context.setScatterplotView) {
+                  this.context.setScatterplotView(view);
+                }
                 // Listen for focus changes to sync with React
                 view.addSignalListener("viz_focused", (name, value) => {
                   this.isFocused = value;
@@ -226,6 +254,34 @@ class ClonalFamiliesViz extends React.Component {
               }}
               spec={this.spec}
             />
+          )}
+          {/* Toolbar: Hide Controls and Export - positioned after the plot */}
+          {availableClonalFamilies.length > 0 && (
+            <div style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={this.toggleHideControls}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  border: "1px solid #ccc",
+                  borderRadius: 4,
+                  backgroundColor: hideControls ? "#e3f2fd" : "#fff",
+                  color: "#333",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease"
+                }}
+                title={hideControls ? "Show plot controls" : "Hide plot controls"}
+                onMouseEnter={(e) => { e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5"; }}
+                onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
+              >
+                {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+                <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>
+              </button>
+              <VegaExportToolbar vegaView={this.state.vegaView} filename="olmsted-scatterplot" />
+            </div>
           )}
         </div>
       );

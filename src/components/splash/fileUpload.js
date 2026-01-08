@@ -1,5 +1,6 @@
 import React from "react";
 import Dropzone from "react-dropzone";
+import { FiUpload } from "react-icons/fi";
 import { CenterContent } from "./centerContent";
 import FileProcessor from "../../utils/fileProcessor";
 import SplitFileProcessor from "../../utils/splitFileProcessor";
@@ -15,7 +16,9 @@ class FileUpload extends React.Component {
       isProcessing: false,
       error: null,
       loadingStage: "",
-      loadingProgress: 0
+      loadingProgress: 0,
+      dropzoneHovered: false,
+      removeHoveredId: null
     };
 
     this.processFile = this.processFile.bind(this);
@@ -290,14 +293,16 @@ class FileUpload extends React.Component {
             accept="application/json, application/gzip, .json, .gz"
             multiple
             disabled={isProcessing}
+            onMouseEnter={() => this.setState({ dropzoneHovered: true })}
+            onMouseLeave={() => this.setState({ dropzoneHovered: false })}
             style={{
-              border: "2px dashed #ccc",
-              borderRadius: 10,
+              border: this.state.dropzoneHovered ? "2px dashed #042a6b" : "2px dashed #05337f",
+              borderRadius: 5,
               padding: 40,
               textAlign: "center",
               cursor: "pointer",
-              backgroundColor: "#fafafa",
-              transition: "background-color 0.2s",
+              backgroundColor: this.state.dropzoneHovered ? "rgba(5, 51, 127, 0.08)" : "rgba(5, 51, 127, 0.03)",
+              transition: "background-color 0.15s ease, border-color 0.15s ease",
               opacity: isProcessing ? 0.6 : 1,
               minHeight: 150,
               display: "flex",
@@ -306,7 +311,8 @@ class FileUpload extends React.Component {
               alignItems: "center"
             }}
             activeStyle={{
-              backgroundColor: "#f0f0f0"
+              backgroundColor: "rgba(5, 51, 127, 0.15)",
+              borderColor: "#042a6b"
             }}
           >
             {isProcessing ? (
@@ -373,13 +379,17 @@ class FileUpload extends React.Component {
               </div>
             ) : (
               <div>
-                <div style={{ fontSize: 20, marginBottom: 10, color: "#333" }}>Drag & drop files here</div>
-                <div style={{ fontSize: 18, color: "#333", marginBottom: 15 }}>or click to browse</div>
-                <div style={{ fontSize: 14, color: "#333" }}>
-                  <strong>Supported formats:</strong> olmsted-cli consolidated JSON (.json only)
-                  <br />
-                  • Single consolidated file from olmsted-cli (recommended)
-                  <br />• Multiple split files together (datasets.json, clones.*.json, tree.*.json)
+                <FiUpload
+                  size={48}
+                  color="#05337f"
+                  style={{ marginBottom: 15, opacity: this.state.dropzoneHovered ? 1 : 0.7 }}
+                />
+                <div style={{ fontSize: 20, marginBottom: 10, color: "#05337f", fontWeight: 500 }}>
+                  Drag & drop files here
+                </div>
+                <div style={{ fontSize: 16, color: "#05337f", marginBottom: 15 }}>or click to browse</div>
+                <div style={{ fontSize: 14, color: "#666" }}>
+                  <strong>Supported format:</strong> olmsted-cli consolidated JSON (.json)
                 </div>
               </div>
             )}
@@ -437,14 +447,17 @@ class FileUpload extends React.Component {
                     <button
                       type="button"
                       onClick={() => this.removeFile(file.datasetId)}
+                      onMouseEnter={() => this.setState({ removeHoveredId: file.datasetId })}
+                      onMouseLeave={() => this.setState({ removeHoveredId: null })}
                       style={{
                         padding: "5px 10px",
-                        backgroundColor: "#dc3545",
+                        backgroundColor: this.state.removeHoveredId === file.datasetId ? "#bb2d3b" : "#dc3545",
                         color: "white",
                         border: "none",
                         borderRadius: 3,
                         cursor: "pointer",
-                        fontSize: 12
+                        fontSize: 12,
+                        transition: "background-color 0.15s ease"
                       }}
                     >
                       Remove

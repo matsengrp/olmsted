@@ -10,6 +10,8 @@ import DownloadFasta from "./downloadFasta";
 import { getNaiveVizData } from "./naive";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
+import * as explorerActions from "../../actions/explorer";
+import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Lineage focus viz
 // =================
@@ -56,32 +58,32 @@ const mapStateToProps = (state) => {
     // Tree/alignment chain selection - used to infer lineage chain when leaf is clicked
     treeChain: state.clonalFamilies.selectedChain || "heavy",
     // Track which chain was clicked in stacked mode
-    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy"
+    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy",
+    // Lineage settings from Redux
+    lineageShowEntire: state.clonalFamilies.lineageShowEntire,
+    lineageShowBorders: state.clonalFamilies.lineageShowBorders,
+    lineageChain: state.clonalFamilies.lineageChain
   };
 };
 
 // Component definition
 
-@connect(mapStateToProps)
+@connect(mapStateToProps, {
+  updateLineageShowEntire: explorerActions.updateLineageShowEntire,
+  updateLineageShowBorders: explorerActions.updateLineageShowBorders,
+  updateLineageChain: explorerActions.updateLineageChain
+})
 class Lineage extends React.Component {
   constructor(props) {
     super(props);
-    // Initialize lineageChain based on the selected family's actual chain
-    let initialChain = CHAIN_TYPES.HEAVY;
-    if (props.selectedFamily && !props.selectedFamily.is_paired) {
-      initialChain = clonalFamiliesSelectors.getCloneChain(props.selectedFamily);
-    }
-
     this.state = {
-      showEntireLineage: false,
-      showMutationBorders: false,
-      lineageChain: initialChain
+      vegaViewReady: false
     };
+    this.vegaViewRef = null;
   }
 
   componentDidUpdate(prevProps) {
-    const { selectedSeq, selectedFamily, treeChain, lastClickedChain } = this.props;
-    const { lineageChain } = this.state;
+    const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
 
     // When family changes, infer the appropriate chain
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
@@ -89,7 +91,7 @@ class Lineage extends React.Component {
       if (!selectedFamily.is_paired) {
         const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
         if (familyChain !== lineageChain) {
-          this.setState({ lineageChain: familyChain });
+          updateLineageChain(familyChain);
           return;
         }
       }
@@ -100,7 +102,7 @@ class Lineage extends React.Component {
       // For non-paired families, always use the family's actual chain
       if (selectedFamily && !selectedFamily.is_paired) {
         const familyChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
-        this.setState({ lineageChain: familyChain });
+        updateLineageChain(familyChain);
       } else {
         // For paired families, infer from tree selection
         let inferredChain = CHAIN_TYPES.HEAVY;
@@ -110,26 +112,27 @@ class Lineage extends React.Component {
           // In stacked/side-by-side mode, use the chain that was actually clicked
           inferredChain = lastClickedChain;
         }
-        this.setState({ lineageChain: inferredChain });
+        updateLineageChain(inferredChain);
       }
     }
   }
 
   handleEntireLineageChange = (event) => {
-    this.setState({ showEntireLineage: event.target.checked });
+    this.props.updateLineageShowEntire(event.target.checked);
   }
 
   handleMutationBordersChange = (event) => {
-    this.setState({ showMutationBorders: event.target.checked });
+    this.props.updateLineageShowBorders(event.target.checked);
   }
 
   handleLineageChainChange = (event) => {
-    this.setState({ lineageChain: event.target.value });
+    this.props.updateLineageChain(event.target.value);
   }
 
   render() {
-    const { selectedFamily, selectedSeq, selectedTree, heavyClone, heavyTree, lightClone, lightTree } = this.props;
-    const { showEntireLineage, showMutationBorders, lineageChain } = this.state;
+    const { selectedFamily, selectedSeq, selectedTree, heavyClone, heavyTree, lightClone, lightTree, lineageShowEntire, lineageShowBorders, lineageChain } = this.props;
+    const showEntireLineage = lineageShowEntire;
+    const showMutationBorders = lineageShowBorders;
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Determine which tree and clone to use based on chain selection
@@ -198,10 +201,15 @@ class Lineage extends React.Component {
                     <li><strong>Download FASTA:</strong> Download all sequences in the lineage as a FASTA file</li>
                   </ul>
                   <strong>Display Options:</strong>
-                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li><strong>Show mutation borders:</strong> Draw borders around mutated positions for easier identification</li>
                     <li><strong>Show entire lineage:</strong> Include all ancestral nodes (default shows only nodes with mutations)</li>
                   </ul>
+                  <strong>Export:</strong>
+                  <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
+                    <li><strong>Export PNG/SVG:</strong> Save the lineage visualization as an image</li>
+                  </ul>
+                  <strong>Tip:</strong> Display options can be saved as configurations via the Settings menu in the header.
                 </div>
               }
             />
@@ -281,17 +289,28 @@ class Lineage extends React.Component {
               </div>
 
               <h3>Lineage</h3>
-              <Vega
-                key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
-                onParseError={(...args) => console.error("parse error:", args)}
-                debug
-                data={{
-                  naive_data: naiveData.source,
-                  cdr_bounds: cdrBounds,
-                  source_0: lineageData.lineage_alignment
-                }}
-                spec={seqAlignSpec(lineageData, { showMutationBorders })}
-              />
+              <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
+                <Vega
+                  key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                  onNewView={(view) => {
+                    this.vegaViewRef = view;
+                    if (!this.state.vegaViewReady) {
+                      this.setState({ vegaViewReady: true });
+                    }
+                  }}
+                  onParseError={(...args) => console.error("parse error:", args)}
+                  debug
+                  data={{
+                    naive_data: naiveData.source,
+                    cdr_bounds: cdrBounds,
+                    source_0: lineageData.lineage_alignment
+                  }}
+                  spec={seqAlignSpec(lineageData, { showMutationBorders })}
+                />
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <VegaExportToolbar vegaView={this.vegaViewRef} filename={`olmsted-lineage-${selectedSeq.sequence_id}`} />
+              </div>
             </>
             )}
 
