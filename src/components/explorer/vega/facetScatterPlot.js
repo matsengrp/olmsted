@@ -92,11 +92,15 @@ const createLayoutSignals = () => [
   },
   {
     name: "height",
-    update: "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT",
+    update: "floor(windowSize()[1]*plot_height_ratio)-PADDING_BUFFER_HEIGHT",
     on: [
       {
         events: { source: "window", type: "resize" },
-        update: "floor(windowSize()[1]*(1-2*PADDING_FRACTION))-PADDING_BUFFER_HEIGHT"
+        update: "floor(windowSize()[1]*plot_height_ratio)-PADDING_BUFFER_HEIGHT"
+      },
+      {
+        events: { signal: "plot_height_ratio" },
+        update: "floor(windowSize()[1]*plot_height_ratio)-PADDING_BUFFER_HEIGHT"
       }
     ]
   },
@@ -251,6 +255,18 @@ const createControlSignals = () => [
     bind: {
       input: "checkbox",
       name: "Filled shapes"
+    }
+  },
+  // Plot height ratio control - allows adjusting plot height as fraction of window
+  {
+    name: "plot_height_ratio",
+    value: 1.0,
+    bind: {
+      name: "Plot height",
+      input: "range",
+      min: 0.75,
+      max: 1.5,
+      step: 0.05
     }
   },
   {

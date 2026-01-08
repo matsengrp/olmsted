@@ -20,6 +20,8 @@ export const SCATTERPLOT_SIGNALS = [
   "symbolSize",
   "symbolOpacity",
   "filledShapes",
+  // Layout
+  "plot_height_ratio",
   // Zoom/pan state
   "zoom_level",
   "pan_x",
@@ -57,6 +59,8 @@ export const DEFAULT_SCATTERPLOT_SETTINGS = {
   symbolSize: 1,
   symbolOpacity: 0.4,
   filledShapes: false,
+  // Layout
+  plot_height_ratio: 1.0,
   // Zoom/pan defaults
   zoom_level: 0.9,
   pan_x: 0,
