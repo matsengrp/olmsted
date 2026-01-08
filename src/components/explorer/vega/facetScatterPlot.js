@@ -193,23 +193,33 @@ const createSelectionSignals = () => [
 
 // Helper function to create control signals (dropdowns)
 const createControlSignals = () => [
+  // Facet controls - variable selection and direction are separate to prevent multi-facet issues
   {
-    name: "facet_col_signal",
+    name: "facet_variable",
     value: "<none>",
     bind: {
-      name: "Facet columns",
+      name: "Facet by",
       input: "select",
       options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]
     }
   },
   {
-    name: "facet_row_signal",
-    value: "<none>",
+    name: "facet_direction",
+    value: "columns",
     bind: {
-      name: "Facet rows",
+      name: "Facet direction",
       input: "select",
-      options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]
+      options: ["columns", "rows"]
     }
+  },
+  // Computed signals for column/row faceting based on variable and direction
+  {
+    name: "facet_col_signal",
+    update: "facet_direction === 'columns' ? facet_variable : '<none>'"
+  },
+  {
+    name: "facet_row_signal",
+    update: "facet_direction === 'rows' ? facet_variable : '<none>'"
   },
   {
     name: "yField",
