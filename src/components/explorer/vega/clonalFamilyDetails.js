@@ -622,7 +622,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         on: [
           {
             events: [{ source: "scope", type: "click" }],
-            update: "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol') ? datum : null"
+            update: "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol' || item().mark.name == 'alignment_row_click') ? datum : null"
           }
         ]
       },
@@ -650,13 +650,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             update: "datum.type !== 'naive' && datum.type !== 'root' ? datum.y_tree : null"
           },
           {
+            // Alignment side: clickable row areas (these have y_tree directly from leaves data)
+            events: "@alignment_row_click:mouseover",
+            update: "datum.type !== 'naive' && datum.type !== 'root' ? datum.y_tree : null"
+          },
+          {
             // Alignment side: mutations marks and gridlines (these have y, need to invert)
             // Exclude naive type
             events: "@marks:mouseover, @y_grid:mouseover, @gap_and_x_marks:mouseover",
             update: "datum.type !== 'naive' ? invert('yscale', datum.y) : null"
           },
           {
-            events: "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
+            events: "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @alignment_row_click:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
             update: "null"
           }
         ]
@@ -2168,6 +2173,23 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     height: { signal: "mutation_mark_height + 4" },
                     fill: { value: "#ffeb3b" },
                     fillOpacity: { signal: "hovered_leaf_y_tree !== null ? 0.3 : 0" }
+                  }
+                }
+              },
+              // /CLICKABLE ROW AREAS
+              // Invisible clickable rects for each leaf row - allows clicking anywhere on row to select
+              {
+                name: "alignment_row_click",
+                type: "rect",
+                from: { data: "leaves" },
+                encode: {
+                  update: {
+                    x: { value: 0 },
+                    x2: { signal: "alignment_group_width" },
+                    yc: { field: "y" },
+                    height: { signal: "mutation_mark_height + 4" },
+                    fill: { value: "transparent" },
+                    cursor: { value: "pointer" }
                   }
                 }
               },
