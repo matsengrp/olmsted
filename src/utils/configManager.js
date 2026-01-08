@@ -11,7 +11,8 @@ export const DEFAULT_KEYWORD = "<default>";
 
 // Scatterplot signal names that can be persisted
 export const SCATTERPLOT_SIGNALS = [
-  "facet_by_signal",
+  "facet_col_signal",
+  "facet_row_signal",
   "yField",
   "xField",
   "colorBy",
@@ -50,7 +51,8 @@ export const TREE_SIGNALS = [
 
 // Default scatterplot settings
 export const DEFAULT_SCATTERPLOT_SETTINGS = {
-  facet_by_signal: "<none>",
+  facet_col_signal: "<none>",
+  facet_row_signal: "<none>",
   yField: "mean_mut_freq",
   xField: "unique_seqs_count",
   colorBy: "<none>",
