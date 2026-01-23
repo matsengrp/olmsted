@@ -86,7 +86,7 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 | Command | Description |
 |---------|-------------|
 | `npm start` | Start development server with hot reloading |
-| `npm run start:local` | Start with local data from `example_data/build_data` |
+| `npm run start:local` | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
 | `npm run build` | Build production bundle |
 | `npm run build:start` | Build and start production server |
 | `npm run lint` | Run ESLint on src/ |
