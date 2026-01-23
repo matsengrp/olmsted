@@ -2,6 +2,22 @@
 
 This guide covers development setup, common tasks, and best practices for contributing to Olmsted.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Development Server](#development-server)
+- [Available Scripts](#available-scripts)
+- [Code Quality](#code-quality)
+- [Project Structure](#project-structure)
+- [Common Development Tasks](#common-development-tasks)
+- [Debugging](#debugging)
+- [Building for Production](#building-for-production)
+- [Common Issues](#common-issues)
+- [Getting Help](#getting-help)
+
+---
+
 ## Quick Start
 
 ```bash
