@@ -37,9 +37,9 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
                                                           v
 +------------------+     +------------------+     +------------------+
 |                  |     |                  |     |                  |
-|   Vega Charts    |<----|  React          |<----|  Redux Store     |
-|   (Scatterplot,  |     |  Components     |     |  (State Mgmt)    |
-|    Tree, etc.)   |     |                 |     |                  |
+|   Vega Charts    |<----|  React           |<----|  Redux Store     |
+|   (Scatterplot,  |     |  Components      |     |  (State Mgmt)    |
+|    Tree, etc.)   |     |                  |     |                  |
 +------------------+     +------------------+     +------------------+
 ```
 
@@ -53,16 +53,16 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
                             USER INTERACTION
                                    |
                                    v
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 |                         FILE UPLOAD LAYER                         |
 |                                                                   |
 |  FileUpload.js          FileProcessor.js       splitFileProcessor |
-|  (Drag & Drop)    --->  (Parse JSON)      ---> (Large files)     |
+|  (Drag & Drop)    --->  (Parse JSON)      ---> (Large files)      |
 |                                                                   |
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
                                    |
                                    v
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 |                         STORAGE LAYER                             |
 |                                                                   |
 |  olmstedDB.js (Dexie)              clientDataStore.js             |
@@ -73,10 +73,10 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
 |  | configs          |              | - recentTrees Map      |     |
 |  +------------------+              +------------------------+     |
 |                                                                   |
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
                                    |
                                    v
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 |                         REDUX LAYER                               |
 |                                                                   |
 |  Actions (clientDataLoader.js)     Middleware                     |
@@ -88,25 +88,25 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
 |                                    Redux Store                    |
 |                               (5 combined reducers)               |
 |                                                                   |
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
                                    |
                                    v
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 |                       PRESENTATION LAYER                          |
 |                                                                   |
 |  Selectors (Reselect)          React Components                   |
-|  - getAvailableClonalFamilies  +---------------------------+     |
-|  - getBrushedClonalFamilies    | Root                      |     |
-|  - getSelectedFamily           |   NavBar                  |     |
-|  - getClonalFamiliesPage       |   MainComponentSwitch     |     |
-|                                |     Splash / App          |     |
-|                                +---------------------------+     |
+|  - getAvailableClonalFamilies  +---------------------------+      |
+|  - getBrushedClonalFamilies    | Root                      |      |
+|  - getSelectedFamily           |   NavBar                  |      |
+|  - getClonalFamiliesPage       |   MainComponentSwitch     |      |
+|                                |     Splash / App          |      |
+|                                +---------------------------+      |
 |                                           |                       |
 |                                           v                       |
 |                                    Vega Visualizations            |
 |                               (facetScatterPlot, tree, etc.)      |
 |                                                                   |
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 ```
 
 ### Upload & Processing Pipeline
@@ -139,10 +139,10 @@ The application uses a **lazy loading** strategy to handle large datasets:
 // src/actions/clientDataLoader.js
 
 // Load lightweight clone metadata (fast)
-getClientClonalFamilies(dispatch, dataset_id)
+getClientClonalFamilies(dispatch, dataset_id);
 
 // Load full tree with sequences (on-demand)
-getClientTree(dispatch, tree_id)
+getClientTree(dispatch, tree_id);
 ```
 
 ---
@@ -373,23 +373,23 @@ Root (src/Root.js)
 
 The following components are connected to the Redux store:
 
-| Component | Connected State |
-|-----------|-----------------|
-| `App` | browserDimensions, availableDatasets, pendingDatasetLoads, selectedFamily, selectedSeq, loadedClonalFamilies |
-| `Splash` | availableDatasets, errorMessage |
-| `MainComponentSwitch` | displayComponent |
-| `NavBarWrapper` | displayComponent |
-| `SelectedFamiliesSummary` | selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal |
-| `ClonalFamiliesTable` | clonalFamiliesPage, pagination, lastPage, selectedFamily, starredFamilies |
-| `ClonalFamiliesViz` | availableClonalFamilies, brushSelection, availableDatasets, selectedChain |
-| `TreeViz` | selectedFamily, pairedClone, trees.cache, selectedTreeIdent |
-| `Lineage` | selectedSeq, selectedFamily, lineage settings |
-| `FilterPanel` | filters, availableClonalFamilies, datasets |
-| `DatasetLoadingTable` | datasets, selectedDatasets |
-| `DatasetManagementTable` | availableDatasets, starredDatasets |
-| `ConfigModal` | configs state |
-| `ConfigList` | savedConfigs |
-| `ConfigButton` | isModalOpen |
+| Component                 | Connected State                                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `App`                     | browserDimensions, availableDatasets, pendingDatasetLoads, selectedFamily, selectedSeq, loadedClonalFamilies |
+| `Splash`                  | availableDatasets, errorMessage                                                                              |
+| `MainComponentSwitch`     | displayComponent                                                                                             |
+| `NavBarWrapper`           | displayComponent                                                                                             |
+| `SelectedFamiliesSummary` | selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal                                                 |
+| `ClonalFamiliesTable`     | clonalFamiliesPage, pagination, lastPage, selectedFamily, starredFamilies                                    |
+| `ClonalFamiliesViz`       | availableClonalFamilies, brushSelection, availableDatasets, selectedChain                                    |
+| `TreeViz`                 | selectedFamily, pairedClone, trees.cache, selectedTreeIdent                                                  |
+| `Lineage`                 | selectedSeq, selectedFamily, lineage settings                                                                |
+| `FilterPanel`             | filters, availableClonalFamilies, datasets                                                                   |
+| `DatasetLoadingTable`     | datasets, selectedDatasets                                                                                   |
+| `DatasetManagementTable`  | availableDatasets, starredDatasets                                                                           |
+| `ConfigModal`             | configs state                                                                                                |
+| `ConfigList`              | savedConfigs                                                                                                 |
+| `ConfigButton`            | isModalOpen                                                                                                  |
 
 ---
 
@@ -401,11 +401,11 @@ Olmsted uses Vega 5 for declarative, interactive visualizations. Vega specs are 
 
 #### Key Visualization Components
 
-| File | Purpose |
-|------|---------|
-| `src/components/explorer/vega/facetScatterPlot.js` | Main clonal families scatterplot with brush selection, faceting, and zoom/pan |
-| `src/components/explorer/vega/clonalFamilyDetails.js` | Combined phylogenetic tree and sequence alignment view |
-| `src/components/explorer/vega/naive.js` | V(D)J gene segment visualization for naive sequences |
+| File                                                  | Purpose                                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `src/components/explorer/vega/facetScatterPlot.js`    | Main clonal families scatterplot with brush selection, faceting, and zoom/pan |
+| `src/components/explorer/vega/clonalFamilyDetails.js` | Combined phylogenetic tree and sequence alignment view                        |
+| `src/components/explorer/vega/naive.js`               | V(D)J gene segment visualization for naive sequences                          |
 
 #### Scatterplot Features (`facetScatterPlot.js`)
 
@@ -439,70 +439,70 @@ The `VegaViewContext` (src/components/config/VegaViewContext.js) provides React 
 
 ### Core Application
 
-| File | Purpose |
-|------|---------|
-| `src/index.js` | Application entry point, React 18 root creation |
-| `src/Root.js` | Root component with routing logic |
-| `src/store/index.js` | Redux store configuration with middleware |
+| File                 | Purpose                                         |
+| -------------------- | ----------------------------------------------- |
+| `src/index.js`       | Application entry point, React 18 root creation |
+| `src/Root.js`        | Root component with routing logic               |
+| `src/store/index.js` | Redux store configuration with middleware       |
 
 ### State Management
 
-| File | Purpose |
-|------|---------|
-| `src/reducers/index.js` | Root reducer combining all reducers |
-| `src/reducers/datasets.js` | Dataset metadata and routing state |
-| `src/reducers/clonalFamilies.js` | Clonal family data and visualization state |
-| `src/reducers/trees.js` | Tree data cache |
-| `src/reducers/configs.js` | Saved visualization configs |
-| `src/reducers/browserDimensions.js` | Window dimensions |
+| File                                | Purpose                                    |
+| ----------------------------------- | ------------------------------------------ |
+| `src/reducers/index.js`             | Root reducer combining all reducers        |
+| `src/reducers/datasets.js`          | Dataset metadata and routing state         |
+| `src/reducers/clonalFamilies.js`    | Clonal family data and visualization state |
+| `src/reducers/trees.js`             | Tree data cache                            |
+| `src/reducers/configs.js`           | Saved visualization configs                |
+| `src/reducers/browserDimensions.js` | Window dimensions                          |
 
 ### Data Management
 
-| File | Purpose |
-|------|---------|
-| `src/utils/olmstedDB.js` | Dexie database schema and CRUD operations |
-| `src/utils/clientDataStore.js` | Storage abstraction with LRU caching |
-| `src/utils/fileProcessor.js` | File parsing for Olmsted JSON format |
+| File                              | Purpose                                     |
+| --------------------------------- | ------------------------------------------- |
+| `src/utils/olmstedDB.js`          | Dexie database schema and CRUD operations   |
+| `src/utils/clientDataStore.js`    | Storage abstraction with LRU caching        |
+| `src/utils/fileProcessor.js`      | File parsing for Olmsted JSON format        |
 | `src/actions/clientDataLoader.js` | Redux actions for loading data from storage |
 
 ### Middleware
 
-| File | Purpose |
-|------|---------|
+| File                          | Purpose                        |
+| ----------------------------- | ------------------------------ |
 | `src/middleware/changeURL.js` | URL synchronization middleware |
 
 ### Selectors
 
-| File | Purpose |
-|------|---------|
+| File                              | Purpose                                        |
+| --------------------------------- | ---------------------------------------------- |
 | `src/selectors/clonalFamilies.js` | Memoized selectors for filtered/paginated data |
-| `src/selectors/trees.js` | Tree data selectors |
+| `src/selectors/trees.js`          | Tree data selectors                            |
 
 ### Main Components
 
-| File | Purpose |
-|------|---------|
-| `src/components/splash/index.js` | Landing page with upload and dataset management |
-| `src/components/explorer/app.js` | Main exploration view with all visualization sections |
-| `src/components/framework/nav-bar.js` | Navigation header |
+| File                                  | Purpose                                               |
+| ------------------------------------- | ----------------------------------------------------- |
+| `src/components/splash/index.js`      | Landing page with upload and dataset management       |
+| `src/components/explorer/app.js`      | Main exploration view with all visualization sections |
+| `src/components/framework/nav-bar.js` | Navigation header                                     |
 
 ### Visualization Components
 
-| File | Purpose |
-|------|---------|
-| `src/components/explorer/scatterplot.js` | Scatterplot wrapper component |
-| `src/components/explorer/tree.js` | Tree visualization wrapper |
-| `src/components/explorer/lineage.js` | Ancestral sequence visualization |
-| `src/components/explorer/table.js` | Clonal families table |
-| `src/components/explorer/FilterPanel.js` | High-level filter controls |
+| File                                     | Purpose                          |
+| ---------------------------------------- | -------------------------------- |
+| `src/components/explorer/scatterplot.js` | Scatterplot wrapper component    |
+| `src/components/explorer/tree.js`        | Tree visualization wrapper       |
+| `src/components/explorer/lineage.js`     | Ancestral sequence visualization |
+| `src/components/explorer/table.js`       | Clonal families table            |
+| `src/components/explorer/FilterPanel.js` | High-level filter controls       |
 
 ### Vega Specifications
 
-| File | Purpose |
-|------|---------|
-| `src/components/explorer/vega/facetScatterPlot.js` | Clonal families scatterplot spec |
-| `src/components/explorer/vega/clonalFamilyDetails.js` | Tree + alignment spec |
-| `src/components/explorer/vega/naive.js` | V(D)J segment visualization spec |
+| File                                                  | Purpose                          |
+| ----------------------------------------------------- | -------------------------------- |
+| `src/components/explorer/vega/facetScatterPlot.js`    | Clonal families scatterplot spec |
+| `src/components/explorer/vega/clonalFamilyDetails.js` | Tree + alignment spec            |
+| `src/components/explorer/vega/naive.js`               | V(D)J segment visualization spec |
 
 ---
 
@@ -532,12 +532,12 @@ The application uses Dexie.js to manage IndexedDB storage with the following sch
 
 #### Table Descriptions
 
-| Table | Primary Key | Purpose |
-|-------|-------------|---------|
-| `datasets` | `dataset_id` | Dataset metadata (name, clone count, upload time) |
-| `clones` | `[dataset_id+clone_id]` | Clone family metadata without heavy tree data |
-| `trees` | `ident` | Full phylogenetic tree data with all nodes |
-| `configs` | `id` | User-saved visualization configurations |
+| Table      | Primary Key             | Purpose                                           |
+| ---------- | ----------------------- | ------------------------------------------------- |
+| `datasets` | `dataset_id`            | Dataset metadata (name, clone count, upload time) |
+| `clones`   | `[dataset_id+clone_id]` | Clone family metadata without heavy tree data     |
+| `trees`    | `ident`                 | Full phylogenetic tree data with all nodes        |
+| `configs`  | `id`                    | User-saved visualization configurations           |
 
 #### Data Flow
 
@@ -549,4 +549,4 @@ This lazy loading approach enables handling datasets with thousands of clonal fa
 
 ---
 
-*Last updated: 2026-01-23*
+_Last updated: 2026-01-23_

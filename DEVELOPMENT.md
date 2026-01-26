@@ -29,7 +29,7 @@ cd olmsted
 npm install --legacy-peer-deps
 
 # Start development server with hot reloading
-npm start
+./bin/olmsted-server-local.sh /path/to/data 3999 dev
 
 # Open in browser
 open http://localhost:3999
@@ -55,10 +55,15 @@ npm --version    # Should output 9.x.x or higher
 ### Standard Development Mode
 
 ```bash
-npm start
+# Start development server with hot reloading
+./bin/olmsted-server-local.sh /path/to/data 3999 dev
+
+# Open in browser
+open http://localhost:3999
 ```
 
 Starts the development server at `http://localhost:3999` with:
+
 - Hot module replacement (React Fast Refresh)
 - Source maps for debugging
 - Webpack dev middleware
@@ -69,7 +74,12 @@ For testing with local data files in split format:
 
 ```bash
 # Copy example data to data/ directory
-cp ../olmsted-cli/example_data/pcp/split_golden_data/* data/
+cp ../olmsted-cli/example_data/pcp/split_golden_data/* path/to/data/
+
+# Start development server with hot reloading
+./bin/olmsted-server-local.sh /path/to/data 3999 dev
+
+# OR: invoke npm scripts manually
 
 # Start with local data
 npm run start:local
@@ -83,16 +93,16 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start development server with hot reloading |
-| `npm run start:local` | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
-| `npm run build` | Build production bundle |
-| `npm run build:start` | Build and start production server |
-| `npm run lint` | Run ESLint on src/ |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check formatting without modifying files |
-| `npm run clean` | Remove build artifacts |
+| Command                | Description                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `npm start`            | Start development server with hot reloading                                                        |
+| `npm run start:local`  | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
+| `npm run build`        | Build production bundle                                                                            |
+| `npm run build:start`  | Build and start production server                                                                  |
+| `npm run lint`         | Run ESLint on src/                                                                                 |
+| `npm run format`       | Format code with Prettier                                                                          |
+| `npm run format:check` | Check formatting without modifying files                                                           |
+| `npm run clean`        | Remove build artifacts                                                                             |
 
 ### Build Commands
 
@@ -148,6 +158,7 @@ npm run format:check
 ### Code Standards
 
 From CLAUDE.md:
+
 - **Function size**: No function should exceed 50 lines
 - **Error handling**: Comprehensive try-catch blocks with specific error messages
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
@@ -205,12 +216,16 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed documentation of the data 
 
 export const generateMyVizSpec = (data, options) => {
   return {
-    "$schema": "https://vega.github.io/schema/vega/v5.json",
-    "width": options.width,
-    "height": options.height,
-    "data": [{ "name": "source", "values": data }],
-    "marks": [/* ... */],
-    "signals": [/* ... */]
+    $schema: "https://vega.github.io/schema/vega/v5.json",
+    width: options.width,
+    height: options.height,
+    data: [{ name: "source", values: data }],
+    marks: [
+      /* ... */
+    ],
+    signals: [
+      /* ... */
+    ]
   };
 };
 ```
@@ -219,10 +234,10 @@ export const generateMyVizSpec = (data, options) => {
 
 ```javascript
 // src/components/explorer/myVisualization.js
-import React from 'react';
-import { connect } from 'react-redux';
-import Vega from 'react-vega';
-import { generateMyVizSpec } from './vega/myVisualization';
+import React from "react";
+import { connect } from "react-redux";
+import Vega from "react-vega";
+import { generateMyVizSpec } from "./vega/myVisualization";
 
 @connect((state) => ({
   data: state.myData,
@@ -296,18 +311,15 @@ export const myNewAction = (value) => ({
 Selectors in `src/selectors/` use Reselect for memoization:
 
 ```javascript
-import { createSelector } from 'reselect';
+import { createSelector } from "reselect";
 
 const getData = (state) => state.myData;
 const getFilter = (state) => state.myFilter;
 
-export const getFilteredData = createSelector(
-  [getData, getFilter],
-  (data, filter) => {
-    // Expensive computation only runs when inputs change
-    return data.filter(item => item.matches(filter));
-  }
-);
+export const getFilteredData = createSelector([getData, getFilter], (data, filter) => {
+  // Expensive computation only runs when inputs change
+  return data.filter((item) => item.matches(filter));
+});
 ```
 
 ---
@@ -336,7 +348,7 @@ console.warn("Warning message");
 console.error("Error message");
 
 // Will trigger ESLint warning
-console.log("Debug message");  // Remove before committing
+console.log("Debug message"); // Remove before committing
 ```
 
 ---
@@ -400,6 +412,7 @@ If the browser database gets corrupted:
 ### Large Dataset Performance
 
 For datasets with thousands of clonal families:
+
 - The application uses lazy loading (tree data loaded on demand)
 - Memory cache is limited to 10 items (configurable in `clientDataStore.js`)
 - Consider using the filter panel to reduce visible data
@@ -418,4 +431,4 @@ Ensure your editor is configured to use the project's ESLint config with Babel p
 
 ---
 
-*Last updated: 2026-01-23*
+_Last updated: 2026-01-23_
