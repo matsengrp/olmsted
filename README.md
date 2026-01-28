@@ -11,7 +11,8 @@ Olmsted is an open-source tool for visualizing and exploring B cell lineages.
   - [Getting Started](#getting-started)
   - [Preparing Your Data](#preparing-your-data)
   - [Using the Visualization](#using-the-visualization)
-  - [Local Deployment](#local-deployment) (for developers)
+  - [Local Deployment](#local-deployment)
+  - [For Developers](#for-developers)
   - [Miscellany](#miscellany)
 
 ## Overview
@@ -299,6 +300,37 @@ python -m http.server 4000
 ```
 
 For AWS S3 deployment, see `bin/deploy.py -h`.
+
+## For Developers
+
+For contributors and maintainers, we provide detailed documentation:
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, data flow, Redux store structure, and component hierarchy
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Development setup, common tasks, debugging, and contribution guidelines
+
+### Quick Start for New Maintainers
+
+1. Clone the repository and run `npm install --legacy-peer-deps`
+2. Run `npm start` for the development server
+3. Read [ARCHITECTURE.md](./ARCHITECTURE.md) for system overview
+4. Read [DEVELOPMENT.md](./DEVELOPMENT.md) for common tasks
+
+### Technology Stack
+
+- **React 18** with Redux for state management
+- **Vega 5** for declarative visualizations
+- **Dexie (IndexedDB)** for client-side data persistence
+- **Express** server with webpack dev middleware
+
+### Key Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| `src/components/` | React components |
+| `src/components/explorer/vega/` | Vega visualization specs |
+| `src/reducers/` | Redux state management |
+| `src/utils/` | Data processing and storage |
+| `src/selectors/` | Memoized data selectors |
 
 ## Miscellany
 ### Versioning
