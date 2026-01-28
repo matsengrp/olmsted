@@ -1,9 +1,9 @@
-const queryString = require("query-string");
 const getFiles = require("./getFiles");
 
 const applyCharonToApp = (app) => {
   app.get("/charon*", (req, res) => {
-    const query = queryString.parse(req.url.split("?")[1]);
+    const searchParams = new URLSearchParams(req.url.split("?")[1] || "");
+    const query = Object.fromEntries(searchParams.entries());
     console.log("Charon API request: " + req.originalUrl);
     if (Object.keys(query).indexOf("request") === -1) {
       console.warn("Query rejected (nothing requested) -- " + req.originalUrl);

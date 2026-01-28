@@ -1,8 +1,8 @@
-import { createSelector, defaultMemoize, createSelectorCreator } from "reselect";
+import { createSelector, lruMemoize, createSelectorCreator } from "reselect";
 import * as _ from "lodash";
 import * as fun from "../components/framework/fun";
 // create a "selector creator" that uses lodash.isEqual instead of ===
-const createDeepEqualSelector = createSelectorCreator(defaultMemoize, _.isEqual);
+const createDeepEqualSelector = createSelectorCreator(lruMemoize, _.isEqual);
 
 // FILTER CLONAL FAMILIES BY SELECTED DATASETS
 

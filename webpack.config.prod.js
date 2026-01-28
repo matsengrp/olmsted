@@ -7,7 +7,6 @@ const { execSync } = require('child_process');
 
 module.exports = {
   entry: [
-    "@babel/polyfill",
     "./src/index"
   ],
   output: {
