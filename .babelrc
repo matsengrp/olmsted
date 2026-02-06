@@ -20,6 +20,9 @@
         ["react-refresh/babel", { "skipEnvCheck": true }]
       ]
     },
+    "test": {
+      "plugins": []
+    },
     "production": {
       "plugins": [
         ["strip-function-call", {"strip": ["timerStart", "timerEnd"]}]
