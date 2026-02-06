@@ -9,6 +9,7 @@ This guide covers development setup, common tasks, and best practices for contri
 - [Development Server](#development-server)
 - [Available Scripts](#available-scripts)
 - [Code Quality](#code-quality)
+- [Testing](#testing)
 - [Project Structure](#project-structure)
 - [Common Development Tasks](#common-development-tasks)
 - [Debugging](#debugging)
@@ -102,6 +103,9 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 | `npm run lint`         | Run ESLint on src/                                                                                 |
 | `npm run format`       | Format code with Prettier                                                                          |
 | `npm run format:check` | Check formatting without modifying files                                                           |
+| `npm test`             | Run all Jest tests                                                                                 |
+| `npm run test:watch`   | Run tests in watch mode (re-runs on file changes)                                                  |
+| `npm run test:coverage` | Run tests with coverage report                                                                    |
 | `npm run clean`        | Remove build artifacts                                                                             |
 
 ### Build Commands
@@ -164,6 +168,75 @@ From CLAUDE.md:
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
 - **Documentation**: JSDoc for all public methods and complex functions
 - **Indentation**: 2 spaces
+
+---
+
+## Testing
+
+Olmsted uses [Jest](https://jestjs.io/) with a jsdom environment for unit testing. Tests live in `__tests__/` directories alongside the source files they cover.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (re-runs on file changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run a specific test file
+npm test -- src/reducers/__tests__/configs.test.js
+
+# Run tests matching a pattern
+npm test -- --testPathPattern="selectors"
+
+# See every individual test name
+npm test -- --verbose
+```
+
+### Test Organization
+
+Tests are colocated with source files using the `__tests__/` convention:
+
+```
+src/
+├── reducers/
+│   ├── clonalFamilies.js
+│   └── __tests__/
+│       └── clonalFamilies.test.js
+├── selectors/
+│   ├── trees.js
+│   └── __tests__/
+│       └── trees.test.js
+└── __test-data__/
+    └── mockState.js          # Shared mock data (families, trees, datasets)
+```
+
+**What's tested:** Pure functions — reducers, selectors, utilities, and file processors. These are the highest-ROI tests since they validate data transformations without needing a browser or DOM.
+
+### Writing New Tests
+
+When adding tests, follow the existing patterns:
+
+- **Reducers**: Test `(state, action) => newState` for each action type, plus the default/initial state
+- **Selectors**: Test exported helper functions directly; test memoized selectors by constructing mock state objects
+- **Utilities**: Test pure input/output with edge cases (null, empty, boundary values)
+
+Import shared mock data from `src/__test-data__/mockState.js` rather than duplicating fixtures across test files.
+
+### Configuration
+
+| File | Purpose |
+|------|---------|
+| `jest.config.js` | Jest config: jsdom env, babel-jest transform, CSS/image mocks, ESM package handling |
+| `jest.setup.js` | sessionStorage polyfill, console noise suppression |
+| `__mocks__/fileMock.js` | Stub for image/file imports |
+| `.babelrc` `"test"` env | Avoids loading react-refresh plugin (crashes in Jest) |
+
+**Note on ESM packages**: lodash-es and d3-* are ESM-only and must be excluded from `transformIgnorePatterns` in `jest.config.js` so babel-jest can process them. If you add a new ESM dependency that causes `SyntaxError: Unexpected token export` in tests, add it to the pattern.
 
 ---
 
@@ -431,4 +504,4 @@ Ensure your editor is configured to use the project's ESLint config with Babel p
 
 ---
 
-_Last updated: 2026-01-23_
+_Last updated: 2026-02-06_
