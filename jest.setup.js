@@ -29,7 +29,12 @@ console.warn = (...args) => {
 
 console.error = (...args) => {
   // Suppress specific known errors during tests
-  if (typeof args[0] === "string" && args[0].includes("Not implemented")) {
+  if (
+    typeof args[0] === "string" &&
+    (args[0].includes("Not implemented") ||
+      args[0].includes("Application Error:") ||
+      args[0].includes("Network Error:"))
+  ) {
     return;
   }
   originalError.apply(console, args);
