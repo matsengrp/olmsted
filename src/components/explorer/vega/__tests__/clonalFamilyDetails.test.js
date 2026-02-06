@@ -5,6 +5,14 @@ import {
 } from "../clonalFamilyDetails";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../../constants/aminoAcidColors";
+import {
+  treeNodesData,
+  treeAlignmentData,
+  naiveGeneRegionData,
+  cdrBoundsData,
+  leavesCountData,
+  seedData
+} from "./vegaMockData";
 
 describe("concatTreeWithAlignmentSpec", () => {
   let spec;
@@ -208,10 +216,15 @@ describe("concatTreeWithAlignmentSpec", () => {
       expect(runtime).toHaveProperty("operators");
     });
 
-    it("can instantiate a headless View", async () => {
+    it("can instantiate and run a headless View with data", async () => {
       const runtime = vega.parse(spec);
-      // logLevel: 0 (vega.None) suppresses expected runtime errors from missing data
-      const view = new vega.View(runtime, { renderer: "none", logLevel: 0 });
+      const view = new vega.View(runtime, { renderer: "none" });
+      view.data("source_0", treeNodesData);
+      view.data("source_1", treeAlignmentData);
+      view.data("naive_data", naiveGeneRegionData);
+      view.data("cdr_bounds", cdrBoundsData);
+      view.data("leaves_count_incl_naive", leavesCountData);
+      view.data("seed", seedData);
       await expect(view.runAsync()).resolves.toBeDefined();
       view.finalize();
     });
@@ -328,9 +341,12 @@ describe("seqAlignSpec", () => {
       expect(runtime).toHaveProperty("operators");
     });
 
-    it("can instantiate a headless View", async () => {
+    it("can instantiate and run a headless View with data", async () => {
       const runtime = vega.parse(spec);
       const view = new vega.View(runtime, { renderer: "none" });
+      view.data("source_0", treeAlignmentData);
+      view.data("naive_data", naiveGeneRegionData);
+      view.data("cdr_bounds", cdrBoundsData);
       await expect(view.runAsync()).resolves.toBeDefined();
       view.finalize();
     });

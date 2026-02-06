@@ -1,5 +1,6 @@
 import * as vega from "vega";
 import facetClonalFamiliesVizSpec from "../facetScatterPlot";
+import { scatterplotSourceData, scatterplotDatasetsData } from "./vegaMockData";
 
 describe("facetClonalFamiliesVizSpec", () => {
   let spec;
@@ -206,9 +207,13 @@ describe("facetClonalFamiliesVizSpec", () => {
       expect(runtime).toHaveProperty("operators");
     });
 
-    it("can instantiate a headless View", async () => {
+    it("can instantiate and run a headless View with data", async () => {
       const runtime = vega.parse(spec);
       const view = new vega.View(runtime, { renderer: "none" });
+      view.data("source", scatterplotSourceData);
+      view.data("datasets", scatterplotDatasetsData);
+      view.data("selected", [{ ident: "clone-1" }]);
+      view.data("locus", [{ locus: "IGH" }]);
       await expect(view.runAsync()).resolves.toBeDefined();
       view.finalize();
     });

@@ -1,6 +1,7 @@
 import * as vega from "vega";
 import naiveVegaSpec from "../naive";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
+import { naiveSourceData } from "./vegaMockData";
 
 describe("naiveVegaSpec", () => {
   it("is a valid Vega v5 spec object", () => {
@@ -123,9 +124,10 @@ describe("naiveVegaSpec", () => {
       expect(runtime).toHaveProperty("operators");
     });
 
-    it("can instantiate a headless View", async () => {
+    it("can instantiate and run a headless View with data", async () => {
       const runtime = vega.parse(naiveVegaSpec);
       const view = new vega.View(runtime, { renderer: "none" });
+      view.data("source", naiveSourceData);
       await expect(view.runAsync()).resolves.toBeDefined();
       view.finalize();
     });
