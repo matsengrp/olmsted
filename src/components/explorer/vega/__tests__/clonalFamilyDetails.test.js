@@ -1,3 +1,4 @@
+import * as vega from "vega";
 import {
   concatTreeWithAlignmentSpec,
   seqAlignSpec
@@ -195,6 +196,31 @@ describe("concatTreeWithAlignmentSpec", () => {
       );
     });
   });
+
+  describe("Vega runtime compatibility", () => {
+    it("parses without errors", () => {
+      expect(() => vega.parse(spec)).not.toThrow();
+    });
+
+    it("produces a valid runtime dataflow", () => {
+      const runtime = vega.parse(spec);
+      expect(runtime).toBeDefined();
+      expect(runtime).toHaveProperty("operators");
+    });
+
+    it("can instantiate a headless View", async () => {
+      const runtime = vega.parse(spec);
+      // logLevel: 0 (vega.None) suppresses expected runtime errors from missing data
+      const view = new vega.View(runtime, { renderer: "none", logLevel: 0 });
+      await expect(view.runAsync()).resolves.toBeDefined();
+      view.finalize();
+    });
+
+    it("parses with showControls=false", () => {
+      const noControls = concatTreeWithAlignmentSpec({ showControls: false });
+      expect(() => vega.parse(noControls)).not.toThrow();
+    });
+  });
 });
 
 describe("seqAlignSpec", () => {
@@ -288,6 +314,25 @@ describe("seqAlignSpec", () => {
       const spec1 = seqAlignSpec(mockFamily);
       const spec2 = seqAlignSpec(mockFamily);
       expect(JSON.stringify(spec1)).toBe(JSON.stringify(spec2));
+    });
+  });
+
+  describe("Vega runtime compatibility", () => {
+    it("parses without errors", () => {
+      expect(() => vega.parse(spec)).not.toThrow();
+    });
+
+    it("produces a valid runtime dataflow", () => {
+      const runtime = vega.parse(spec);
+      expect(runtime).toBeDefined();
+      expect(runtime).toHaveProperty("operators");
+    });
+
+    it("can instantiate a headless View", async () => {
+      const runtime = vega.parse(spec);
+      const view = new vega.View(runtime, { renderer: "none" });
+      await expect(view.runAsync()).resolves.toBeDefined();
+      view.finalize();
     });
   });
 });

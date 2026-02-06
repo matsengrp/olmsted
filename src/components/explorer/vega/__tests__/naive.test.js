@@ -1,3 +1,4 @@
+import * as vega from "vega";
 import naiveVegaSpec from "../naive";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
 
@@ -108,6 +109,25 @@ describe("naiveVegaSpec", () => {
   describe("config", () => {
     it("sets Y axis minExtent", () => {
       expect(naiveVegaSpec.config.axisY.minExtent).toBe(30);
+    });
+  });
+
+  describe("Vega runtime compatibility", () => {
+    it("parses without errors", () => {
+      expect(() => vega.parse(naiveVegaSpec)).not.toThrow();
+    });
+
+    it("produces a valid runtime dataflow", () => {
+      const runtime = vega.parse(naiveVegaSpec);
+      expect(runtime).toBeDefined();
+      expect(runtime).toHaveProperty("operators");
+    });
+
+    it("can instantiate a headless View", async () => {
+      const runtime = vega.parse(naiveVegaSpec);
+      const view = new vega.View(runtime, { renderer: "none" });
+      await expect(view.runAsync()).resolves.toBeDefined();
+      view.finalize();
     });
   });
 });

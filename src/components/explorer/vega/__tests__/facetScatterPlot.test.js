@@ -1,3 +1,4 @@
+import * as vega from "vega";
 import facetClonalFamiliesVizSpec from "../facetScatterPlot";
 
 describe("facetClonalFamiliesVizSpec", () => {
@@ -191,6 +192,25 @@ describe("facetClonalFamiliesVizSpec", () => {
       const spec1 = facetClonalFamiliesVizSpec();
       const spec2 = facetClonalFamiliesVizSpec();
       expect(JSON.stringify(spec1)).toBe(JSON.stringify(spec2));
+    });
+  });
+
+  describe("Vega runtime compatibility", () => {
+    it("parses without errors", () => {
+      expect(() => vega.parse(spec)).not.toThrow();
+    });
+
+    it("produces a valid runtime dataflow", () => {
+      const runtime = vega.parse(spec);
+      expect(runtime).toBeDefined();
+      expect(runtime).toHaveProperty("operators");
+    });
+
+    it("can instantiate a headless View", async () => {
+      const runtime = vega.parse(spec);
+      const view = new vega.View(runtime, { renderer: "none" });
+      await expect(view.runAsync()).resolves.toBeDefined();
+      view.finalize();
     });
   });
 });
