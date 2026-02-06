@@ -12,5 +12,13 @@ module.exports = {
     "^vega-lib$": "vega"
   },
   setupFiles: ["<rootDir>/jest.setup.js"],
-  testMatch: ["**/__tests__/**/*.test.js"]
+  testMatch: ["**/__tests__/**/*.test.js"],
+  collectCoverageFrom: [
+    "src/**/*.js",
+    "!src/index.js",
+    "!src/**/index.js",
+    "!src/css/**",
+    "!src/images/**",
+    "!src/__test-data__/**"
+  ]
 };
