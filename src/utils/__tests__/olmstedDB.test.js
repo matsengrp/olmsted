@@ -14,15 +14,13 @@ class TestOlmstedDB extends Dexie {
 
     this.version(1).stores({
       datasets: "dataset_id, name, clone_count",
-      clones:
-        "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
+      clones: "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
       trees: "ident, tree_id, clone_id"
     });
 
     this.version(2).stores({
       datasets: "dataset_id, name, clone_count",
-      clones:
-        "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
+      clones: "[dataset_id+clone_id], dataset_id, sample_id, name, unique_seqs_count, mean_mut_freq",
       trees: "ident, tree_id, clone_id",
       configs: "id, name, datasetId, createdAt"
     });
@@ -258,14 +256,8 @@ describe("clearAll", () => {
 describe("cascade delete pattern", () => {
   it("removes dataset, its clones, and associated trees", async () => {
     await db.datasets.put(makeDataset());
-    await db.clones.bulkPut([
-      makeClone({ clone_id: "c1" }),
-      makeClone({ clone_id: "c2" })
-    ]);
-    await db.trees.bulkPut([
-      makeTree({ ident: "t1", clone_id: "c1" }),
-      makeTree({ ident: "t2", clone_id: "c2" })
-    ]);
+    await db.clones.bulkPut([makeClone({ clone_id: "c1" }), makeClone({ clone_id: "c2" })]);
+    await db.trees.bulkPut([makeTree({ ident: "t1", clone_id: "c1" }), makeTree({ ident: "t2", clone_id: "c2" })]);
 
     // Simulate removeDataset logic
     await db.transaction("rw", db.datasets, db.clones, db.trees, async () => {

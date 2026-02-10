@@ -149,9 +149,7 @@ describe("URL_QUERY_CHANGE_WITH_COMPUTED_STATE", () => {
       query: { x: "1" }
     });
     // next should be called at least twice: once for the original action, once for URL
-    const urlCall = next.mock.calls.find(
-      (call) => call[0] && call[0].type === types.URL
-    );
+    const urlCall = next.mock.calls.find((call) => call[0] && call[0].type === types.URL);
     expect(urlCall).toBeDefined();
   });
 });
@@ -226,9 +224,7 @@ describe("PAGE_CHANGE", () => {
       pushState: true
     });
     // URL action dispatched
-    const urlCall = next.mock.calls.find(
-      (call) => call[0] && call[0].type === types.URL
-    );
+    const urlCall = next.mock.calls.find((call) => call[0] && call[0].type === types.URL);
     expect(urlCall).toBeDefined();
   });
 
@@ -253,9 +249,7 @@ describe("PAGE_CHANGE", () => {
       datapath: "my_data",
       pushState: true
     });
-    const urlCalls = next.mock.calls.filter(
-      (call) => call[0] && call[0].type === types.URL
-    );
+    const urlCalls = next.mock.calls.filter((call) => call[0] && call[0].type === types.URL);
     expect(urlCalls.length).toBeGreaterThan(0);
     expect(urlCalls[0][0].path).toBe("/my/data");
   });

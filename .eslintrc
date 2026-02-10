@@ -59,5 +59,11 @@ parserOptions:
 env:
   es6: true
   browser: true
+overrides:
+  - files:
+      - '**/__tests__/**/*.js'
+      - '**/*.test.js'
+    env:
+      jest: true
 
 # https://gist.github.com/odedw/cf14a55aa154adbc3bf7#file-eslintrc-yaml-L4

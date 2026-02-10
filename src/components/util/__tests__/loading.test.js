@@ -1,12 +1,6 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
-import {
-  GreenCheckmark,
-  RedXIcon,
-  PlusIcon,
-  LoadingStatus,
-  SimpleInProgress
-} from "../loading";
+import { GreenCheckmark, RedXIcon, PlusIcon, LoadingStatus, SimpleInProgress } from "../loading";
 
 describe("loading.js", () => {
   // ── SVG icon components ──

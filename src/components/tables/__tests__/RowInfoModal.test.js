@@ -15,62 +15,58 @@ describe("RowInfoModal", () => {
   };
 
   it("returns null when isOpen is false", () => {
-    const { container } = render(
-      <RowInfoModal datum={baseDatum} isOpen={false} onClose={jest.fn()} />
-    );
+    const { container } = render(<RowInfoModal datum={baseDatum} isOpen={false} onClose={jest.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 
   it("returns null when datum is null", () => {
-    const { container } = render(
-      <RowInfoModal datum={null} isOpen={true} onClose={jest.fn()} />
-    );
+    const { container } = render(<RowInfoModal datum={null} isOpen onClose={jest.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 
   it("renders modal with default title when title not provided", () => {
-    render(<RowInfoModal datum={baseDatum} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={baseDatum} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("Row Details")).toBeInTheDocument();
   });
 
   it("renders modal with custom title", () => {
-    render(<RowInfoModal datum={baseDatum} isOpen={true} onClose={jest.fn()} title="My Clone" />);
+    render(<RowInfoModal datum={baseDatum} isOpen onClose={jest.fn()} title="My Clone" />);
     expect(screen.getByText("My Clone")).toBeInTheDocument();
   });
 
   // ── formatValue indirectly ──
 
   it("formats numbers as strings", () => {
-    render(<RowInfoModal datum={{ count: 7 }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ count: 7 }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("7")).toBeInTheDocument();
   });
 
   it("formats booleans as Yes/No", () => {
-    render(<RowInfoModal datum={{ active: true, deleted: false }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ active: true, deleted: false }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("Yes")).toBeInTheDocument();
     expect(screen.getByText("No")).toBeInTheDocument();
   });
 
   it("formats null/undefined as em-dash", () => {
-    render(<RowInfoModal datum={{ missing: null }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ missing: null }} isOpen onClose={jest.fn()} />);
     // The em-dash character
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("formats arrays as JSON", () => {
-    render(<RowInfoModal datum={{ tags: ["a", "b"] }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ tags: ["a", "b"] }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText(/\["a","b"\]|"a",\s*"b"/)).toBeInTheDocument();
   });
 
   // ── formatLabel indirectly ──
 
   it("converts snake_case keys to Title Case labels", () => {
-    render(<RowInfoModal datum={{ unique_seqs_count: 5 }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ unique_seqs_count: 5 }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("Unique Seqs Count")).toBeInTheDocument();
   });
 
   it("converts camelCase keys to Title Case labels", () => {
-    render(<RowInfoModal datum={{ meanMutFreq: 0.1 }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ meanMutFreq: 0.1 }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("Mean Mut Freq")).toBeInTheDocument();
   });
 
@@ -78,20 +74,20 @@ describe("RowInfoModal", () => {
 
   it("omits excluded keys (trees, nodes, seqs, sequences)", () => {
     const datum = { name: "X", trees: [1, 2], nodes: { a: 1 }, seqs: [] };
-    render(<RowInfoModal datum={datum} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={datum} isOpen onClose={jest.fn()} />);
     expect(screen.getByText(/Fields not shown/)).toBeInTheDocument();
   });
 
   it("omits large arrays (>10 items)", () => {
     const bigArray = Array.from({ length: 15 }, (_, i) => i);
-    render(<RowInfoModal datum={{ name: "Y", items: bigArray }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ name: "Y", items: bigArray }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText(/items \(15 items\)/)).toBeInTheDocument();
   });
 
   // ── Flattening sample ──
 
   it("flattens sample sub-object with sample. prefix", () => {
-    render(<RowInfoModal datum={{ sample: { sample_id: "S42" } }} isOpen={true} onClose={jest.fn()} />);
+    render(<RowInfoModal datum={{ sample: { sample_id: "S42" } }} isOpen onClose={jest.fn()} />);
     expect(screen.getByText("Sample.sample Id")).toBeInTheDocument();
     expect(screen.getByText("S42")).toBeInTheDocument();
   });
@@ -100,14 +96,14 @@ describe("RowInfoModal", () => {
 
   it("calls onClose when close button is clicked", () => {
     const onClose = jest.fn();
-    render(<RowInfoModal datum={baseDatum} isOpen={true} onClose={onClose} />);
+    render(<RowInfoModal datum={baseDatum} isOpen onClose={onClose} />);
     fireEvent.click(screen.getByLabelText("Close modal"));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("calls onClose when overlay is clicked", () => {
     const onClose = jest.fn();
-    render(<RowInfoModal datum={baseDatum} isOpen={true} onClose={onClose} />);
+    render(<RowInfoModal datum={baseDatum} isOpen onClose={onClose} />);
     const overlay = screen.getByRole("dialog");
     fireEvent.click(overlay);
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -115,7 +111,7 @@ describe("RowInfoModal", () => {
 
   it("calls onClose on Escape key", () => {
     const onClose = jest.fn();
-    render(<RowInfoModal datum={baseDatum} isOpen={true} onClose={onClose} />);
+    render(<RowInfoModal datum={baseDatum} isOpen onClose={onClose} />);
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(1);
   });

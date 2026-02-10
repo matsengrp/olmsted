@@ -36,8 +36,6 @@ describe("IncompleteDataWarning", () => {
 
   it("renders the instruction paragraph", () => {
     render(<IncompleteDataWarning datum={{ id: "z" }} data_type="node" />);
-    expect(
-      screen.getByText(/object has been logged to the console for inspection/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/object has been logged to the console for inspection/)).toBeInTheDocument();
   });
 });
