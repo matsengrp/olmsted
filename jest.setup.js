@@ -29,11 +29,11 @@ console.warn = (...args) => {
 
 console.error = (...args) => {
   // Suppress specific known errors during tests
+  const msg = typeof args[0] === "string" ? args[0] : args[0]?.message || "";
   if (
-    typeof args[0] === "string" &&
-    (args[0].includes("Not implemented") ||
-      args[0].includes("Application Error:") ||
-      args[0].includes("Network Error:"))
+    msg.includes("Not implemented") ||
+    msg.includes("Application Error:") ||
+    msg.includes("Network Error:")
   ) {
     return;
   }
