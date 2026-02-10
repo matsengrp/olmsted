@@ -1,3 +1,10 @@
+import "fake-indexeddb/auto";
+
+// Polyfill structuredClone for Node 18 jsdom (needed by fake-indexeddb)
+if (typeof globalThis.structuredClone === "undefined") {
+  globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+}
+
 // Provide sessionStorage fallback for jsdom
 if (typeof window !== "undefined" && !window.sessionStorage) {
   const store = {};
