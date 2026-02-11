@@ -9,6 +9,7 @@ This guide covers development setup, common tasks, and best practices for contri
 - [Development Server](#development-server)
 - [Available Scripts](#available-scripts)
 - [Code Quality](#code-quality)
+- [Testing](#testing)
 - [Project Structure](#project-structure)
 - [Common Development Tasks](#common-development-tasks)
 - [Debugging](#debugging)
@@ -93,16 +94,19 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 
 ## Available Scripts
 
-| Command                | Description                                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------------- |
-| `npm start`            | Start development server with hot reloading                                                        |
-| `npm run start:local`  | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
-| `npm run build`        | Build production bundle                                                                            |
-| `npm run build:start`  | Build and start production server                                                                  |
-| `npm run lint`         | Run ESLint on src/                                                                                 |
-| `npm run format`       | Format code with Prettier                                                                          |
-| `npm run format:check` | Check formatting without modifying files                                                           |
-| `npm run clean`        | Remove build artifacts                                                                             |
+| Command                 | Description                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `npm start`             | Start development server with hot reloading                                                        |
+| `npm run start:local`   | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
+| `npm run build`         | Build production bundle                                                                            |
+| `npm run build:start`   | Build and start production server                                                                  |
+| `npm run lint`          | Run ESLint on src/                                                                                 |
+| `npm run format`        | Format code with Prettier                                                                          |
+| `npm run format:check`  | Check formatting without modifying files                                                           |
+| `npm test`              | Run all Jest tests                                                                                 |
+| `npm run test:watch`    | Run tests in watch mode (re-runs on file changes)                                                  |
+| `npm run test:coverage` | Run tests with coverage report                                                                     |
+| `npm run clean`         | Remove build artifacts                                                                             |
 
 ### Build Commands
 
@@ -164,6 +168,114 @@ From CLAUDE.md:
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
 - **Documentation**: JSDoc for all public methods and complex functions
 - **Indentation**: 2 spaces
+
+---
+
+## Testing
+
+Olmsted uses [Jest](https://jestjs.io/) with a jsdom environment for unit testing. Tests live in `__tests__/` directories alongside the source files they cover.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (re-runs on file changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run a specific test file
+npm test -- src/reducers/__tests__/configs.test.js
+
+# Run tests matching a pattern
+npm test -- --testPathPattern="selectors"
+
+# See every individual test name
+npm test -- --verbose
+```
+
+### Test Organization
+
+Tests are colocated with source files using the `__tests__/` convention:
+
+```
+src/
+├── reducers/
+│   ├── clonalFamilies.js
+│   └── __tests__/
+│       └── clonalFamilies.test.js
+├── selectors/
+│   ├── trees.js
+│   └── __tests__/
+│       └── trees.test.js
+├── components/
+│   ├── util/
+│   │   ├── loading.js
+│   │   └── __tests__/
+│   │       └── loading.test.js
+│   ├── tables/
+│   │   └── __tests__/
+│   │       └── RowInfoModal.test.js
+│   └── explorer/
+│       ├── __tests__/
+│       │   └── naive.test.js
+│       └── vega/__tests__/
+│           └── naive.test.js
+├── middleware/
+│   ├── changeURL.js
+│   └── __tests__/
+│       └── changeURL.test.js
+├── utils/
+│   ├── olmstedDB.js
+│   └── __tests__/
+│       ├── olmstedDB.test.js
+│       └── clientDataStore.test.js
+└── __test-data__/
+    └── mockState.js          # Shared mock data (families, trees, datasets)
+```
+
+**What's tested:**
+
+- **Pure functions** — reducers, selectors, utilities, and file processors
+- **React components** — presentational components and components with internal logic (using `@testing-library/react`)
+- **IndexedDB / Dexie** — database CRUD operations and LRU cache logic (using `fake-indexeddb`)
+- **Redux middleware** — URL-sync middleware with mocked `window.history` and Redux store
+- **Vega specs** — structural validation and runtime compatibility (parse + headless View)
+
+### Writing New Tests
+
+When adding tests, follow the existing patterns:
+
+- **Reducers**: Test `(state, action) => newState` for each action type, plus the default/initial state
+- **Selectors**: Test exported helper functions directly; test memoized selectors by constructing mock state objects
+- **Utilities**: Test pure input/output with edge cases (null, empty, boundary values)
+- **React components**: Use `@testing-library/react` (`render`, `screen`, `fireEvent`). Query by accessible roles/labels rather than implementation details. See `loading.test.js` for timer testing with `jest.useFakeTimers()`
+- **IndexedDB / Dexie**: Create fresh `Dexie` instances per test (don't import the singleton). Use factory functions (`makeDataset()`, `makeClone()`, `makeTree()`) with spread overrides to reduce duplication. See `olmstedDB.test.js`
+- **Redux middleware**: Mock `store.getState()`, `next`, and `window.history`. Use `window.history.pushState` (the real one) to set jsdom's URL before mocking. See `changeURL.test.js`
+
+Import shared mock data from `src/__test-data__/mockState.js` rather than duplicating fixtures across test files.
+
+### Configuration
+
+| File                    | Purpose                                                                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `jest.config.js`        | Jest config: jsdom env, babel-jest transform, CSS/image mocks, ESM package handling, `setupFilesAfterEnv` for `@testing-library/jest-dom` |
+| `jest.setup.js`         | `fake-indexeddb/auto` polyfill, `structuredClone` polyfill for Node 18, sessionStorage fallback, console noise suppression                |
+| `__mocks__/fileMock.js` | Stub for image/file imports                                                                                                               |
+| `.babelrc` `"test"` env | Avoids loading react-refresh plugin (crashes in Jest)                                                                                     |
+| `.eslintrc` `overrides` | Adds `jest: true` env for `__tests__/` files so ESLint recognizes `describe`, `it`, `expect`, etc.                                        |
+
+**Key dependencies:**
+
+- `@testing-library/react` + `@testing-library/dom` + `@testing-library/jest-dom` — React component testing with DOM matchers (`.toBeInTheDocument()`, etc.)
+- `fake-indexeddb` — in-memory IndexedDB polyfill for Dexie tests
+- `@testing-library/jest-dom` must be in `setupFilesAfterEnv` (not `setupFiles`) because it extends `expect`, which isn't available until after the test framework loads
+- `structuredClone` is not available in Node 18's jsdom — the polyfill in `jest.setup.js` is required for `fake-indexeddb` to work
+
+**Note on ESM packages**: lodash-es and d3-\* are ESM-only and must be excluded from `transformIgnorePatterns` in `jest.config.js` so babel-jest can process them. If you add a new ESM dependency that causes `SyntaxError: Unexpected token export` in tests, add it to the pattern.
 
 ---
 
@@ -431,4 +543,4 @@ Ensure your editor is configured to use the project's ESLint config with Babel p
 
 ---
 
-_Last updated: 2026-01-23_
+_Last updated: 2026-02-11_

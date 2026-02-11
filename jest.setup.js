@@ -1,0 +1,48 @@
+import "fake-indexeddb/auto";
+
+// Polyfill structuredClone for Node 18 jsdom (needed by fake-indexeddb)
+if (typeof globalThis.structuredClone === "undefined") {
+  globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+}
+
+// Provide sessionStorage fallback for jsdom
+if (typeof window !== "undefined" && !window.sessionStorage) {
+  const store = {};
+  window.sessionStorage = {
+    getItem: (key) => store[key] || null,
+    setItem: (key, value) => {
+      store[key] = String(value);
+    },
+    removeItem: (key) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((key) => delete store[key]);
+    }
+  };
+}
+
+// Suppress noisy console output during tests
+const originalWarn = console.warn;
+const originalError = console.error;
+
+console.warn = (...args) => {
+  // Suppress specific known warnings during tests
+  if (typeof args[0] === "string" && args[0].includes("Failed to persist")) {
+    return;
+  }
+  originalWarn.apply(console, args);
+};
+
+console.error = (...args) => {
+  // Suppress specific known errors during tests
+  const msg = typeof args[0] === "string" ? args[0] : args[0]?.message || "";
+  if (
+    msg.includes("Not implemented") ||
+    msg.includes("Application Error:") ||
+    msg.includes("Network Error:")
+  ) {
+    return;
+  }
+  originalError.apply(console, args);
+};

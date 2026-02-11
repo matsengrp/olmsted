@@ -22,12 +22,14 @@ proddata
 **/__pycache__/
 
 ### development ###
+# Ignore single-underscore prefixed dirs/files (scratch work: _deploy, _backup, etc.)
 **/_*/
-**/_claude*/
-**/_test*/
-**/_backup*/
 **/_*.*
+# Allow double-underscore dirs (JS conventions: __tests__, __mocks__, __test-data__)
+!**/__*/
+**/__pycache__/
 
+coverage/
 .claude/
 paper/other_papers/
 paper/paper.pdf
