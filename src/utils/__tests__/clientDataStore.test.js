@@ -6,40 +6,34 @@
  */
 
 // Mock olmstedDB before importing ClientDataStore
-jest.mock("../olmstedDB", () => {
-  const datasets = [];
-  const clones = [];
-  const trees = [];
+jest.mock("../olmstedDB", () => ({
+  __esModule: true,
+  default: {
+    ready: Promise.resolve(),
+    storeDataset: jest.fn(async (data) => data.datasetId),
+    getAllDatasets: jest.fn(async () => []),
+    getCloneMetadata: jest.fn(async () => []),
+    getTreeByIdent: jest.fn(async () => null),
+    getTreeForClone: jest.fn(async () => null),
+    removeDataset: jest.fn(async () => {}),
+    clearAll: jest.fn(async () => {}),
+    getStats: jest.fn(async () => ({ datasets: 0, clones: 0, trees: 0, configs: 0 })),
+    getStorageEstimate: jest.fn(async () => ({ used: 0, total: 0 }))
+  }
+}));
 
-  return {
-    __esModule: true,
-    default: {
-      ready: Promise.resolve(),
-      storeDataset: jest.fn(async (data) => data.datasetId),
-      getAllDatasets: jest.fn(async () => [...datasets]),
-      getCloneMetadata: jest.fn(async () => [...clones]),
-      getTreeByIdent: jest.fn(async (ident) => trees.find((t) => t.ident === ident) || null),
-      getTreeForClone: jest.fn(async (cloneId) => trees.find((t) => t.clone_id === cloneId) || null),
-      removeDataset: jest.fn(async () => {}),
-      clearAll: jest.fn(async () => {}),
-      getStats: jest.fn(async () => ({ datasets: 0, clones: 0, trees: 0, configs: 0 })),
-      getStorageEstimate: jest.fn(async () => ({ used: 0, total: 0 })),
-      // Helpers for tests to manipulate mock data
-      _datasets: datasets,
-      _clones: clones,
-      _trees: trees
-    }
-  };
-});
+// Mock errors module — ValidationError must be the same class used in the
+// instanceof check inside storeProcessedData, so we define it once and
+// reference it in both the class export and the validateRequired mock.
+const MockValidationError = class ValidationError extends Error {
+  constructor(msg) {
+    super(msg);
+    this.name = "ValidationError";
+  }
+};
 
-// Mock errors module to avoid import issues
 jest.mock("../errors", () => ({
-  ValidationError: class ValidationError extends Error {
-    constructor(msg) {
-      super(msg);
-      this.name = "ValidationError";
-    }
-  },
+  ValidationError: MockValidationError,
   DatabaseError: class DatabaseError extends Error {
     constructor(msg) {
       super(msg);
@@ -52,7 +46,7 @@ jest.mock("../errors", () => ({
     log: jest.fn()
   },
   validateRequired: jest.fn((val, name) => {
-    if (val === null || val === undefined) throw new Error(`${name} is required`);
+    if (val === null || val === undefined) throw new MockValidationError(`${name} is required`);
   }),
   validateType: jest.fn()
 }));
@@ -79,27 +73,28 @@ describe("ClientDataStore", () => {
     });
 
     it("evicts oldest entry when cache exceeds maxCacheSize", () => {
+      const { maxCacheSize } = clientDataStore;
       const cache = new Map();
-      // Fill to max (10)
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < maxCacheSize; i++) {
         clientDataStore.addToCache(cache, `k${i}`, `v${i}`);
       }
-      expect(cache.size).toBe(10);
+      expect(cache.size).toBe(maxCacheSize);
       expect(cache.has("k0")).toBe(true);
 
       // Add one more — should evict k0
-      clientDataStore.addToCache(cache, "k10", "v10");
-      expect(cache.size).toBe(10);
+      clientDataStore.addToCache(cache, "overflow", "val");
+      expect(cache.size).toBe(maxCacheSize);
       expect(cache.has("k0")).toBe(false);
-      expect(cache.has("k10")).toBe(true);
+      expect(cache.has("overflow")).toBe(true);
     });
 
     it("evicts entries in FIFO order", () => {
+      const { maxCacheSize } = clientDataStore;
       const cache = new Map();
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < maxCacheSize; i++) {
         clientDataStore.addToCache(cache, `k${i}`, `v${i}`);
       }
-      // Add 3 more
+      // Add 3 more — should evict k0, k1, k2
       clientDataStore.addToCache(cache, "a", "a");
       clientDataStore.addToCache(cache, "b", "b");
       clientDataStore.addToCache(cache, "c", "c");
@@ -209,6 +204,46 @@ describe("ClientDataStore", () => {
 
     it("throws on invalid datasetId", async () => {
       await expect(clientDataStore.removeDataset("")).rejects.toThrow("non-empty string");
+    });
+  });
+
+  // ── Validation / error paths ──
+
+  describe("storeProcessedData validation", () => {
+    it("throws when processedData is null", async () => {
+      await expect(clientDataStore.storeProcessedData(null)).rejects.toThrow("processedData is required");
+    });
+
+    it("throws when processedData is undefined", async () => {
+      await expect(clientDataStore.storeProcessedData(undefined)).rejects.toThrow("processedData is required");
+    });
+
+    it("throws when datasets is missing", async () => {
+      await expect(clientDataStore.storeProcessedData({ datasetId: "ds_1" })).rejects.toThrow("datasets");
+    });
+
+    it("throws when datasetId is missing", async () => {
+      await expect(clientDataStore.storeProcessedData({ datasets: [] })).rejects.toThrow("datasetId");
+    });
+  });
+
+  describe("getTree validation", () => {
+    it("throws when treeIdent is empty string", async () => {
+      await expect(clientDataStore.getTree("")).rejects.toThrow("non-empty string");
+    });
+
+    it("throws when treeIdent is null", async () => {
+      await expect(clientDataStore.getTree(null)).rejects.toThrow("non-empty string");
+    });
+  });
+
+  describe("getFullClone validation", () => {
+    it("throws when cloneId is empty", async () => {
+      await expect(clientDataStore.getFullClone("", "ds_1")).rejects.toThrow("non-empty string");
+    });
+
+    it("throws when datasetId is empty", async () => {
+      await expect(clientDataStore.getFullClone("c1", "")).rejects.toThrow("non-empty string");
     });
   });
 });

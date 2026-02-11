@@ -55,7 +55,8 @@ describe("RowInfoModal", () => {
 
   it("formats arrays as JSON", () => {
     render(<RowInfoModal datum={{ tags: ["a", "b"] }} isOpen onClose={jest.fn()} />);
-    expect(screen.getByText(/\["a","b"\]|"a",\s*"b"/)).toBeInTheDocument();
+    // JSON.stringify always produces bracket-wrapped output
+    expect(screen.getByText(/\[\s*"a",\s*"b"\s*\]/)).toBeInTheDocument();
   });
 
   // ── formatLabel indirectly ──
