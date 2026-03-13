@@ -120,7 +120,7 @@ const checkInRange = (axis, datum, brushSelection) => {
   const value = datum[brushSelection[axis]["fieldName"]];
   // Skip filtering on this axis if the range is degenerate (NaN or equal values,
   // which happens when all data points share the same value on this axis)
-  if (!isFinite(range[0]) || !isFinite(range[1]) || range[0] === range[1]) {
+  if (!Number.isFinite(range[0]) || !Number.isFinite(range[1]) || range[0] === range[1]) {
     return true;
   }
   return range[0] <= value && value <= range[1];

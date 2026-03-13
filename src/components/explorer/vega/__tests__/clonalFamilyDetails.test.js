@@ -303,9 +303,9 @@ describe("seqAlignSpec", () => {
 
   describe("options", () => {
     it("defaults showMutationBorders to false", () => {
-      // The default spec should not have strokeWidth on mutation marks
-      // (or have it set to 0 / not present)
-      expect(spec).toBeDefined();
+      const signal = spec.signals.find((s) => s.name === "show_mutation_borders");
+      expect(signal).toBeDefined();
+      expect(signal.value).toBe(false);
     });
   });
 

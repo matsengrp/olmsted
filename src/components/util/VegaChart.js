@@ -31,30 +31,28 @@ function mergeDataIntoSpec(spec, data) {
  *
  * Provides a simpler API for Olmsted's Vega visualizations:
  * - Merges named datasets into the spec before compilation (like react-vega v4)
- * - Registers signal listeners via the View API
- * - Exposes the Vega View through an onNewView callback
+ * - Exposes the Vega View through an onNewView callback for signal listener registration
  * - Updates data via the View API without re-embedding (preserves zoom/pan/brush)
  *
  * @param {Object} props
  * @param {Object} props.spec - Vega spec object (required)
  * @param {Object} [props.data] - Named datasets: { datasetName: values[] }
- * @param {Object} [props.signalListeners] - Signal handlers: { signalName: (name, value) => void }
  * @param {Function} [props.onNewView] - Callback receiving the Vega View instance
  * @param {Function} [props.onError] - Error callback
  * @param {Object} [props.options] - Additional vega-embed options
  */
-function VegaChart({ spec, data, signalListeners, onNewView, onError, options, ...rest }) {
+function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
   const viewRef = useRef(null);
   const onNewViewRef = useRef(onNewView);
-  const signalListenersRef = useRef(signalListeners);
-  const initialDataRef = useRef(data);
+  const dataRef = useRef(data);
   onNewViewRef.current = onNewView;
-  signalListenersRef.current = signalListeners;
+  dataRef.current = data;
 
-  // Merge initial data into spec only once (when spec changes). Subsequent
-  // data updates go through the View API to avoid re-embedding, which would
-  // destroy zoom/pan/brush state.
-  const mergedSpec = useMemo(() => mergeDataIntoSpec(spec, initialDataRef.current), [spec]);
+  // Merge current data into spec when spec changes. Subsequent data updates
+  // go through the View API to avoid re-embedding, which would destroy
+  // zoom/pan/brush state. Using dataRef ensures a spec change gets the
+  // latest data rather than a stale snapshot from the first render.
+  const mergedSpec = useMemo(() => mergeDataIntoSpec(spec, dataRef.current), [spec]);
 
   // When data changes after initial embed, update via View API
   useEffect(() => {
@@ -76,7 +74,10 @@ function VegaChart({ spec, data, signalListeners, onNewView, onError, options, .
         );
         changed = true;
       } catch (e) {
-        // Dataset may not exist in this spec — ignore
+        // Dataset may not exist in this spec — only suppress that case
+        if (!e.message || !e.message.includes("Unrecognized data set")) {
+          console.warn(`VegaChart: error updating dataset "${name}":`, e);
+        }
       }
     });
 
@@ -88,13 +89,6 @@ function VegaChart({ spec, data, signalListeners, onNewView, onError, options, .
   const handleEmbed = useCallback((result) => {
     const { view } = result;
     viewRef.current = view;
-
-    // Register signal listeners
-    if (signalListenersRef.current) {
-      Object.entries(signalListenersRef.current).forEach(([signal, handler]) => {
-        view.addSignalListener(signal, handler);
-      });
-    }
 
     if (onNewViewRef.current) {
       onNewViewRef.current(view);

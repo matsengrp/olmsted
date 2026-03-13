@@ -8,9 +8,6 @@ import * as explorerActions from "../../actions/explorer";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
-// Store the last clear_selection_trigger value to detect changes
-let lastClearTrigger = 0;
-
 // Clonal Families Viz
 // ===================
 //
@@ -44,9 +41,8 @@ class ClonalFamiliesViz extends React.Component {
       vegaView: null,
       hideControls: false
     };
-    this.yField = "mean_mut_freq";
-    this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
+    this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
     this.handleWindowClick = this.handleWindowClick.bind(this);
@@ -181,12 +177,6 @@ class ClonalFamiliesViz extends React.Component {
                     clearBrushSelection();
                   }
                 });
-                view.addSignalListener("xField", (name, result) => {
-                  this.xField = result;
-                });
-                view.addSignalListener("yField", (name, result) => {
-                  this.yField = result;
-                });
                 view.addSignalListener("clicked", (name, datum) => {
                   if (datum && datum.ident) {
                     selectFamily(datum.ident, true);
@@ -200,13 +190,13 @@ class ClonalFamiliesViz extends React.Component {
                 // handler above. In Vega 6, addSignalListener doesn't fire for
                 // signal-chain push:"outer" updates from nested group marks.
                 view.addSignalListener("clear_selection_trigger", (name, trigger) => {
-                  if (trigger > lastClearTrigger) {
-                    lastClearTrigger = trigger;
+                  if (trigger > this.lastClearTrigger) {
+                    this.lastClearTrigger = trigger;
                     clearBrushSelection();
                   }
                 });
               }}
-              onError={(...args) => console.error("parse error:", args)}
+              onError={(...args) => console.error("Vega error:", args)}
               data={{
                 source: availableClonalFamilies,
                 selected: [{ ident: selectedFamily ? selectedFamily.ident : "none" }],

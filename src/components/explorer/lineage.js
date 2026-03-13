@@ -324,7 +324,7 @@ class Lineage extends React.Component {
                         this.setState({ vegaViewReady: true });
                       }
                     }}
-                    onError={(...args) => console.error("parse error:", args)}
+                    onError={(...args) => console.error("Vega error:", args)}
                     data={{
                       naive_data: naiveData.source,
                       cdr_bounds: cdrBounds,

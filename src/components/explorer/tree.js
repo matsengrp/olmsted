@@ -383,6 +383,7 @@ class TreeViz extends React.Component {
     this.singleVegaRef = null;
     // Track focus state for scroll prevention
     this.isFocused = false;
+    this.setupSingleChainView = this.setupSingleChainView.bind(this);
     // List of signals to synchronize between light and heavy chain
     this.syncedSignals = [
       "max_leaf_size",
@@ -465,6 +466,29 @@ class TreeViz extends React.Component {
         // Signal may not exist or view not ready
       }
     }
+  }
+
+  /**
+   * Set up a single-chain Vega view with common signal listeners.
+   * Used by both the default single-chain render and the loading-state render.
+   *
+   * @param {Object} view - Vega View instance
+   * @param {Function} dispatchSelectedSeq - Redux action for sequence selection
+   */
+  setupSingleChainView(view, dispatchSelectedSeq) {
+    this.singleVegaRef = view;
+    this.setState({ currentVegaView: view });
+    if (this.context && this.context.setTreeView) {
+      this.context.setTreeView(view);
+    }
+    view.addSignalListener("viz_focused", (name, value) => {
+      if (value) this.isFocused = true;
+    });
+    view.addSignalListener("pts_tuple", (name, node) => {
+      if (node && node.parent) {
+        dispatchSelectedSeq(node.sequence_id);
+      }
+    });
   }
 
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
@@ -719,7 +743,7 @@ class TreeViz extends React.Component {
                     }
                   });
                 }}
-                onError={(...args) => console.error("parse error:", args)}
+                onError={(...args) => console.error("Vega error:", args)}
                 data={this.getChainData("heavy")}
                 spec={this.specNoControls}
               />
@@ -735,7 +759,7 @@ class TreeViz extends React.Component {
                       }
                     });
                   }}
-                  onError={(...args) => console.error("parse error:", args)}
+                  onError={(...args) => console.error("Vega error:", args)}
                   data={this.getChainData("light")}
                   spec={this.spec}
                 />
@@ -826,22 +850,8 @@ class TreeViz extends React.Component {
                 <div>
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
                   <VegaChart
-                    onNewView={(view) => {
-                      this.singleVegaRef = view;
-                      this.setState({ currentVegaView: view });
-                      if (this.context && this.context.setTreeView) {
-                        this.context.setTreeView(view);
-                      }
-                      view.addSignalListener("viz_focused", (name, value) => {
-                        if (value) this.isFocused = true;
-                      });
-                      view.addSignalListener("pts_tuple", (name, node) => {
-                        if (node && node.parent) {
-                          dispatchSelectedSeq(node.sequence_id);
-                        }
-                      });
-                    }}
-                    onError={(...args) => console.error("parse error:", args)}
+                    onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
+                    onError={(...args) => console.error("Vega error:", args)}
                     data={this.treeDataFromProps()}
                     spec={this.spec}
                   />
@@ -850,22 +860,8 @@ class TreeViz extends React.Component {
             })()}
           {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
             <VegaChart
-              onNewView={(view) => {
-                this.singleVegaRef = view;
-                this.setState({ currentVegaView: view });
-                if (this.context && this.context.setTreeView) {
-                  this.context.setTreeView(view);
-                }
-                view.addSignalListener("viz_focused", (name, value) => {
-                  if (value) this.isFocused = true;
-                });
-                view.addSignalListener("pts_tuple", (name, node) => {
-                  if (node && node.parent) {
-                    dispatchSelectedSeq(node.sequence_id);
-                  }
-                });
-              }}
-              onError={(...args) => console.error("parse error:", args)}
+              onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
+              onError={(...args) => console.error("Vega error:", args)}
               data={this.tempVegaData}
               spec={this.spec}
             />
