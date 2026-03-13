@@ -213,9 +213,7 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
                   <td style={labelCellStyle}>{formatLabel(key)}</td>
                   <td style={valueCellStyle}>
                     {typeof value === "object" && value !== null ? (
-                      <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: "12px" }}>
-                        {formatValue(value)}
-                      </pre>
+                      <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: "12px" }}>{formatValue(value)}</pre>
                     ) : (
                       formatValue(value)
                     )}
@@ -284,12 +282,7 @@ export function InfoButtonCell({ datum }) {
       >
         <FiInfo size={14} />
       </button>
-      <RowInfoModal
-        datum={datum}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={getTitle()}
-      />
+      <RowInfoModal datum={datum} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={getTitle()} />
     </div>
   );
 }
@@ -344,12 +337,7 @@ export function DatasetInfoCell({ datum }) {
       >
         <FiInfo size={14} />
       </button>
-      <RowInfoModal
-        datum={datum}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={getTitle()}
-      />
+      <RowInfoModal datum={datum} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={getTitle()} />
     </div>
   );
 }
@@ -493,12 +481,7 @@ export function DatasetActionsCell({ datum, onDelete }) {
           <FiTrash2 size={14} />
         </button>
       )}
-      <RowInfoModal
-        datum={datum}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={getTitle()}
-      />
+      <RowInfoModal datum={datum} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={getTitle()} />
     </div>
   );
 }

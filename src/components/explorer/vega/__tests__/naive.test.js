@@ -6,9 +6,7 @@ import { naiveSourceData } from "./vegaMockData";
 describe("naiveVegaSpec", () => {
   it("is a valid Vega v5 spec object", () => {
     expect(naiveVegaSpec).toBeDefined();
-    expect(naiveVegaSpec.$schema).toBe(
-      "https://vega.github.io/schema/vega/v5.json"
-    );
+    expect(naiveVegaSpec.$schema).toBe("https://vega.github.io/schema/vega/v6.json");
   });
 
   it("has expected top-level properties", () => {

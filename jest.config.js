@@ -1,15 +1,18 @@
 module.exports = {
   testEnvironment: "jsdom",
   transform: {
-    "^.+\\.jsx?$": "babel-jest"
+    "^.+\\.m?jsx?$": "babel-jest"
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(lodash-es|d3-array|d3-axis|d3-brush|d3-collection|d3-color|d3-ease|d3-interpolate|d3-scale|d3-selection|d3-shape|d3-time-format|d3-timer|d3-zoom|d3-dispatch|d3-drag|d3-dsv|d3-format|d3-path|d3-time|d3-transition|internmap|delaunator|robust-predicates)/)"
+    "/node_modules/(?!(lodash-es|vega|vega-lite|vega-embed|vega-[^/]+|d3-array|d3-axis|d3-brush|d3-collection|d3-color|d3-ease|d3-interpolate|d3-scale|d3-selection|d3-shape|d3-time-format|d3-timer|d3-zoom|d3-dispatch|d3-drag|d3-dsv|d3-format|d3-path|d3-time|d3-transition|internmap|delaunator|robust-predicates)/)"
   ],
+  // Force Jest to treat ESM-only packages (vega 6+) as CJS for transformation
+  moduleFileExtensions: ["js", "mjs", "cjs", "jsx", "json", "node"],
   moduleNameMapper: {
     "\\.(css|less|scss)$": "identity-obj-proxy",
     "\\.(jpg|jpeg|png|gif|svg|eot|otf|webp|ttf|woff|woff2)$": "<rootDir>/__mocks__/fileMock.js",
-    "^vega-lib$": "vega"
+    // Point Jest at Vega's UMD build (CJS-compatible) since vega 6+ is ESM-only
+    "^vega$": "<rootDir>/node_modules/vega/build/vega.js"
   },
   setupFiles: ["<rootDir>/jest.setup.js"],
   setupFilesAfterEnv: ["@testing-library/jest-dom"],

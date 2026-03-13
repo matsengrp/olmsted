@@ -58,7 +58,7 @@ describe("clonalFamilies reducer", () => {
       const existingState = {
         ...initialState,
         byDatasetId: { "dataset-0": [{ ident: "f0" }] },
-        byIdent: { "f0": { ident: "f0" } }
+        byIdent: { f0: { ident: "f0" } }
       };
       const state = clonalFamilies(existingState, {
         type: types.CLONAL_FAMILIES_RECEIVED,
@@ -326,7 +326,7 @@ describe("clonalFamilies reducer", () => {
     it("removes a specific filter", () => {
       const stateWithFilters = {
         ...initialState,
-        filters: { "sample.locus": ["IGH"], "has_seed": [true] }
+        filters: { "sample.locus": ["IGH"], has_seed: [true] }
       };
       const state = clonalFamilies(stateWithFilters, {
         type: types.CLEAR_FILTER,
@@ -341,7 +341,7 @@ describe("clonalFamilies reducer", () => {
     it("removes all filters", () => {
       const stateWithFilters = {
         ...initialState,
-        filters: { "sample.locus": ["IGH"], "has_seed": [true] }
+        filters: { "sample.locus": ["IGH"], has_seed: [true] }
       };
       const state = clonalFamilies(stateWithFilters, {
         type: types.CLEAR_ALL_FILTERS

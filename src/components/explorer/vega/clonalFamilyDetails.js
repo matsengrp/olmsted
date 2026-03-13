@@ -12,7 +12,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
 
   return {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
+    $schema: "https://vega.github.io/schema/vega/v6.json",
     description: "",
     autosize: { type: "pad", resize: true },
     // Top padding for readability around the gene region
@@ -90,7 +90,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           // Calculate x_raw based on the current mode (for extent calculation)
           // Now depth is available from the tree transform
           {
-            expr: 'fixed_branch_lengths ? datum.depth : datum.distance',
+            expr: "fixed_branch_lengths ? datum.depth : datum.distance",
             type: "formula",
             as: "x_raw"
           },
@@ -437,7 +437,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // so top/bottom leaves have same spacing to edge as to their neighbors
       {
         name: "yext_fencepost",
-        update: "[yext[0] - span(yext)/(leaves_count_incl_naive - 1), yext[1] + span(yext)/(leaves_count_incl_naive - 1)]"
+        update:
+          "[yext[0] - span(yext)/(leaves_count_incl_naive - 1), yext[1] + span(yext)/(leaves_count_incl_naive - 1)]"
       },
       {
         name: "ydom",
@@ -464,8 +465,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       { name: "tree_zoom_x", update: "xdom ? span(xext) / span(xdom) : 1" },
       { name: "tree_zoom_y", update: "ydom ? span(yext_fencepost) / span(ydom) : 1" },
       { name: "tree_pan_x", update: "xdom ? ((xdom[0] + xdom[1])/2 - (xext[0] + xext[1])/2) / span(xext) : 0" },
-      { name: "tree_pan_y", update: "ydom ? ((ydom[0] + ydom[1])/2 - (yext_fencepost[0] + yext_fencepost[1])/2) / span(yext_fencepost) : 0" },
-      { name: "tree_zoom_pan_active", update: "abs(tree_zoom_x - 1) > 0.01 || abs(tree_zoom_y - 1) > 0.01 || abs(tree_pan_x) > 0.01 || abs(tree_pan_y) > 0.01" },
+      {
+        name: "tree_pan_y",
+        update: "ydom ? ((ydom[0] + ydom[1])/2 - (yext_fencepost[0] + yext_fencepost[1])/2) / span(yext_fencepost) : 0"
+      },
+      {
+        name: "tree_zoom_pan_active",
+        update:
+          "abs(tree_zoom_x - 1) > 0.01 || abs(tree_zoom_y - 1) > 0.01 || abs(tree_pan_x) > 0.01 || abs(tree_pan_y) > 0.01"
+      },
 
       // /TREE SIGNALS:
       // ---------------------------------------------------------------------------
@@ -622,7 +630,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         on: [
           {
             events: [{ source: "scope", type: "click" }],
-            update: "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol' || item().mark.name == 'alignment_row_click') ? datum : null"
+            update:
+              "datum && (item().mark.marktype == 'text' || item().mark.marktype == 'symbol' || item().mark.name == 'alignment_row_click') ? datum : null"
           }
         ]
       },
@@ -661,7 +670,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             update: "datum.type !== 'naive' ? invert('yscale', datum.y) : null"
           },
           {
-            events: "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @alignment_row_click:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
+            events:
+              "@pie:mouseout, @leaf_center:mouseout, @leaf_label:mouseout, @alignment_row_click:mouseout, @marks:mouseout, @y_grid:mouseout, @gap_and_x_marks:mouseout",
             update: "null"
           }
         ]
@@ -674,7 +684,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         on: [
           {
             events: { signal: "pts_tuple" },
-            update: "pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== 'naive' && pts_tuple.type !== 'root' ? pts_tuple.y_tree : null"
+            update:
+              "pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== 'naive' && pts_tuple.type !== 'root' ? pts_tuple.y_tree : null"
           }
         ]
       },
@@ -828,7 +839,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "aa_visible_ticks",
         // Generate integers from visible start to end, with appropriate step
         // Conditional on alignment_group_width forces re-evaluation when divider changes
-        update: "alignment_group_width > 0 ? sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, aa_tick_step) : []"
+        update:
+          "alignment_group_width > 0 ? sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, aa_tick_step) : []"
       },
       {
         name: "aa_gridline_values",
@@ -919,7 +931,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               ]
             },
             // Round to 0.02 increments for cleaner values
-            update: "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
+            update:
+              "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
           },
           {
             events: {
@@ -930,7 +943,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               ]
             },
             // Round to 0.02 increments for cleaner values
-            update: "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
+            update:
+              "clamp(round((divider_drag_start_ratio + (x() - divider_drag_start_x) / width) * 50) / 50, 0.2, 0.98)"
           }
         ]
       },
@@ -997,7 +1011,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             },
             // Calculate new ratio based on drag distance relative to window height
             // Round to 0.05 increments for cleaner values
-            update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+            update:
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
           },
           {
             events: {
@@ -1008,7 +1023,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               ]
             },
             // Round to 0.05 increments for cleaner values
-            update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+            update:
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
           }
         ]
       },
@@ -1102,22 +1118,24 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           }
         ],
         // pie chart legend - conditionally shown
-        ...(showLegend ? {
-          legends: [
-            {
-              orient: "bottom",
-              direction: "horizontal",
-              fill: "timepoint_multiplicities",
-              title: { signal: "leaf_size_by_legend_label" }, // "Leaf color key:",
-              titleLimit: "2000",
-              encode: {
-                symbols: {
-                  update: { shape: { value: "circle" }, opacity: { value: 0.9 } }
+        ...(showLegend
+          ? {
+              legends: [
+                {
+                  orient: "bottom",
+                  direction: "horizontal",
+                  fill: "timepoint_multiplicities",
+                  title: { signal: "leaf_size_by_legend_label" }, // "Leaf color key:",
+                  titleLimit: "2000",
+                  encode: {
+                    symbols: {
+                      update: { shape: { value: "circle" }, opacity: { value: 0.9 } }
+                    }
+                  }
                 }
-              }
+              ]
             }
-          ]
-        } : {})
+          : {})
       },
       // Amino acid position axis
       {
@@ -1184,7 +1202,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               {
                 events: {
                   type: "mousedown",
-                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
+                  filter:
+                    "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                 },
                 update: "xy()"
               },
@@ -1198,7 +1217,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               {
                 events: {
                   type: "mousedown",
-                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
+                  filter:
+                    "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                 },
                 update: "slice(xdom || xext)"
               },
@@ -1212,7 +1232,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               {
                 events: {
                   type: "mousedown",
-                  filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
+                  filter:
+                    "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                 },
                 update: "slice(ydom || yext_fencepost)"
               },
@@ -1232,7 +1253,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     between: [
                       {
                         type: "mousedown",
-                        filter: "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
+                        filter:
+                          "!event.item || !event.item.mark || (event.item.mark.name !== 'scrollbar_thumb' && event.item.mark.name !== 'scrollbar_track' && !test(/^(tree|alignment)_zoom_(in|out)_(bg|text)$/, event.item.mark.name || '') && event.item.mark.name !== 'tree_zoom_label' && event.item.mark.name !== 'alignment_zoom_label')"
                       },
                       { source: "window", type: "mouseup" }
                     ]
@@ -1258,7 +1280,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               },
               {
                 events: { type: "touchstart", filter: "event.touches.length===2" },
-                update: "[((xdom || xext)[0] + (xdom || xext)[1]) / 2, ((ydom || yext_fencepost)[0] + (ydom || yext_fencepost)[1]) / 2]"
+                update:
+                  "[((xdom || xext)[0] + (xdom || xext)[1]) / 2, ((ydom || yext_fencepost)[0] + (ydom || yext_fencepost)[1]) / 2]"
               }
             ]
           },
@@ -1386,7 +1409,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // "update": "[ycur[0] + span(ycur) * delta[1] / height,   ycur[1] + span(ycur) * delta[1] / height]"
                 // Limiting dragging so tree stays at least at the midpoint of the view (use yext_fencepost as fallback)
                 // Top branch (yext[0]) cannot go below midpoint, bottom branch (yext[1]) cannot go above midpoint
-                update: "yext[0] > (ydom_delta[0] + ydom_delta[1])/2 || yext[1] < (ydom_delta[0] + ydom_delta[1])/2 ? slice(ydom || yext_fencepost) : slice(ydom_delta)"
+                update:
+                  "yext[0] > (ydom_delta[0] + ydom_delta[1])/2 || yext[1] < (ydom_delta[0] + ydom_delta[1])/2 ? slice(ydom || yext_fencepost) : slice(ydom_delta)"
               },
               // Update shown y values when zooming
               {
@@ -1403,7 +1427,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 update: "slice(yext_fencepost)"
               }
             ]
-          },
+          }
         ],
         marks: [
           // /HIGHLIGHT ROWS (drawn first, underneath buttons)
@@ -1482,7 +1506,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   field: "x"
                 },
                 tooltip: {
-                  signal: '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"]}'
+                  signal:
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"]}'
                 }
               },
               enter: {
@@ -1885,7 +1910,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 cornerRadius: { value: 2 }
               }
             }
-          },
+          }
         ]
       },
 
@@ -2371,7 +2396,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 opacity: { signal: "alignment_zoom > 1 ? 1 : 0" }
               }
             }
-          },
+          }
         ]
       },
 
@@ -2400,7 +2425,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           update: {
             x: { value: 5 },
             y: { value: -22 },
-            text: { signal: "show_controls && tree_zoom_pan_active ? 'Tree:: Zoom: ' + format(tree_zoom_x, '.2f') + 'x, ' + format(tree_zoom_y, '.2f') + 'x, Pan: ' + format(tree_pan_x, '.2f') + ', ' + format(tree_pan_y, '.2f') : ''" },
+            text: {
+              signal:
+                "show_controls && tree_zoom_pan_active ? 'Tree:: Zoom: ' + format(tree_zoom_x, '.2f') + 'x, ' + format(tree_zoom_y, '.2f') + 'x, Pan: ' + format(tree_pan_x, '.2f') + ', ' + format(tree_pan_y, '.2f') : ''"
+            },
             fontSize: { value: 11 },
             fill: { value: "#555" },
             align: { value: "left" },
@@ -2432,7 +2460,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           update: {
             x: { value: 5 },
             y: { value: -8 },
-            text: { signal: "show_controls && alignment_zoom > 1 ? 'Align:: Zoom: ' + format(alignment_zoom, '.2f') + 'x, Pan: ' + format(alignment_pan, '.2f') : ''" },
+            text: {
+              signal:
+                "show_controls && alignment_zoom > 1 ? 'Align:: Zoom: ' + format(alignment_zoom, '.2f') + 'x, Pan: ' + format(alignment_pan, '.2f') : ''"
+            },
             fontSize: { value: 11 },
             fill: { value: "#555" },
             align: { value: "left" },
@@ -2554,7 +2585,7 @@ const seqAlignSpec = (family, options = {}) => {
   const height = Math.min(max_height, Math.max(min_height, calculated_height));
 
   return {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
+    $schema: "https://vega.github.io/schema/vega/v6.json",
     autosize: { type: "pad", resize: true },
     padding: 5,
     height: height,

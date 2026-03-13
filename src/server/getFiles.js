@@ -87,5 +87,5 @@ module.exports = {
   getDatasets,
   getClonalFamilies,
   getSplashImage,
-  getDatasetJson,
+  getDatasetJson
 };

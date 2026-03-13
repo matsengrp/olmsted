@@ -1,6 +1,7 @@
 import { connect } from "react-redux";
 import React from "react";
-import Vega from "react-vega";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import { concatTreeWithAlignmentSpec } from "./vega/clonalFamilyDetails";
@@ -15,7 +16,6 @@ import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../..
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
-import { FiEye, FiEyeOff } from "react-icons/fi";
 
 // Tree header component
 // =================================
@@ -35,74 +35,122 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 )
 class TreeHeader extends React.Component {
   render() {
-    const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } = this.props;
+    const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } =
+      this.props;
     return (
       <div>
         <CollapseHelpTitle
           titleText={`Clonal Family Details for: "${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}"`}
           helpText={
             <div>
-              For a selected clonal family, its phylogenetic tree is visualized below. Alongside the tree is an alignment
-              of the sequences at the tree&apos;s tips. Colors indicate amino acid
-              mutations at each position that differs from the sequence at the root of the tree (typically the
-              family&apos;s inferred naive antibody sequence). The tree&apos;s leaves are displayed as scaled markers
-              showing the multiplicity (i.e. the number of downsampled and deduplicated sequences) represented by a given
-              sequence, with wedges colored according to sampling timepoint. See the{" "}
-              <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
+              For a selected clonal family, its phylogenetic tree is visualized below. Alongside the tree is an
+              alignment of the sequences at the tree&apos;s tips. Colors indicate amino acid mutations at each position
+              that differs from the sequence at the root of the tree (typically the family&apos;s inferred naive
+              antibody sequence). The tree&apos;s leaves are displayed as scaled markers showing the multiplicity (i.e.
+              the number of downsampled and deduplicated sequences) represented by a given sequence, with wedges colored
+              according to sampling timepoint. See the <a href="https://github.com/matsengrp/olmsted#readme">README</a>{" "}
+              to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
               <br />
               <br />
-              <strong>Ancestral Reconstruction Method:</strong> Select among alternate phylogenies using the Ancestral reconstruction method dropdown menu.
-              These methods are specified in the input data according to the phylogenetic inference tool used.
+              <strong>Ancestral Reconstruction Method:</strong> Select among alternate phylogenies using the Ancestral
+              reconstruction method dropdown menu. These methods are specified in the input data according to the
+              phylogenetic inference tool used.
               <br />
               <br />
-              <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below, allowing you to select which chain to visualize: heavy chain only,
-              light chain only, or both chains stacked.
+              <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
+              allowing you to select which chain to visualize: heavy chain only, light chain only, or both chains
+              stacked.
               <br />
               <br />
               <strong>Mouse + Keyboard Controls:</strong>
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                <li><strong>Click</strong> on leaf labels or markers to select sequences for lineage analysis</li>
-                <li><strong>Scroll</strong> over tree section to zoom vertically</li>
-                <li><strong>Scroll</strong> over alignment section to zoom horizontally</li>
-                <li><strong>Drag</strong> to pan the view</li>
-                <li><strong>Drag scrollbar:</strong> When the alignment is zoomed, a draggable scrollbar appears at the bottom for horizontal panning</li>
-                <li><strong>Hold Shift:</strong> Temporarily switch between Select and Pan/Zoom modes</li>
-                <li><strong>Double-click:</strong> Reset zoom and pan to default view</li>
+                <li>
+                  <strong>Click</strong> on leaf labels or markers to select sequences for lineage analysis
+                </li>
+                <li>
+                  <strong>Scroll</strong> over tree section to zoom vertically
+                </li>
+                <li>
+                  <strong>Scroll</strong> over alignment section to zoom horizontally
+                </li>
+                <li>
+                  <strong>Drag</strong> to pan the view
+                </li>
+                <li>
+                  <strong>Drag scrollbar:</strong> When the alignment is zoomed, a draggable scrollbar appears at the
+                  bottom for horizontal panning
+                </li>
+                <li>
+                  <strong>Hold Shift:</strong> Temporarily switch between Select and Pan/Zoom modes
+                </li>
+                <li>
+                  <strong>Double-click:</strong> Reset zoom and pan to default view
+                </li>
               </ul>
               <strong>Note:</strong> Clicking on the plot enters focused mode, where scroll events will zoom the plot
-              instead of scrolling the page. Click outside the plot to exit focused mode and restore normal page scrolling.
+              instead of scrolling the page. Click outside the plot to exit focused mode and restore normal page
+              scrolling.
               <br />
               <br />
               <strong>Button Controls:</strong>
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                <li><strong>Tree +/−:</strong> Zoom tree section vertically</li>
-                <li><strong>Align +/−:</strong> Zoom alignment section horizontally</li>
-                <li><strong>Reset View:</strong> Reset all zoom and pan to default view</li>
+                <li>
+                  <strong>Tree +/−:</strong> Zoom tree section vertically
+                </li>
+                <li>
+                  <strong>Align +/−:</strong> Zoom alignment section horizontally
+                </li>
+                <li>
+                  <strong>Reset View:</strong> Reset all zoom and pan to default view
+                </li>
               </ul>
               <strong>Plot Customization:</strong> Use the controls below the tree to configure:
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                <li><strong>Tree width ratio:</strong> Adjust the relative width of the tree vs. alignment panels</li>
-                <li><strong>Leaf size by:</strong> Scale leaf marker size by a continuous field</li>
-                <li><strong>Max leaf size:</strong> Set maximum leaf marker diameter</li>
-                <li><strong>Show labels:</strong> Toggle tree tip labels on and off</li>
-                <li><strong>Branch width and color:</strong> Map branch visual properties to continuous fields</li>
-                <li><strong>Color scheme:</strong> Choose color palette for branch coloring</li>
+                <li>
+                  <strong>Tree width ratio:</strong> Adjust the relative width of the tree vs. alignment panels
+                </li>
+                <li>
+                  <strong>Leaf size by:</strong> Scale leaf marker size by a continuous field
+                </li>
+                <li>
+                  <strong>Max leaf size:</strong> Set maximum leaf marker diameter
+                </li>
+                <li>
+                  <strong>Show labels:</strong> Toggle tree tip labels on and off
+                </li>
+                <li>
+                  <strong>Branch width and color:</strong> Map branch visual properties to continuous fields
+                </li>
+                <li>
+                  <strong>Color scheme:</strong> Choose color palette for branch coloring
+                </li>
               </ul>
               <strong>Branch Metrics:</strong> The following phylogenetic metrics can be used to color or size branches:
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                <li><strong>LBI (Local Branching Index):</strong> Measures the local tree imbalance around each branch, useful for identifying rapidly expanding lineages</li>
-                <li><strong>LBR (Local Branching Ratio):</strong> Ratio-based measure of local branching patterns</li>
-                <li><strong>Parent:</strong> Colors branches by parentage; sibling branches share a common color</li>
+                <li>
+                  <strong>LBI (Local Branching Index):</strong> Measures the local tree imbalance around each branch,
+                  useful for identifying rapidly expanding lineages
+                </li>
+                <li>
+                  <strong>LBR (Local Branching Ratio):</strong> Ratio-based measure of local branching patterns
+                </li>
+                <li>
+                  <strong>Parent:</strong> Colors branches by parentage; sibling branches share a common color
+                </li>
               </ul>
-              <strong>Lineage Selection:</strong> To view the ancestral sequence lineage for a specific sequence, click on a
-              leaf&apos;s label (or on the center of the leaf marker). The Ancestral Sequences section will appear
+              <strong>Lineage Selection:</strong> To view the ancestral sequence lineage for a specific sequence, click
+              on a leaf&apos;s label (or on the center of the leaf marker). The Ancestral Sequences section will appear
               below the tree showing the mutational history from naive to the selected sequence.
               <br />
               <br />
               <strong>Export &amp; Display Options:</strong>
               <ul style={{ marginTop: "5px", paddingLeft: "20px" }}>
-                <li><strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view</li>
-                <li><strong>Export PNG/SVG:</strong> Save the tree visualization as an image</li>
+                <li>
+                  <strong>Hide Plot Settings:</strong> Toggle off the on-plot settings panel for a cleaner view
+                </li>
+                <li>
+                  <strong>Export PNG/SVG:</strong> Save the tree visualization as an image
+                </li>
               </ul>
               <strong>Tip:</strong> Plot settings can be saved as configurations via the Settings menu in the header.
             </div>
@@ -158,7 +206,7 @@ const isTreeComplete = (tree) => tree && tree.nodes && !tree.nodes.error;
 const computeCloneVizData = (clone, tree, label = "5p") => {
   const naiveData = getNaiveVizData(clone, label);
   const cdrBounds = naiveData.source
-    .filter((region) => region.region === 'CDR1' || region.region === 'CDR2' || region.region === 'CDR3')
+    .filter((region) => region.region === "CDR1" || region.region === "CDR2" || region.region === "CDR3")
     .flatMap((region) => [
       { x: Math.floor(region.start / 3) - 0.5, region: region.region },
       { x: Math.floor(region.end / 3) + 0.5, region: region.region }
@@ -229,7 +277,8 @@ const mapStateToProps = (state) => {
         lightCdrBounds: lightVizData ? lightVizData.cdrBounds : null,
         lightTree: lightVizData ? lightVizData.treeData : null
       };
-    } else if (isLightMode) {
+    }
+    if (isLightMode) {
       // Light chain only mode
       if (lightClone && lightCloneTree && isTreeComplete(lightCloneTree)) {
         const vizData = computeCloneVizData(lightClone, lightCloneTree, "5p");
@@ -334,11 +383,21 @@ class TreeViz extends React.Component {
     this.singleVegaRef = null;
     // Track focus state for scroll prevention
     this.isFocused = false;
+    this.setupSingleChainView = this.setupSingleChainView.bind(this);
     // List of signals to synchronize between light and heavy chain
     this.syncedSignals = [
-      "max_leaf_size", "leaf_size_by", "branch_width_by", "branch_color_by",
-      "branch_color_scheme", "min_color_value", "show_labels", "fixed_branch_lengths",
-      "tree_group_width_ratio", "show_alignment", "show_mutation_borders", "viz_height_ratio"
+      "max_leaf_size",
+      "leaf_size_by",
+      "branch_width_by",
+      "branch_color_by",
+      "branch_color_scheme",
+      "min_color_value",
+      "show_labels",
+      "fixed_branch_lengths",
+      "tree_group_width_ratio",
+      "show_alignment",
+      "show_mutation_borders",
+      "viz_height_ratio"
     ];
     // Signals that can be changed via drag on either view (bidirectional)
     this.bidirectionalSignals = ["tree_group_width_ratio", "show_alignment", "viz_height_ratio"];
@@ -407,6 +466,29 @@ class TreeViz extends React.Component {
         // Signal may not exist or view not ready
       }
     }
+  }
+
+  /**
+   * Set up a single-chain Vega view with common signal listeners.
+   * Used by both the default single-chain render and the loading-state render.
+   *
+   * @param {Object} view - Vega View instance
+   * @param {Function} dispatchSelectedSeq - Redux action for sequence selection
+   */
+  setupSingleChainView(view, dispatchSelectedSeq) {
+    this.singleVegaRef = view;
+    this.setState({ currentVegaView: view });
+    if (this.context && this.context.setTreeView) {
+      this.context.setTreeView(view);
+    }
+    view.addSignalListener("viz_focused", (name, value) => {
+      if (value) this.isFocused = true;
+    });
+    view.addSignalListener("pts_tuple", (name, node) => {
+      if (node && node.parent) {
+        dispatchSelectedSeq(node.sequence_id);
+      }
+    });
   }
 
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
@@ -522,7 +604,16 @@ class TreeViz extends React.Component {
 
   // Get data for a specific chain (used in both modes)
   getChainData(chain) {
-    const { heavyClone, lightClone, heavyTree, lightTree, heavyNaiveData, lightNaiveData, heavyCdrBounds, lightCdrBounds } = this.props;
+    const {
+      heavyClone,
+      lightClone,
+      heavyTree,
+      lightTree,
+      heavyNaiveData,
+      lightNaiveData,
+      heavyCdrBounds,
+      lightCdrBounds
+    } = this.props;
 
     // Validate data exists before performing assignments
     const tree = chain === CHAIN_TYPES.HEAVY ? heavyTree : lightTree;
@@ -567,7 +658,18 @@ class TreeViz extends React.Component {
   }
 
   render() {
-    const { selectedFamily, selectedTree, selectedSeq, tree, heavyTree, lightTree, dispatchSelectedSeq, dispatchLastClickedChain, selectedChain, lightChainUnavailable } = this.props;
+    const {
+      selectedFamily,
+      selectedTree,
+      selectedSeq,
+      tree,
+      heavyTree,
+      lightTree,
+      dispatchSelectedSeq,
+      dispatchLastClickedChain,
+      selectedChain,
+      lightChainUnavailable
+    } = this.props;
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
@@ -625,210 +727,208 @@ class TreeViz extends React.Component {
           {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
           {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
 
-        {/* Stacked mode: render two separate tree/alignment visualizations */}
-        {/* Light chain has controls, heavy chain mirrors light chain settings */}
-        {isStacked && completeData && (
-          <div>
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
-            <Vega
-              onParseError={(...args) => console.error("parse error:", args)}
-              onSignalPts_tuple={(...args) => {
-                const node = args.slice(1)[0];
-                if (node && node.parent) {
-                  dispatchSelectedSeq(node.sequence_id);
-                  dispatchLastClickedChain("heavy");
-                  // Sync selection to light chain view
-                  this.syncSelectionToLightChain(node.y_tree);
-                }
-              }}
-              onNewView={(view) => this.setupHeavyChainSignalSync(view)}
-              debug
-              data={this.getChainData("heavy")}
-              spec={this.specNoControls}
-            />
-            {lightTree ? (
-              <Vega
-                onParseError={(...args) => console.error("parse error:", args)}
-                onSignalPts_tuple={(...args) => {
-                  const node = args.slice(1)[0];
-                  if (node && node.parent) {
-                    dispatchSelectedSeq(node.sequence_id);
-                    dispatchLastClickedChain("light");
-                    // Sync selection to heavy chain view
-                    this.syncSelectionToHeavyChain(node.y_tree);
-                  }
+          {/* Stacked mode: render two separate tree/alignment visualizations */}
+          {/* Light chain has controls, heavy chain mirrors light chain settings */}
+          {isStacked && completeData && (
+            <div>
+              <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
+              <VegaChart
+                onNewView={(view) => {
+                  this.setupHeavyChainSignalSync(view);
+                  view.addSignalListener("pts_tuple", (name, node) => {
+                    if (node && node.parent) {
+                      dispatchSelectedSeq(node.sequence_id);
+                      dispatchLastClickedChain("heavy");
+                      this.syncSelectionToLightChain(node.y_tree);
+                    }
+                  });
                 }}
-                onNewView={(view) => this.setupLightChainSignalSync(view, 0.4)}
-                debug
-                data={this.getChainData("light")}
-                spec={this.spec}
+                onError={(...args) => console.error("Vega error:", args)}
+                data={this.getChainData("heavy")}
+                spec={this.specNoControls}
               />
-            ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "10px", backgroundColor: "#fff3f3", border: "1px solid #ffcccc", borderRadius: "4px" }}>
+              {lightTree ? (
+                <VegaChart
+                  onNewView={(view) => {
+                    this.setupLightChainSignalSync(view, 0.4);
+                    view.addSignalListener("pts_tuple", (name, node) => {
+                      if (node && node.parent) {
+                        dispatchSelectedSeq(node.sequence_id);
+                        dispatchLastClickedChain("light");
+                        this.syncSelectionToHeavyChain(node.y_tree);
+                      }
+                    });
+                  }}
+                  onError={(...args) => console.error("Vega error:", args)}
+                  data={this.getChainData("light")}
+                  spec={this.spec}
+                />
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginTop: "10px",
+                    padding: "10px",
+                    backgroundColor: "#fff3f3",
+                    border: "1px solid #ffcccc",
+                    borderRadius: "4px"
+                  }}
+                >
+                  <span style={{ color: "#cc0000", fontSize: "18px", fontWeight: "bold" }}>✗</span>
+                  <span style={{ color: "#cc0000" }}>
+                    Light chain tree data not available. The paired clone may not be loaded yet.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Side-by-side mode: In development */}
+          {isSideBySide && completeData && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginTop: "10px",
+                padding: "12px",
+                backgroundColor: "#fff8e6",
+                border: "1px solid #ffcc00",
+                borderRadius: "4px"
+              }}
+            >
+              <span style={{ color: "#cc8800", fontSize: "18px" }}>⚠</span>
+              <span style={{ color: "#806600" }}>
+                Side-by-side view is currently in development. Please use the stacked view for now.
+              </span>
+            </div>
+          )}
+
+          {/* Single chain mode: light chain unavailable error */}
+          {!isBothMode && lightChainUnavailable && (
+            <div>
+              <TreeHeader
+                selectedFamily={selectedFamily}
+                selectedTree={selectedTree}
+                selectedSeq={selectedSeq}
+                tree={tree}
+              />
+              <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Light Chain</h4>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginTop: "10px",
+                  padding: "10px",
+                  backgroundColor: "#fff3f3",
+                  border: "1px solid #ffcccc",
+                  borderRadius: "4px"
+                }}
+              >
                 <span style={{ color: "#cc0000", fontSize: "18px", fontWeight: "bold" }}>✗</span>
                 <span style={{ color: "#cc0000" }}>
                   Light chain tree data not available. The paired clone may not be loaded yet.
                 </span>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Side-by-side mode: In development */}
-        {isSideBySide && completeData && (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "12px", backgroundColor: "#fff8e6", border: "1px solid #ffcc00", borderRadius: "4px" }}>
-            <span style={{ color: "#cc8800", fontSize: "18px" }}>⚠</span>
-            <span style={{ color: "#806600" }}>
-              Side-by-side view is currently in development. Please use the stacked view for now.
-            </span>
-          </div>
-        )}
-
-        {/* Single chain mode: light chain unavailable error */}
-        {!isBothMode && lightChainUnavailable && (
-          <div>
-            <TreeHeader
-              selectedFamily={selectedFamily}
-              selectedTree={selectedTree}
-              selectedSeq={selectedSeq}
-              tree={tree}
+          {/* Single chain mode: original Vega component */}
+          {!isBothMode &&
+            !lightChainUnavailable &&
+            completeData &&
+            (() => {
+              // Determine chain label: for paired data use selectedChain, for non-paired use locus
+              const chainType = selectedFamily.is_paired
+                ? selectedChain
+                : clonalFamiliesSelectors.getCloneChain(selectedFamily);
+              const chainLabel = chainType === "heavy" ? "Heavy Chain" : "Light Chain";
+              return (
+                <div>
+                  <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
+                  <VegaChart
+                    onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
+                    onError={(...args) => console.error("Vega error:", args)}
+                    data={this.treeDataFromProps()}
+                    spec={this.spec}
+                  />
+                </div>
+              );
+            })()}
+          {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
+            <VegaChart
+              onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
+              onError={(...args) => console.error("Vega error:", args)}
+              data={this.tempVegaData}
+              spec={this.spec}
             />
-            <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Light Chain</h4>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", padding: "10px", backgroundColor: "#fff3f3", border: "1px solid #ffcccc", borderRadius: "4px" }}>
-              <span style={{ color: "#cc0000", fontSize: "18px", fontWeight: "bold" }}>✗</span>
-              <span style={{ color: "#cc0000" }}>
-                Light chain tree data not available. The paired clone may not be loaded yet.
-              </span>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Single chain mode: original Vega component */}
-        {!isBothMode && !lightChainUnavailable && completeData && (() => {
-          // Determine chain label: for paired data use selectedChain, for non-paired use locus
-          const chainType = selectedFamily.is_paired
-            ? selectedChain
-            : clonalFamiliesSelectors.getCloneChain(selectedFamily);
-          const chainLabel = chainType === "heavy" ? "Heavy Chain" : "Light Chain";
-          return (
-            <div>
-              <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
-              <Vega
-                onParseError={(...args) => console.error("parse error:", args)}
-                onSignalPts_tuple={(...args) => {
-                  const node = args.slice(1)[0];
-                  if (node && node.parent) {
-                    // update selected sequence for lineage mode if it has a parent ie if it is not a bad request
-                    dispatchSelectedSeq(node.sequence_id);
-                  }
+          {/* Export and download options */}
+          {completeData && (
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <button
+                onClick={this.toggleHideControls}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  border: "1px solid #ccc",
+                  borderRadius: 4,
+                  backgroundColor: hideControls ? "#e3f2fd" : "#fff",
+                  color: "#333",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease"
                 }}
-                onNewView={(view) => {
-                  this.singleVegaRef = view;
-                  // Update state for export functionality
-                  this.setState({ currentVegaView: view });
-                  // Register view with context for config management
-                  if (this.context && this.context.setTreeView) {
-                    this.context.setTreeView(view);
-                  }
-                  // Listen for focus changes to sync with React
-                  view.addSignalListener("viz_focused", (name, value) => {
-                    if (value) this.isFocused = true;
-                  });
+                title={hideControls ? "Show plot controls" : "Hide plot controls"}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5";
                 }}
-                debug
-                // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
-                data={this.treeDataFromProps()}
-                spec={this.spec}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff";
+                }}
+              >
+                {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+                <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>
+              </button>
+              <VegaExportToolbar
+                vegaView={this.state.currentVegaView}
+                filename={`olmsted-tree-${selectedFamily.clone_id || "family"}`}
               />
             </div>
-          );
-        })()}
-        {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
-          <Vega
-            onParseError={(...args) => console.error("parse error:", args)}
-            onSignalPts_tuple={(...args) => {
-              const node = args.slice(1)[0];
-              if (node && node.parent) {
-                dispatchSelectedSeq(node.sequence_id);
-              }
-            }}
-            onNewView={(view) => {
-              this.singleVegaRef = view;
-              // Update state for export functionality
-              this.setState({ currentVegaView: view });
-              // Register view with context for config management
-              if (this.context && this.context.setTreeView) {
-                this.context.setTreeView(view);
-              }
-              // Listen for focus changes to sync with React
-              view.addSignalListener("viz_focused", (name, value) => {
-                if (value) this.isFocused = true;
-              });
-            }}
-            debug
-            data={this.tempVegaData}
-            spec={this.spec}
-          />
-        )}
-
-        {/* Export and download options */}
-        {completeData && (
-          <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <button
-              onClick={this.toggleHideControls}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "4px 8px",
-                fontSize: 12,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                backgroundColor: hideControls ? "#e3f2fd" : "#fff",
-                color: "#333",
-                cursor: "pointer",
-                transition: "all 0.15s ease"
-              }}
-              title={hideControls ? "Show plot controls" : "Hide plot controls"}
-              onMouseEnter={(e) => { e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5"; }}
-              onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
-            >
-              {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
-              <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>
-            </button>
-            <VegaExportToolbar
-              vegaView={this.state.currentVegaView}
-              filename={`olmsted-tree-${selectedFamily.clone_id || "family"}`}
-            />
-          </div>
-        )}
-        {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
-          <div style={{ marginTop: "10px" }}>
-            <div style={{ marginBottom: "8px" }}>
-              <DownloadFasta
-                sequencesSet={downloadTree.download_unique_family_seqs.slice()}
-                filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
-                  "-",
-                  selectedFamily.clone_id,
-                  ".fasta"
-                )}
-                label="Download Fasta: Unique Sequences In This Tree"
-              />
+          )}
+          {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
+            <div style={{ marginTop: "10px" }}>
+              <div style={{ marginBottom: "8px" }}>
+                <DownloadFasta
+                  sequencesSet={downloadTree.download_unique_family_seqs.slice()}
+                  filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                    "-",
+                    selectedFamily.clone_id,
+                    ".fasta"
+                  )}
+                  label="Download Fasta: Unique Sequences In This Tree"
+                />
+              </div>
+              <div>
+                <DownloadText
+                  text={selectedTree.newick}
+                  filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
+                    "-",
+                    selectedFamily.clone_id,
+                    "-newick",
+                    ".txt"
+                  )}
+                  label="Download Clonal Family Tree Newick String"
+                />
+              </div>
             </div>
-            <div>
-              <DownloadText
-                text={selectedTree.newick}
-                filename={(selectedFamily.sample_id || selectedFamily.subject_id || "sample").concat(
-                  "-",
-                  selectedFamily.clone_id,
-                  "-newick",
-                  ".txt"
-                )}
-                label="Download Clonal Family Tree Newick String"
-              />
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
     );

@@ -5,10 +5,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as configActions from "../../actions/configs";
-import {
-  createConfig,
-  extractCurrentSettings
-} from "../../utils/configManager";
+import { createConfig, extractCurrentSettings } from "../../utils/configManager";
 import VegaViewContext from "./VegaViewContext";
 
 const formStyle = {
@@ -206,15 +203,11 @@ class ConfigSaveForm extends React.Component {
         </div>
 
         <div style={hintStyle}>
-          This will save your current scatterplot, tree, and ancestral sequence visualization settings,
-          including axis selections, colors, sizes, zoom/pan state, and display options.
+          This will save your current scatterplot, tree, and ancestral sequence visualization settings, including axis
+          selections, colors, sizes, zoom/pan state, and display options.
         </div>
 
-        <button
-          type="submit"
-          style={canSubmit ? buttonStyle : disabledButtonStyle}
-          disabled={!canSubmit}
-        >
+        <button type="submit" style={canSubmit ? buttonStyle : disabledButtonStyle} disabled={!canSubmit}>
           {isSaving ? "Saving..." : "Save Configuration"}
         </button>
       </form>

@@ -215,15 +215,9 @@ class ConfigList extends React.Component {
               ) : (
                 <span style={globalBadgeStyle}>Global</span>
               )}
-              {isActive && (
-                <span style={{ ...badgeStyle, backgroundColor: "#d4edda", color: "#155724" }}>
-                  Active
-                </span>
-              )}
+              {isActive && <span style={{ ...badgeStyle, backgroundColor: "#d4edda", color: "#155724" }}>Active</span>}
             </h4>
-            <p style={configMetaStyle}>
-              Last edited: {formatDate(config.updatedAt || config.createdAt)}
-            </p>
+            <p style={configMetaStyle}>Last edited: {formatDate(config.updatedAt || config.createdAt)}</p>
           </div>
 
           <div style={actionsContainerStyle}>
@@ -236,11 +230,7 @@ class ConfigList extends React.Component {
                 <FiRefreshCw size={14} />
               </button>
             )}
-            <button
-              style={applyButtonStyle}
-              onClick={() => this.handleApply(config)}
-              title="Apply this configuration"
-            >
+            <button style={applyButtonStyle} onClick={() => this.handleApply(config)} title="Apply this configuration">
               <FiCheck size={14} />
             </button>
             <button
@@ -250,18 +240,10 @@ class ConfigList extends React.Component {
             >
               <FiInfo size={14} />
             </button>
-            <button
-              style={exportButtonStyle}
-              onClick={() => this.handleExport(config)}
-              title="Export configuration"
-            >
+            <button style={exportButtonStyle} onClick={() => this.handleExport(config)} title="Export configuration">
               <FiDownload size={14} />
             </button>
-            <button
-              style={deleteButtonStyle}
-              onClick={() => this.handleDelete(config)}
-              title="Delete configuration"
-            >
+            <button style={deleteButtonStyle} onClick={() => this.handleDelete(config)} title="Delete configuration">
               <FiTrash2 size={14} />
             </button>
           </div>
@@ -280,7 +262,10 @@ class ConfigList extends React.Component {
             <div style={{ marginBottom: "10px" }}>
               <strong>Created:</strong> {formatDate(config.createdAt)}
               {config.updatedAt !== config.createdAt && (
-                <span> | <strong>Last updated:</strong> {formatDate(config.updatedAt)}</span>
+                <span>
+                  {" "}
+                  | <strong>Last updated:</strong> {formatDate(config.updatedAt)}
+                </span>
               )}
             </div>
             <div>

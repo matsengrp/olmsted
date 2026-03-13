@@ -39,7 +39,7 @@ export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree]
 const createAlignment = (naive_seq, tree) => {
   let all_mutations = [];
   // Get the length of the naive sequence to determine alignment width
-  const naive_length = _.isObject(naive_seq) ? Object.keys(naive_seq).length : (naive_seq ? naive_seq.length : 0);
+  const naive_length = _.isObject(naive_seq) ? Object.keys(naive_seq).length : naive_seq ? naive_seq.length : 0;
 
   // compute mutations for each node in the tree
   _.forEach(tree, (node) => {
@@ -247,14 +247,10 @@ const computeLineageData = (tree, seq, includeAllNodes = false) => {
   return treeData;
 };
 
-export const getTreeData = createSelector(
-  [getSelectedTree],
-  (tree) => computeTreeData(tree)
-);
+export const getTreeData = createSelector([getSelectedTree], (tree) => computeTreeData(tree));
 
-export const getLineageData = createSelector(
-  [getSelectedTree, getSelectedSeq],
-  (tree, seq) => computeLineageData(tree, seq, false)
+export const getLineageData = createSelector([getSelectedTree, getSelectedSeq], (tree, seq) =>
+  computeLineageData(tree, seq, false)
 );
 
 // Export the function for direct use with options

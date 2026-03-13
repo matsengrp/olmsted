@@ -105,7 +105,12 @@ class DownloadCSV extends React.Component {
 
     if (compact) {
       return (
-        <a href={this.createCSVDownload()} download={filename || "table.csv"} style={linkStyle} title={label || "Download CSV"}>
+        <a
+          href={this.createCSVDownload()}
+          download={filename || "table.csv"}
+          style={linkStyle}
+          title={label || "Download CSV"}
+        >
           <button
             type="button"
             style={compactButtonStyle}

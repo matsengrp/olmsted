@@ -57,9 +57,7 @@ export const useVegaViews = () => React.useContext(VegaViewContext);
 export const withVegaViews = (Component) => {
   return function WithVegaViewsComponent(props) {
     return (
-      <VegaViewContext.Consumer>
-        {(context) => <Component {...props} vegaViews={context} />}
-      </VegaViewContext.Consumer>
+      <VegaViewContext.Consumer>{(context) => <Component {...props} vegaViews={context} />}</VegaViewContext.Consumer>
     );
   };
 };

@@ -27,7 +27,7 @@ const FILTER_FIELDS = [
   {
     key: "sample.locus",
     label: "Locus",
-    accessor: (f) => f.sample && f.sample.locus ? f.sample.locus.toUpperCase() : null
+    accessor: (f) => (f.sample && f.sample.locus ? f.sample.locus.toUpperCase() : null)
   },
   { key: "subject_id", label: "Subject", accessor: (f) => f.subject_id },
   { key: "sample_id", label: "Sample", accessor: (f) => f.sample_id },
@@ -54,14 +54,7 @@ const getUniqueValues = (families, field, datasets) => {
 /**
  * Individual filter section with collapsible checkbox list
  */
-const FilterSection = ({
-  field,
-  uniqueValues,
-  selectedValues,
-  onToggleValue,
-  expanded,
-  onToggleExpand
-}) => {
+const FilterSection = ({ field, uniqueValues, selectedValues, onToggleValue, expanded, onToggleExpand }) => {
   const hasSelections = selectedValues && selectedValues.length > 0;
 
   return (
@@ -129,9 +122,7 @@ const FilterSection = ({
  * Active filter chips displayed above filter sections
  */
 const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
-  const filterEntries = Object.entries(filters).filter(
-    ([, values]) => values && values.length > 0
-  );
+  const filterEntries = Object.entries(filters).filter(([, values]) => values && values.length > 0);
 
   if (filterEntries.length === 0) {
     return null;
@@ -164,9 +155,7 @@ const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
               fontSize: 12
             }}
           >
-            <span style={{ fontWeight: "bold", marginRight: 4 }}>
-              {fieldLabels[fieldKey] || fieldKey}:
-            </span>
+            <span style={{ fontWeight: "bold", marginRight: 4 }}>{fieldLabels[fieldKey] || fieldKey}:</span>
             <span>{values.length === 1 ? values[0] : `${values.length} selected`}</span>
             <button
               onClick={() => onRemoveFilter(fieldKey)}
@@ -232,13 +221,7 @@ class FilterPanel extends React.Component {
   };
 
   render() {
-    const {
-      allClonalFamilies,
-      datasets,
-      filters,
-      clearFilter,
-      clearAllFilters
-    } = this.props;
+    const { allClonalFamilies, datasets, filters, clearFilter, clearAllFilters } = this.props;
     const { expandedSections } = this.state;
 
     // Get loaded datasets for resolving dataset names
@@ -259,18 +242,10 @@ class FilterPanel extends React.Component {
         >
           <FiFilter size={16} style={{ marginRight: 6 }} />
           <span style={{ fontWeight: "bold" }}>Filter Clonal Families</span>
-          {!hasActiveFilters && (
-            <span style={{ marginLeft: 8, color: "#999", fontSize: 12 }}>
-              (no filters active)
-            </span>
-          )}
+          {!hasActiveFilters && <span style={{ marginLeft: 8, color: "#999", fontSize: 12 }}>(no filters active)</span>}
         </div>
 
-        <ActiveFilterChips
-          filters={filters}
-          onRemoveFilter={clearFilter}
-          onClearAll={clearAllFilters}
-        />
+        <ActiveFilterChips filters={filters} onRemoveFilter={clearFilter} onClearAll={clearAllFilters} />
 
         {FILTER_FIELDS.map((field) => (
           <FilterSection

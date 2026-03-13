@@ -1,25 +1,18 @@
 const path = require("path");
 const webpack = require("webpack");
-const CompressionPlugin = require('compression-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const fs = require('fs');
-const { execSync } = require('child_process');
+const CompressionPlugin = require("compression-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const fs = require("fs");
+const { execSync } = require("child_process");
 
 module.exports = {
-  entry: [
-    "@babel/polyfill",
-    "./src/index"
-  ],
+  entry: ["@babel/polyfill", "./src/index"],
   output: {
     path: path.join(__dirname, "_deploy/dist/"),
     filename: "bundle.js",
     publicPath: "dist/"
   },
-  resolve: {
-    alias: {
-      'vega-lib': 'vega'
-    }
-  },
+  resolve: {},
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
@@ -29,7 +22,8 @@ module.exports = {
     }),
     /* Note: console.log statements are not stripped out */
     new webpack.optimize.AggressiveMergingPlugin(), // merge chunks - https://github.com/webpack/docs/wiki/list-of-plugins#aggressivemergingplugin
-    new CompressionPlugin({ // gzip everything - https://github.com/webpack-contrib/compression-webpack-plugin
+    new CompressionPlugin({
+      // gzip everything - https://github.com/webpack-contrib/compression-webpack-plugin
       filename: "[path][base].gz",
       algorithm: "gzip",
       test: /\.js$|\.css$|\.html$/,
@@ -40,26 +34,27 @@ module.exports = {
       // Custom plugin to replace WebpackShellPlugin functionality
       apply: (compiler) => {
         // Create directories before build
-        if (!fs.existsSync('_deploy/dist')) {
-          fs.mkdirSync('_deploy/dist', { recursive: true });
+        if (!fs.existsSync("_deploy/dist")) {
+          fs.mkdirSync("_deploy/dist", { recursive: true });
         }
-        if (!fs.existsSync('_deploy/data')) {
-          fs.mkdirSync('_deploy/data', { recursive: true });
+        if (!fs.existsSync("_deploy/data")) {
+          fs.mkdirSync("_deploy/data", { recursive: true });
         }
-        
+
         // Run postbuild script after compilation
-        compiler.hooks.done.tap('CustomPostBuildPlugin', () => {
+        compiler.hooks.done.tap("CustomPostBuildPlugin", () => {
           try {
-            execSync('./bin/postbuild.sh', { stdio: 'inherit' });
+            execSync("./bin/postbuild.sh", { stdio: "inherit" });
           } catch (error) {
-            console.warn('Postbuild script failed:', error.message);
+            console.warn("Postbuild script failed:", error.message);
           }
         });
       }
     }
   ],
   optimization: {
-    minimizer: [new TerserPlugin()]},
+    minimizer: [new TerserPlugin()]
+  },
   module: {
     rules: [
       {

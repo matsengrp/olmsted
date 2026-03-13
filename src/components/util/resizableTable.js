@@ -495,7 +495,9 @@ export class ResizableTable extends React.Component {
               justifyContent: "space-between"
             }}
           >
-            <span>Showing {sortedData.length} {itemName || "items"}</span>
+            <span>
+              Showing {sortedData.length} {itemName || "items"}
+            </span>
             {footerAction}
           </div>
         )}
