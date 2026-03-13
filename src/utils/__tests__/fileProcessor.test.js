@@ -44,9 +44,7 @@ describe("FileProcessor", () => {
   describe("processConsolidatedFormat", () => {
     const validData = {
       metadata: { schema_version: "2.0.0", name: "Test Data" },
-      datasets: [
-        { dataset_id: "original-id", clone_count: 2, subjects_count: 1 }
-      ],
+      datasets: [{ dataset_id: "original-id", clone_count: 2, subjects_count: 1 }],
       clones: {
         "original-id": [
           { ident: "clone-1", clone_id: "c1" },
@@ -112,9 +110,7 @@ describe("FileProcessor", () => {
 
     it("throws when datasets array is empty", () => {
       const emptyData = { ...validData, datasets: [] };
-      expect(() => FileProcessor.processConsolidatedFormat(emptyData, "test.json")).toThrow(
-        "missing datasets"
-      );
+      expect(() => FileProcessor.processConsolidatedFormat(emptyData, "test.json")).toThrow("missing datasets");
     });
   });
 

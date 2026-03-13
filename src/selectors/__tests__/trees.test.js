@@ -87,9 +87,7 @@ describe("computeTreeData", () => {
   it("alignment includes mutations for leaf nodes", () => {
     const result = computeTreeData(mockTree);
     // leaf-1 has "MKVI" vs naive "MKVL" — differs at position 3
-    const leaf1Mutations = result.tips_alignment.filter(
-      (m) => m.seq_id === "leaf-1" && m.type === "leaf"
-    );
+    const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
     expect(leaf1Mutations.length).toBeGreaterThanOrEqual(1);
     const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
     expect(mutAtPos3).toBeDefined();
@@ -120,9 +118,7 @@ describe("computeLineageDataWithOptions", () => {
     const resultAll = computeLineageDataWithOptions(mockTree, leaf, true);
     const resultFiltered = computeLineageDataWithOptions(mockTree, leaf, false);
     // includeAllNodes should include internal nodes regardless of mutations
-    expect(resultAll.lineage_seq_counter).toBeGreaterThanOrEqual(
-      resultFiltered.lineage_seq_counter
-    );
+    expect(resultAll.lineage_seq_counter).toBeGreaterThanOrEqual(resultFiltered.lineage_seq_counter);
   });
 
   it("produces download lineage sequences", () => {

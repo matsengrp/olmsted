@@ -9,18 +9,20 @@ import olmstedDB from "../utils/olmstedDB";
  * Load all configs from IndexedDB
  * @param {string|undefined} datasetId - Optional filter by dataset
  */
-export const loadConfigs = (datasetId = undefined) => async (dispatch) => {
-  try {
-    await olmstedDB.ready;
-    const configs = await olmstedDB.getAllConfigs(datasetId);
-    dispatch({
-      type: types.CONFIGS_LOADED,
-      configs
-    });
-  } catch (error) {
-    console.error("Failed to load configs:", error);
-  }
-};
+export const loadConfigs =
+  (datasetId = undefined) =>
+  async (dispatch) => {
+    try {
+      await olmstedDB.ready;
+      const configs = await olmstedDB.getAllConfigs(datasetId);
+      dispatch({
+        type: types.CONFIGS_LOADED,
+        configs
+      });
+    } catch (error) {
+      console.error("Failed to load configs:", error);
+    }
+  };
 
 /**
  * Save a new config or update existing

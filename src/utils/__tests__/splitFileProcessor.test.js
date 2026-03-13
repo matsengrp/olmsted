@@ -27,9 +27,7 @@ describe("SplitFileProcessor", () => {
     });
 
     it("returns false for single file", () => {
-      const files = [
-        { name: "dataset.json", content: { dataset_id: "d1" } }
-      ];
+      const files = [{ name: "dataset.json", content: { dataset_id: "d1" } }];
       expect(SplitFileProcessor.isSplitFormat(files)).toBe(false);
     });
 
@@ -129,17 +127,13 @@ describe("SplitFileProcessor", () => {
 
   describe("extractClones", () => {
     it("extracts clone objects from array content", () => {
-      const files = [
-        { name: "clones.json", content: [{ clone_id: "c1" }, { clone_id: "c2" }] }
-      ];
+      const files = [{ name: "clones.json", content: [{ clone_id: "c1" }, { clone_id: "c2" }] }];
       const result = SplitFileProcessor.extractClones(files);
       expect(result).toHaveLength(2);
     });
 
     it("extracts single clone object", () => {
-      const files = [
-        { name: "clone.json", content: { clone_id: "c1" } }
-      ];
+      const files = [{ name: "clone.json", content: { clone_id: "c1" } }];
       const result = SplitFileProcessor.extractClones(files);
       expect(result).toHaveLength(1);
     });
@@ -147,17 +141,13 @@ describe("SplitFileProcessor", () => {
 
   describe("extractTrees", () => {
     it("extracts tree objects", () => {
-      const files = [
-        { name: "tree.json", content: [{ newick: "(a,b);" }] }
-      ];
+      const files = [{ name: "tree.json", content: [{ newick: "(a,b);" }] }];
       const result = SplitFileProcessor.extractTrees(files);
       expect(result).toHaveLength(1);
     });
 
     it("extracts single tree object with tree_id", () => {
-      const files = [
-        { name: "tree.json", content: { tree_id: "t1", newick: "(a);" } }
-      ];
+      const files = [{ name: "tree.json", content: { tree_id: "t1", newick: "(a);" } }];
       const result = SplitFileProcessor.extractTrees(files);
       expect(result).toHaveLength(1);
     });

@@ -61,7 +61,7 @@ export function UploadTimeCell({ datum }) {
   }
 
   // Display in YYYY-MM-DD HH:MM:SS format (remove T and Z from ISO format)
-  const formattedTime = uploadTime.replace('T', ' ').replace('Z', '');
+  const formattedTime = uploadTime.replace("T", " ").replace("Z", "");
   return <span>{formattedTime}</span>;
 }
 
@@ -120,7 +120,7 @@ export function DatasetStarCell({ datum, starredDatasets, onToggleStar }) {
         size={16}
         style={{
           fill: isStarred ? "#ffc107" : "none",
-          color: isStarred ? "#ffc107" : (hovered ? "#ffc107" : "#999"),
+          color: isStarred ? "#ffc107" : hovered ? "#ffc107" : "#999",
           transition: "all 0.15s ease"
         }}
       />
@@ -158,19 +158,19 @@ export function getDatasetCsvColumns(showCitation = false) {
  * Standard column width map for dataset tables
  */
 export const datasetColumnWidths = {
-  "Star": 50,
-  "Select": 50,
-  "Load": 50,
-  "Status": 50,
-  "Info": 60,
-  "Delete": 60,
-  "Name": 200,
-  "ID": 150,
-  "Source": 80,
+  Star: 50,
+  Select: 50,
+  Load: 50,
+  Status: 50,
+  Info: 60,
+  Delete: 60,
+  Name: 200,
+  ID: 150,
+  Source: 80,
   "Size (MB)": 80,
-  "Subjects": 80,
-  "Families": 100,
+  Subjects: 80,
+  Families: 100,
   "Upload Time": 120,
   "Build Time": 120,
-  "Citation": 150
+  Citation: 150
 };

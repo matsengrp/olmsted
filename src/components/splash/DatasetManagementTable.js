@@ -185,7 +185,9 @@ class DatasetManagementTableComponent extends React.Component {
       const newValue = !prevState.sortStarredFirst;
       try {
         sessionStorage.setItem("olmsted_datasets_sort_starred_first", JSON.stringify(newValue));
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
       return { sortStarredFirst: newValue };
     });
   };
@@ -195,7 +197,9 @@ class DatasetManagementTableComponent extends React.Component {
       const newValue = !prevState.showOnlyStarred;
       try {
         sessionStorage.setItem("olmsted_datasets_show_only_starred", JSON.stringify(newValue));
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
       return { showOnlyStarred: newValue };
     });
   };
@@ -271,69 +275,97 @@ class DatasetManagementTableComponent extends React.Component {
       transition: "all 0.15s ease"
     };
 
-    const footerAction = availableDatasets.length > 0 ? (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-        <label style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}>
-          <input type="checkbox" checked={sortStarredFirst} onChange={this.toggleSortStarredFirst} style={{ cursor: "pointer" }} />
-          Starred first
-        </label>
-        <label style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}>
-          <input type="checkbox" checked={showOnlyStarred} onChange={this.toggleShowOnlyStarred} style={{ cursor: "pointer" }} />
-          Only starred
-        </label>
-        <button
-          type="button"
-          onClick={() => {
-            visibleIds.forEach((id) => {
-              if (!starredDatasets.includes(id)) dispatch(explorerActions.toggleStarredDataset(id));
-            });
-          }}
-          onMouseEnter={() => this.setState({ starAllHovered: true })}
-          onMouseLeave={() => this.setState({ starAllHovered: false })}
-          style={{ ...starButtonStyle, background: starAllHovered ? "#fff8e1" : "none", borderColor: starAllHovered ? "#ffc107" : "#ccc" }}
-          title="Star all visible datasets"
-          disabled={allVisibleStarred || sortedDatasets.length === 0}
-        >
-          <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
-          Star All
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            visibleIds.forEach((id) => {
-              if (starredDatasets.includes(id)) dispatch(explorerActions.toggleStarredDataset(id));
-            });
-          }}
-          onMouseEnter={() => this.setState({ unstarAllHovered: true })}
-          onMouseLeave={() => this.setState({ unstarAllHovered: false })}
-          style={{ ...starButtonStyle, background: unstarAllHovered ? "#f5f5f5" : "none", borderColor: unstarAllHovered ? "#999" : "#ccc" }}
-          title="Unstar all visible datasets"
-          disabled={visibleStarredCount === 0}
-        >
-          <FiStar size={12} />
-          Unstar All
-        </button>
-        {starredDatasets.length > 0 && (
+    const footerAction =
+      availableDatasets.length > 0 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              checked={sortStarredFirst}
+              onChange={this.toggleSortStarredFirst}
+              style={{ cursor: "pointer" }}
+            />
+            Starred first
+          </label>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              checked={showOnlyStarred}
+              onChange={this.toggleShowOnlyStarred}
+              style={{ cursor: "pointer" }}
+            />
+            Only starred
+          </label>
           <button
             type="button"
-            onClick={() => dispatch(explorerActions.clearStarredDatasets())}
-            onMouseEnter={() => this.setState({ clearStarsHovered: true })}
-            onMouseLeave={() => this.setState({ clearStarsHovered: false })}
-            style={{ ...starButtonStyle, background: clearStarsHovered ? "#ffebee" : "none", borderColor: clearStarsHovered ? "#f44336" : "#ccc", color: clearStarsHovered ? "#f44336" : "inherit" }}
-            title={`Clear all ${starredDatasets.length} starred datasets`}
+            onClick={() => {
+              visibleIds.forEach((id) => {
+                if (!starredDatasets.includes(id)) dispatch(explorerActions.toggleStarredDataset(id));
+              });
+            }}
+            onMouseEnter={() => this.setState({ starAllHovered: true })}
+            onMouseLeave={() => this.setState({ starAllHovered: false })}
+            style={{
+              ...starButtonStyle,
+              background: starAllHovered ? "#fff8e1" : "none",
+              borderColor: starAllHovered ? "#ffc107" : "#ccc"
+            }}
+            title="Star all visible datasets"
+            disabled={allVisibleStarred || sortedDatasets.length === 0}
           >
-            Clear Stars ({starredDatasets.length})
+            <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
+            Star All
           </button>
-        )}
-        <DownloadCSV
-          data={sortedDatasets}
-          columns={csvColumns}
-          filename="datasets.csv"
-          label="Download Table as CSV"
-          compact
-        />
-      </div>
-    ) : null;
+          <button
+            type="button"
+            onClick={() => {
+              visibleIds.forEach((id) => {
+                if (starredDatasets.includes(id)) dispatch(explorerActions.toggleStarredDataset(id));
+              });
+            }}
+            onMouseEnter={() => this.setState({ unstarAllHovered: true })}
+            onMouseLeave={() => this.setState({ unstarAllHovered: false })}
+            style={{
+              ...starButtonStyle,
+              background: unstarAllHovered ? "#f5f5f5" : "none",
+              borderColor: unstarAllHovered ? "#999" : "#ccc"
+            }}
+            title="Unstar all visible datasets"
+            disabled={visibleStarredCount === 0}
+          >
+            <FiStar size={12} />
+            Unstar All
+          </button>
+          {starredDatasets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => dispatch(explorerActions.clearStarredDatasets())}
+              onMouseEnter={() => this.setState({ clearStarsHovered: true })}
+              onMouseLeave={() => this.setState({ clearStarsHovered: false })}
+              style={{
+                ...starButtonStyle,
+                background: clearStarsHovered ? "#ffebee" : "none",
+                borderColor: clearStarsHovered ? "#f44336" : "#ccc",
+                color: clearStarsHovered ? "#f44336" : "inherit"
+              }}
+              title={`Clear all ${starredDatasets.length} starred datasets`}
+            >
+              Clear Stars ({starredDatasets.length})
+            </button>
+          )}
+          <DownloadCSV
+            data={sortedDatasets}
+            columns={csvColumns}
+            filename="datasets.csv"
+            label="Download Table as CSV"
+            compact
+          />
+        </div>
+      ) : null;
 
     // Get row style - starred datasets get a light gold background
     const getRowStyle = (dataset) => {
@@ -370,8 +402,6 @@ class DatasetManagementTableComponent extends React.Component {
   }
 }
 
-export const DatasetManagementTable = connect(
-  (state) => ({
-    starredDatasets: state.datasets.starredDatasets || []
-  })
-)(DatasetManagementTableComponent);
+export const DatasetManagementTable = connect((state) => ({
+  starredDatasets: state.datasets.starredDatasets || []
+}))(DatasetManagementTableComponent);

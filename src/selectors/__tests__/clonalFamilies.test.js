@@ -62,13 +62,11 @@ describe("getAvailableClonalFamilies", () => {
   });
 
   it("applies high-level filters", () => {
-    const state = makeState(
-      [mockFamily1, mockFamily2],
-      [mockDataset],
-      { "sample.locus": ["IGH"] }
-    );
+    const state = makeState([mockFamily1, mockFamily2], [mockDataset], { "sample.locus": ["IGH"] });
     // Need to reset memoization
-    getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations && getAvailableClonalFamilies.resetRecomputations();
+    getAvailableClonalFamilies.recomputations &&
+      getAvailableClonalFamilies.resetRecomputations &&
+      getAvailableClonalFamilies.resetRecomputations();
     const result = getAvailableClonalFamilies(state);
     // mockFamily1 has IGH, mockFamily2 has IGK
     expect(result).toHaveLength(1);
@@ -96,10 +94,7 @@ describe("getBrushedClonalFamilies", () => {
   });
 
   it("filters by clicked family", () => {
-    const state = makeState(
-      [mockFamily1, mockFamily2],
-      { clicked: "family-1" }
-    );
+    const state = makeState([mockFamily1, mockFamily2], { clicked: "family-1" });
     const result = getBrushedClonalFamilies(state);
     expect(result).toHaveLength(1);
     expect(result[0].ident).toBe("family-1");

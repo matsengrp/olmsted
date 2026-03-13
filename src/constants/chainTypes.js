@@ -7,16 +7,16 @@
 
 export const CHAIN_TYPES = {
   /** Heavy chain only */
-  HEAVY: 'heavy',
+  HEAVY: "heavy",
 
   /** Light chain only (kappa or lambda) */
-  LIGHT: 'light',
+  LIGHT: "light",
 
   /** Both chains displayed vertically stacked */
-  BOTH_STACKED: 'both-stacked',
+  BOTH_STACKED: "both-stacked",
 
   /** Both chains displayed side-by-side */
-  BOTH_SIDE_BY_SIDE: 'both-side-by-side'
+  BOTH_SIDE_BY_SIDE: "both-side-by-side"
 };
 
 /**

@@ -140,7 +140,6 @@ const checkAndCorrectErrorsInState = (state, metadata) => {
     }
   }
 
-
   return state;
 };
 

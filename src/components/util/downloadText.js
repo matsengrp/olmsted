@@ -36,11 +36,7 @@ class DownloadText extends React.Component {
   render() {
     const { text, filename, label } = this.props;
     return (
-      <a
-        href={this.createTextDownload(text)}
-        download={filename ? filename : this.defaultFilename}
-        style={linkStyle}
-      >
+      <a href={this.createTextDownload(text)} download={filename ? filename : this.defaultFilename} style={linkStyle}>
         <button type="button" style={buttonStyle}>
           <FiDownload style={{ marginRight: "6px", verticalAlign: "middle" }} />
           {label ? label : this.defaultLabel}
