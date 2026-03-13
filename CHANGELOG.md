@@ -1,3 +1,12 @@
+## version 2.3.0 - 2026/03/13
+Changed:
+* Upgraded Vega 5→6, Vega-Lite 5→6, react-vega 4→8 to resolve 6 high-severity XSS vulnerabilities
+* Added VegaChart wrapper component bridging react-vega v8 API changes
+* Scatterplot brush selection uses signal polling workaround for Vega 6 compatibility
+* Data updates via View API changesets to preserve zoom/pan/brush state
+* Added sample field to scatterplot tooltip
+* Applied Prettier formatting across codebase
+
 ## version 2.2.9 - 2026/01/08
 [PR236](https://github.com/matsengrp/olmsted/pull/236) Changed:
 * Configuration management: Save, load, and share visualization settings via Settings menu
