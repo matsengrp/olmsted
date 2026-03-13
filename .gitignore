@@ -1,6 +1,7 @@
 ### App specific ###
 /dist/
 /data/
+/devel/
 /deploy/
 /_deploy/
 /releases/

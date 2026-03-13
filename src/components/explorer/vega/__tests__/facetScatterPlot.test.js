@@ -11,9 +11,7 @@ describe("facetClonalFamiliesVizSpec", () => {
 
   it("returns a valid Vega v5 spec", () => {
     expect(spec).toBeDefined();
-    expect(spec.$schema).toBe(
-      "https://vega.github.io/schema/vega/v5.json"
-    );
+    expect(spec.$schema).toBe("https://vega.github.io/schema/vega/v6.json");
   });
 
   it("has all required top-level properties", () => {

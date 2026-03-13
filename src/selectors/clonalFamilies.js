@@ -51,9 +51,7 @@ const applyHighLevelFilters = (families, filters, datasets) => {
         familyValue = dataset ? dataset.name || dataset.dataset_id : family.dataset_id;
       } else if (fieldName === "sample.locus") {
         // Special case-insensitive handling for locus
-        familyValue = family.sample && family.sample.locus
-          ? family.sample.locus.toUpperCase()
-          : undefined;
+        familyValue = family.sample && family.sample.locus ? family.sample.locus.toUpperCase() : undefined;
       } else if (fieldName.includes(".")) {
         // Handle nested fields like "sample.subject_id"
         const fieldValues = _.at(family, fieldName);
@@ -118,10 +116,14 @@ export const getAllClonalFamilies = createDeepEqualSelector(
 const getBrushSelection = (state) => state.clonalFamilies.brushSelection;
 
 const checkInRange = (axis, datum, brushSelection) => {
-  return (
-    brushSelection[axis]["range"][0] < datum[brushSelection[axis]["fieldName"]] &&
-    datum[brushSelection[axis]["fieldName"]] < brushSelection[axis]["range"][1]
-  );
+  const range = brushSelection[axis]["range"];
+  const value = datum[brushSelection[axis]["fieldName"]];
+  // Skip filtering on this axis if the range is degenerate (NaN or equal values,
+  // which happens when all data points share the same value on this axis)
+  if (!isFinite(range[0]) || !isFinite(range[1]) || range[0] === range[1]) {
+    return true;
+  }
+  return range[0] <= value && value <= range[1];
 };
 
 const checkBrushSelection = (brushSelection, datum, datasets = []) => {
@@ -233,9 +235,7 @@ export const getPairedClone = (clonalFamilies, clone) => {
     return null;
   }
   // Find the other clone with the same pair_id but different ident
-  return _.find(clonalFamilies, (cf) =>
-    cf.pair_id === clone.pair_id && cf.ident !== clone.ident
-  ) || null;
+  return _.find(clonalFamilies, (cf) => cf.pair_id === clone.pair_id && cf.ident !== clone.ident) || null;
 };
 
 /**

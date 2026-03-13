@@ -1,26 +1,18 @@
-const path = require('path');
-const webpack = require('webpack');
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const path = require("path");
+const webpack = require("webpack");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 
 module.exports = {
-  mode: 'development',
-  context: __dirname, 
-  devtool: 'cheap-module-source-map',
-  entry: [
-    "@babel/polyfill",
-    'webpack-hot-middleware/client',
-    './src/index'
-  ],
+  mode: "development",
+  context: __dirname,
+  devtool: "cheap-module-source-map",
+  entry: ["@babel/polyfill", "webpack-hot-middleware/client", "./src/index"],
   output: {
-    path: path.join(__dirname, 'devel'),
-    filename: 'bundle.js',
-    publicPath: '/dist/'
+    path: path.join(__dirname, "devel"),
+    filename: "bundle.js",
+    publicPath: "/dist/"
   },
-  resolve: {
-    alias: {
-      'vega-lib': 'vega'
-    }
-  },
+  resolve: {},
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new ReactRefreshWebpackPlugin(),
@@ -31,8 +23,8 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        use: ['babel-loader'],
-        include: path.join(__dirname, 'src')
+        use: ["babel-loader"],
+        include: path.join(__dirname, "src")
       },
       {
         test: /\.css$/,
@@ -47,6 +39,6 @@ module.exports = {
   },
   devServer: {
     hot: true,
-    contentBase:'./'
-  },
+    contentBase: "./"
+  }
 };

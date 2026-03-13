@@ -1,8 +1,5 @@
 import * as vega from "vega";
-import {
-  concatTreeWithAlignmentSpec,
-  seqAlignSpec
-} from "../clonalFamilyDetails";
+import { concatTreeWithAlignmentSpec, seqAlignSpec } from "../clonalFamilyDetails";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../../constants/aminoAcidColors";
 import {
@@ -23,9 +20,7 @@ describe("concatTreeWithAlignmentSpec", () => {
 
   it("returns a valid Vega v5 spec", () => {
     expect(spec).toBeDefined();
-    expect(spec.$schema).toBe(
-      "https://vega.github.io/schema/vega/v5.json"
-    );
+    expect(spec.$schema).toBe("https://vega.github.io/schema/vega/v6.json");
   });
 
   it("has all required top-level properties", () => {
@@ -51,17 +46,13 @@ describe("concatTreeWithAlignmentSpec", () => {
 
     it("showControls=true adds bind properties to signals", () => {
       const withControls = concatTreeWithAlignmentSpec({ showControls: true });
-      const maxLeafSize = withControls.signals.find(
-        (s) => s.name === "max_leaf_size"
-      );
+      const maxLeafSize = withControls.signals.find((s) => s.name === "max_leaf_size");
       expect(maxLeafSize.bind).toBeDefined();
     });
 
     it("showControls=false omits bind properties from signals", () => {
       const noControls = concatTreeWithAlignmentSpec({ showControls: false });
-      const maxLeafSize = noControls.signals.find(
-        (s) => s.name === "max_leaf_size"
-      );
+      const maxLeafSize = noControls.signals.find((s) => s.name === "max_leaf_size");
       expect(maxLeafSize.bind).toBeUndefined();
     });
   });
@@ -199,9 +190,7 @@ describe("concatTreeWithAlignmentSpec", () => {
     it("returns different specs with different options", () => {
       const withControls = concatTreeWithAlignmentSpec({ showControls: true });
       const noControls = concatTreeWithAlignmentSpec({ showControls: false });
-      expect(JSON.stringify(withControls)).not.toBe(
-        JSON.stringify(noControls)
-      );
+      expect(JSON.stringify(withControls)).not.toBe(JSON.stringify(noControls));
     });
   });
 
@@ -249,9 +238,7 @@ describe("seqAlignSpec", () => {
 
   it("returns a valid Vega v5 spec", () => {
     expect(spec).toBeDefined();
-    expect(spec.$schema).toBe(
-      "https://vega.github.io/schema/vega/v5.json"
-    );
+    expect(spec.$schema).toBe("https://vega.github.io/schema/vega/v6.json");
   });
 
   it("has expected top-level properties", () => {

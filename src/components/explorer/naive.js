@@ -1,5 +1,5 @@
 import React from "react";
-import { createClassFromSpec } from "react-vega";
+import VegaChart from "../util/VegaChart";
 import naiveVegaSpec from "./vega/naive";
 import { getCloneChain } from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES } from "../../constants/chainTypes";
@@ -72,9 +72,10 @@ const buildCloneRegions = (clone, familyLabel) => {
       family: familyLabel,
       region: "CDR3",
       start: junctionStart,
-      end: junctionStart !== null && junctionStart !== undefined && junctionLength !== null && junctionLength !== undefined
-        ? junctionStart + junctionLength
-        : null
+      end:
+        junctionStart !== null && junctionStart !== undefined && junctionLength !== null && junctionLength !== undefined
+          ? junctionStart + junctionLength
+          : null
     },
     // Layer 2 (middle): Grey background bar
     {
@@ -144,9 +145,9 @@ const filterValidRegions = (regions) => {
   return regions.filter((region) => {
     if (region.region === "Sequence") return true;
     const { start, end } = region;
-    return start !== null && start !== undefined &&
-           end !== null && end !== undefined &&
-           start >= 0 && end > 0 && start < end;
+    return (
+      start !== null && start !== undefined && end !== null && end !== undefined && start >= 0 && end > 0 && start < end
+    );
   });
 };
 
@@ -163,10 +164,8 @@ const getNaiveVizData = (clone, label = "5p") => {
   return { source: filterValidRegions(regions) };
 };
 
-const NaiveViz = createClassFromSpec(naiveVegaSpec);
-
 function NaiveSequence({ datum }) {
-  return <NaiveViz data={getNaiveVizData(datum)} />;
+  return <VegaChart spec={naiveVegaSpec} data={getNaiveVizData(datum)} />;
 }
 
 export { NaiveSequence, getNaiveVizData };
