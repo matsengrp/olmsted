@@ -68,13 +68,18 @@ const createAlignment = (naive_seq, tree) => {
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
+        const surpriseData = node.surprise_scores?.[String(i)];
         mutations.push({
           type: node.type,
           parent: node.parent,
           seq_id: seq_id,
           position: i,
           mut_from: naive_aa,
-          mut_to: aa
+          mut_to: aa,
+          surprise_mutsel: surpriseData?.surprise_mutsel ?? null,
+          surprise_neutral: surpriseData?.surprise_neutral ?? null,
+          selection_contribution: surpriseData?.selection_contribution ?? null,
+          region: surpriseData?.region ?? null
         });
       }
     }

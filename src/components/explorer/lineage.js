@@ -77,7 +77,8 @@ class Lineage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      vegaViewReady: false
+      vegaViewReady: false,
+      colorBySurprise: false
     };
     this.vegaViewRef = null;
   }
@@ -125,6 +126,10 @@ class Lineage extends React.Component {
   handleMutationBordersChange = (event) => {
     const { updateLineageShowBorders } = this.props;
     updateLineageShowBorders(event.target.checked);
+  };
+
+  handleColorBySurpriseChange = (event) => {
+    this.setState({ colorBySurprise: event.target.checked });
   };
 
   handleLineageChainChange = (event) => {
@@ -317,7 +322,7 @@ class Lineage extends React.Component {
                 <h3>Lineage</h3>
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
-                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.colorBySurprise ? "surprise" : "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
                     onNewView={(view) => {
                       this.vegaViewRef = view;
                       if (!this.state.vegaViewReady) {
@@ -330,7 +335,10 @@ class Lineage extends React.Component {
                       cdr_bounds: cdrBounds,
                       source_0: lineageData.lineage_alignment
                     }}
-                    spec={seqAlignSpec(lineageData, { showMutationBorders })}
+                    spec={seqAlignSpec(lineageData, {
+                      showMutationBorders,
+                      colorBySurprise: this.state.colorBySurprise
+                    })}
                   />
                 </div>
                 <div style={{ marginTop: 10 }}>
@@ -352,6 +360,16 @@ class Lineage extends React.Component {
                   style={{ marginRight: "6px" }}
                 />
                 Show mutation borders
+              </label>
+              <label htmlFor="color-by-surprise" style={{ cursor: "pointer" }}>
+                <input
+                  id="color-by-surprise"
+                  type="checkbox"
+                  checked={this.state.colorBySurprise}
+                  onChange={this.handleColorBySurpriseChange}
+                  style={{ marginRight: "6px" }}
+                />
+                Color by surprise score
               </label>
               <label htmlFor="show-entire-lineage" style={{ cursor: "pointer" }}>
                 <input

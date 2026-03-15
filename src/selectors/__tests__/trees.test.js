@@ -94,6 +94,45 @@ describe("computeTreeData", () => {
     expect(mutAtPos3.mut_from).toBe("L");
     expect(mutAtPos3.mut_to).toBe("I");
   });
+
+  it("mutation records have null surprise fields when nodes lack surprise_scores", () => {
+    const result = computeTreeData(mockTree);
+    const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
+    const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
+    expect(mutAtPos3.surprise_mutsel).toBeNull();
+    expect(mutAtPos3.surprise_neutral).toBeNull();
+    expect(mutAtPos3.selection_contribution).toBeNull();
+    expect(mutAtPos3.region).toBeNull();
+  });
+
+  it("mutation records include surprise fields when nodes have surprise_scores", () => {
+    const treeWithSurprise = {
+      ...mockTree,
+      nodes: mockTree.nodes.map((node) => {
+        if (node.sequence_id === "leaf-1") {
+          return {
+            ...node,
+            surprise_scores: {
+              3: {
+                surprise_mutsel: 7.2,
+                surprise_neutral: 3.1,
+                selection_contribution: 4.1,
+                region: "CDR2"
+              }
+            }
+          };
+        }
+        return node;
+      })
+    };
+    const result = computeTreeData(treeWithSurprise);
+    const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
+    const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
+    expect(mutAtPos3.surprise_mutsel).toBe(7.2);
+    expect(mutAtPos3.surprise_neutral).toBe(3.1);
+    expect(mutAtPos3.selection_contribution).toBe(4.1);
+    expect(mutAtPos3.region).toBe("CDR2");
+  });
 });
 
 describe("computeLineageDataWithOptions", () => {

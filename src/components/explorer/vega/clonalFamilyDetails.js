@@ -1071,6 +1071,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
+      // Toggle to color mutations by surprise score
+      {
+        name: "color_by_surprise",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Color by surprise score"
+        })
+      },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
         name: "show_controls",
@@ -2273,13 +2282,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         test: 'datum["position"] === null || isNaN(datum["position"])',
                         value: null
                       },
+                      {
+                        test: "color_by_surprise && datum.surprise_mutsel !== null",
+                        scale: "surprise_color",
+                        field: "surprise_mutsel"
+                      },
                       { scale: "aa_color", field: "mut_to" }
                     ],
                     stroke: { signal: "show_mutation_borders ? 'black' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                        'color_by_surprise && datum.surprise_mutsel !== null ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": format(datum["surprise_mutsel"], ".1f"), "selection_contribution": format(datum["selection_contribution"], ".1f"), "region": \'\'+datum["region"]} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {
@@ -2551,6 +2565,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         type: "ordinal",
         domain: AMINO_ACID_DOMAIN,
         range: AMINO_ACID_RANGE
+      },
+      {
+        name: "surprise_color",
+        type: "linear",
+        domain: [0, 15],
+        range: { scheme: "oranges" },
+        clamp: true
       }
     ],
     // LEGENDS
@@ -2563,10 +2584,22 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         title: "AA color",
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && !color_by_surprise ? 1 : 0" } }
           },
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }
+          }
+        }
+      },
+      {
+        orient: "right",
+        direction: "vertical",
+        fill: "surprise_color",
+        title: "Surprise score",
+        type: "gradient",
+        encode: {
+          legend: {
+            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
           }
         }
       }
@@ -2575,7 +2608,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false } = options;
+  const { showMutationBorders = false, colorBySurprise = false } = options;
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -2662,6 +2695,11 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "show_mutation_borders",
         value: showMutationBorders
+      },
+      // Toggle to color mutations by surprise score - controlled via React state
+      {
+        name: "color_by_surprise",
+        value: colorBySurprise
       }
     ],
     marks: [
@@ -2747,13 +2785,18 @@ const seqAlignSpec = (family, options = {}) => {
                 test: 'datum["position"] === null || isNaN(datum["position"])',
                 value: null
               },
+              {
+                test: "color_by_surprise && datum.surprise_mutsel !== null",
+                scale: "surprise_color",
+                field: "surprise_mutsel"
+              },
               { scale: "aa_color", field: "mut_to" }
             ],
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
               signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                'color_by_surprise && datum.surprise_mutsel !== null ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": format(datum["surprise_mutsel"], ".1f"), "selection_contribution": format(datum["selection_contribution"], ".1f"), "region": \'\'+datum["region"]} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
@@ -2836,6 +2879,13 @@ const seqAlignSpec = (family, options = {}) => {
         type: "ordinal",
         domain: AMINO_ACID_DOMAIN,
         range: AMINO_ACID_RANGE
+      },
+      {
+        name: "surprise_color",
+        type: "linear",
+        domain: [0, 15],
+        range: { scheme: "oranges" },
+        clamp: true
       }
     ],
     axes: [
