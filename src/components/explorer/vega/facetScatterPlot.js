@@ -317,7 +317,8 @@ const createControlSignals = () => [
         },
         // Calculate new ratio based on drag distance relative to window height
         // Round to 0.05 increments for cleaner values
-        update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+        update:
+          "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
       },
       {
         events: {
@@ -328,7 +329,8 @@ const createControlSignals = () => [
           ]
         },
         // Round to 0.05 increments for cleaner values
-        update: "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+        update:
+          "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
       }
     ]
   },
@@ -502,7 +504,8 @@ const createZoomPanSignals = () => [
         // Scroll to zoom when focused and in zoom mode
         // Don't consume - let React handle scroll prevention based on focus state
         events: { type: "wheel" },
-        update: "viz_focused && interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.1, 10) : zoom_level"
+        update:
+          "viz_focused && interaction_mode === 'zoom' ? clamp(zoom_level * pow(1.001, -event.deltaY), 0.1, 10) : zoom_level"
       },
       {
         // Doubleclick to reset zoom/pan (when in zoom mode)
@@ -594,11 +597,13 @@ const createZoomPanSignals = () => [
   },
   {
     name: "x_domain_zoomed",
-    update: "[x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_x), x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_x)]"
+    update:
+      "[x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_x), x_domain_raw[0] + (x_domain_raw[1] - x_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_x)]"
   },
   {
     name: "y_domain_zoomed",
-    update: "[y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_y), y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_y)]"
+    update:
+      "[y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 - 0.5/zoom_level + pan_y), y_domain_raw[0] + (y_domain_raw[1] - y_domain_raw[0]) * (0.5 + 0.5/zoom_level + pan_y)]"
   },
   // Signal to track if zoom/pan is active (different from default state)
   {
@@ -608,7 +613,12 @@ const createZoomPanSignals = () => [
 ];
 
 // Helper function to create all signals
-const createSignals = () => [...createLayoutSignals(), ...createSelectionSignals(), ...createControlSignals(), ...createZoomPanSignals()];
+const createSignals = () => [
+  ...createLayoutSignals(),
+  ...createSelectionSignals(),
+  ...createControlSignals(),
+  ...createZoomPanSignals()
+];
 
 // Helper function to create scales configuration
 const createScales = () => [
@@ -821,7 +831,7 @@ const createBrushSignals = () => [
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"']
         },
         update: "interaction_mode === 'select' ? [x(cell), x(cell)] : brush_x"
       },
@@ -834,7 +844,7 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"']
             },
             { source: "window", type: "mouseup" }
           ]
@@ -857,7 +867,7 @@ const createBrushSignals = () => [
         events: {
           source: "scope",
           type: "mousedown",
-          filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+          filter: ['!event.item || event.item.mark.name !== "brush_brush"']
         },
         update: "interaction_mode === 'select' ? [y(cell), y(cell)] : brush_y"
       },
@@ -870,7 +880,7 @@ const createBrushSignals = () => [
             {
               source: "scope",
               type: "mousedown",
-              filter: ['!event.item || event.item.mark.name !== "brush_brush"', "inScope(event.item)"]
+              filter: ['!event.item || event.item.mark.name !== "brush_brush"']
             },
             { source: "window", type: "mouseup" }
           ]
@@ -1326,6 +1336,7 @@ const createSymbolEncoding = () => ({
       "{" +
       "'Clone ID': datum.clone_id, " +
       "'Dataset': datum.dataset_name || '', " +
+      "'Sample': datum.sample ? datum.sample.sample_id : '', " +
       "'Subject': datum.subject_id, " +
       "'Locus': datum.sample ? datum.sample.locus : '', " +
       "'Unique Sequences': datum.unique_seqs_count, " +
@@ -1434,7 +1445,7 @@ const createMarks = () => [...createHeaderMarks(), createCellMark(), createBotto
 // Main function that composes the complete spec
 const facetClonalFamiliesVizSpec = () => {
   return {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
+    $schema: "https://vega.github.io/schema/vega/v6.json",
     autosize: { type: "pad", resize: true },
     data: createDataConfiguration(),
     signals: createSignals(),

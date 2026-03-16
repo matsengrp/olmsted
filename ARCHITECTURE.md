@@ -20,7 +20,7 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
 
 - **React 18** - UI component framework with class components and decorators
 - **Redux** - State management with thunk middleware for async operations
-- **Vega 5** - Declarative visualization grammar for interactive plots
+- **Vega 6** - Declarative visualization grammar for interactive plots
 - **Dexie (IndexedDB)** - Client-side persistent storage for large datasets
 - **D3** - Data manipulation and supplementary visualizations
 
@@ -397,7 +397,7 @@ The following components are connected to the Redux store:
 
 ### Vega Integration
 
-Olmsted uses Vega 5 for declarative, interactive visualizations. Vega specs are defined as JavaScript objects and rendered via `vega-embed`.
+Olmsted uses Vega 6 for declarative, interactive visualizations. Vega specs are defined as JavaScript objects and rendered via the `VegaChart` wrapper component (`src/components/util/VegaChart.js`), which bridges the react-vega v8 API.
 
 #### Key Visualization Components
 
@@ -424,6 +424,17 @@ Olmsted uses Vega 5 for declarative, interactive visualizations. Vega specs are 
 - **Sequence alignment**: Position-by-position view with mutation highlighting
 - **Node tooltips**: Display LBI, LBR, multiplicity, and other metrics
 - **Interactive selection**: Click nodes to view ancestral sequences
+
+#### VegaChart Wrapper (`src/components/util/VegaChart.js`)
+
+The `VegaChart` component wraps react-vega v8's `VegaEmbed` and provides:
+
+- **Data merging**: Injects named datasets into the Vega spec before initial compilation (matching the react-vega v4 API that the rest of the codebase was built around)
+- **View API data updates**: After the initial embed, data changes are applied via Vega's changeset API (`view.change()`) rather than re-embedding, which preserves zoom/pan/brush state
+- **Signal listeners**: Registers listeners via `view.addSignalListener()` (react-vega v8 removed the `onSignalXxx` prop pattern)
+- **View access**: Exposes the Vega View instance through an `onNewView` callback
+
+All visualization components (scatterplot, tree, lineage, naive) use `VegaChart` as their rendering layer.
 
 ### VegaViewContext
 
@@ -488,13 +499,14 @@ The `VegaViewContext` (src/components/config/VegaViewContext.js) provides React 
 
 ### Visualization Components
 
-| File                                     | Purpose                          |
-| ---------------------------------------- | -------------------------------- |
-| `src/components/explorer/scatterplot.js` | Scatterplot wrapper component    |
-| `src/components/explorer/tree.js`        | Tree visualization wrapper       |
-| `src/components/explorer/lineage.js`     | Ancestral sequence visualization |
-| `src/components/explorer/table.js`       | Clonal families table            |
-| `src/components/explorer/FilterPanel.js` | High-level filter controls       |
+| File                                     | Purpose                                          |
+| ---------------------------------------- | ------------------------------------------------ |
+| `src/components/util/VegaChart.js`       | Vega wrapper: data merging, signal listeners, View API updates |
+| `src/components/explorer/scatterplot.js` | Scatterplot wrapper component                    |
+| `src/components/explorer/tree.js`        | Tree visualization wrapper                       |
+| `src/components/explorer/lineage.js`     | Ancestral sequence visualization                 |
+| `src/components/explorer/table.js`       | Clonal families table                            |
+| `src/components/explorer/FilterPanel.js` | High-level filter controls                       |
 
 ### Vega Specifications
 
@@ -549,4 +561,4 @@ This lazy loading approach enables handling datasets with thousands of clonal fa
 
 ---
 
-_Last updated: 2026-01-23_
+_Last updated: 2026-03-13_

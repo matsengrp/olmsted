@@ -41,5 +41,5 @@ const applyCharonToApp = (app) => {
 };
 
 module.exports = {
-  applyCharonToApp,
+  applyCharonToApp
 };

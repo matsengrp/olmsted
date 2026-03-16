@@ -168,7 +168,6 @@ class FileProcessor {
       return v.toString(16);
     });
   }
-
 }
 
 export default FileProcessor;

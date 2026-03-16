@@ -85,9 +85,7 @@ class CollapseHelpTitle extends React.Component {
           >
             <FiX size={18} />
           </button>
-          <div style={{ paddingRight: "30px" }}>
-            {helpText}
-          </div>
+          <div style={{ paddingRight: "30px" }}>{helpText}</div>
         </div>
       </Collapsible>
     );

@@ -225,10 +225,14 @@ describe("applyGlobalSettings", () => {
       clearAllFilters: jest.fn(() => ({ type: "CLEAR_ALL_FILTERS" })),
       updateSelectedChain: jest.fn((chain) => ({ type: "UPDATE_CHAIN", chain }))
     };
-    applyGlobalSettings(dispatch, {
-      filters: { "sample.locus": ["IGH"] },
-      selectedChain: "light"
-    }, actions);
+    applyGlobalSettings(
+      dispatch,
+      {
+        filters: { "sample.locus": ["IGH"] },
+        selectedChain: "light"
+      },
+      actions
+    );
     expect(dispatch).toHaveBeenCalledTimes(3); // clearAll + setFilter + updateChain
   });
 });
@@ -245,11 +249,15 @@ describe("applyLineageSettings", () => {
       updateLineageShowBorders: jest.fn((v) => ({ type: "T", v })),
       updateLineageChain: jest.fn((v) => ({ type: "T", v }))
     };
-    applyLineageSettings(dispatch, {
-      showEntire: true,
-      showBorders: true,
-      chain: "light"
-    }, actions);
+    applyLineageSettings(
+      dispatch,
+      {
+        showEntire: true,
+        showBorders: true,
+        chain: "light"
+      },
+      actions
+    );
     expect(dispatch).toHaveBeenCalledTimes(3);
   });
 });
@@ -276,10 +284,14 @@ describe("createConfig", () => {
   });
 
   it("includes optional description and datasetId", () => {
-    const config = createConfig("C", {}, {
-      description: "desc",
-      datasetId: "d1"
-    });
+    const config = createConfig(
+      "C",
+      {},
+      {
+        description: "desc",
+        datasetId: "d1"
+      }
+    );
     expect(config.description).toBe("desc");
     expect(config.datasetId).toBe("d1");
   });

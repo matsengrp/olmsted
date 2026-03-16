@@ -392,11 +392,7 @@ class ConfigModal extends React.Component {
         );
 
       case "save":
-        return (
-          <ConfigSaveForm
-            onSave={() => this.setState({ activeTab: "saved" })}
-          />
-        );
+        return <ConfigSaveForm onSave={() => this.setState({ activeTab: "saved" })} />;
 
       case "importExport":
         return (
@@ -426,7 +422,8 @@ class ConfigModal extends React.Component {
             <div>
               <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>Export Configuration</h4>
               <p style={{ margin: "0 0 12px 0", color: "#666", fontSize: "13px" }}>
-                To export a saved configuration, go to the &quot;Saved Configs&quot; tab and click the export button next to the config you want to export.
+                To export a saved configuration, go to the &quot;Saved Configs&quot; tab and click the export button
+                next to the config you want to export.
               </p>
             </div>
           </div>
@@ -501,16 +498,16 @@ class ConfigModal extends React.Component {
                 size={18}
                 style={helpIconStyle}
                 onClick={this.toggleHelp}
-                onMouseEnter={(e) => { e.target.style.color = "#4a90a4"; }}
-                onMouseLeave={(e) => { e.target.style.color = showHelp ? "#4a90a4" : "#999"; }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = "#4a90a4";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = showHelp ? "#4a90a4" : "#999";
+                }}
                 title="Click for help"
               />
             </h2>
-            <button
-              style={closeButtonStyle}
-              onClick={this.handleClose}
-              aria-label="Close modal"
-            >
+            <button style={closeButtonStyle} onClick={this.handleClose} aria-label="Close modal">
               &times;
             </button>
           </div>
@@ -529,24 +526,50 @@ class ConfigModal extends React.Component {
               </button>
               <strong>Configuration Management</strong>
               <p style={{ margin: "8px 0 0 0" }}>
-                Save and restore your visualization settings to quickly switch between different views or share setups with collaborators.
+                Save and restore your visualization settings to quickly switch between different views or share setups
+                with collaborators.
               </p>
-              <p style={{ margin: "8px 0 0 0" }}><strong>What gets saved:</strong></p>
+              <p style={{ margin: "8px 0 0 0" }}>
+                <strong>What gets saved:</strong>
+              </p>
               <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
-                <li><strong>Scatterplot:</strong> X/Y axes, color/shape/size mappings, faceting, symbol size &amp; opacity, zoom/pan state</li>
-                <li><strong>Tree view:</strong> Branch coloring, leaf sizing, display options, alignment zoom/pan</li>
-                <li><strong>Lineage:</strong> Show entire lineage, mutation borders, chain selection</li>
-                <li><strong>Filters:</strong> Active filter selections (locus, subject, sample, V/J genes, dataset)</li>
+                <li>
+                  <strong>Scatterplot:</strong> X/Y axes, color/shape/size mappings, faceting, symbol size &amp;
+                  opacity, zoom/pan state
+                </li>
+                <li>
+                  <strong>Tree view:</strong> Branch coloring, leaf sizing, display options, alignment zoom/pan
+                </li>
+                <li>
+                  <strong>Lineage:</strong> Show entire lineage, mutation borders, chain selection
+                </li>
+                <li>
+                  <strong>Filters:</strong> Active filter selections (locus, subject, sample, V/J genes, dataset)
+                </li>
               </ul>
-              <p style={{ margin: "8px 0 0 0" }}><strong>How to use:</strong></p>
+              <p style={{ margin: "8px 0 0 0" }}>
+                <strong>How to use:</strong>
+              </p>
               <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
-                <li><strong>Saved Configs:</strong> Click the checkmark to apply a config. The green refresh button updates the active config with current settings</li>
-                <li><strong>Save Current:</strong> Give your current view a name and optional description to save it</li>
-                <li><strong>Import/Export:</strong> Download configs as JSON files to share or backup. Import previously exported configs</li>
-                <li><strong>Reset to Defaults:</strong> Restore all visualization settings to their original application defaults</li>
+                <li>
+                  <strong>Saved Configs:</strong> Click the checkmark to apply a config. The green refresh button
+                  updates the active config with current settings
+                </li>
+                <li>
+                  <strong>Save Current:</strong> Give your current view a name and optional description to save it
+                </li>
+                <li>
+                  <strong>Import/Export:</strong> Download configs as JSON files to share or backup. Import previously
+                  exported configs
+                </li>
+                <li>
+                  <strong>Reset to Defaults:</strong> Restore all visualization settings to their original application
+                  defaults
+                </li>
               </ul>
               <p style={{ margin: "8px 0 0 0", fontStyle: "italic" }}>
-                Tip: Configurations are stored in your browser and persist across sessions. Export important configs as JSON files for backup.
+                Tip: Configurations are stored in your browser and persist across sessions. Export important configs as
+                JSON files for backup.
               </p>
             </div>
           )}

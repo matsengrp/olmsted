@@ -67,7 +67,9 @@ class Root extends React.Component {
   handleDontAskAgain = () => {
     localStorage.setItem("olmsted_dont_ask_clear_db", "true");
     window.removeEventListener("beforeunload", this.handleBeforeUnload);
-    alert("You will no longer be prompted when closing the browser. Your data will be preserved until you manually clear it.");
+    alert(
+      "You will no longer be prompted when closing the browser. Your data will be preserved until you manually clear it."
+    );
   };
 
   render() {

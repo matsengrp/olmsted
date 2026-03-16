@@ -14,14 +14,16 @@ function IncompleteDataWarning({ datum, data_type }) {
         color: "#721c24"
       }}
     >
-      <h3 style={{
-        margin: "0 0 12px 0",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        fontSize: "16px",
-        fontWeight: "bold"
-      }}>
+      <h3
+        style={{
+          margin: "0 0 12px 0",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontSize: "16px",
+          fontWeight: "bold"
+        }}
+      >
         <span style={{ fontSize: "20px" }}>✖</span>
         Loading error: Insufficient data to display {data_type}
         {id_of_broken_data && ": " + id_of_broken_data}

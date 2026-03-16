@@ -46,9 +46,7 @@ export const scatterplotSourceData = [
   }
 ];
 
-export const scatterplotDatasetsData = [
-  { dataset_id: "dataset-1", name: "Test Dataset" }
-];
+export const scatterplotDatasetsData = [{ dataset_id: "dataset-1", name: "Test Dataset" }];
 
 // --- clonalFamilyDetails.js: tree + alignment ---
 
@@ -91,9 +89,7 @@ export const treeNodesData = [
     multiplicity: 1,
     cluster_multiplicity: 1,
     affinity: 0.6,
-    timepoint_multiplicities: [
-      { timepoint_id: "day-0", multiplicity: 1 }
-    ]
+    timepoint_multiplicities: [{ timepoint_id: "day-0", multiplicity: 1 }]
   }
 ];
 
@@ -114,14 +110,7 @@ export const naiveGeneRegionData = [
   { region: "Sequence", start: 0, end: 350, gene: "IGHV1-2*02", family: "fam-1" }
 ];
 
-export const cdrBoundsData = [
-  { x: 25 },
-  { x: 33 },
-  { x: 50 },
-  { x: 58 },
-  { x: 96 },
-  { x: 110 }
-];
+export const cdrBoundsData = [{ x: 25 }, { x: 33 }, { x: 50 }, { x: 58 }, { x: 96 }, { x: 110 }];
 
 // leaves_count_incl_naive is passed as a dataset with a single record
 // The signal reads: data("leaves_count_incl_naive")[0].data

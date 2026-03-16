@@ -214,7 +214,9 @@ class ResizableVirtualTable extends ResizableTable {
                     }}
                   >
                     {name}
-                    {isSortable && isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
+                    {isSortable && isCurrentSort && (
+                      <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>
+                    )}
                   </span>
                   {/* Resize handle */}
                   <div
@@ -285,7 +287,8 @@ class ResizableVirtualTable extends ResizableTable {
 }))
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap, starredFamilies } = this.props;
+    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap, starredFamilies } =
+      this.props;
     return (
       <ResizableVirtualTable
         data={data}
@@ -365,7 +368,7 @@ class StarCell extends React.Component {
           size={16}
           style={{
             fill: isStarred ? "#ffc107" : "none",
-            color: isStarred ? "#ffc107" : (hovered ? "#ffc107" : "#999"),
+            color: isStarred ? "#ffc107" : hovered ? "#ffc107" : "#999",
             transition: "all 0.15s ease"
           }}
         />
@@ -373,7 +376,6 @@ class StarCell extends React.Component {
     );
   }
 }
-
 
 @connect(
   (_store) => ({}),
@@ -482,7 +484,15 @@ class ClonalFamiliesTable extends React.Component {
   }
 
   render() {
-    const { brushedClonalFamilies, selectedFamily, pagination, starredFamilies, starAllFamilies, unstarAllFamilies, clearStarredFamilies } = this.props;
+    const {
+      brushedClonalFamilies,
+      selectedFamily,
+      pagination,
+      starredFamilies,
+      starAllFamilies,
+      unstarAllFamilies,
+      clearStarredFamilies
+    } = this.props;
     const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst, showOnlyStarred } = this.state;
 
     // Filter to only starred if enabled
@@ -494,10 +504,7 @@ class ClonalFamiliesTable extends React.Component {
     const visibleClonalFamilies = sortStarredFirst
       ? _.orderBy(
           filteredFamilies,
-          [
-            (family) => (starredFamilies.includes(family.ident) ? 1 : 0),
-            pagination.order_by
-          ],
+          [(family) => (starredFamilies.includes(family.ident) ? 1 : 0), pagination.order_by],
           ["desc", pagination.desc ? "desc" : "asc"]
         )
       : _.orderBy(filteredFamilies, [pagination.order_by], [pagination.desc ? "desc" : "asc"]);
@@ -545,128 +552,129 @@ class ClonalFamiliesTable extends React.Component {
       marginRight: "8px"
     };
 
-    const footerAction = visibleClonalFamilies.length > 0 || showOnlyStarred ? (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            fontSize: "11px",
-            cursor: "pointer",
-            marginRight: "8px"
-          }}
-          title="When enabled, starred families appear at the top of the table"
-        >
-          <input
-            type="checkbox"
-            checked={sortStarredFirst}
-            onChange={this.toggleSortStarredFirst}
-            style={{ cursor: "pointer" }}
-          />
-          Starred first
-        </label>
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            fontSize: "11px",
-            cursor: "pointer",
-            marginRight: "8px"
-          }}
-          title="When enabled, only starred families are shown"
-        >
-          <input
-            type="checkbox"
-            checked={showOnlyStarred}
-            onChange={this.toggleShowOnlyStarred}
-            style={{ cursor: "pointer" }}
-          />
-          Only starred
-        </label>
-        <button
-          type="button"
-          onClick={() => starAllFamilies(visibleIdents)}
-          onMouseEnter={() => this.setState({ starAllHovered: true })}
-          onMouseLeave={() => this.setState({ starAllHovered: false })}
-          style={{
-            ...starButtonStyle,
-            background: starAllHovered ? "#fff8e1" : "none",
-            borderColor: starAllHovered ? "#ffc107" : "#ccc"
-          }}
-          title="Star all visible families"
-          disabled={allVisibleStarred || visibleClonalFamilies.length === 0}
-        >
-          <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
-          Star All
-        </button>
-        <button
-          type="button"
-          onClick={() => unstarAllFamilies(visibleIdents)}
-          onMouseEnter={() => this.setState({ unstarAllHovered: true })}
-          onMouseLeave={() => this.setState({ unstarAllHovered: false })}
-          style={{
-            ...starButtonStyle,
-            background: unstarAllHovered ? "#f5f5f5" : "none",
-            borderColor: unstarAllHovered ? "#999" : "#ccc"
-          }}
-          title="Unstar all visible families"
-          disabled={visibleStarredCount === 0}
-        >
-          <FiStar size={12} />
-          Unstar All
-        </button>
-        {starredFamilies.length > 0 && (
+    const footerAction =
+      visibleClonalFamilies.length > 0 || showOnlyStarred ? (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <label
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "11px",
+              cursor: "pointer",
+              marginRight: "8px"
+            }}
+            title="When enabled, starred families appear at the top of the table"
+          >
+            <input
+              type="checkbox"
+              checked={sortStarredFirst}
+              onChange={this.toggleSortStarredFirst}
+              style={{ cursor: "pointer" }}
+            />
+            Starred first
+          </label>
+          <label
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "11px",
+              cursor: "pointer",
+              marginRight: "8px"
+            }}
+            title="When enabled, only starred families are shown"
+          >
+            <input
+              type="checkbox"
+              checked={showOnlyStarred}
+              onChange={this.toggleShowOnlyStarred}
+              style={{ cursor: "pointer" }}
+            />
+            Only starred
+          </label>
           <button
             type="button"
-            onClick={() => clearStarredFamilies()}
-            onMouseEnter={() => this.setState({ clearStarsHovered: true })}
-            onMouseLeave={() => this.setState({ clearStarsHovered: false })}
+            onClick={() => starAllFamilies(visibleIdents)}
+            onMouseEnter={() => this.setState({ starAllHovered: true })}
+            onMouseLeave={() => this.setState({ starAllHovered: false })}
             style={{
               ...starButtonStyle,
-              background: clearStarsHovered ? "#ffebee" : "none",
-              borderColor: clearStarsHovered ? "#f44336" : "#ccc",
-              color: clearStarsHovered ? "#f44336" : "inherit"
+              background: starAllHovered ? "#fff8e1" : "none",
+              borderColor: starAllHovered ? "#ffc107" : "#ccc"
             }}
-            title={`Clear all ${starredFamilies.length} starred families`}
+            title="Star all visible families"
+            disabled={allVisibleStarred || visibleClonalFamilies.length === 0}
           >
-            Clear Stars ({starredFamilies.length})
+            <FiStar size={12} style={{ fill: "#ffc107", color: "#ffc107" }} />
+            Star All
           </button>
-        )}
-        <DownloadCSV
-          data={visibleClonalFamilies}
-          columns={csvColumns}
-          filename="clonal_families.csv"
-          label="Download Table as CSV"
-          compact
-        />
-      </div>
-    ) : null;
+          <button
+            type="button"
+            onClick={() => unstarAllFamilies(visibleIdents)}
+            onMouseEnter={() => this.setState({ unstarAllHovered: true })}
+            onMouseLeave={() => this.setState({ unstarAllHovered: false })}
+            style={{
+              ...starButtonStyle,
+              background: unstarAllHovered ? "#f5f5f5" : "none",
+              borderColor: unstarAllHovered ? "#999" : "#ccc"
+            }}
+            title="Unstar all visible families"
+            disabled={visibleStarredCount === 0}
+          >
+            <FiStar size={12} />
+            Unstar All
+          </button>
+          {starredFamilies.length > 0 && (
+            <button
+              type="button"
+              onClick={() => clearStarredFamilies()}
+              onMouseEnter={() => this.setState({ clearStarsHovered: true })}
+              onMouseLeave={() => this.setState({ clearStarsHovered: false })}
+              style={{
+                ...starButtonStyle,
+                background: clearStarsHovered ? "#ffebee" : "none",
+                borderColor: clearStarsHovered ? "#f44336" : "#ccc",
+                color: clearStarsHovered ? "#f44336" : "inherit"
+              }}
+              title={`Clear all ${starredFamilies.length} starred families`}
+            >
+              Clear Stars ({starredFamilies.length})
+            </button>
+          )}
+          <DownloadCSV
+            data={visibleClonalFamilies}
+            columns={csvColumns}
+            filename="clonal_families.csv"
+            label="Download Table as CSV"
+            compact
+          />
+        </div>
+      ) : null;
 
     // Column width map for this table
     const columnWidthMap = {
-      "Star": 50,
-      "Select": 60,
-      "Info": 60,
+      Star: 50,
+      Select: 60,
+      Info: 60,
       "Naive sequence": 260,
       "Family ID": 120,
       "Unique seqs": 100,
       "V gene": 80,
       "D gene": 80,
       "J gene": 80,
-      "Locus": 80,
-      "Chain": 60,
-      "Paired": 60,
+      Locus: 80,
+      Chain: 60,
+      Paired: 60,
       "Pair ID": 150,
       "Junction length": 100,
       "Mut freq": 80,
       "Seed run": 80,
-      "Subject": 100,
-      "Sample": 100,
-      "Timepoint": 100,
-      "Dataset": 120,
-      "Ident": 120
+      Subject: 100,
+      Sample: 100,
+      Timepoint: 100,
+      Dataset: 120,
+      Ident: 120
     };
 
     return (

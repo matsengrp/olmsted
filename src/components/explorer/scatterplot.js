@@ -1,15 +1,12 @@
 import { connect } from "react-redux";
 import React from "react";
-import Vega from "react-vega";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import VegaChart from "../util/VegaChart";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
-
-// Store the last clear_selection_trigger value to detect changes
-let lastClearTrigger = 0;
 
 // Clonal Families Viz
 // ===================
@@ -44,10 +41,8 @@ class ClonalFamiliesViz extends React.Component {
       vegaView: null,
       hideControls: false
     };
-    this.xField = "unique_seqs_count";
-    this.yField = "mean_mut_freq";
-    this.multiSelectMode = false;
     this.spec = facetClonalFamiliesVizSpec();
+    this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
     this.handleWindowClick = this.handleWindowClick.bind(this);
@@ -122,7 +117,7 @@ class ClonalFamiliesViz extends React.Component {
           )}
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
-            <Vega
+            <VegaChart
               onNewView={(view) => {
                 this.setState({ vegaView: view });
                 // Register view with context for config management
@@ -133,121 +128,77 @@ class ClonalFamiliesViz extends React.Component {
                 view.addSignalListener("viz_focused", (name, value) => {
                   this.isFocused = value;
                 });
-              }}
-              // TURN THESE ON TO DEBUG SIGNALS
-              // SEE https://github.com/matsengrp/olmsted/issues/65
-              // onSignalWidth={(...args) => {
-              //   let result = args.slice(1)[0]
-              //   console.log("width", result)
-              // }}
-              // onSignalHeight={(...args) => {
-              //   let result = args.slice(1)[0]
-              //   console.log("height", result)
-              // }}
-              // onSignalBrush_x={(...args) => {
-              //   let result = args.slice(1)[0]
-              //   console.log('brushx: ', result)
-              // }}
-              // onSignalBrush_y={(...args) => {
-              //   let result = args.slice(1)[0]
-              //   console.log('brushy: ', result)
-              // }}
-              onSignalPts_tuple={(...args) => {
-                const family = args.slice(1)[0];
-                if (family && family.ident) {
-                  // Second argument specifies that we would like to
-                  // include just this family in our brush selection
-                  // and therefore in the table since we have clicked it
+                // Signal listeners for user interactions
+                view.addSignalListener("pts_tuple", (name, family) => {
+                  if (family && family.ident) {
+                    selectFamily(family.ident, true);
+                  }
+                });
+                view.addSignalListener("mouseDown", (name, coords) => {
+                  if (coords) {
+                    updateSelectingStatus();
+                    this.mouseDown = true;
+                  }
+                });
+                view.addSignalListener("mouseUp", (name, coords) => {
+                  const wasMouseDown = this.mouseDown;
+                  if (this.mouseDown && coords) {
+                    updateSelectingStatus();
+                  }
+                  this.mouseDown = false;
 
-                  selectFamily(family.ident, true);
-                }
-              }}
-              onSignalMouseDown={(...args) => {
-                const coords = args.slice(1)[0];
-                // Must check to see if there are actual mouse coordinates
-                // here and in the mouseup signal handler just below because
-                // they are triggered with undefined upon rendering the viz
-                if (coords) {
-                  updateSelectingStatus();
-                  this.mouseDown = true;
-                }
-              }}
-              onSignalMouseUp={(...args) => {
-                const coords = args.slice(1)[0];
-                if (this.mouseDown && coords) {
-                  updateSelectingStatus();
-                }
-                this.mouseDown = false;
-              }}
-              onSignalXField={(...args) => {
-                const result = args.slice(1)[0];
-                this.xField = result;
-              }}
-              onSignalYField={(...args) => {
-                const result = args.slice(1)[0];
-                this.yField = result;
-              }}
-              onSignalClicked={(...args) => {
-                const datum = args.slice(1)[0];
-                if (datum && datum.ident) {
-                  selectFamily(datum.ident, true);
-                }
-              }}
-              onSignalFacet_by_signal={(...args) => {
-                const result = args.slice(1)[0];
-                updateFacet(result);
-              }}
-              onSignalBrush_x_field={(...args) => {
-                const result = args.slice(1)[0];
-                updateBrushSelection("x", this.xField, result);
-              }}
-              onSignalBrush_y_field={(...args) => {
-                const result = args.slice(1)[0];
-                updateBrushSelection("y", this.yField, result);
-              }}
-              onSignalBrush_selection={(...args) => {
-                const brushData = args.slice(1)[0];
-                if (brushData && brushData.intervals) {
-                  // Update brush selection with both X and Y ranges
-                  if (brushData.intervals.x && brushData.intervals.x.extent) {
-                    updateBrushSelection("x", brushData.intervals.x.field, brushData.intervals.x.extent);
+                  // Only poll brush values when the user was interacting with
+                  // the plot (mouseDown was set). Skip for clicks on Vega
+                  // binding controls or other UI elements.
+                  if (!wasMouseDown) return;
+
+                  // Vega 6 workaround: addSignalListener doesn't fire for
+                  // signal-driven push:"outer" updates from nested groups.
+                  // Poll brush signal values after mouseUp instead.
+                  // Read xField/yField directly from view rather than cached
+                  // this.xField/this.yField, which can be stale after re-embeds.
+                  const brushXField = view.signal("brush_x_field");
+                  const brushYField = view.signal("brush_y_field");
+                  const currentXField = view.signal("xField");
+                  const currentYField = view.signal("yField");
+                  if (brushXField || brushYField) {
+                    if (brushXField) {
+                      updateBrushSelection("x", currentXField, brushXField);
+                    }
+                    if (brushYField) {
+                      updateBrushSelection("y", currentYField, brushYField);
+                    }
+                    const brushedFacet = view.signal("brushed_facet_value");
+                    if (brushedFacet && brushedFacet[0] && brushedFacet[0] !== "<none>") {
+                      filterBrushSelection(brushedFacet[0], brushedFacet[1]);
+                    }
+                  } else {
+                    // Brush was cleared (clicked off) — revert to showing all families
+                    clearBrushSelection();
                   }
-                  if (brushData.intervals.y && brushData.intervals.y.extent) {
-                    updateBrushSelection("y", brushData.intervals.y.field, brushData.intervals.y.extent);
+                });
+                view.addSignalListener("clicked", (name, datum) => {
+                  if (datum && datum.ident) {
+                    selectFamily(datum.ident, true);
                   }
-                  // Handle facet filtering if present
-                  if (brushData.facetKey && brushData.facetValue && brushData.facetKey !== "<none>") {
-                    filterBrushSelection(brushData.facetKey, brushData.facetValue);
+                });
+                view.addSignalListener("facet_col_signal", (name, result) => {
+                  updateFacet(result);
+                });
+                // Note: brush_x_field, brush_y_field, brush_selection, and
+                // brushed_facet_value are handled via polling in the mouseUp
+                // handler above. In Vega 6, addSignalListener doesn't fire for
+                // signal-chain push:"outer" updates from nested group marks.
+                view.addSignalListener("clear_selection_trigger", (name, trigger) => {
+                  if (trigger > this.lastClearTrigger) {
+                    this.lastClearTrigger = trigger;
+                    clearBrushSelection();
                   }
-                }
+                });
               }}
-              onSignalBrushed_facet_value={(...args) => {
-                const keyVal = args.slice(1)[0];
-                if (keyVal) {
-                  filterBrushSelection(keyVal[0], keyVal[1]);
-                }
-              }}
-              onSignalClear_selection_trigger={(...args) => {
-                const trigger = args.slice(1)[0];
-                // Only clear if the trigger value has changed (button was clicked)
-                if (trigger > lastClearTrigger) {
-                  lastClearTrigger = trigger;
-                  clearBrushSelection();
-                }
-              }}
-              onSignalMulti_select_mode={(...args) => {
-                const isMultiSelect = args.slice(1)[0];
-                // Store multi-select mode state on the component
-                this.multiSelectMode = isMultiSelect;
-              }}
-              onParseError={(...args) => console.error("parse error:", args)}
-              debug
-              // logLevel={vega.Debug} // https://vega.github.io/vega/docs/api/view/#view_logLevel
+              onError={(...args) => console.error("Vega error:", args)}
               data={{
                 source: availableClonalFamilies,
-                // Here we create a separate dataset only containing the id of the
-                // selected family so as to check quickly for this id within the
-                // viz to highlight the selected family.
                 selected: [{ ident: selectedFamily ? selectedFamily.ident : "none" }],
                 locus: [{ locus: locus }],
                 datasets: datasets
@@ -274,8 +225,12 @@ class ClonalFamiliesViz extends React.Component {
                   transition: "all 0.15s ease"
                 }}
                 title={hideControls ? "Show plot controls" : "Hide plot controls"}
-                onMouseEnter={(e) => { e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5"; }}
-                onMouseLeave={(e) => { e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff"; }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = hideControls ? "#bbdefb" : "#f5f5f5";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = hideControls ? "#e3f2fd" : "#fff";
+                }}
               >
                 {hideControls ? <FiEye size={14} /> : <FiEyeOff size={14} />}
                 <span>{hideControls ? "Show Plot Settings" : "Hide Plot Settings"}</span>

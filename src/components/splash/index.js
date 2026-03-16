@@ -70,7 +70,9 @@ class Splash extends React.Component {
   render() {
     const { errorMessage, availableDatasets, dispatch } = this.props;
     return (
-      <div style={{ justifyContent: "space-around", display: "flex", marginRight: 50, paddingTop: NAV_BAR_HEIGHT + 20 }}>
+      <div
+        style={{ justifyContent: "space-around", display: "flex", marginRight: 50, paddingTop: NAV_BAR_HEIGHT + 20 }}
+      >
         <div className="static container">
           <div style={{ marginBottom: 35 }}>
             <Flex justifyContent="center">
@@ -119,11 +121,9 @@ class Splash extends React.Component {
               lineHeight: 1.42857143
             }}
           >
-            To get started, upload your dataset below and click &quot;Explore!&quot; to visualize your data.
-            Click the{" "}
-            <FiHelpCircle style={{ verticalAlign: "middle", marginBottom: "2px" }} />
-            {" "}icons next to sectional headers for detailed usage descriptions.
-            For information on data formats and usage, see the{" "}
+            To get started, upload your dataset below and click &quot;Explore!&quot; to visualize your data. Click the{" "}
+            <FiHelpCircle style={{ verticalAlign: "middle", marginBottom: "2px" }} /> icons next to sectional headers
+            for detailed usage descriptions. For information on data formats and usage, see the{" "}
             <a
               href="https://github.com/matsengrp/olmsted#readme"
               target="_blank"
@@ -131,8 +131,8 @@ class Splash extends React.Component {
               style={{ color: "#05337f", textDecoration: "underline" }}
             >
               Olmsted README
-            </a>
-            {" "}and{" "}
+            </a>{" "}
+            and{" "}
             <a
               href="https://github.com/matsengrp/olmsted-cli#readme"
               target="_blank"
@@ -141,7 +141,7 @@ class Splash extends React.Component {
             >
               olmsted-cli README
             </a>
-          .
+            .
           </p>
 
           {/* Dataset Manager Section */}
@@ -151,8 +151,8 @@ class Splash extends React.Component {
               helpText={
                 <div>
                   The Dataset Manager allows you to upload, view, and delete datasets stored in your browser&apos;s
-                  local storage (IndexedDB). The typical workflow is to upload one or more datasets, select them
-                  for loading, and click &quot;Explore!&quot; to visualize clonal families in the interactive explorer.
+                  local storage (IndexedDB). The typical workflow is to upload one or more datasets, select them for
+                  loading, and click &quot;Explore!&quot; to visualize clonal families in the interactive explorer.
                   Datasets persist between browser sessions until you manually delete them.
                   <br />
                   <br />
@@ -160,15 +160,15 @@ class Splash extends React.Component {
                   <a href="https://github.com/matsengrp/olmsted-cli" target="_blank" rel="noopener noreferrer">
                     olmsted-cli
                   </a>
-                  . This tool converts standard AIRR and PCP formats into Olmsted-compatible JSON files.
-                  Raw AIRR or other formats cannot be uploaded directly.
+                  . This tool converts standard AIRR and PCP formats into Olmsted-compatible JSON files. Raw AIRR or
+                  other formats cannot be uploaded directly.
                   <br />
                   <br />
                   <strong>Uploading Datasets:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
-                      <strong>Drag and Drop:</strong> Drag one or more Olmsted JSON files onto the upload area below
-                      the table. Files will be processed and added to your local database automatically.
+                      <strong>Drag and Drop:</strong> Drag one or more Olmsted JSON files onto the upload area below the
+                      table. Files will be processed and added to your local database automatically.
                     </li>
                     <li>
                       <strong>Upload Button:</strong> Click the &quot;Upload Data&quot; button to open a file browser
@@ -178,14 +178,15 @@ class Splash extends React.Component {
                   <strong>Managing Datasets:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
-                      <strong>Loading datasets:</strong> Click the row to load or unload a dataset. The Load column indicates the status of the dataset.
+                      <strong>Loading datasets:</strong> Click the row to load or unload a dataset. The Load column
+                      indicates the status of the dataset.
                     </li>
                     <li>
                       <strong>Info button:</strong> Click the info button to view all dataset metadata in a modal.
                     </li>
                     <li>
-                      <strong>Deleting datasets:</strong> Click the delete button in the Actions column to
-                      remove a dataset from your local storage. This action cannot be undone.
+                      <strong>Deleting datasets:</strong> Click the delete button in the Actions column to remove a
+                      dataset from your local storage. This action cannot be undone.
                     </li>
                     <li>
                       <strong>Delete All:</strong> Use the &quot;Delete All Datasets&quot; button to remove all datasets
@@ -195,10 +196,12 @@ class Splash extends React.Component {
                   <strong>Table Controls:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>
-                      <strong>Sorting:</strong> Click column headers to sort. Click again to toggle ascending/descending order.
+                      <strong>Sorting:</strong> Click column headers to sort. Click again to toggle ascending/descending
+                      order.
                     </li>
                     <li>
-                      <strong>Resizing columns:</strong> Drag column borders to resize. Double-click to auto-fit content.
+                      <strong>Resizing columns:</strong> Drag column borders to resize. Double-click to auto-fit
+                      content.
                     </li>
                   </ul>
                   <strong>Exploring Data:</strong>
@@ -211,12 +214,22 @@ class Splash extends React.Component {
                   </ul>
                   <strong>Starring Datasets:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
-                    <li><strong>Star icon:</strong> Click the star in any row to mark it for easy reference</li>
-                    <li><strong>Starred first:</strong> Check this option to sort starred datasets to the top of the table</li>
-                    <li><strong>Only starred:</strong> Check this option to filter and show only starred datasets</li>
-                    <li><strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star or unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars</li>
+                    <li>
+                      <strong>Star icon:</strong> Click the star in any row to mark it for easy reference
+                    </li>
+                    <li>
+                      <strong>Starred first:</strong> Check this option to sort starred datasets to the top of the table
+                    </li>
+                    <li>
+                      <strong>Only starred:</strong> Check this option to filter and show only starred datasets
+                    </li>
+                    <li>
+                      <strong>Bulk actions:</strong> Use &quot;Star All&quot; or &quot;Unstar All&quot; to quickly star
+                      or unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars
+                    </li>
                   </ul>
-                  <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with applied filters and sorting) to a CSV file.
+                  <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view
+                  (with applied filters and sorting) to a CSV file.
                 </div>
               }
             />
