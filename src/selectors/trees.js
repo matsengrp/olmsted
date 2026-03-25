@@ -209,16 +209,36 @@ const dissoc = (d, key) => {
  * Surprise-format files have a "naive" placeholder root with empty sequences
  * alongside the real root. Vega's stratify requires exactly one root.
  */
-const filterDuplicateRoots = (nodes) => {
+/**
+ * Ensure the tree has exactly one root for Vega's stratify transform.
+ *
+ * Handles two cases:
+ * 1. Duplicate roots: empty-sequence "naive" placeholder alongside real root
+ *    → Remove the empty placeholder
+ * 2. Forest (multiple disconnected subtrees): many root nodes with sequences
+ *    → Connect all subtree roots to a single root node. If a "naive" or "root"
+ *    type node exists, use it as the single root; otherwise create one.
+ */
+const ensureSingleRoot = (nodes) => {
   const roots = nodes.filter((n) => !n.parent);
   if (roots.length <= 1) return nodes;
-  // Keep roots with non-empty sequences, remove empty placeholders
-  const emptyRoots = roots.filter((n) => !n.sequence_alignment);
-  if (emptyRoots.length > 0 && emptyRoots.length < roots.length) {
-    const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
-    return nodes.filter((n) => !emptyIds.has(n.sequence_id));
+
+  // Find or designate the primary root.
+  // Prefer a root with sequences (needed for alignment computation).
+  // The "naive" placeholder has empty sequences, so use a sequenced root instead.
+  let primaryRoot = roots.find((n) => n.type === "root" && n.sequence_alignment);
+  if (!primaryRoot) {
+    // Fall back to naive or first root
+    primaryRoot = roots.find((n) => n.sequence_id === "naive") || roots[0];
   }
-  return nodes;
+
+  // Connect all other roots as children of the primary root
+  return nodes.map((n) => {
+    if (!n.parent && n.sequence_id !== primaryRoot.sequence_id) {
+      return { ...n, parent: primaryRoot.sequence_id };
+    }
+    return n;
+  });
 };
 
 export const computeTreeData = (tree) => {
@@ -234,7 +254,7 @@ export const computeTreeData = (tree) => {
       x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
     );
     // Ensure exactly one root for Vega's stratify transform
-    treeData.nodes = filterDuplicateRoots(treeData.nodes);
+    treeData.nodes = ensureSingleRoot(treeData.nodes);
   }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
