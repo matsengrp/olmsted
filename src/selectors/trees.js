@@ -205,40 +205,106 @@ const dissoc = (d, key) => {
 };
 
 /**
- * Filter out duplicate root nodes (nodes with no parent).
- * Surprise-format files have a "naive" placeholder root with empty sequences
- * alongside the real root. Vega's stratify requires exactly one root.
+ * Build a consensus sequence from multiple sequences by majority vote at each position.
+ * Gaps and missing positions use the most common character at that position.
+ *
+ * @param {string[]} sequences - Array of sequence strings
+ * @returns {string} Consensus sequence
  */
+const buildConsensus = (sequences) => {
+  const validSeqs = sequences.filter((s) => s && s.length > 0);
+  if (validSeqs.length === 0) return "";
+  if (validSeqs.length === 1) return validSeqs[0];
+
+  const maxLen = Math.max(...validSeqs.map((s) => s.length));
+  let consensus = "";
+  for (let i = 0; i < maxLen; i++) {
+    const counts = {};
+    for (const seq of validSeqs) {
+      const ch = i < seq.length ? seq[i] : "-";
+      counts[ch] = (counts[ch] || 0) + 1;
+    }
+    // Pick the most common character at this position
+    let bestChar = "-";
+    let bestCount = 0;
+    for (const [ch, count] of Object.entries(counts)) {
+      if (count > bestCount) {
+        bestChar = ch;
+        bestCount = count;
+      }
+    }
+    consensus += bestChar;
+  }
+  return consensus;
+};
+
+const SYNTHETIC_ROOT_ID = "__synthetic_root__";
+
 /**
  * Ensure the tree has exactly one root for Vega's stratify transform.
+ * Returns { nodes, modification } where modification is null if no change
+ * was needed, or a description string for data_modifications metadata.
  *
- * Handles two cases:
- * 1. Duplicate roots: empty-sequence "naive" placeholder alongside real root
- *    → Remove the empty placeholder
- * 2. Forest (multiple disconnected subtrees): many root nodes with sequences
- *    → Connect all subtree roots to a single root node. If a "naive" or "root"
- *    type node exists, use it as the single root; otherwise create one.
+ * Handles:
+ * 1. Single root with empty "naive" duplicate → removes the placeholder
+ * 2. Forest (multiple disconnected subtrees) → creates a synthetic root
+ *    with consensus sequences and re-parents all subtree roots to it
  */
 const ensureSingleRoot = (nodes) => {
   const roots = nodes.filter((n) => !n.parent);
-  if (roots.length <= 1) return nodes;
+  if (roots.length <= 1) return { nodes, modification: null };
 
-  // Find or designate the primary root.
-  // Prefer a root with sequences (needed for alignment computation).
-  // The "naive" placeholder has empty sequences, so use a sequenced root instead.
-  let primaryRoot = roots.find((n) => n.type === "root" && n.sequence_alignment);
-  if (!primaryRoot) {
-    // Fall back to naive or first root
-    primaryRoot = roots.find((n) => n.sequence_id === "naive") || roots[0];
+  // Separate empty placeholders from sequenced roots
+  const sequencedRoots = roots.filter((n) => n.sequence_alignment);
+  const emptyRoots = roots.filter((n) => !n.sequence_alignment);
+
+  // Case 1: single sequenced root + empty placeholder(s) → just remove empties
+  if (sequencedRoots.length === 1 && emptyRoots.length > 0) {
+    const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+    return {
+      nodes: nodes.filter((n) => !emptyIds.has(n.sequence_id)),
+      modification: `Removed ${emptyRoots.length} empty root placeholder(s): ${emptyRoots.map((n) => n.sequence_id).join(", ")}`
+    };
   }
 
-  // Connect all other roots as children of the primary root
-  return nodes.map((n) => {
-    if (!n.parent && n.sequence_id !== primaryRoot.sequence_id) {
-      return { ...n, parent: primaryRoot.sequence_id };
-    }
-    return n;
-  });
+  // Case 2: forest — create synthetic root with consensus sequences
+  const dnaSeqs = sequencedRoots.map((n) => n.sequence_alignment).filter(Boolean);
+  const aaSeqs = sequencedRoots.map((n) => n.sequence_alignment_aa).filter(Boolean);
+
+  const syntheticRoot = {
+    sequence_id: SYNTHETIC_ROOT_ID,
+    type: "root",
+    parent: null,
+    sequence_alignment: buildConsensus(dnaSeqs),
+    sequence_alignment_aa: buildConsensus(aaSeqs),
+    distance: null,
+    length: null,
+    multiplicity: 0,
+    cluster_multiplicity: 0,
+    lbi: null,
+    lbr: null,
+    affinity: null,
+    timepoint_multiplicities: []
+  };
+
+  // Re-parent all original roots (including empty placeholders) to synthetic root
+  // Then filter out empty placeholders since they add no value
+  const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+  const modifiedNodes = nodes
+    .filter((n) => !emptyIds.has(n.sequence_id))
+    .map((n) => {
+      if (!n.parent) {
+        return { ...n, parent: SYNTHETIC_ROOT_ID };
+      }
+      return n;
+    });
+
+  return {
+    nodes: [syntheticRoot, ...modifiedNodes],
+    modification:
+      `Created synthetic root from consensus of ${sequencedRoots.length} subtree roots` +
+      (emptyRoots.length > 0 ? `; removed ${emptyRoots.length} empty placeholder(s)` : "")
+  };
 };
 
 export const computeTreeData = (tree) => {
@@ -254,7 +320,12 @@ export const computeTreeData = (tree) => {
       x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
     );
     // Ensure exactly one root for Vega's stratify transform
-    treeData.nodes = ensureSingleRoot(treeData.nodes);
+    const rootResult = ensureSingleRoot(treeData.nodes);
+    treeData.nodes = rootResult.nodes;
+    if (rootResult.modification) {
+      treeData.data_modifications = treeData.data_modifications || [];
+      treeData.data_modifications.push(rootResult.modification);
+    }
   }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {

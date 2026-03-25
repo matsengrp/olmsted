@@ -747,6 +747,26 @@ class TreeViz extends React.Component {
             <strong>Tree visualization error:</strong> {vegaError}
           </div>
         )}
+        {tree && tree.data_modifications && tree.data_modifications.length > 0 && (
+          <div
+            style={{
+              marginBottom: "10px",
+              padding: "10px 14px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: "4px",
+              color: "#856404",
+              fontSize: "12px"
+            }}
+          >
+            <strong>Data modifications:</strong>
+            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+              {tree.data_modifications.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div
           className={hideControls ? "hide-vega-controls" : ""}
           style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}

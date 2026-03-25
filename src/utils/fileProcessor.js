@@ -103,6 +103,8 @@ class FileProcessor {
       if (status.defaulted) missingFields.push(`clone.${field}`);
     }
     processedDataset.missing_fields = missingFields;
+    processedDataset.data_modifications =
+      missingFields.length > 0 ? [`Default values applied for ${missingFields.length} missing field(s)`] : [];
 
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
