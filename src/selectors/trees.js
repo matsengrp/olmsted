@@ -204,6 +204,23 @@ const dissoc = (d, key) => {
   return newD;
 };
 
+/**
+ * Filter out duplicate root nodes (nodes with no parent).
+ * Surprise-format files have a "naive" placeholder root with empty sequences
+ * alongside the real root. Vega's stratify requires exactly one root.
+ */
+const filterDuplicateRoots = (nodes) => {
+  const roots = nodes.filter((n) => !n.parent);
+  if (roots.length <= 1) return nodes;
+  // Keep roots with non-empty sequences, remove empty placeholders
+  const emptyRoots = roots.filter((n) => !n.sequence_alignment);
+  if (emptyRoots.length > 0 && emptyRoots.length < roots.length) {
+    const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+    return nodes.filter((n) => !emptyIds.has(n.sequence_id));
+  }
+  return nodes;
+};
+
 export const computeTreeData = (tree) => {
   // Return empty object if tree is null or undefined
   if (!tree) {
@@ -216,6 +233,8 @@ export const computeTreeData = (tree) => {
     treeData.nodes = _.map(treeData.nodes, (x) =>
       x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
     );
+    // Ensure exactly one root for Vega's stratify transform
+    treeData.nodes = filterDuplicateRoots(treeData.nodes);
   }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
