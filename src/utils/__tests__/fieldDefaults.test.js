@@ -141,8 +141,8 @@ describe("fieldDefaults", () => {
 
       applyNodeDefaults(node);
 
-      expect(node.distance).toBe(1);
-      expect(node.length).toBe(1);
+      expect(node.distance).toBeNull();
+      expect(node.length).toBeNull();
       expect(node.multiplicity).toBe(1);
       expect(node.cluster_multiplicity).toBe(1);
       expect(node.lbi).toBeNull();
@@ -165,7 +165,7 @@ describe("fieldDefaults", () => {
       expect(node.lbi).toBe(0.3);
       expect(node.multiplicity).toBe(5);
       // Missing fields should be filled
-      expect(node.length).toBe(1);
+      expect(node.length).toBeNull();
       expect(node.lbr).toBeNull();
     });
 

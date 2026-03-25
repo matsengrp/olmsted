@@ -607,7 +607,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "fixed_branch_lengths",
-        value: false,
+        value:
+          availableFields &&
+          availableFields.node &&
+          availableFields.node.distance &&
+          !availableFields.node.distance.present
+            ? true
+            : false,
         ...maybeAddBind({
           input: "checkbox",
           name: "Fixed branch lengths"

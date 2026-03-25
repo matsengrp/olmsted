@@ -155,6 +155,25 @@ export function getDatasetCsvColumns(showCitation = false) {
 }
 
 /**
+ * Cell showing whether a dataset has missing data fields.
+ * Displays "Yes" (yellow) if any fields were defaulted, "No" otherwise.
+ */
+export function MissingFieldsCell({ datum }) {
+  if (!datum || !datum.data_fields) return <span style={{ color: "#999" }}>—</span>;
+  const { node, clone } = datum.data_fields;
+  const allFields = [...Object.values(node || {}), ...Object.values(clone || {})];
+  const hasDefaults = allFields.some((f) => f.defaulted);
+  return hasDefaults ? (
+    <span title="Some data fields were not found and have been defaulted" style={{ color: "#856404" }}>
+      Yes
+    </span>
+  ) : (
+    <span style={{ color: "#666" }}>No</span>
+  );
+}
+MissingFieldsCell.isReactComponent = true;
+
+/**
  * Standard column width map for dataset tables
  */
 export const datasetColumnWidths = {
@@ -172,5 +191,6 @@ export const datasetColumnWidths = {
   Families: 100,
   "Upload Time": 120,
   "Build Time": 120,
-  Citation: 150
+  Citation: 150,
+  "Missing Fields": 100
 };

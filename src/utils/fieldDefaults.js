@@ -13,8 +13,8 @@ export const REQUIRED = Symbol("REQUIRED");
  * Fields set to null will be present but empty in the data.
  */
 export const NODE_FIELD_DEFAULTS = {
-  distance: 1,
-  length: 1,
+  distance: null,
+  length: null,
   multiplicity: 1,
   cluster_multiplicity: 1,
   lbi: null,

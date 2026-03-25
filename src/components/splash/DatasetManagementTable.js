@@ -18,7 +18,8 @@ import {
   BuildTimeCell,
   DatasetStarCell,
   getDatasetCsvColumns,
-  datasetColumnWidths
+  datasetColumnWidths,
+  MissingFieldsCell
 } from "../tables/DatasetTableCells";
 import { DatasetInfoCell, DatasetDeleteCell } from "../tables/RowInfoModal";
 
@@ -244,7 +245,8 @@ class DatasetManagementTableComponent extends React.Component {
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
       ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
-      ["Build Time", BuildTimeCell, { sortKey: "build.time" }]
+      ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
+      ["Missing Fields", MissingFieldsCell, { sortable: false }]
     ];
 
     if (showCitation) {
