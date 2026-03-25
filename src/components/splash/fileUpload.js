@@ -431,36 +431,51 @@ class FileUpload extends React.Component {
                         key={`warn-${file.datasetId}`}
                         style={{
                           marginBottom: 6,
-                          padding: "8px 12px",
+                          padding: "10px 14px",
                           backgroundColor: "#fff3cd",
                           border: "1px solid #ffc107",
                           borderRadius: 4,
                           color: "#856404",
-                          fontSize: 12
+                          fontSize: 11
                         }}
                       >
-                        <strong>{file.fileName}:</strong>
+                        <div style={{ fontSize: 14, marginBottom: 8 }}>
+                          <strong>{file.fileName}</strong> — uploaded successfully with warnings:
+                        </div>
                         {file.missingFieldWarnings?.length > 0 && (
-                          <>
-                            {" "}
+                          <div style={{ marginBottom: 4 }}>
                             <strong>Missing data fields:</strong>
                             <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
                               {file.missingFieldWarnings.map((w) => (
                                 <li key={w}>{w}</li>
                               ))}
                             </ul>
-                          </>
+                          </div>
                         )}
                         {file.dataModifications?.length > 0 && (
-                          <>
-                            {" "}
+                          <div>
                             <strong>Data modifications applied:</strong>
                             <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                              {file.dataModifications.map((m) => (
-                                <li key={m}>{m}</li>
-                              ))}
+                              {file.dataModifications.map((m) => {
+                                const label = typeof m === "string" ? m : m.label;
+                                const items = typeof m === "object" && m.items ? m.items : [];
+                                return (
+                                  <li key={label}>
+                                    {label}
+                                    {items.length > 0 && (
+                                      <ul style={{ margin: "2px 0 0 0", paddingLeft: 16 }}>
+                                        {items.map((item) => (
+                                          <li key={item} style={{ listStyleType: "circle" }}>
+                                            {item}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </li>
+                                );
+                              })}
                             </ul>
-                          </>
+                          </div>
                         )}
                       </div>
                     ))}

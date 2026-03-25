@@ -105,9 +105,10 @@ class FileProcessor {
     processedDataset.missing_fields = missingFields;
     const dataModifications = [];
     if (missingFields.length > 0) {
-      dataModifications.push(
-        `Default values applied for ${missingFields.length} missing field(s): ${missingFields.join(", ")}`
-      );
+      dataModifications.push({
+        label: `Default values applied for ${missingFields.length} missing field(s)`,
+        items: missingFields
+      });
     }
 
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
@@ -149,10 +150,12 @@ class FileProcessor {
     });
 
     if (forestTreeCount > 0) {
-      dataModifications.push(
-        `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
-          `A synthetic root with consensus sequence will be created for visualization.`
-      );
+      dataModifications.push({
+        label:
+          `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
+          `A synthetic root with consensus sequence will be created for visualization.`,
+        items: []
+      });
     }
 
     processedDataset.data_modifications = dataModifications;
