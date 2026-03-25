@@ -39,8 +39,8 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
       });
     } else if (isClientSide && clonalFamily) {
       // Fallback: surprise-format files may not have trees_meta on clones.
-      // Try loading a tree by clone_id or ident.
-      getClientTree(dispatch, clonalFamily.ident || clonalFamily.clone_id);
+      // Try loading a tree by clone_id (the shared key between clones and trees).
+      getClientTree(dispatch, clonalFamily.clone_id);
     }
 
     // For paired families, also load the paired clone's trees

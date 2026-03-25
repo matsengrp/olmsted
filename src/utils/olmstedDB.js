@@ -216,8 +216,8 @@ class OlmstedDB extends Dexie {
           (tree) =>
             tree.clone_id === cloneId ||
             tree.ident === cloneId ||
-            tree.ident.includes(cloneId) ||
-            tree.tree_id.includes(cloneId)
+            (tree.ident && tree.ident.includes(cloneId)) ||
+            (tree.tree_id && tree.tree_id.includes(cloneId))
         );
       }
 

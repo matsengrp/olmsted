@@ -76,13 +76,16 @@ describe("RowInfoModal", () => {
   it("omits excluded keys (trees, nodes, seqs, sequences)", () => {
     const datum = { name: "X", trees: [1, 2], nodes: { a: 1 }, seqs: [] };
     render(<RowInfoModal datum={datum} isOpen onClose={jest.fn()} />);
-    expect(screen.getByText(/Fields not shown/)).toBeInTheDocument();
+    // Excluded keys should not appear as labels
+    expect(screen.queryByText("Trees")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nodes")).not.toBeInTheDocument();
+    expect(screen.queryByText("Seqs")).not.toBeInTheDocument();
   });
 
-  it("omits large arrays (>10 items)", () => {
+  it("shows expand button for large arrays (>10 items)", () => {
     const bigArray = Array.from({ length: 15 }, (_, i) => i);
     render(<RowInfoModal datum={{ name: "Y", items: bigArray }} isOpen onClose={jest.fn()} />);
-    expect(screen.getByText(/items \(15 items\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Expand \(15 items\)/)).toBeInTheDocument();
   });
 
   // ── Flattening sample ──
