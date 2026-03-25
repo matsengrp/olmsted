@@ -421,6 +421,51 @@ class FileUpload extends React.Component {
           {uploadedFiles.length > 0 && (
             <div style={{ marginTop: 30 }}>
               <h4>Uploaded Files:</h4>
+              {/* Data warnings — shown between header and file list */}
+              {uploadedFiles.some((f) => f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0) && (
+                <div style={{ marginBottom: 10 }}>
+                  {uploadedFiles
+                    .filter((f) => f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                    .map((file) => (
+                      <div
+                        key={`warn-${file.datasetId}`}
+                        style={{
+                          marginBottom: 6,
+                          padding: "8px 12px",
+                          backgroundColor: "#fff3cd",
+                          border: "1px solid #ffc107",
+                          borderRadius: 4,
+                          color: "#856404",
+                          fontSize: 12
+                        }}
+                      >
+                        <strong>{file.fileName}:</strong>
+                        {file.missingFieldWarnings?.length > 0 && (
+                          <>
+                            {" "}
+                            <strong>Missing data fields:</strong>
+                            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                              {file.missingFieldWarnings.map((w) => (
+                                <li key={w}>{w}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        {file.dataModifications?.length > 0 && (
+                          <>
+                            {" "}
+                            <strong>Data modifications applied:</strong>
+                            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                              {file.dataModifications.map((m) => (
+                                <li key={m}>{m}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {uploadedFiles.map((file) => (
                   <li
@@ -448,40 +493,6 @@ class FileUpload extends React.Component {
                       {file.fileCount && (
                         <div style={{ fontSize: 11, color: "#888", marginTop: 3 }}>
                           Files: {file.originalFiles ? file.originalFiles.join(", ") : `${file.fileCount} files`}
-                        </div>
-                      )}
-                      {(file.missingFieldWarnings?.length > 0 || file.dataModifications?.length > 0) && (
-                        <div
-                          style={{
-                            marginTop: 6,
-                            padding: "6px 10px",
-                            backgroundColor: "#fff3cd",
-                            border: "1px solid #ffc107",
-                            borderRadius: 4,
-                            color: "#856404",
-                            fontSize: 12
-                          }}
-                        >
-                          {file.missingFieldWarnings?.length > 0 && (
-                            <>
-                              <strong>Missing data fields:</strong>
-                              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                                {file.missingFieldWarnings.map((w) => (
-                                  <li key={w}>{w}</li>
-                                ))}
-                              </ul>
-                            </>
-                          )}
-                          {file.dataModifications?.length > 0 && (
-                            <>
-                              <strong>Data modifications applied:</strong>
-                              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                                {file.dataModifications.map((m) => (
-                                  <li key={m}>{m}</li>
-                                ))}
-                              </ul>
-                            </>
-                          )}
                         </div>
                       )}
                     </div>
