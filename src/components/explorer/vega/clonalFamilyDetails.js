@@ -6,10 +6,13 @@ import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRe
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 
 const concatTreeWithAlignmentSpec = (options = {}) => {
-  const { showControls = true, showLegend = true, topPadding = 20, availableFields = null } = options;
+  const { showControls = true, showLegend = true, topPadding = 20, missingFields = null } = options;
 
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
+
+  // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
+  const missingSet = missingFields ? new Set(missingFields) : null;
 
   /**
    * Filter dropdown options to exclude fields not present in the dataset.
@@ -18,11 +21,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
    * @returns {string[]} Filtered options
    */
   const filterOptions = (opts, category) => {
-    if (!availableFields || !availableFields[category]) return opts;
+    if (!missingSet) return opts;
     return opts.filter((opt) => {
       if (opt === "<none>" || opt === "parent") return true;
-      const info = availableFields[category][opt];
-      return !info || info.present;
+      return !missingSet.has(`${category}.${opt}`);
     });
   };
 
@@ -607,13 +609,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "fixed_branch_lengths",
-        value:
-          availableFields &&
-          availableFields.node &&
-          availableFields.node.distance &&
-          !availableFields.node.distance.present
-            ? true
-            : false,
+        value: missingSet ? missingSet.has("node.distance") : false,
         ...maybeAddBind({
           input: "checkbox",
           name: "Fixed branch lengths"

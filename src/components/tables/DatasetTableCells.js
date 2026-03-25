@@ -159,10 +159,8 @@ export function getDatasetCsvColumns(showCitation = false) {
  * Displays "Yes" (yellow) if any fields were defaulted, "No" otherwise.
  */
 export function MissingFieldsCell({ datum }) {
-  if (!datum || !datum.data_fields) return <span style={{ color: "#999" }}>—</span>;
-  const { node, clone } = datum.data_fields;
-  const allFields = [...Object.values(node || {}), ...Object.values(clone || {})];
-  const hasDefaults = allFields.some((f) => f.defaulted);
+  if (!datum) return <span style={{ color: "#999" }}>—</span>;
+  const hasDefaults = datum.missing_fields && datum.missing_fields.length > 0;
   return hasDefaults ? (
     <span title="Some data fields were not found and have been defaulted" style={{ color: "#856404" }}>
       Yes

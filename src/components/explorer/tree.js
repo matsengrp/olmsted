@@ -685,12 +685,12 @@ class TreeViz extends React.Component {
     // Regenerate Vega specs when dataset field availability changes
     if (dataFields !== this.lastDataFields) {
       this.lastDataFields = dataFields;
-      this.spec = concatTreeWithAlignmentSpec({ showControls: true, availableFields: dataFields });
+      this.spec = concatTreeWithAlignmentSpec({ showControls: true, missingFields: dataFields?.missing_fields });
       this.specNoControls = concatTreeWithAlignmentSpec({
         showControls: false,
         showLegend: false,
         topPadding: 0,
-        availableFields: dataFields
+        missingFields: dataFields?.missing_fields
       });
     }
     // TODO #94: We need to have a better way to tell if a family should not be

@@ -29,13 +29,19 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
     const isClientSide = dataset?.isClientSide || dataset?.temporary;
 
     // Use appropriate loader based on dataset source
-    _.forEach(clonalFamilyTrees, (tree) => {
-      if (isClientSide) {
-        getClientTree(dispatch, tree.ident);
-      } else {
-        loadData.getTree(dispatch, tree.ident);
-      }
-    });
+    if (clonalFamilyTrees.length > 0) {
+      _.forEach(clonalFamilyTrees, (tree) => {
+        if (isClientSide) {
+          getClientTree(dispatch, tree.ident);
+        } else {
+          loadData.getTree(dispatch, tree.ident);
+        }
+      });
+    } else if (isClientSide && clonalFamily) {
+      // Fallback: surprise-format files may not have trees_meta on clones.
+      // Try loading a tree by clone_id or ident.
+      getClientTree(dispatch, clonalFamily.ident || clonalFamily.clone_id);
+    }
 
     // For paired families, also load the paired clone's trees
     // This ensures light chain data is available for "both" and "light" modes

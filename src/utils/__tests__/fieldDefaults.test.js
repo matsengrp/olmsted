@@ -301,50 +301,27 @@ describe("fieldDefaults", () => {
   });
 
   describe("getMissingFieldSummary", () => {
-    it("returns empty array when all fields present", () => {
-      const dataFields = {
-        node: {
-          distance: { present: true, defaulted: false },
-          lbi: { present: true, defaulted: false },
-          lbr: { present: true, defaulted: false },
-          affinity: { present: true, defaulted: false },
-          multiplicity: { present: true, defaulted: false },
-          cluster_multiplicity: { present: true, defaulted: false }
-        },
-        clone: {
-          d_call: { present: true, defaulted: false },
-          j_call: { present: true, defaulted: false },
-          germline_alignment: { present: true, defaulted: false },
-          cdr1_alignment_start: { present: true, defaulted: false },
-          cdr2_alignment_start: { present: true, defaulted: false },
-          junction_start: { present: true, defaulted: false }
-        }
-      };
-
-      expect(getMissingFieldSummary(dataFields)).toEqual([]);
+    it("returns empty array when no fields missing", () => {
+      expect(getMissingFieldSummary([])).toEqual([]);
     });
 
     it("lists missing categories for surprise-format data", () => {
-      const dataFields = {
-        node: {
-          distance: { present: false, defaulted: true },
-          lbi: { present: false, defaulted: true },
-          lbr: { present: false, defaulted: true },
-          affinity: { present: false, defaulted: true },
-          multiplicity: { present: false, defaulted: true },
-          cluster_multiplicity: { present: false, defaulted: true }
-        },
-        clone: {
-          d_call: { present: false, defaulted: true },
-          j_call: { present: false, defaulted: true },
-          germline_alignment: { present: false, defaulted: true },
-          cdr1_alignment_start: { present: false, defaulted: true },
-          cdr2_alignment_start: { present: false, defaulted: true },
-          junction_start: { present: false, defaulted: true }
-        }
-      };
+      const missingFields = [
+        "node.distance",
+        "node.lbi",
+        "node.lbr",
+        "node.affinity",
+        "node.multiplicity",
+        "node.cluster_multiplicity",
+        "clone.d_call",
+        "clone.j_call",
+        "clone.germline_alignment",
+        "clone.cdr1_alignment_start",
+        "clone.cdr2_alignment_start",
+        "clone.junction_start"
+      ];
 
-      const summary = getMissingFieldSummary(dataFields);
+      const summary = getMissingFieldSummary(missingFields);
 
       expect(summary.length).toBeGreaterThan(0);
       expect(summary.some((s) => s.includes("lbi"))).toBe(true);

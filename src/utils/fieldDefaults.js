@@ -191,44 +191,44 @@ export function extractGermlineFromTree(clone, trees) {
  * Build a human-readable summary of which field categories are missing.
  * Used for the import warning banner.
  *
- * @param {Object} dataFields - The data_fields metadata object
+ * @param {string[]} missingFields - Flat array of missing field names (e.g., ["node.lbi", "clone.d_call"])
  * @returns {string[]} Array of summary strings for missing categories
  */
-export function getMissingFieldSummary(dataFields) {
-  if (!dataFields) return [];
+export function getMissingFieldSummary(missingFields) {
+  if (!missingFields || missingFields.length === 0) return [];
 
-  const missing = [];
-  const { node, clone } = dataFields;
+  const set = new Set(missingFields);
+  const summary = [];
 
-  const missingNodeMetrics = ["lbi", "lbr", "affinity"].filter((f) => node[f] && node[f].defaulted);
+  const missingNodeMetrics = ["lbi", "lbr", "affinity"].filter((f) => set.has(`node.${f}`));
   if (missingNodeMetrics.length > 0) {
-    missing.push(`Node metrics: ${missingNodeMetrics.join(", ")}`);
+    summary.push(`Node metrics: ${missingNodeMetrics.join(", ")}`);
   }
 
-  const missingNodeCounts = ["multiplicity", "cluster_multiplicity"].filter((f) => node[f] && node[f].defaulted);
+  const missingNodeCounts = ["multiplicity", "cluster_multiplicity"].filter((f) => set.has(`node.${f}`));
   if (missingNodeCounts.length > 0) {
-    missing.push(`Node counts: ${missingNodeCounts.join(", ")} (defaulted to 1)`);
+    summary.push(`Node counts: ${missingNodeCounts.join(", ")} (defaulted to 1)`);
   }
 
-  if (node.distance && node.distance.defaulted) {
-    missing.push("Branch distances (defaulted to unit length)");
+  if (set.has("node.distance")) {
+    summary.push("Branch distances (defaulted to unit length)");
   }
 
-  const missingCdr = ["cdr1_alignment_start", "cdr2_alignment_start", "junction_start"].filter(
-    (f) => clone[f] && clone[f].defaulted
+  const missingCdr = ["cdr1_alignment_start", "cdr2_alignment_start", "junction_start"].filter((f) =>
+    set.has(`clone.${f}`)
   );
   if (missingCdr.length > 0) {
-    missing.push("CDR region positions");
+    summary.push("CDR region positions");
   }
 
-  if (clone.germline_alignment && clone.germline_alignment.defaulted) {
-    missing.push("Germline alignment");
+  if (set.has("clone.germline_alignment")) {
+    summary.push("Germline alignment");
   }
 
-  const missingGenes = ["d_call", "j_call"].filter((f) => clone[f] && clone[f].defaulted);
+  const missingGenes = ["d_call", "j_call"].filter((f) => set.has(`clone.${f}`));
   if (missingGenes.length > 0) {
-    missing.push(`Gene calls: ${missingGenes.join(", ")}`);
+    summary.push(`Gene calls: ${missingGenes.join(", ")}`);
   }
 
-  return missing;
+  return summary;
 }

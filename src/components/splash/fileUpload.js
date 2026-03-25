@@ -94,9 +94,8 @@ class FileUpload extends React.Component {
       this.updateLoadingStatus("Storing data in browser database...", 75);
       const datasetId = await clientDataStore.storeProcessedData(result);
 
-      // Check for missing fields and build warning summary
-      const dataFields = result.datasets[0]?.data_fields;
-      const missingFieldWarnings = getMissingFieldSummary(dataFields);
+      // Check for missing fields
+      const missingFieldWarnings = getMissingFieldSummary(result.datasets[0]?.missing_fields);
 
       // Add to uploaded files list
       this.updateLoadingStatus("Finalizing upload...", 90);

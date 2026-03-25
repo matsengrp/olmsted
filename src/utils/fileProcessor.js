@@ -93,9 +93,8 @@ class FileProcessor {
 
     // Detect which optional fields are present before applying defaults
     const dataFields = detectFieldPresence(datasetClones, data.trees);
-    processedDataset.data_fields = dataFields;
 
-    // Build a flat list of missing/defaulted field names for the info panel
+    // Build a flat list of missing/defaulted field names
     const missingFields = [];
     for (const [field, status] of Object.entries(dataFields.node)) {
       if (status.defaulted) missingFields.push(`node.${field}`);
@@ -159,11 +158,12 @@ class FileProcessor {
       return processed;
     });
 
-    // Update germline_alignment field status if we extracted it from tree roots
-    if (dataFields.clone.germline_alignment && dataFields.clone.germline_alignment.defaulted) {
+    // If germline was extracted from tree roots, remove it from missing list
+    if (missingFields.includes("clone.germline_alignment")) {
       const hasExtractedGermline = processedClones.some((c) => c.germline_alignment);
       if (hasExtractedGermline) {
-        dataFields.clone.germline_alignment = { present: true, defaulted: false };
+        const idx = missingFields.indexOf("clone.germline_alignment");
+        missingFields.splice(idx, 1);
       }
     }
 
