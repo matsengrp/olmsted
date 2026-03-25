@@ -95,22 +95,48 @@ class FileProcessor {
     const dataFields = detectFieldPresence(datasetClones, data.trees);
     processedDataset.data_fields = dataFields;
 
+    // Build a flat list of missing/defaulted field names for the info panel
+    const missingFields = [];
+    for (const [field, status] of Object.entries(dataFields.node)) {
+      if (status.defaulted) missingFields.push(`node.${field}`);
+    }
+    for (const [field, status] of Object.entries(dataFields.clone)) {
+      if (status.defaulted) missingFields.push(`clone.${field}`);
+    }
+    processedDataset.missing_fields = missingFields;
+
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
     const processedTrees = (data.trees || []).map((tree) => {
-      // Convert nodes array to object indexed by sequence_id if needed
-      let processedNodes = tree.nodes;
-      if (tree.nodes && Array.isArray(tree.nodes)) {
-        processedNodes = {};
-        tree.nodes.forEach((node, nodeIndex) => {
+      let nodesList = tree.nodes;
+
+      // Normalize to array for filtering
+      if (nodesList && !Array.isArray(nodesList)) {
+        nodesList = Object.values(nodesList);
+      }
+
+      // Filter out duplicate root nodes with empty sequences (e.g., surprise-format
+      // files have a "naive" placeholder root with no sequence alongside the real root).
+      // Vega's stratify transform requires exactly one root (parent: null).
+      if (nodesList) {
+        const roots = nodesList.filter((n) => !n.parent || n.parent === "None");
+        if (roots.length > 1) {
+          const emptyRoots = roots.filter((n) => !n.sequence_alignment);
+          if (emptyRoots.length > 0 && emptyRoots.length < roots.length) {
+            const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+            nodesList = nodesList.filter((n) => !emptyIds.has(n.sequence_id));
+          }
+        }
+      }
+
+      // Convert nodes array to object indexed by sequence_id
+      const processedNodes = {};
+      if (nodesList) {
+        nodesList.forEach((node, nodeIndex) => {
           const nodeId = node.sequence_id || String(nodeIndex);
           applyNodeDefaults(node);
           processedNodes[nodeId] = node;
         });
-      } else if (processedNodes && typeof processedNodes === "object") {
-        for (const nodeData of Object.values(processedNodes)) {
-          applyNodeDefaults(nodeData);
-        }
       }
 
       return {
