@@ -103,30 +103,30 @@ class FileProcessor {
       if (status.defaulted) missingFields.push(`clone.${field}`);
     }
     processedDataset.missing_fields = missingFields;
-    processedDataset.data_modifications =
-      missingFields.length > 0 ? [`Default values applied for ${missingFields.length} missing field(s)`] : [];
+    const dataModifications = [];
+    if (missingFields.length > 0) {
+      dataModifications.push(
+        `Default values applied for ${missingFields.length} missing field(s): ${missingFields.join(", ")}`
+      );
+    }
 
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
+    let forestTreeCount = 0;
     const processedTrees = (data.trees || []).map((tree) => {
       let nodesList = tree.nodes;
 
-      // Normalize to array for filtering
+      // Normalize to array for processing
       if (nodesList && !Array.isArray(nodesList)) {
         nodesList = Object.values(nodesList);
       }
 
-      // Filter out duplicate root nodes with empty sequences (e.g., surprise-format
-      // files have a "naive" placeholder root with no sequence alongside the real root).
-      // Vega's stratify transform requires exactly one root (parent: null).
+      // Detect forest structure (multiple root nodes) for metadata
       if (nodesList) {
-        const roots = nodesList.filter((n) => !n.parent || n.parent === "None");
-        if (roots.length > 1) {
-          const emptyRoots = roots.filter((n) => !n.sequence_alignment);
-          if (emptyRoots.length > 0 && emptyRoots.length < roots.length) {
-            const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
-            nodesList = nodesList.filter((n) => !emptyIds.has(n.sequence_id));
-          }
+        const roots = nodesList.filter((n) => !n.parent);
+        const sequencedRoots = roots.filter((n) => n.sequence_alignment);
+        if (sequencedRoots.length > 1) {
+          forestTreeCount++;
         }
       }
 
@@ -147,6 +147,15 @@ class FileProcessor {
         ident: tree.ident || this.generateUUID()
       };
     });
+
+    if (forestTreeCount > 0) {
+      dataModifications.push(
+        `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
+          `A synthetic root with consensus sequence will be created for visualization.`
+      );
+    }
+
+    processedDataset.data_modifications = dataModifications;
 
     // Process clones — apply defaults and extract germline from tree root if missing
     const processedClones = datasetClones.map((clone) => {

@@ -94,8 +94,9 @@ class FileUpload extends React.Component {
       this.updateLoadingStatus("Storing data in browser database...", 75);
       const datasetId = await clientDataStore.storeProcessedData(result);
 
-      // Check for missing fields
+      // Check for missing fields and data modifications
       const missingFieldWarnings = getMissingFieldSummary(result.datasets[0]?.missing_fields);
+      const dataModifications = result.datasets[0]?.data_modifications || [];
 
       // Add to uploaded files list
       this.updateLoadingStatus("Finalizing upload...", 90);
@@ -108,7 +109,8 @@ class FileUpload extends React.Component {
             fileType,
             dataset: result.datasets[0],
             success: true,
-            missingFieldWarnings
+            missingFieldWarnings,
+            dataModifications
           }
         ]
       }));
@@ -448,7 +450,7 @@ class FileUpload extends React.Component {
                           Files: {file.originalFiles ? file.originalFiles.join(", ") : `${file.fileCount} files`}
                         </div>
                       )}
-                      {file.missingFieldWarnings && file.missingFieldWarnings.length > 0 && (
+                      {(file.missingFieldWarnings?.length > 0 || file.dataModifications?.length > 0) && (
                         <div
                           style={{
                             marginTop: 6,
@@ -460,12 +462,26 @@ class FileUpload extends React.Component {
                             fontSize: 12
                           }}
                         >
-                          <strong>Some data fields were not found and will be unavailable:</strong>
-                          <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                            {file.missingFieldWarnings.map((w) => (
-                              <li key={w}>{w}</li>
-                            ))}
-                          </ul>
+                          {file.missingFieldWarnings?.length > 0 && (
+                            <>
+                              <strong>Missing data fields:</strong>
+                              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                                {file.missingFieldWarnings.map((w) => (
+                                  <li key={w}>{w}</li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                          {file.dataModifications?.length > 0 && (
+                            <>
+                              <strong>Data modifications applied:</strong>
+                              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                                {file.dataModifications.map((m) => (
+                                  <li key={m}>{m}</li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
