@@ -373,8 +373,11 @@ class TreeViz extends React.Component {
       // Track the current Vega view for export functionality
       currentVegaView: null,
       // Toggle to hide/show Vega control bindings
-      hideControls: false
+      hideControls: false,
+      // Vega rendering error message (shown to user)
+      vegaError: null
     };
+    this.handleVegaError = this.handleVegaError.bind(this);
     // Specs are memoized and regenerated only when dataFields changes
     this.lastDataFields = null;
     this.spec = concatTreeWithAlignmentSpec({ showControls: true });
@@ -501,6 +504,15 @@ class TreeViz extends React.Component {
     });
   }
 
+  /**
+   * Handle Vega rendering errors — log to console and show to user.
+   */
+  handleVegaError(...args) {
+    const errorMsg = args[0] instanceof Error ? args[0].message : String(args[0]);
+    console.error("Vega error:", ...args);
+    this.setState({ vegaError: errorMsg });
+  }
+
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
   setupHeavyChainSignalSync(heavyView) {
     this.heavyVegaRef.current = heavyView;
@@ -603,6 +615,10 @@ class TreeViz extends React.Component {
     const { selectedFamily, selectedChain, dispatchSelectedChain } = this.props;
     // When family changes, check if we need to reset chain selection
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
+      // Clear any previous Vega error when switching families
+      if (this.state.vegaError) {
+        this.setState({ vegaError: null });
+      }
       const isBothMode = isBothChainsMode(selectedChain);
       const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
       // If in "both" or "light" mode but new family is not paired, reset to "heavy"
@@ -713,10 +729,24 @@ class TreeViz extends React.Component {
     // Use heavyTree for downloads in both mode, otherwise use tree
     const downloadTree = isBothMode ? heavyTree : tree;
 
-    const { hideControls } = this.state;
+    const { hideControls, vegaError } = this.state;
 
     return (
       <div ref={this.containerRef}>
+        {vegaError && (
+          <div
+            style={{
+              marginBottom: "10px",
+              padding: "12px",
+              backgroundColor: "#f8d7da",
+              border: "1px solid #dc3545",
+              borderRadius: "4px",
+              color: "#721c24"
+            }}
+          >
+            <strong>Tree visualization error:</strong> {vegaError}
+          </div>
+        )}
         <div
           className={hideControls ? "hide-vega-controls" : ""}
           style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}
@@ -766,7 +796,7 @@ class TreeViz extends React.Component {
                     }
                   });
                 }}
-                onError={(...args) => console.error("Vega error:", args)}
+                onError={this.handleVegaError}
                 data={this.getChainData("heavy")}
                 spec={this.specNoControls}
               />
@@ -782,7 +812,7 @@ class TreeViz extends React.Component {
                       }
                     });
                   }}
-                  onError={(...args) => console.error("Vega error:", args)}
+                  onError={this.handleVegaError}
                   data={this.getChainData("light")}
                   spec={this.spec}
                 />
@@ -874,7 +904,7 @@ class TreeViz extends React.Component {
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
                   <VegaChart
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
-                    onError={(...args) => console.error("Vega error:", args)}
+                    onError={this.handleVegaError}
                     data={this.treeDataFromProps()}
                     spec={this.spec}
                   />
@@ -884,7 +914,7 @@ class TreeViz extends React.Component {
           {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
             <VegaChart
               onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
-              onError={(...args) => console.error("Vega error:", args)}
+              onError={this.handleVegaError}
               data={this.tempVegaData}
               spec={this.spec}
             />
