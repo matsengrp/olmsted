@@ -22,6 +22,27 @@ import {
 } from "../tables/DatasetTableCells";
 import { DatasetInfoCell } from "../tables/RowInfoModal";
 
+/**
+ * Cell component showing dataset field completeness.
+ * "Full" (green) when all fields present, "Partial" (yellow) when some defaulted.
+ */
+function FieldStatusCell({ datum }) {
+  if (!datum || !datum.data_fields) return <span style={{ color: "#999" }}>—</span>;
+  const { node, clone } = datum.data_fields;
+  const allFields = [...Object.values(node || {}), ...Object.values(clone || {})];
+  const hasDefaults = allFields.some((f) => f.defaulted);
+  return hasDefaults ? (
+    <span title="Some fields were not found in this dataset" style={{ color: "#856404" }}>
+      Partial
+    </span>
+  ) : (
+    <span title="All expected fields present" style={{ color: "#155724" }}>
+      Full
+    </span>
+  );
+}
+FieldStatusCell.isReactComponent = true;
+
 // Component for non-selectable load status display
 function LoadStatusDisplay({ datum }) {
   if (!datum) {
@@ -229,7 +250,8 @@ export default class DatasetLoadingTable extends React.Component {
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],
       ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
-      ["Build Time", BuildTimeCell, { sortKey: "build.time" }]
+      ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
+      ["Fields", FieldStatusCell, { sortable: false }]
     ];
 
     if (showCitation) {

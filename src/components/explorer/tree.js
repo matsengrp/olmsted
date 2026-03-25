@@ -12,7 +12,12 @@ import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
-import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
+import {
+  getPairedClone,
+  getAllClonalFamilies,
+  getHeavyLightClones,
+  getSelectedDatasetFields
+} from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
@@ -219,6 +224,7 @@ const mapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
   const selectedChain = state.clonalFamilies.selectedChain || "heavy";
+  const dataFields = getSelectedDatasetFields(state);
   // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
   // even when they're filtered out of the scatterplot
   const allClonalFamilies = getAllClonalFamilies(state);
@@ -275,7 +281,8 @@ const mapStateToProps = (state) => {
         // Light chain data
         lightNaiveData: lightVizData ? lightVizData.naiveData : null,
         lightCdrBounds: lightVizData ? lightVizData.cdrBounds : null,
-        lightTree: lightVizData ? lightVizData.treeData : null
+        lightTree: lightVizData ? lightVizData.treeData : null,
+        dataFields
       };
     }
     if (isLightMode) {
@@ -291,7 +298,8 @@ const mapStateToProps = (state) => {
           selectedChain,
           cdrBounds: vizData.cdrBounds,
           pairedClone,
-          lightClone
+          lightClone,
+          dataFields
         };
       }
       // Light chain not available - return error state instead of falling through
@@ -302,7 +310,8 @@ const mapStateToProps = (state) => {
         selectedSeq: state.clonalFamilies.selectedSeq,
         lightChainUnavailable: true,
         pairedClone,
-        lightClone
+        lightClone,
+        dataFields
       };
     }
 
@@ -318,7 +327,8 @@ const mapStateToProps = (state) => {
         selectedChain,
         cdrBounds: vizData.cdrBounds,
         pairedClone,
-        heavyClone
+        heavyClone,
+        dataFields
       };
     }
 
@@ -331,10 +341,11 @@ const mapStateToProps = (state) => {
       tree: vizData.treeData,
       selectedSeq: state.clonalFamilies.selectedSeq,
       selectedChain,
-      cdrBounds: vizData.cdrBounds
+      cdrBounds: vizData.cdrBounds,
+      dataFields
     };
   }
-  return { selectedFamily, selectedTree, selectedChain };
+  return { selectedFamily, selectedTree, selectedChain, dataFields };
 };
 
 // now for the actual component definition
@@ -364,10 +375,9 @@ class TreeViz extends React.Component {
       // Toggle to hide/show Vega control bindings
       hideControls: false
     };
-    // Spec with controls (for light chain in stacked mode, or single chain mode)
+    // Specs are memoized and regenerated only when dataFields changes
+    this.lastDataFields = null;
     this.spec = concatTreeWithAlignmentSpec({ showControls: true });
-    // Spec without controls (for heavy chain in stacked mode - mirrors light chain settings)
-    // Also hides legend and removes top padding for compact layout
     this.specNoControls = concatTreeWithAlignmentSpec({ showControls: false, showLegend: false, topPadding: 0 });
     this.treeDataFromProps = this.treeDataFromProps.bind(this);
     this.getChainData = this.getChainData.bind(this);
@@ -635,7 +645,7 @@ class TreeViz extends React.Component {
       cdr_bounds: cdrBounds,
       leaves_count_incl_naive: tree.leaves_count_incl_naive,
       pts_tuple: cloneForChain,
-      seed: cloneForChain.seed_id === null ? [] : [{ id: cloneForChain.seed_id }]
+      seed: cloneForChain.seed_id ? [{ id: cloneForChain.seed_id }] : []
     };
   }
 
@@ -653,7 +663,7 @@ class TreeViz extends React.Component {
       // Here we create a separate dataset only containing the id of the
       // seed sequence so as to check quickly for this id within the
       // viz to color the seed blue
-      seed: selectedFamily.seed_id === null ? [] : [{ id: selectedFamily.seed_id }]
+      seed: selectedFamily.seed_id ? [{ id: selectedFamily.seed_id }] : []
     };
   }
 
@@ -668,13 +678,26 @@ class TreeViz extends React.Component {
       dispatchSelectedSeq,
       dispatchLastClickedChain,
       selectedChain,
-      lightChainUnavailable
+      lightChainUnavailable,
+      dataFields
     } = this.props;
+
+    // Regenerate Vega specs when dataset field availability changes
+    if (dataFields !== this.lastDataFields) {
+      this.lastDataFields = dataFields;
+      this.spec = concatTreeWithAlignmentSpec({ showControls: true, availableFields: dataFields });
+      this.specNoControls = concatTreeWithAlignmentSpec({
+        showControls: false,
+        showLegend: false,
+        topPadding: 0,
+        availableFields: dataFields
+      });
+    }
     // TODO #94: We need to have a better way to tell if a family should not be
     // displayed because its data are incomplete. One idea is an 'incomplete' field
     // that we can set to true (upon building and checking for valid data) and have some
     // minimum bit of information saying the error that occured and/or the field that was not built.
-    const incompleteFamily = !selectedFamily.unique_seqs_count || !selectedFamily.trees;
+    const incompleteFamily = !selectedFamily.unique_seqs_count;
 
     // Being explicit about the fact that we are relying on the tree being
     // defined vs undefined instead of keeping track of its true loading state

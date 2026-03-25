@@ -95,7 +95,7 @@ describe("computeTreeData", () => {
     expect(mutAtPos3.mut_to).toBe("I");
   });
 
-  it("mutation records have null surprise fields when nodes lack surprise_scores", () => {
+  it("mutation records have null surprise fields when nodes lack surprise_mutations", () => {
     const result = computeTreeData(mockTree);
     const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
     const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
@@ -105,21 +105,24 @@ describe("computeTreeData", () => {
     expect(mutAtPos3.region).toBeNull();
   });
 
-  it("mutation records include surprise fields when nodes have surprise_scores", () => {
+  it("mutation records include surprise fields when nodes have surprise_mutations", () => {
     const treeWithSurprise = {
       ...mockTree,
       nodes: mockTree.nodes.map((node) => {
         if (node.sequence_id === "leaf-1") {
           return {
             ...node,
-            surprise_scores: {
-              3: {
+            surprise_mutations: [
+              {
+                site: 3,
+                parent_aa: "L",
+                child_aa: "I",
                 surprise_mutsel: 7.2,
                 surprise_neutral: 3.1,
                 selection_contribution: 4.1,
                 region: "CDR2"
               }
-            }
+            ]
           };
         }
         return node;

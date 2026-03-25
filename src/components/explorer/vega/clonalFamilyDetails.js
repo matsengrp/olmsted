@@ -6,10 +6,25 @@ import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRe
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 
 const concatTreeWithAlignmentSpec = (options = {}) => {
-  const { showControls = true, showLegend = true, topPadding = 20 } = options;
+  const { showControls = true, showLegend = true, topPadding = 20, availableFields = null } = options;
 
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
+
+  /**
+   * Filter dropdown options to exclude fields not present in the dataset.
+   * @param {string[]} opts - Full list of options
+   * @param {string} category - "node" or "clone"
+   * @returns {string[]} Filtered options
+   */
+  const filterOptions = (opts, category) => {
+    if (!availableFields || !availableFields[category]) return opts;
+    return opts.filter((opt) => {
+      if (opt === "<none>" || opt === "parent") return true;
+      const info = availableFields[category][opt];
+      return !info || info.present;
+    });
+  };
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -90,7 +105,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           // Calculate x_raw based on the current mode (for extent calculation)
           // Now depth is available from the tree transform
           {
-            expr: "fixed_branch_lengths ? datum.depth : datum.distance",
+            expr: "fixed_branch_lengths || datum.distance == null ? datum.depth : datum.distance",
             type: "formula",
             as: "x_raw"
           },
@@ -517,7 +532,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         value: "<none>",
         ...maybeAddBind({
           input: "select",
-          options: ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]
+          options: filterOptions(
+            ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"],
+            "node"
+          )
         })
       },
       {
@@ -535,14 +553,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // uses value from the child of the branch
         name: "branch_width_by",
         value: "<none>",
-        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi"] })
+        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi"], "node") })
       },
       {
         // Seq metric to use for coloring branches;
         // uses value from the child of the branch
         name: "branch_color_by",
         value: "parent",
-        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi", "parent"] })
+        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi", "parent"], "node") })
       },
       {
         name: "branch_color_scheme",
@@ -1516,7 +1534,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
                 }
               },
               enter: {
@@ -1549,7 +1567,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 },
                 outerRadius: {
                   scale: "leaf_size_scale",
@@ -1578,7 +1596,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 cursor: { value: "pointer" },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },
@@ -1616,7 +1634,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },

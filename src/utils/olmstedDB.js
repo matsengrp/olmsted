@@ -177,20 +177,8 @@ class OlmstedDB extends Dexie {
       const nodesArray = [];
       if (completeTree.nodes) {
         for (const [nodeId, nodeData] of Object.entries(completeTree.nodes)) {
-          const nodeForSelector = {
-            sequence_id: nodeId, // IMPORTANT: Use sequence_id not node_id for tree selectors
-            parent: nodeData.parent,
-            sequence_alignment: nodeData.sequence_alignment,
-            sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            distance: nodeData.distance,
-            length: nodeData.length,
-            lbi: nodeData.lbi,
-            lbr: nodeData.lbr,
-            affinity: nodeData.affinity,
-            type: nodeData.type,
-            multiplicity: nodeData.multiplicity,
-            timepoint_multiplicities: nodeData.timepoint_multiplicities
-          };
+          // Spread all node fields to preserve surprise_mutations, cluster_multiplicity, etc.
+          const nodeForSelector = { sequence_id: nodeId, ...nodeData };
           nodesArray.push(nodeForSelector);
         }
       }
@@ -242,20 +230,8 @@ class OlmstedDB extends Dexie {
       const nodesArray = [];
       if (completeTree.nodes) {
         for (const [nodeId, nodeData] of Object.entries(completeTree.nodes)) {
-          const nodeForSelector = {
-            sequence_id: nodeId, // IMPORTANT: Use sequence_id not node_id for tree selectors
-            parent: nodeData.parent,
-            sequence_alignment: nodeData.sequence_alignment,
-            sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            distance: nodeData.distance,
-            length: nodeData.length,
-            lbi: nodeData.lbi,
-            lbr: nodeData.lbr,
-            affinity: nodeData.affinity,
-            type: nodeData.type,
-            multiplicity: nodeData.multiplicity,
-            timepoint_multiplicities: nodeData.timepoint_multiplicities
-          };
+          // Spread all node fields to preserve surprise_mutations, cluster_multiplicity, etc.
+          const nodeForSelector = { sequence_id: nodeId, ...nodeData };
           nodesArray.push(nodeForSelector);
         }
       }

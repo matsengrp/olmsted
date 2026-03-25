@@ -5,6 +5,7 @@ import { CenterContent } from "./centerContent";
 import FileProcessor from "../../utils/fileProcessor";
 import SplitFileProcessor from "../../utils/splitFileProcessor";
 import clientDataStore from "../../utils/clientDataStore";
+import { getMissingFieldSummary } from "../../utils/fieldDefaults";
 import { getClientDatasets } from "../../actions/clientDataLoader";
 import { SimpleInProgress } from "../util/loading";
 
@@ -93,6 +94,10 @@ class FileUpload extends React.Component {
       this.updateLoadingStatus("Storing data in browser database...", 75);
       const datasetId = await clientDataStore.storeProcessedData(result);
 
+      // Check for missing fields and build warning summary
+      const dataFields = result.datasets[0]?.data_fields;
+      const missingFieldWarnings = getMissingFieldSummary(dataFields);
+
       // Add to uploaded files list
       this.updateLoadingStatus("Finalizing upload...", 90);
       this.setState((prevState) => ({
@@ -103,7 +108,8 @@ class FileUpload extends React.Component {
             datasetId: datasetId,
             fileType,
             dataset: result.datasets[0],
-            success: true
+            success: true,
+            missingFieldWarnings
           }
         ]
       }));
@@ -428,7 +434,7 @@ class FileUpload extends React.Component {
                       alignItems: "center"
                     }}
                   >
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: "#666" }}>
                         ({file.fileType === "consolidated-split" ? "Consolidated Split" : "Consolidated"} format)
@@ -441,6 +447,26 @@ class FileUpload extends React.Component {
                       {file.fileCount && (
                         <div style={{ fontSize: 11, color: "#888", marginTop: 3 }}>
                           Files: {file.originalFiles ? file.originalFiles.join(", ") : `${file.fileCount} files`}
+                        </div>
+                      )}
+                      {file.missingFieldWarnings && file.missingFieldWarnings.length > 0 && (
+                        <div
+                          style={{
+                            marginTop: 6,
+                            padding: "6px 10px",
+                            backgroundColor: "#fff3cd",
+                            border: "1px solid #ffc107",
+                            borderRadius: 4,
+                            color: "#856404",
+                            fontSize: 12
+                          }}
+                        >
+                          <strong>Some data fields were not found and will be unavailable:</strong>
+                          <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                            {file.missingFieldWarnings.map((w) => (
+                              <li key={w}>{w}</li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>

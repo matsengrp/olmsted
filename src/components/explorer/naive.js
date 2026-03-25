@@ -165,7 +165,11 @@ const getNaiveVizData = (clone, label = "5p") => {
 };
 
 function NaiveSequence({ datum }) {
-  return <VegaChart spec={naiveVegaSpec} data={getNaiveVizData(datum)} />;
+  const vizData = getNaiveVizData(datum);
+  if (vizData.source.length === 0) {
+    return <span style={{ color: "#888", fontStyle: "italic", fontSize: 12 }}>Gene region data not available</span>;
+  }
+  return <VegaChart spec={naiveVegaSpec} data={vizData} />;
 }
 
 export { NaiveSequence, getNaiveVizData };

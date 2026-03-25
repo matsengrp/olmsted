@@ -6,14 +6,23 @@ import * as clonalFamiliesSelectors from "./clonalFamilies";
 const getSelectedTreeIdent = (state) => state.trees.selectedTreeIdent;
 
 export const getTreeFromCache = (cache, family, selectedIdent) => {
-  const ident =
-    selectedIdent ||
-    (
+  if (selectedIdent) {
+    return cache[selectedIdent];
+  }
+
+  // If the clone has embedded tree references, use them with preferred strategy ordering
+  if (family.trees && _.values(family.trees).length > 0) {
+    const ident = (
       _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" }) ||
       _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" }) ||
       _.values(family.trees)[0]
     ).ident;
-  return cache[ident];
+    return cache[ident];
+  }
+
+  // Fallback: find a cached tree whose clone_id matches this family
+  const cloneId = family.clone_id || family.ident;
+  return _.find(_.values(cache), { clone_id: cloneId });
 };
 
 // combine these to select out the actual selected tree entity
@@ -68,7 +77,7 @@ const createAlignment = (naive_seq, tree) => {
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
-        const surpriseData = node.surprise_scores?.[String(i)];
+        const surpriseData = node.surprise_mutations?.find((m) => m.site === i);
         mutations.push({
           type: node.type,
           parent: node.parent,

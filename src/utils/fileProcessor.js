@@ -1,3 +1,5 @@
+import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
+
 /**
  * File processor for olmsted-cli consolidated format JSON files
  * Processes pre-processed consolidated format files for client-side storage
@@ -89,6 +91,10 @@ class FileProcessor {
       }
     };
 
+    // Detect which optional fields are present before applying defaults
+    const dataFields = detectFieldPresence(datasetClones, data.trees);
+    processedDataset.data_fields = dataFields;
+
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
     const processedTrees = (data.trees || []).map((tree) => {
@@ -98,8 +104,13 @@ class FileProcessor {
         processedNodes = {};
         tree.nodes.forEach((node, nodeIndex) => {
           const nodeId = node.sequence_id || String(nodeIndex);
+          applyNodeDefaults(node);
           processedNodes[nodeId] = node;
         });
+      } else if (processedNodes && typeof processedNodes === "object") {
+        for (const nodeData of Object.values(processedNodes)) {
+          applyNodeDefaults(nodeData);
+        }
       }
 
       return {
@@ -110,14 +121,25 @@ class FileProcessor {
       };
     });
 
-    // Process clones (tree references already exist, don't extract trees from clones)
+    // Process clones — apply defaults and extract germline from tree root if missing
     const processedClones = datasetClones.map((clone) => {
-      return {
+      const processed = {
         ...clone,
         dataset_id: datasetId,
         ident: clone.ident || this.generateUUID()
       };
+      applyCloneDefaults(processed);
+      extractGermlineFromTree(processed, processedTrees);
+      return processed;
     });
+
+    // Update germline_alignment field status if we extracted it from tree roots
+    if (dataFields.clone.germline_alignment && dataFields.clone.germline_alignment.defaulted) {
+      const hasExtractedGermline = processedClones.some((c) => c.germline_alignment);
+      if (hasExtractedGermline) {
+        dataFields.clone.germline_alignment = { present: true, defaulted: false };
+      }
+    }
 
     return {
       datasets: [processedDataset],
