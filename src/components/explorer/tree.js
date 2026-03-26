@@ -382,6 +382,24 @@ class TreeViz extends React.Component {
     this.handleVegaError = this.handleVegaError.bind(this);
     this.focusSubtree = this.focusSubtree.bind(this);
     this.resetSubtree = this.resetSubtree.bind(this);
+    // Saved Vega signal values to restore after subtree focus re-mount
+    this.savedSignals = null;
+    // User-configurable signals to preserve across re-mounts
+    this.preservedSignalNames = [
+      "max_leaf_size",
+      "leaf_size_by",
+      "branch_width_by",
+      "branch_color_by",
+      "branch_color_scheme",
+      "min_color_value",
+      "show_labels",
+      "fixed_branch_lengths",
+      "tree_group_width_ratio",
+      "viz_height_ratio",
+      "show_alignment",
+      "show_mutation_borders",
+      "color_by_surprise"
+    ];
     // Specs are memoized and regenerated only when dataFields changes
     this.lastDataFields = null;
     this.spec = concatTreeWithAlignmentSpec({ showControls: true });
@@ -498,6 +516,20 @@ class TreeViz extends React.Component {
     if (this.context && this.context.setTreeView) {
       this.context.setTreeView(view);
     }
+
+    // Restore saved signals from before subtree re-mount
+    if (this.savedSignals) {
+      for (const [name, value] of Object.entries(this.savedSignals)) {
+        try {
+          view.signal(name, value);
+        } catch (e) {
+          // Signal may not exist in this spec variant
+        }
+      }
+      view.runAsync();
+      this.savedSignals = null;
+    }
+
     view.addSignalListener("viz_focused", (name, value) => {
       if (value) this.isFocused = true;
     });
@@ -520,9 +552,27 @@ class TreeViz extends React.Component {
   /**
    * Focus the tree view on the subtree rooted at the currently selected node.
    */
+  /**
+   * Save current Vega signal values so they can be restored after re-mount.
+   */
+  saveSignals() {
+    const view = this.singleVegaRef;
+    if (!view) return;
+    const saved = {};
+    for (const name of this.preservedSignalNames) {
+      try {
+        saved[name] = view.signal(name);
+      } catch (e) {
+        // Signal may not exist in this spec variant
+      }
+    }
+    this.savedSignals = saved;
+  }
+
   focusSubtree() {
     const { selectedSeq } = this.props;
     if (selectedSeq) {
+      this.saveSignals();
       this.setState({ subtreeRoot: selectedSeq, vegaError: null });
     }
   }
@@ -531,6 +581,7 @@ class TreeViz extends React.Component {
    * Reset to showing the full tree.
    */
   resetSubtree() {
+    this.saveSignals();
     this.setState({ subtreeRoot: null, vegaError: null });
   }
 
