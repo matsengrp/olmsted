@@ -2627,6 +2627,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
           },
           labels: {
+            update: {
+              opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" },
+              fontSize: { signal: "show_alignment && color_by_surprise ? 10 : 0" }
+            }
+          },
+          gradient: {
             update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
           }
         }
