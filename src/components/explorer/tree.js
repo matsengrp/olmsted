@@ -645,11 +645,11 @@ class TreeViz extends React.Component {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
           <span>
             <span style={labelStyle}>Root: </span>
-            <span style={valueStyle}>{effectiveRoot || "—"}</span>
+            <span style={valueStyle}>{(typeof effectiveRoot === "string" ? effectiveRoot : null) || "—"}</span>
           </span>
           <span>
             <span style={labelStyle}>Selected: </span>
-            <span style={valueStyle}>{selectedSeq || "—"}</span>
+            <span style={valueStyle}>{(typeof selectedSeq === "string" ? selectedSeq : null) || "—"}</span>
           </span>
         </div>
         {/* Controls */}
@@ -826,8 +826,9 @@ class TreeViz extends React.Component {
 
     // Auto-select the root node when a tree first loads and no node is selected
     if (tree && tree.nodes && !selectedSeq) {
-      const rootNode = tree.nodes.find((n) => !n.parent || n.type === "root");
-      if (rootNode) {
+      const nodesArr = this.normalizeNodes(tree.nodes);
+      const rootNode = nodesArr.find((n) => !n.parent || n.type === "root");
+      if (rootNode && rootNode.sequence_id) {
         dispatchSelectedSeq(rootNode.sequence_id);
       }
     }
