@@ -474,6 +474,19 @@ class TreeViz extends React.Component {
       this.context.setTreeView(lightView);
     }
 
+    // Restore saved signals from before subtree re-mount
+    if (this.savedSignals) {
+      for (const [name, value] of Object.entries(this.savedSignals)) {
+        try {
+          lightView.signal(name, value);
+        } catch (e) {
+          // Signal may not exist in this spec variant
+        }
+      }
+      lightView.runAsync();
+      this.savedSignals = null;
+    }
+
     // Set initial height ratio for stacked mode
     if (initialHeightRatio !== null) {
       lightView.signal("viz_height_ratio", initialHeightRatio).run();
@@ -556,7 +569,8 @@ class TreeViz extends React.Component {
    * Save current Vega signal values so they can be restored after re-mount.
    */
   saveSignals() {
-    const view = this.singleVegaRef;
+    // Try single-chain view first, fall back to light chain view (stacked mode has controls)
+    const view = this.singleVegaRef || (this.lightVegaRef && this.lightVegaRef.current);
     if (!view) return;
     const saved = {};
     for (const name of this.preservedSignalNames) {
@@ -858,12 +872,27 @@ class TreeViz extends React.Component {
     // Only compute remaining data after validation passes
     const cdrBounds = chain === CHAIN_TYPES.HEAVY ? heavyCdrBounds : lightCdrBounds;
 
+    const { subtreeRoot } = this.state;
+    let nodes = tree.nodes;
+    let alignment = tree.tips_alignment;
+    let leavesCount = tree.leaves_count_incl_naive;
+
+    // Apply subtree filter if focused
+    if (subtreeRoot && nodes) {
+      const subtreeIds = this.getSubtreeNodeIds(nodes, subtreeRoot);
+      nodes = nodes
+        .filter((n) => subtreeIds.has(n.sequence_id))
+        .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
+      alignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
+      leavesCount = nodes.filter((n) => n.type === "root" || n.type === "leaf").length;
+    }
+
     return {
-      source_0: tree.nodes,
-      source_1: tree.tips_alignment,
+      source_0: nodes,
+      source_1: alignment,
       naive_data: naiveData.source,
       cdr_bounds: cdrBounds,
-      leaves_count_incl_naive: tree.leaves_count_incl_naive,
+      leaves_count_incl_naive: leavesCount,
       pts_tuple: cloneForChain,
       seed: cloneForChain.seed_id ? [{ id: cloneForChain.seed_id }] : []
     };
@@ -1050,6 +1079,7 @@ class TreeViz extends React.Component {
               <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
               {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
+                key={`heavy-${subtreeRoot || "full"}`}
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
                   view.addSignalListener("pts_tuple", (name, node) => {
@@ -1066,6 +1096,7 @@ class TreeViz extends React.Component {
               />
               {lightTree ? (
                 <VegaChart
+                  key={`light-${subtreeRoot || "full"}`}
                   onNewView={(view) => {
                     this.setupLightChainSignalSync(view, 0.4);
                     view.addSignalListener("pts_tuple", (name, node) => {
