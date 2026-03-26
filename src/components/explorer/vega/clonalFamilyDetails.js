@@ -2824,6 +2824,10 @@ const seqAlignSpec = (family, options = {}) => {
                 scale: "surprise_color",
                 field: "surprise_mutsel"
               },
+              {
+                test: "color_by_surprise && datum.surprise_mutsel === null",
+                value: null
+              },
               { scale: "aa_color", field: "mut_to" }
             ],
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
