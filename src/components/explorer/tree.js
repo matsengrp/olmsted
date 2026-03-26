@@ -42,6 +42,7 @@ class TreeHeader extends React.Component {
   render() {
     const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } =
       this.props;
+    if (!tree) return null;
     return (
       <div>
         <CollapseHelpTitle
