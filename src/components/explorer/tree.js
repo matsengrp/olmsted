@@ -682,7 +682,7 @@ class TreeViz extends React.Component {
           )}
           {children.length > 0 && (
             <select
-              value={selectedSeq || ""}
+              value=""
               onChange={(e) => {
                 if (e.target.value) dispatchSelectedSeq(e.target.value);
               }}
@@ -695,9 +695,7 @@ class TreeViz extends React.Component {
               }}
               title={`Children of ${effectiveRoot}`}
             >
-              <option value="" disabled>
-                Children of {effectiveRoot}
-              </option>
+              <option value="">Children of {typeof effectiveRoot === "string" ? effectiveRoot : "root"}</option>
               {children.map((child) => (
                 <option key={child.sequence_id} value={child.sequence_id}>
                   {child.sequence_id} ({child.type || "node"})
