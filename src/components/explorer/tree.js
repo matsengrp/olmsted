@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
-import { FiEye, FiEyeOff, FiGitBranch, FiRotateCcw } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiGitBranch, FiRotateCcw, FiChevronDown } from "react-icons/fi";
 import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
@@ -585,6 +585,124 @@ class TreeViz extends React.Component {
     this.setState({ subtreeRoot: null, vegaError: null });
   }
 
+  /**
+   * Get direct children of a given node from the tree's nodes array.
+   */
+  getDirectChildren(nodes, parentId) {
+    if (!nodes || !parentId) return [];
+    return nodes.filter((n) => n.parent === parentId).sort((a, b) => a.sequence_id.localeCompare(b.sequence_id));
+  }
+
+  /**
+   * Get the current effective root — subtreeRoot if focused, otherwise the tree root.
+   */
+  getEffectiveRootId(nodes) {
+    if (this.state.subtreeRoot) return this.state.subtreeRoot;
+    if (!nodes) return null;
+    const root = nodes.find((n) => !n.parent || n.type === "root");
+    return root ? root.sequence_id : null;
+  }
+
+  /**
+   * Render the subtree navigation bar (focus/reset buttons + children dropdown).
+   */
+  renderSubtreeNav(tree) {
+    const { selectedSeq, dispatchSelectedSeq } = this.props;
+    const { subtreeRoot } = this.state;
+    const nodes = tree ? tree.nodes : null;
+    const effectiveRoot = this.getEffectiveRootId(nodes);
+    const children = this.getDirectChildren(nodes, effectiveRoot);
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          marginBottom: 6,
+          flexWrap: "wrap",
+          fontSize: 12
+        }}
+      >
+        <button
+          type="button"
+          onClick={this.focusSubtree}
+          disabled={!selectedSeq}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "3px 7px",
+            fontSize: 12,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            backgroundColor: selectedSeq ? "#fff" : "#f5f5f5",
+            color: selectedSeq ? "#333" : "#999",
+            cursor: selectedSeq ? "pointer" : "default",
+            transition: "all 0.15s ease"
+          }}
+          title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
+        >
+          <FiGitBranch size={12} />
+          {subtreeRoot ? `Focused: ${subtreeRoot}` : selectedSeq ? `Focus Subtree (${selectedSeq})` : "Focus Subtree"}
+        </button>
+        {subtreeRoot && (
+          <button
+            type="button"
+            onClick={this.resetSubtree}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "3px 7px",
+              fontSize: 12,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              backgroundColor: "#e3f2fd",
+              color: "#333",
+              cursor: "pointer",
+              transition: "all 0.15s ease"
+            }}
+            title="Show full tree"
+          >
+            <FiRotateCcw size={12} />
+            Full Tree
+          </button>
+        )}
+        {children.length > 0 && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <FiChevronDown size={12} style={{ color: "#666" }} />
+            <select
+              value={selectedSeq || ""}
+              onChange={(e) => {
+                if (e.target.value) {
+                  dispatchSelectedSeq(e.target.value);
+                }
+              }}
+              style={{
+                padding: "3px 5px",
+                fontSize: 12,
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                cursor: "pointer"
+              }}
+              title={`Children of ${effectiveRoot}`}
+            >
+              <option value="" disabled>
+                Select child of {effectiveRoot}
+              </option>
+              {children.map((child) => (
+                <option key={child.sequence_id} value={child.sequence_id}>
+                  {child.sequence_id} ({child.type || "node"})
+                </option>
+              ))}
+            </select>
+          </span>
+        )}
+      </div>
+    );
+  }
+
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
   setupHeavyChainSignalSync(heavyView) {
     this.heavyVegaRef.current = heavyView;
@@ -1041,6 +1159,7 @@ class TreeViz extends React.Component {
               return (
                 <div>
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
+                  {this.renderSubtreeNav(tree)}
                   <VegaChart
                     key={`tree-${subtreeRoot || "full"}`}
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
@@ -1052,13 +1171,16 @@ class TreeViz extends React.Component {
               );
             })()}
           {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
-            <VegaChart
-              key={`tree-${subtreeRoot || "full"}`}
-              onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
-              onError={this.handleVegaError}
-              data={this.tempVegaData}
-              spec={this.spec}
-            />
+            <div>
+              {this.renderSubtreeNav(tree)}
+              <VegaChart
+                key={`tree-${subtreeRoot || "full"}`}
+                onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
+                onError={this.handleVegaError}
+                data={this.tempVegaData}
+                spec={this.spec}
+              />
+            </div>
           )}
 
           {/* Export and download options */}
@@ -1094,57 +1216,6 @@ class TreeViz extends React.Component {
                 vegaView={this.state.currentVegaView}
                 filename={`olmsted-tree-${selectedFamily.clone_id || "family"}`}
               />
-              <button
-                type="button"
-                onClick={this.focusSubtree}
-                disabled={!selectedSeq}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  padding: "4px 8px",
-                  fontSize: 12,
-                  border: "1px solid #ccc",
-                  borderRadius: 4,
-                  backgroundColor: selectedSeq ? "#fff" : "#f5f5f5",
-                  color: selectedSeq ? "#333" : "#999",
-                  cursor: selectedSeq ? "pointer" : "default",
-                  transition: "all 0.15s ease"
-                }}
-                title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
-              >
-                <FiGitBranch size={14} />
-                <span>
-                  {subtreeRoot
-                    ? `Focused: ${subtreeRoot}`
-                    : selectedSeq
-                      ? `Focus Subtree (${selectedSeq})`
-                      : "Focus Subtree"}
-                </span>
-              </button>
-              {subtreeRoot && (
-                <button
-                  type="button"
-                  onClick={this.resetSubtree}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "4px 8px",
-                    fontSize: 12,
-                    border: "1px solid #ccc",
-                    borderRadius: 4,
-                    backgroundColor: "#e3f2fd",
-                    color: "#333",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease"
-                  }}
-                  title="Show full tree"
-                >
-                  <FiRotateCcw size={14} />
-                  <span>Full Tree</span>
-                </button>
-              )}
             </div>
           )}
           {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
