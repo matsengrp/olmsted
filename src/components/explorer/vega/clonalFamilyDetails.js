@@ -2994,6 +2994,28 @@ const seqAlignSpec = (family, options = {}) => {
             update: { shape: { value: "square" }, opacity: { value: 0.7 } }
           }
         }
+      },
+      {
+        orient: "right",
+        direction: "vertical",
+        fill: "surprise_color",
+        title: { signal: "color_by_surprise ? 'Surprise score' : ''" },
+        type: "gradient",
+        gradientLength: { signal: "color_by_surprise ? 100 : 0" },
+        encode: {
+          legend: {
+            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+          },
+          labels: {
+            update: {
+              opacity: { signal: "color_by_surprise ? 1 : 0" },
+              fontSize: { signal: "color_by_surprise ? 10 : 0" }
+            }
+          },
+          gradient: {
+            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+          }
+        }
       }
     ]
   };

@@ -381,6 +381,16 @@ const computeLineageData = (tree, seq, includeAllNodes = false) => {
   }
 
   const treeData = _.clone(tree); // clone for assign by value
+
+  // Apply same root normalization as computeTreeData
+  if (treeData.nodes) {
+    treeData.nodes = _.map(treeData.nodes, (x) =>
+      x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
+    );
+    const rootResult = ensureSingleRoot(treeData.nodes);
+    treeData.nodes = rootResult.nodes;
+  }
+
   if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {
     const data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
