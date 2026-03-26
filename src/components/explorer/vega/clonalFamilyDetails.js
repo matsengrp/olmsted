@@ -2303,9 +2303,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         value: null
                       },
                       {
-                        test: "color_by_surprise",
+                        test: "color_by_surprise && datum.surprise_mutsel !== null",
                         scale: "surprise_color",
-                        signal: "datum.surprise_mutsel !== null ? datum.surprise_mutsel : 0"
+                        field: "surprise_mutsel"
+                      },
+                      {
+                        test: "color_by_surprise && datum.surprise_mutsel === null",
+                        value: null
                       },
                       { scale: "aa_color", field: "mut_to" }
                     ],
