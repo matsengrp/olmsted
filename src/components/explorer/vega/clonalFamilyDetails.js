@@ -2303,9 +2303,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         value: null
                       },
                       {
-                        test: "color_by_surprise && datum.surprise_mutsel !== null",
+                        test: "color_by_surprise",
                         scale: "surprise_color",
-                        field: "surprise_mutsel"
+                        signal: "datum.surprise_mutsel !== null ? datum.surprise_mutsel : 0"
                       },
                       { scale: "aa_color", field: "mut_to" }
                     ],
@@ -2313,7 +2313,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal:
-                        'color_by_surprise && datum.surprise_mutsel !== null ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": format(datum["surprise_mutsel"], ".1f"), "selection_contribution": format(datum["selection_contribution"], ".1f"), "region": \'\'+datum["region"]} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                        'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {
@@ -2816,7 +2816,7 @@ const seqAlignSpec = (family, options = {}) => {
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
               signal:
-                'color_by_surprise && datum.surprise_mutsel !== null ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": format(datum["surprise_mutsel"], ".1f"), "selection_contribution": format(datum["selection_contribution"], ".1f"), "region": \'\'+datum["region"]} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
