@@ -588,9 +588,20 @@ class TreeViz extends React.Component {
   /**
    * Get direct children of a given node from the tree's nodes array.
    */
+  /**
+   * Normalize nodes to an array (they may be an object keyed by sequence_id or an array).
+   */
+  normalizeNodes(nodes) {
+    if (!nodes) return [];
+    return Array.isArray(nodes) ? nodes : Object.values(nodes);
+  }
+
   getDirectChildren(nodes, parentId) {
-    if (!nodes || !parentId) return [];
-    return nodes.filter((n) => n.parent === parentId).sort((a, b) => a.sequence_id.localeCompare(b.sequence_id));
+    if (!parentId) return [];
+    const arr = this.normalizeNodes(nodes);
+    return arr
+      .filter((n) => n.parent === parentId)
+      .sort((a, b) => String(a.sequence_id).localeCompare(String(b.sequence_id)));
   }
 
   /**
@@ -598,8 +609,9 @@ class TreeViz extends React.Component {
    */
   getEffectiveRootId(nodes) {
     if (this.state.subtreeRoot) return this.state.subtreeRoot;
-    if (!nodes) return null;
-    const root = nodes.find((n) => !n.parent || n.type === "root");
+    const arr = this.normalizeNodes(nodes);
+    if (arr.length === 0) return null;
+    const root = arr.find((n) => !n.parent || n.type === "root");
     return root ? root.sequence_id : null;
   }
 
