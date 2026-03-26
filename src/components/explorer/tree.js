@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
-import { FiEye, FiEyeOff, FiGitBranch, FiRotateCcw, FiChevronDown } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiGitBranch, FiRotateCcw } from "react-icons/fi";
 import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
@@ -613,71 +613,66 @@ class TreeViz extends React.Component {
     const effectiveRoot = this.getEffectiveRootId(nodes);
     const children = this.getDirectChildren(nodes, effectiveRoot);
 
+    const labelStyle = { color: "#666", fontWeight: "normal" };
+    const valueStyle = { color: "#333", fontWeight: 500 };
+    const btnStyle = {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4,
+      padding: "3px 7px",
+      fontSize: 12,
+      border: "1px solid #ccc",
+      borderRadius: 4,
+      cursor: "pointer",
+      transition: "all 0.15s ease"
+    };
+
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 6,
-          flexWrap: "wrap",
-          fontSize: 12
-        }}
-      >
-        <button
-          type="button"
-          onClick={this.focusSubtree}
-          disabled={!selectedSeq}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            padding: "3px 7px",
-            fontSize: 12,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            backgroundColor: selectedSeq ? "#fff" : "#f5f5f5",
-            color: selectedSeq ? "#333" : "#999",
-            cursor: selectedSeq ? "pointer" : "default",
-            transition: "all 0.15s ease"
-          }}
-          title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
-        >
-          <FiGitBranch size={12} />
-          {subtreeRoot ? `Focused: ${subtreeRoot}` : selectedSeq ? `Focus Subtree (${selectedSeq})` : "Focus Subtree"}
-        </button>
-        {subtreeRoot && (
+      <div style={{ marginBottom: 6, fontSize: 12 }}>
+        {/* Status line */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+          <span>
+            <span style={labelStyle}>Root: </span>
+            <span style={valueStyle}>{effectiveRoot || "—"}</span>
+          </span>
+          <span>
+            <span style={labelStyle}>Selected: </span>
+            <span style={valueStyle}>{selectedSeq || "—"}</span>
+          </span>
+        </div>
+        {/* Controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <button
             type="button"
-            onClick={this.resetSubtree}
+            onClick={this.focusSubtree}
+            disabled={!selectedSeq}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "3px 7px",
-              fontSize: 12,
-              border: "1px solid #ccc",
-              borderRadius: 4,
-              backgroundColor: "#e3f2fd",
-              color: "#333",
-              cursor: "pointer",
-              transition: "all 0.15s ease"
+              ...btnStyle,
+              backgroundColor: selectedSeq ? "#fff" : "#f5f5f5",
+              color: selectedSeq ? "#333" : "#999",
+              cursor: selectedSeq ? "pointer" : "default"
             }}
-            title="Show full tree"
+            title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
           >
-            <FiRotateCcw size={12} />
-            Full Tree
+            <FiGitBranch size={12} />
+            Focus Subtree
           </button>
-        )}
-        {children.length > 0 && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <FiChevronDown size={12} style={{ color: "#666" }} />
+          {subtreeRoot && (
+            <button
+              type="button"
+              onClick={this.resetSubtree}
+              style={{ ...btnStyle, backgroundColor: "#e3f2fd" }}
+              title="Show full tree"
+            >
+              <FiRotateCcw size={12} />
+              Full Tree
+            </button>
+          )}
+          {children.length > 0 && (
             <select
               value={selectedSeq || ""}
               onChange={(e) => {
-                if (e.target.value) {
-                  dispatchSelectedSeq(e.target.value);
-                }
+                if (e.target.value) dispatchSelectedSeq(e.target.value);
               }}
               style={{
                 padding: "3px 5px",
@@ -689,7 +684,7 @@ class TreeViz extends React.Component {
               title={`Children of ${effectiveRoot}`}
             >
               <option value="" disabled>
-                Select child of {effectiveRoot}
+                Children of {effectiveRoot}
               </option>
               {children.map((child) => (
                 <option key={child.sequence_id} value={child.sequence_id}>
@@ -697,8 +692,8 @@ class TreeViz extends React.Component {
                 </option>
               ))}
             </select>
-          </span>
-        )}
+          )}
+        </div>
       </div>
     );
   }
