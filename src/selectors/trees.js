@@ -328,6 +328,34 @@ export const computeTreeData = (tree) => {
     }
   }
 
+  // Compute node depth (edges from root) — done on full tree before any filtering
+  if (treeData.nodes && treeData.nodes.length > 0) {
+    const childrenMap = {};
+    let rootId = null;
+    for (const node of treeData.nodes) {
+      if (!node.parent) {
+        rootId = node.sequence_id;
+      } else {
+        if (!childrenMap[node.parent]) childrenMap[node.parent] = [];
+        childrenMap[node.parent].push(node.sequence_id);
+      }
+    }
+    if (rootId) {
+      const depthMap = {};
+      const queue = [[rootId, 0]];
+      while (queue.length > 0) {
+        const [nodeId, d] = queue.shift();
+        depthMap[nodeId] = d;
+        for (const childId of childrenMap[nodeId] || []) {
+          queue.push([childId, d + 1]);
+        }
+      }
+      treeData.nodes = treeData.nodes.map((n) =>
+        depthMap[n.sequence_id] !== undefined ? { ...n, node_depth: depthMap[n.sequence_id] } : n
+      );
+    }
+  }
+
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);
     const naive = findNaive(data);

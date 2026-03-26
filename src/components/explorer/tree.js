@@ -1055,9 +1055,15 @@ class TreeViz extends React.Component {
                 title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
               >
                 <FiGitBranch size={14} />
-                <span>Focus Subtree</span>
+                <span>
+                  {subtreeRoot
+                    ? `Focused: ${subtreeRoot}`
+                    : selectedSeq
+                      ? `Focus Subtree (${selectedSeq})`
+                      : "Focus Subtree"}
+                </span>
               </button>
-              {this.state.subtreeRoot && (
+              {subtreeRoot && (
                 <button
                   type="button"
                   onClick={this.resetSubtree}
