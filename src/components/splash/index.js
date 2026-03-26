@@ -274,7 +274,7 @@ class Splash extends React.Component {
                 type="button"
                 style={{
                   border: "0px",
-                  backgroundColor: this.state.exploreHovered ? "#042a6b" : "#05337f",
+                  backgroundColor: this.state.exploreHovered ? "#1a5e1f" : "#1b7a22",
                   borderRadius: 5,
                   cursor: "pointer",
                   padding: 20,
