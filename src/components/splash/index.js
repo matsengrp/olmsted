@@ -10,7 +10,7 @@ import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
-import { FiHelpCircle, FiCompass, FiUpload, FiTrash2, FiXCircle } from "react-icons/fi";
+import { FiHelpCircle, FiCompass, FiUpload, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
 
@@ -356,7 +356,7 @@ class Splash extends React.Component {
                 onMouseLeave={() => this.setState({ deleteSelectedHovered: false })}
                 onClick={this.handleDeleteSelected}
               >
-                <FiXCircle size={20} />
+                <FiTrash2 size={20} />
                 Delete Selected Datasets
               </button>
               <button
@@ -381,7 +381,7 @@ class Splash extends React.Component {
                 onMouseLeave={() => this.setState({ clearHovered: false })}
                 onClick={this.handleClearAll}
               >
-                <FiTrash2 size={20} />
+                <FiAlertTriangle size={20} />
                 Delete ALL Datasets
               </button>
             </div>
