@@ -14,6 +14,7 @@ class FileUpload extends React.Component {
     super(props);
     this.state = {
       uploadedFiles: [],
+      dismissedWarnings: new Set(),
       isProcessing: false,
       error: null,
       loadingStage: "",
@@ -422,10 +423,18 @@ class FileUpload extends React.Component {
             <div style={{ marginTop: 30 }}>
               <h4>Uploaded Files:</h4>
               {/* Data warnings — shown between header and file list */}
-              {uploadedFiles.some((f) => f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0) && (
+              {uploadedFiles.some(
+                (f) =>
+                  !this.state.dismissedWarnings.has(f.datasetId) &&
+                  (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+              ) && (
                 <div style={{ marginBottom: 10 }}>
                   {uploadedFiles
-                    .filter((f) => f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                    .filter(
+                      (f) =>
+                        !this.state.dismissedWarnings.has(f.datasetId) &&
+                        (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                    )
                     .map((file) => (
                       <div
                         key={`warn-${file.datasetId}`}
@@ -439,8 +448,39 @@ class FileUpload extends React.Component {
                           fontSize: 11
                         }}
                       >
-                        <div style={{ fontSize: 14, marginBottom: 8 }}>
-                          <strong>{file.fileName}</strong> — uploaded successfully with warnings:
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom: 8
+                          }}
+                        >
+                          <div style={{ fontSize: 14 }}>
+                            <strong>{file.fileName}</strong> — uploaded successfully with warnings:
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              this.setState((prev) => ({
+                                dismissedWarnings: new Set([...prev.dismissedWarnings, file.datasetId])
+                              }))
+                            }
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "0 2px",
+                              fontSize: 16,
+                              color: "#856404",
+                              lineHeight: 1,
+                              flexShrink: 0
+                            }}
+                            title="Dismiss warning"
+                            aria-label="Dismiss warning"
+                          >
+                            &times;
+                          </button>
                         </div>
                         {file.missingFieldWarnings?.length > 0 && (
                           <div style={{ marginBottom: 4 }}>
