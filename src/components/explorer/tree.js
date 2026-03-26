@@ -633,7 +633,7 @@ class TreeViz extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { selectedFamily, selectedChain, dispatchSelectedChain } = this.props;
+    const { selectedFamily, selectedChain, dispatchSelectedChain, tree, selectedSeq, dispatchSelectedSeq } = this.props;
     // When family changes, check if we need to reset chain selection
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
       // Clear any previous Vega error and subtree focus when switching families
@@ -645,6 +645,14 @@ class TreeViz extends React.Component {
       // If in "both" or "light" mode but new family is not paired, reset to "heavy"
       if ((isBothMode || isLightMode) && !selectedFamily.is_paired) {
         dispatchSelectedChain(CHAIN_TYPES.HEAVY);
+      }
+    }
+
+    // Auto-select the root node when a tree first loads and no node is selected
+    if (tree && tree.nodes && !selectedSeq) {
+      const rootNode = tree.nodes.find((n) => !n.parent || n.type === "root");
+      if (rootNode) {
+        dispatchSelectedSeq(rootNode.sequence_id);
       }
     }
   }
