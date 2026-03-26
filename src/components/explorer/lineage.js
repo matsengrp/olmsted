@@ -221,6 +221,12 @@ class Lineage extends React.Component {
                       <strong>Download FASTA:</strong> Download all sequences in the lineage as a FASTA file
                     </li>
                   </ul>
+                  <strong>Surprise Score Coloring:</strong> When the dataset includes per-mutation surprise scores, the
+                  &quot;Color by surprise score&quot; toggle (enabled in the Clonal Family Details view above) also
+                  applies here. Scored mutations are colored using an orange heat scale; unscored mutations become
+                  invisible. A surprise score legend appears on the right when active.
+                  <br />
+                  <br />
                   <strong>Display Options:</strong>
                   <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                     <li>

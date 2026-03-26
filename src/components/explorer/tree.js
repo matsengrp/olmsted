@@ -144,6 +144,38 @@ class TreeHeader extends React.Component {
                   <strong>Parent:</strong> Colors branches by parentage; sibling branches share a common color
                 </li>
               </ul>
+              <strong>Surprise Score Coloring:</strong> When the dataset includes per-mutation surprise scores (computed
+              by DASM mutation-selection models), a &quot;Color by surprise score&quot; toggle appears in the plot
+              settings. Enabling it recolors mutation rectangles using an orange heat scale where darker values indicate
+              more surprising mutations (less likely under the model). Mutations without surprise data become invisible
+              so only scored mutations are visible. Hover over a colored mutation to see its surprise score, selection
+              contribution, and CDR region in the tooltip. The surprise color legend appears on the right side when the
+              toggle is active.
+              <br />
+              <br />
+              <strong>Subtree Focus:</strong> The subtree navigation bar above the alignment allows you to focus the
+              visualization on a subtree of the phylogeny.
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li>
+                  <strong>Root / Selected:</strong> Shows the current root of the displayed tree and the currently
+                  selected node
+                </li>
+                <li>
+                  <strong>Children dropdown:</strong> Lists the direct children of the current root node. Select a child
+                  to highlight it without clicking in the tree
+                </li>
+                <li>
+                  <strong>Focus Subtree:</strong> Filters the view to show only the selected node and its descendants.
+                  The selected node becomes the new root
+                </li>
+                <li>
+                  <strong>Full Tree:</strong> Resets the view to show the complete tree (appears when focused on a
+                  subtree)
+                </li>
+              </ul>
+              Plot settings (fixed branch lengths, color by surprise, etc.) are preserved when focusing or resetting.
+              <br />
+              <br />
               <strong>Lineage Selection:</strong> To view the ancestral sequence lineage for a specific sequence, click
               on a leaf&apos;s label (or on the center of the leaf marker). The Ancestral Sequences section will appear
               below the tree showing the mutational history from naive to the selected sequence.
