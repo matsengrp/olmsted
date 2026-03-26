@@ -337,31 +337,6 @@ class Splash extends React.Component {
               <button
                 type="button"
                 style={{
-                  border: "2px solid #dc3545",
-                  backgroundColor: this.state.clearHovered ? "rgba(220, 53, 69, 0.1)" : "transparent",
-                  borderRadius: 5,
-                  cursor: "pointer",
-                  padding: 20,
-                  fontFamily: "Lato",
-                  color: "#dc3545",
-                  fontWeight: 400,
-                  fontSize: 18,
-                  outline: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  transition: "background-color 0.15s ease"
-                }}
-                onMouseEnter={() => this.setState({ clearHovered: true })}
-                onMouseLeave={() => this.setState({ clearHovered: false })}
-                onClick={this.handleClearAll}
-              >
-                <FiTrash2 size={20} />
-                Delete All Datasets
-              </button>
-              <button
-                type="button"
-                style={{
                   border: "2px solid #e65100",
                   backgroundColor: this.state.deleteSelectedHovered ? "rgba(230, 81, 0, 0.1)" : "transparent",
                   borderRadius: 5,
@@ -383,6 +358,31 @@ class Splash extends React.Component {
               >
                 <FiXCircle size={20} />
                 Delete Selected Datasets
+              </button>
+              <button
+                type="button"
+                style={{
+                  border: "2px solid #dc3545",
+                  backgroundColor: this.state.clearHovered ? "rgba(220, 53, 69, 0.1)" : "transparent",
+                  borderRadius: 5,
+                  cursor: "pointer",
+                  padding: 20,
+                  fontFamily: "Lato",
+                  color: "#dc3545",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  outline: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background-color 0.15s ease"
+                }}
+                onMouseEnter={() => this.setState({ clearHovered: true })}
+                onMouseLeave={() => this.setState({ clearHovered: false })}
+                onClick={this.handleClearAll}
+              >
+                <FiTrash2 size={20} />
+                Delete ALL Datasets
               </button>
             </div>
           </CenterContent>
