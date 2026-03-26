@@ -789,7 +789,7 @@ class TreeViz extends React.Component {
     // Use heavyTree for downloads in both mode, otherwise use tree
     const downloadTree = isBothMode ? heavyTree : tree;
 
-    const { hideControls, vegaError } = this.state;
+    const { hideControls, vegaError, subtreeRoot } = this.state;
 
     return (
       <div ref={this.containerRef}>
@@ -983,6 +983,7 @@ class TreeViz extends React.Component {
                 <div>
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
                   <VegaChart
+                    key={`tree-${subtreeRoot || "full"}`}
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                     onError={this.handleVegaError}
                     data={this.treeDataFromProps()}
@@ -993,6 +994,7 @@ class TreeViz extends React.Component {
             })()}
           {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
             <VegaChart
+              key={`tree-${subtreeRoot || "full"}`}
               onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
               onError={this.handleVegaError}
               data={this.tempVegaData}
