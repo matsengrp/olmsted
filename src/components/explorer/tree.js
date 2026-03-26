@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiGitBranch, FiRotateCcw } from "react-icons/fi";
 import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
@@ -375,9 +375,13 @@ class TreeViz extends React.Component {
       // Toggle to hide/show Vega control bindings
       hideControls: false,
       // Vega rendering error message (shown to user)
-      vegaError: null
+      vegaError: null,
+      // Subtree focus: sequence_id of the root of the focused subtree (null = full tree)
+      subtreeRoot: null
     };
     this.handleVegaError = this.handleVegaError.bind(this);
+    this.focusSubtree = this.focusSubtree.bind(this);
+    this.resetSubtree = this.resetSubtree.bind(this);
     // Specs are memoized and regenerated only when dataFields changes
     this.lastDataFields = null;
     this.spec = concatTreeWithAlignmentSpec({ showControls: true });
@@ -513,6 +517,23 @@ class TreeViz extends React.Component {
     this.setState({ vegaError: errorMsg });
   }
 
+  /**
+   * Focus the tree view on the subtree rooted at the currently selected node.
+   */
+  focusSubtree() {
+    const { selectedSeq } = this.props;
+    if (selectedSeq) {
+      this.setState({ subtreeRoot: selectedSeq, vegaError: null });
+    }
+  }
+
+  /**
+   * Reset to showing the full tree.
+   */
+  resetSubtree() {
+    this.setState({ subtreeRoot: null, vegaError: null });
+  }
+
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
   setupHeavyChainSignalSync(heavyView) {
     this.heavyVegaRef.current = heavyView;
@@ -615,9 +636,9 @@ class TreeViz extends React.Component {
     const { selectedFamily, selectedChain, dispatchSelectedChain } = this.props;
     // When family changes, check if we need to reset chain selection
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
-      // Clear any previous Vega error when switching families
-      if (this.state.vegaError) {
-        this.setState({ vegaError: null });
+      // Clear any previous Vega error and subtree focus when switching families
+      if (this.state.vegaError || this.state.subtreeRoot) {
+        this.setState({ vegaError: null, subtreeRoot: null });
       }
       const isBothMode = isBothChainsMode(selectedChain);
       const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
@@ -667,18 +688,57 @@ class TreeViz extends React.Component {
 
   // Try to source data for the vega viz from props instead of faking
   // with the empty data attribute set in the constructor
+  /**
+   * Collect all descendant node IDs of a given root node.
+   */
+  getSubtreeNodeIds(nodes, rootId) {
+    const childrenMap = {};
+    for (const node of nodes) {
+      if (node.parent) {
+        if (!childrenMap[node.parent]) childrenMap[node.parent] = [];
+        childrenMap[node.parent].push(node.sequence_id);
+      }
+    }
+    const ids = new Set([rootId]);
+    const queue = [rootId];
+    while (queue.length > 0) {
+      const current = queue.pop();
+      const children = childrenMap[current] || [];
+      for (const childId of children) {
+        if (!ids.has(childId)) {
+          ids.add(childId);
+          queue.push(childId);
+        }
+      }
+    }
+    return ids;
+  }
+
   treeDataFromProps() {
     const { tree, naiveData, cdrBounds, selectedFamily } = this.props;
+    const { subtreeRoot } = this.state;
+
+    let nodes = tree.nodes;
+    let alignment = tree.tips_alignment;
+    let leavesCount = tree.leaves_count_incl_naive;
+
+    // Filter to subtree if focused
+    if (subtreeRoot) {
+      const subtreeIds = this.getSubtreeNodeIds(nodes, subtreeRoot);
+      nodes = nodes
+        .filter((n) => subtreeIds.has(n.sequence_id))
+        .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
+      alignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
+      leavesCount = nodes.filter((n) => n.type === "root" || n.type === "leaf").length;
+    }
+
     return {
-      source_0: tree.nodes,
-      source_1: tree.tips_alignment,
+      source_0: nodes,
+      source_1: alignment,
       naive_data: naiveData.source,
       cdr_bounds: cdrBounds,
-      leaves_count_incl_naive: tree.leaves_count_incl_naive,
+      leaves_count_incl_naive: leavesCount,
       pts_tuple: selectedFamily,
-      // Here we create a separate dataset only containing the id of the
-      // seed sequence so as to check quickly for this id within the
-      // viz to color the seed blue
       seed: selectedFamily.seed_id ? [{ id: selectedFamily.seed_id }] : []
     };
   }
@@ -973,6 +1033,51 @@ class TreeViz extends React.Component {
                 vegaView={this.state.currentVegaView}
                 filename={`olmsted-tree-${selectedFamily.clone_id || "family"}`}
               />
+              <button
+                type="button"
+                onClick={this.focusSubtree}
+                disabled={!selectedSeq}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  border: "1px solid #ccc",
+                  borderRadius: 4,
+                  backgroundColor: selectedSeq ? "#fff" : "#f5f5f5",
+                  color: selectedSeq ? "#333" : "#999",
+                  cursor: selectedSeq ? "pointer" : "default",
+                  transition: "all 0.15s ease"
+                }}
+                title={selectedSeq ? `Focus on subtree rooted at ${selectedSeq}` : "Select a node first"}
+              >
+                <FiGitBranch size={14} />
+                <span>Focus Subtree</span>
+              </button>
+              {this.state.subtreeRoot && (
+                <button
+                  type="button"
+                  onClick={this.resetSubtree}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "4px 8px",
+                    fontSize: 12,
+                    border: "1px solid #ccc",
+                    borderRadius: 4,
+                    backgroundColor: "#e3f2fd",
+                    color: "#333",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease"
+                  }}
+                  title="Show full tree"
+                >
+                  <FiRotateCcw size={14} />
+                  <span>Full Tree</span>
+                </button>
+              )}
             </div>
           )}
           {completeData && downloadTree && downloadTree.download_unique_family_seqs && (
