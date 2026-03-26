@@ -2619,10 +2619,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: "Surprise score",
+        title: { signal: "show_alignment && color_by_surprise ? 'Surprise score' : ''" },
         type: "gradient",
+        gradientLength: { signal: "show_alignment && color_by_surprise ? 100 : 0" },
         encode: {
           legend: {
+            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+          },
+          labels: {
             update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
           }
         }
