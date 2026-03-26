@@ -1048,6 +1048,7 @@ class TreeViz extends React.Component {
           {isStacked && completeData && (
             <div>
               <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
+              {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
