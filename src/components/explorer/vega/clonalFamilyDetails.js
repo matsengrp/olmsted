@@ -1536,7 +1536,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
                 }
               },
               enter: {
@@ -1569,7 +1569,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 },
                 outerRadius: {
                   scale: "leaf_size_scale",
@@ -1598,7 +1598,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 cursor: { value: "pointer" },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },
@@ -1636,7 +1636,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },
