@@ -6,7 +6,7 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 
 module.exports = {
-  entry: ["@babel/polyfill", "./src/index"],
+  entry: ["./src/index"],
   output: {
     path: path.join(__dirname, "_deploy/dist/"),
     filename: "bundle.js",
