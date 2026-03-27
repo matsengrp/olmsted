@@ -162,6 +162,34 @@ class OlmstedDB extends Dexie {
   }
 
   /**
+   * Convert nodes from object format to array and filter out duplicate roots.
+   * Surprise-format files may have a "naive" placeholder root with empty sequences
+   * alongside the real root. Vega's stratify requires exactly one root.
+   *
+   * @param {Object} nodesObj - Nodes as { sequence_id: nodeData }
+   * @returns {Array} Nodes as array with at most one root
+   */
+  convertAndFilterNodes(nodesObj) {
+    if (!nodesObj) return [];
+    let nodesArray = Object.entries(nodesObj).map(([nodeId, nodeData]) => ({
+      sequence_id: nodeId,
+      ...nodeData
+    }));
+
+    // Filter duplicate roots: keep only roots with non-empty sequences
+    const roots = nodesArray.filter((n) => !n.parent);
+    if (roots.length > 1) {
+      const emptyRoots = roots.filter((n) => !n.sequence_alignment);
+      if (emptyRoots.length > 0 && emptyRoots.length < roots.length) {
+        const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+        nodesArray = nodesArray.filter((n) => !emptyIds.has(n.sequence_id));
+      }
+    }
+
+    return nodesArray;
+  }
+
+  /**
    * Get full tree data by tree identifier (heavy, loaded on demand)
    */
   async getTreeByIdent(treeIdent) {
@@ -173,35 +201,8 @@ class OlmstedDB extends Dexie {
         return null;
       }
 
-      // Convert nodes from object format to array format expected by tree selectors
-      const nodesArray = [];
-      if (completeTree.nodes) {
-        for (const [nodeId, nodeData] of Object.entries(completeTree.nodes)) {
-          const nodeForSelector = {
-            sequence_id: nodeId, // IMPORTANT: Use sequence_id not node_id for tree selectors
-            parent: nodeData.parent,
-            sequence_alignment: nodeData.sequence_alignment,
-            sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            distance: nodeData.distance,
-            length: nodeData.length,
-            lbi: nodeData.lbi,
-            lbr: nodeData.lbr,
-            affinity: nodeData.affinity,
-            type: nodeData.type,
-            multiplicity: nodeData.multiplicity,
-            timepoint_multiplicities: nodeData.timepoint_multiplicities
-          };
-          nodesArray.push(nodeForSelector);
-        }
-      }
-
-      // Return tree with nodes array (tree selectors expect this format)
-      const treeForSelectors = {
-        ...completeTree,
-        nodes: nodesArray // Convert from object to array format
-      };
-
-      return treeForSelectors;
+      const nodesArray = this.convertAndFilterNodes(completeTree.nodes);
+      return { ...completeTree, nodes: nodesArray };
     } catch (error) {
       console.error("OlmstedDB: Failed to get tree by ident:", error);
       return null;
@@ -228,8 +229,8 @@ class OlmstedDB extends Dexie {
           (tree) =>
             tree.clone_id === cloneId ||
             tree.ident === cloneId ||
-            tree.ident.includes(cloneId) ||
-            tree.tree_id.includes(cloneId)
+            (tree.ident && tree.ident.includes(cloneId)) ||
+            (tree.tree_id && tree.tree_id.includes(cloneId))
         );
       }
 
@@ -238,35 +239,8 @@ class OlmstedDB extends Dexie {
         return null;
       }
 
-      // Convert nodes from object format to array format expected by tree selectors
-      const nodesArray = [];
-      if (completeTree.nodes) {
-        for (const [nodeId, nodeData] of Object.entries(completeTree.nodes)) {
-          const nodeForSelector = {
-            sequence_id: nodeId, // IMPORTANT: Use sequence_id not node_id for tree selectors
-            parent: nodeData.parent,
-            sequence_alignment: nodeData.sequence_alignment,
-            sequence_alignment_aa: nodeData.sequence_alignment_aa,
-            distance: nodeData.distance,
-            length: nodeData.length,
-            lbi: nodeData.lbi,
-            lbr: nodeData.lbr,
-            affinity: nodeData.affinity,
-            type: nodeData.type,
-            multiplicity: nodeData.multiplicity,
-            timepoint_multiplicities: nodeData.timepoint_multiplicities
-          };
-          nodesArray.push(nodeForSelector);
-        }
-      }
-
-      // Return tree with nodes array (tree selectors expect this format)
-      const treeForSelectors = {
-        ...completeTree,
-        nodes: nodesArray // Convert from object to array format
-      };
-
-      return treeForSelectors;
+      const nodesArray = this.convertAndFilterNodes(completeTree.nodes);
+      return { ...completeTree, nodes: nodesArray };
     } catch (error) {
       console.error("OlmstedDB: Failed to get tree for clone:", error);
       return null;

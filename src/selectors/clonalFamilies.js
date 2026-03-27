@@ -265,3 +265,12 @@ export const getHeavyLightClones = (selectedFamily, pairedClone) => {
     lightClone: selectedIsHeavy ? pairedClone : selectedFamily
   };
 };
+
+/**
+ * Get the dataset metadata (including missing_fields) for the selected family's dataset.
+ * Returns null if no family is selected.
+ */
+export const getSelectedDatasetFields = createSelector([getSelectedFamily, getDatasets], (family, datasets) => {
+  if (!family || !datasets) return null;
+  return datasets.find((d) => d.dataset_id === family.dataset_id) || null;
+});

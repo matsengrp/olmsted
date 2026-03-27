@@ -6,10 +6,27 @@ import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRe
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 
 const concatTreeWithAlignmentSpec = (options = {}) => {
-  const { showControls = true, showLegend = true, topPadding = 20 } = options;
+  const { showControls = true, showLegend = true, topPadding = 20, missingFields = null } = options;
 
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
+
+  // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
+  const missingSet = missingFields ? new Set(missingFields) : null;
+
+  /**
+   * Filter dropdown options to exclude fields not present in the dataset.
+   * @param {string[]} opts - Full list of options
+   * @param {string} category - "node" or "clone"
+   * @returns {string[]} Filtered options
+   */
+  const filterOptions = (opts, category) => {
+    if (!missingSet) return opts;
+    return opts.filter((opt) => {
+      if (opt === "<none>" || opt === "parent") return true;
+      return !missingSet.has(`${category}.${opt}`);
+    });
+  };
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -90,7 +107,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           // Calculate x_raw based on the current mode (for extent calculation)
           // Now depth is available from the tree transform
           {
-            expr: "fixed_branch_lengths ? datum.depth : datum.distance",
+            expr: "fixed_branch_lengths || datum.distance == null ? datum.depth : datum.distance",
             type: "formula",
             as: "x_raw"
           },
@@ -517,7 +534,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         value: "<none>",
         ...maybeAddBind({
           input: "select",
-          options: ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"]
+          options: filterOptions(
+            ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"],
+            "node"
+          )
         })
       },
       {
@@ -535,14 +555,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // uses value from the child of the branch
         name: "branch_width_by",
         value: "<none>",
-        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi"] })
+        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi"], "node") })
       },
       {
         // Seq metric to use for coloring branches;
         // uses value from the child of the branch
         name: "branch_color_by",
         value: "parent",
-        ...maybeAddBind({ input: "select", options: ["<none>", "lbr", "lbi", "parent"] })
+        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi", "parent"], "node") })
       },
       {
         name: "branch_color_scheme",
@@ -589,7 +609,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "fixed_branch_lengths",
-        value: false,
+        value: missingSet ? missingSet.has("node.distance") : false,
         ...maybeAddBind({
           input: "checkbox",
           name: "Fixed branch lengths"
@@ -1071,6 +1091,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
+      // Toggle to color mutations by surprise score (hidden when dataset has no surprise data)
+      {
+        name: "color_by_surprise",
+        value: false,
+        ...(!missingSet || !missingSet.has("node.surprise_mutations")
+          ? maybeAddBind({ input: "checkbox", name: "Color by surprise score" })
+          : {})
+      },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
         name: "show_controls",
@@ -1507,7 +1535,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
                 }
               },
               enter: {
@@ -1540,7 +1568,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 },
                 outerRadius: {
                   scale: "leaf_size_scale",
@@ -1569,7 +1597,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 cursor: { value: "pointer" },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },
@@ -1607,7 +1635,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 },
                 tooltip: {
                   signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"],"lbi": datum["lbi"],"lbr": datum["lbr"],"affinity": datum["affinity"],"scaled_affinity": datum["scaled_affinity"], "multiplicity": datum["multiplicity"], "cluster_multiplicity": datum["cluster_multiplicity"], "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
                 }
               }
             },
@@ -2273,13 +2301,22 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         test: 'datum["position"] === null || isNaN(datum["position"])',
                         value: null
                       },
+                      {
+                        test: "color_by_surprise && datum.surprise_mutsel !== null",
+                        scale: "surprise_color",
+                        field: "surprise_mutsel"
+                      },
+                      {
+                        test: "color_by_surprise && datum.surprise_mutsel === null",
+                        value: null
+                      },
                       { scale: "aa_color", field: "mut_to" }
                     ],
                     stroke: { signal: "show_mutation_borders ? 'black' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                        'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {
@@ -2551,6 +2588,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         type: "ordinal",
         domain: AMINO_ACID_DOMAIN,
         range: AMINO_ACID_RANGE
+      },
+      {
+        name: "surprise_color",
+        type: "linear",
+        domain: [0, 15],
+        range: { scheme: "oranges" },
+        clamp: true
       }
     ],
     // LEGENDS
@@ -2563,10 +2607,32 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         title: "AA color",
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && !color_by_surprise ? 1 : 0" } }
           },
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }
+          }
+        }
+      },
+      {
+        orient: "right",
+        direction: "vertical",
+        fill: "surprise_color",
+        title: { signal: "show_alignment && color_by_surprise ? 'Surprise score' : ''" },
+        type: "gradient",
+        gradientLength: { signal: "show_alignment && color_by_surprise ? 100 : 0" },
+        encode: {
+          legend: {
+            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+          },
+          labels: {
+            update: {
+              opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" },
+              fontSize: { signal: "show_alignment && color_by_surprise ? 10 : 0" }
+            }
+          },
+          gradient: {
+            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
           }
         }
       }
@@ -2575,7 +2641,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false } = options;
+  const { showMutationBorders = false, colorBySurprise = false } = options;
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -2662,6 +2728,11 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "show_mutation_borders",
         value: showMutationBorders
+      },
+      // Toggle to color mutations by surprise score - controlled via React state
+      {
+        name: "color_by_surprise",
+        value: colorBySurprise
       }
     ],
     marks: [
@@ -2747,13 +2818,22 @@ const seqAlignSpec = (family, options = {}) => {
                 test: 'datum["position"] === null || isNaN(datum["position"])',
                 value: null
               },
+              {
+                test: "color_by_surprise && datum.surprise_mutsel !== null",
+                scale: "surprise_color",
+                field: "surprise_mutsel"
+              },
+              {
+                test: "color_by_surprise && datum.surprise_mutsel === null",
+                value: null
+              },
               { scale: "aa_color", field: "mut_to" }
             ],
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
               signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
@@ -2836,6 +2916,13 @@ const seqAlignSpec = (family, options = {}) => {
         type: "ordinal",
         domain: AMINO_ACID_DOMAIN,
         range: AMINO_ACID_RANGE
+      },
+      {
+        name: "surprise_color",
+        type: "linear",
+        domain: [0, 15],
+        range: { scheme: "oranges" },
+        clamp: true
       }
     ],
     axes: [
@@ -2904,6 +2991,28 @@ const seqAlignSpec = (family, options = {}) => {
         encode: {
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.7 } }
+          }
+        }
+      },
+      {
+        orient: "right",
+        direction: "vertical",
+        fill: "surprise_color",
+        title: { signal: "color_by_surprise ? 'Surprise score' : ''" },
+        type: "gradient",
+        gradientLength: { signal: "color_by_surprise ? 100 : 0" },
+        encode: {
+          legend: {
+            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+          },
+          labels: {
+            update: {
+              opacity: { signal: "color_by_surprise ? 1 : 0" },
+              fontSize: { signal: "color_by_surprise ? 10 : 0" }
+            }
+          },
+          gradient: {
+            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
           }
         }
       }

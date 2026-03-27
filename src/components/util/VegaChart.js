@@ -44,8 +44,10 @@ function mergeDataIntoSpec(spec, data) {
 function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
   const viewRef = useRef(null);
   const onNewViewRef = useRef(onNewView);
+  const onErrorRef = useRef(onError);
   const dataRef = useRef(data);
   onNewViewRef.current = onNewView;
+  onErrorRef.current = onError;
   dataRef.current = data;
 
   // Merge current data into spec when spec changes. Subsequent data updates
@@ -89,15 +91,21 @@ function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
   const handleEmbed = useCallback((result) => {
     const { view } = result;
     viewRef.current = view;
-
     if (onNewViewRef.current) {
       onNewViewRef.current(view);
     }
   }, []);
 
+  const handleError = useCallback((error) => {
+    console.error("VegaChart error:", error);
+    if (onErrorRef.current) {
+      onErrorRef.current(error);
+    }
+  }, []);
+
   const embedOptions = { actions: false, ...options };
 
-  return <VegaEmbed spec={mergedSpec} options={embedOptions} onEmbed={handleEmbed} onError={onError} {...rest} />;
+  return <VegaEmbed spec={mergedSpec} options={embedOptions} onEmbed={handleEmbed} onError={handleError} {...rest} />;
 }
 
 export default VegaChart;

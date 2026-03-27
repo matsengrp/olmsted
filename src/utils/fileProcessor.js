@@ -1,3 +1,5 @@
+import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
+
 /**
  * File processor for olmsted-cli consolidated format JSON files
  * Processes pre-processed consolidated format files for client-side storage
@@ -89,15 +91,45 @@ class FileProcessor {
       }
     };
 
+    // Detect which optional fields are present before applying defaults
+    const dataFields = detectFieldPresence(datasetClones, data.trees);
+
+    // Build a flat list of missing/defaulted field names
+    const missingFields = [];
+    for (const [field, status] of Object.entries(dataFields.node)) {
+      if (status.defaulted) missingFields.push(`node.${field}`);
+    }
+    for (const [field, status] of Object.entries(dataFields.clone)) {
+      if (status.defaulted) missingFields.push(`clone.${field}`);
+    }
+    processedDataset.missing_fields = missingFields;
+
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
+    let forestTreeCount = 0;
     const processedTrees = (data.trees || []).map((tree) => {
-      // Convert nodes array to object indexed by sequence_id if needed
-      let processedNodes = tree.nodes;
-      if (tree.nodes && Array.isArray(tree.nodes)) {
-        processedNodes = {};
-        tree.nodes.forEach((node, nodeIndex) => {
+      let nodesList = tree.nodes;
+
+      // Normalize to array for processing
+      if (nodesList && !Array.isArray(nodesList)) {
+        nodesList = Object.values(nodesList);
+      }
+
+      // Detect forest structure (multiple root nodes) for metadata
+      if (nodesList) {
+        const roots = nodesList.filter((n) => !n.parent);
+        const sequencedRoots = roots.filter((n) => n.sequence_alignment);
+        if (sequencedRoots.length > 1) {
+          forestTreeCount++;
+        }
+      }
+
+      // Convert nodes array to object indexed by sequence_id
+      const processedNodes = {};
+      if (nodesList) {
+        nodesList.forEach((node, nodeIndex) => {
           const nodeId = node.sequence_id || String(nodeIndex);
+          applyNodeDefaults(node);
           processedNodes[nodeId] = node;
         });
       }
@@ -110,14 +142,44 @@ class FileProcessor {
       };
     });
 
-    // Process clones (tree references already exist, don't extract trees from clones)
+    // Process clones — apply defaults and extract germline from tree root if missing
     const processedClones = datasetClones.map((clone) => {
-      return {
+      const processed = {
         ...clone,
         dataset_id: datasetId,
         ident: clone.ident || this.generateUUID()
       };
+      applyCloneDefaults(processed);
+      extractGermlineFromTree(processed, processedTrees);
+      return processed;
     });
+
+    // If germline was extracted from tree roots, remove it from missing list
+    if (missingFields.includes("clone.germline_alignment")) {
+      const hasExtractedGermline = processedClones.some((c) => c.germline_alignment);
+      if (hasExtractedGermline) {
+        const idx = missingFields.indexOf("clone.germline_alignment");
+        missingFields.splice(idx, 1);
+      }
+    }
+
+    // Build data modifications after all mutations to missingFields are complete
+    const dataModifications = [];
+    if (missingFields.length > 0) {
+      dataModifications.push({
+        label: `Default values applied for ${missingFields.length} missing field(s)`,
+        items: [...missingFields]
+      });
+    }
+    if (forestTreeCount > 0) {
+      dataModifications.push({
+        label:
+          `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
+          `A synthetic root with consensus sequence will be created for visualization.`,
+        items: []
+      });
+    }
+    processedDataset.data_modifications = dataModifications;
 
     return {
       datasets: [processedDataset],

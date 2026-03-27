@@ -10,8 +10,9 @@ import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
-import { FiHelpCircle, FiCompass, FiUpload, FiTrash2 } from "react-icons/fi";
+import { FiHelpCircle, FiCompass, FiUpload, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
+import * as types from "../../actions/types";
 
 @connect((state) => ({
   availableDatasets: state.datasets.availableDatasets,
@@ -43,6 +44,30 @@ class Splash extends React.Component {
       console.warn("Failed to load starred datasets from sessionStorage:", e);
     }
   }
+
+  handleDeleteSelected = async () => {
+    const { availableDatasets, dispatch } = this.props;
+    const selected = availableDatasets.filter((d) => (d.isClientSide || d.temporary) && d.loading === "DONE");
+    if (selected.length === 0) {
+      window.alert("No loaded local datasets to delete. Select datasets by clicking their checkboxes first.");
+      return;
+    }
+    const names = selected.map((d) => d.name || d.dataset_id).join(", ");
+    const confirmed = window.confirm(
+      `Delete ${selected.length} selected dataset(s)?\n\n${names}\n\nThis cannot be undone.`
+    );
+    if (confirmed) {
+      try {
+        for (const dataset of selected) {
+          await clientDataStore.removeDataset(dataset.dataset_id);
+          dispatch({ type: types.REMOVE_DATASET, dataset_id: dataset.dataset_id });
+        }
+      } catch (error) {
+        console.error("Error deleting selected datasets:", error);
+        alert("Error deleting datasets. Check the console for details.");
+      }
+    }
+  };
 
   handleClearAll = async () => {
     const confirmed = window.confirm(
@@ -249,7 +274,7 @@ class Splash extends React.Component {
                 type="button"
                 style={{
                   border: "0px",
-                  backgroundColor: this.state.exploreHovered ? "#042a6b" : "#05337f",
+                  backgroundColor: this.state.exploreHovered ? "#1a5e1f" : "#1b7a22",
                   borderRadius: 5,
                   cursor: "pointer",
                   padding: 20,
@@ -312,6 +337,31 @@ class Splash extends React.Component {
               <button
                 type="button"
                 style={{
+                  border: "2px solid #e65100",
+                  backgroundColor: this.state.deleteSelectedHovered ? "rgba(230, 81, 0, 0.1)" : "transparent",
+                  borderRadius: 5,
+                  cursor: "pointer",
+                  padding: 20,
+                  fontFamily: "Lato",
+                  color: "#e65100",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  outline: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  transition: "background-color 0.15s ease"
+                }}
+                onMouseEnter={() => this.setState({ deleteSelectedHovered: true })}
+                onMouseLeave={() => this.setState({ deleteSelectedHovered: false })}
+                onClick={this.handleDeleteSelected}
+              >
+                <FiTrash2 size={20} />
+                Delete Selected Datasets
+              </button>
+              <button
+                type="button"
+                style={{
                   border: "2px solid #dc3545",
                   backgroundColor: this.state.clearHovered ? "rgba(220, 53, 69, 0.1)" : "transparent",
                   borderRadius: 5,
@@ -331,8 +381,8 @@ class Splash extends React.Component {
                 onMouseLeave={() => this.setState({ clearHovered: false })}
                 onClick={this.handleClearAll}
               >
-                <FiTrash2 size={20} />
-                Delete All Datasets
+                <FiAlertTriangle size={20} />
+                Delete ALL Datasets
               </button>
             </div>
           </CenterContent>

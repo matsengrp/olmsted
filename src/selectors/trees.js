@@ -6,14 +6,23 @@ import * as clonalFamiliesSelectors from "./clonalFamilies";
 const getSelectedTreeIdent = (state) => state.trees.selectedTreeIdent;
 
 export const getTreeFromCache = (cache, family, selectedIdent) => {
-  const ident =
-    selectedIdent ||
-    (
+  if (selectedIdent) {
+    return cache[selectedIdent];
+  }
+
+  // If the clone has embedded tree references, use them with preferred strategy ordering
+  if (family.trees && _.values(family.trees).length > 0) {
+    const ident = (
       _.find(_.values(family.trees), { downsampling_strategy: "seed_lineage" }) ||
       _.find(_.values(family.trees), { downsampling_strategy: "min_adcl" }) ||
       _.values(family.trees)[0]
     ).ident;
-  return cache[ident];
+    return cache[ident];
+  }
+
+  // Fallback: find a cached tree whose clone_id matches this family
+  const cloneId = family.clone_id || family.ident;
+  return _.find(_.values(cache), { clone_id: cloneId });
 };
 
 // combine these to select out the actual selected tree entity
@@ -68,13 +77,18 @@ const createAlignment = (naive_seq, tree) => {
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
+        const surpriseData = node.surprise_mutations?.find((m) => m.site === i);
         mutations.push({
           type: node.type,
           parent: node.parent,
           seq_id: seq_id,
           position: i,
           mut_from: naive_aa,
-          mut_to: aa
+          mut_to: aa,
+          surprise_mutsel: surpriseData?.surprise_mutsel ?? null,
+          surprise_neutral: surpriseData?.surprise_neutral ?? null,
+          selection_contribution: surpriseData?.selection_contribution ?? null,
+          region: surpriseData?.region ?? null
         });
       }
     }
@@ -190,6 +204,124 @@ const dissoc = (d, key) => {
   return newD;
 };
 
+/**
+ * Build a consensus sequence from multiple sequences by majority vote at each position.
+ * Gaps and missing positions use the most common character at that position.
+ *
+ * @param {string[]} sequences - Array of sequence strings
+ * @returns {string} Consensus sequence
+ */
+const buildConsensus = (sequences) => {
+  const validSeqs = sequences.filter((s) => s && s.length > 0);
+  if (validSeqs.length === 0) return "";
+  if (validSeqs.length === 1) return validSeqs[0];
+
+  const maxLen = Math.max(...validSeqs.map((s) => s.length));
+  let consensus = "";
+  for (let i = 0; i < maxLen; i++) {
+    const counts = {};
+    for (const seq of validSeqs) {
+      const ch = i < seq.length ? seq[i] : "-";
+      counts[ch] = (counts[ch] || 0) + 1;
+    }
+    // Pick the most common character at this position
+    let bestChar = "-";
+    let bestCount = 0;
+    for (const [ch, count] of Object.entries(counts)) {
+      if (count > bestCount) {
+        bestChar = ch;
+        bestCount = count;
+      }
+    }
+    consensus += bestChar;
+  }
+  return consensus;
+};
+
+const SYNTHETIC_ROOT_ID = "__synthetic_root__";
+
+/**
+ * Ensure the tree has exactly one root for Vega's stratify transform.
+ * Returns { nodes, modification } where modification is null if no change
+ * was needed, or a description string for data_modifications metadata.
+ *
+ * Handles:
+ * 1. Single root with empty "naive" duplicate → removes the placeholder
+ * 2. Forest (multiple disconnected subtrees) → creates a synthetic root
+ *    with consensus sequences and re-parents all subtree roots to it
+ */
+const ensureSingleRoot = (nodes) => {
+  const roots = nodes.filter((n) => !n.parent);
+  if (roots.length <= 1) return { nodes, modification: null };
+
+  // Separate empty placeholders from sequenced roots
+  const sequencedRoots = roots.filter((n) => n.sequence_alignment);
+  const emptyRoots = roots.filter((n) => !n.sequence_alignment);
+
+  // Case 1: single sequenced root + empty placeholder(s) → just remove empties
+  if (sequencedRoots.length === 1 && emptyRoots.length > 0) {
+    const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+    return {
+      nodes: nodes.filter((n) => !emptyIds.has(n.sequence_id)),
+      modification: `Removed ${emptyRoots.length} empty root placeholder(s): ${emptyRoots.map((n) => n.sequence_id).join(", ")}`
+    };
+  }
+
+  // Case 2: forest — create synthetic root with consensus sequences
+  const dnaSeqs = sequencedRoots.map((n) => n.sequence_alignment).filter(Boolean);
+  const aaSeqs = sequencedRoots.map((n) => n.sequence_alignment_aa).filter(Boolean);
+
+  const syntheticRoot = {
+    sequence_id: SYNTHETIC_ROOT_ID,
+    type: "root",
+    parent: null,
+    sequence_alignment: buildConsensus(dnaSeqs),
+    sequence_alignment_aa: buildConsensus(aaSeqs),
+    distance: null,
+    length: null,
+    multiplicity: 0,
+    cluster_multiplicity: 0,
+    lbi: null,
+    lbr: null,
+    affinity: null,
+    timepoint_multiplicities: []
+  };
+
+  // Re-parent all original roots (including empty placeholders) to synthetic root
+  // Then filter out empty placeholders since they add no value
+  const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
+  const modifiedNodes = nodes
+    .filter((n) => !emptyIds.has(n.sequence_id))
+    .map((n) => {
+      if (!n.parent) {
+        return { ...n, parent: SYNTHETIC_ROOT_ID };
+      }
+      return n;
+    });
+
+  return {
+    nodes: [syntheticRoot, ...modifiedNodes],
+    modification:
+      `Created synthetic root from consensus of ${sequencedRoots.length} subtree roots` +
+      (emptyRoots.length > 0 ? `; removed ${emptyRoots.length} empty placeholder(s)` : "")
+  };
+};
+
+/**
+ * Normalize tree nodes: strip lbr from naive nodes and ensure a single root.
+ * Shared by computeTreeData and computeLineageData to avoid duplication.
+ *
+ * @param {Object[]} nodes - Array of tree node objects
+ * @returns {{ nodes: Object[], modification: string|null }} Normalized nodes and optional modification description
+ */
+const normalizeTreeNodes = (nodes) => {
+  let normalized = _.map(nodes, (x) =>
+    x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
+  );
+  const rootResult = ensureSingleRoot(normalized);
+  return { nodes: rootResult.nodes, modification: rootResult.modification };
+};
+
 export const computeTreeData = (tree) => {
   // Return empty object if tree is null or undefined
   if (!tree) {
@@ -197,11 +329,41 @@ export const computeTreeData = (tree) => {
   }
 
   const treeData = _.clone(tree); // clone for assign by value
-  // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
   if (treeData.nodes) {
-    treeData.nodes = _.map(treeData.nodes, (x) =>
-      x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
-    );
+    const normalized = normalizeTreeNodes(treeData.nodes);
+    treeData.nodes = normalized.nodes;
+    if (normalized.modification) {
+      treeData.data_modifications = treeData.data_modifications || [];
+      treeData.data_modifications.push(normalized.modification);
+    }
+  }
+
+  // Compute node depth (edges from root) — done on full tree before any filtering
+  if (treeData.nodes && treeData.nodes.length > 0) {
+    const childrenMap = {};
+    let rootId = null;
+    for (const node of treeData.nodes) {
+      if (!node.parent) {
+        rootId = node.sequence_id;
+      } else {
+        if (!childrenMap[node.parent]) childrenMap[node.parent] = [];
+        childrenMap[node.parent].push(node.sequence_id);
+      }
+    }
+    if (rootId) {
+      const depthMap = {};
+      const queue = [[rootId, 0]];
+      while (queue.length > 0) {
+        const [nodeId, d] = queue.shift();
+        depthMap[nodeId] = d;
+        for (const childId of childrenMap[nodeId] || []) {
+          queue.push([childId, d + 1]);
+        }
+      }
+      treeData.nodes = treeData.nodes.map((n) =>
+        depthMap[n.sequence_id] !== undefined ? { ...n, node_depth: depthMap[n.sequence_id] } : n
+      );
+    }
   }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
@@ -229,6 +391,13 @@ const computeLineageData = (tree, seq, includeAllNodes = false) => {
   }
 
   const treeData = _.clone(tree); // clone for assign by value
+
+  // Apply same root normalization as computeTreeData
+  if (treeData.nodes) {
+    const normalized = normalizeTreeNodes(treeData.nodes);
+    treeData.nodes = normalized.nodes;
+  }
+
   if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {
     const data = treeData["nodes"].slice(0);
     const naive = findNaive(data);

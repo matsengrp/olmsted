@@ -2,8 +2,8 @@
  * Row info modal component for displaying all data fields
  * Used by tables to show complete row information in a scrollable modal
  */
-import React, { useState } from "react";
-import { FiInfo, FiX, FiTrash2 } from "react-icons/fi";
+import React, { useState, useCallback } from "react";
+import { FiInfo, FiX, FiTrash2, FiCopy, FiChevronDown, FiChevronRight, FiCheck } from "react-icons/fi";
 
 /**
  * Formats a value for display in the modal
@@ -112,6 +112,92 @@ const valueCellStyle = {
 // closeButtonStyle is now generated dynamically in the component for hover support
 
 /**
+ * Expandable value component for truncated large arrays/objects.
+ * Shows a preview with expand/collapse toggle.
+ */
+function ExpandableValue({ value }) {
+  const [expanded, setExpanded] = useState(false);
+  const formatted = formatValue(value);
+  const itemCount = Array.isArray(value) ? `${value.length} items` : "object";
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: "none",
+          border: "1px solid #dee2e6",
+          borderRadius: "4px",
+          padding: "2px 8px",
+          cursor: "pointer",
+          fontSize: "12px",
+          color: "#0d6efd",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px"
+        }}
+      >
+        {expanded ? <FiChevronDown size={12} /> : <FiChevronRight size={12} />}
+        {expanded ? "Collapse" : `Expand (${itemCount})`}
+      </button>
+      {expanded && <pre style={{ margin: "6px 0 0 0", whiteSpace: "pre-wrap", fontSize: "11px" }}>{formatted}</pre>}
+    </div>
+  );
+}
+
+/**
+ * Copy button with brief "Copied!" feedback.
+ */
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }, [text]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      style={{
+        background: copied ? "#d4edda" : "#f8f9fa",
+        border: "1px solid #dee2e6",
+        borderRadius: "4px",
+        padding: "4px 10px",
+        cursor: "pointer",
+        fontSize: "12px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        color: copied ? "#155724" : "#333",
+        transition: "all 0.15s ease"
+      }}
+      title="Copy all fields to clipboard"
+    >
+      {copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
+      {copied ? "Copied!" : "Copy All"}
+    </button>
+  );
+}
+
+/** Threshold for showing expand button instead of inline value */
+const TRUNCATE_ARRAY_LENGTH = 10;
+const TRUNCATE_STRING_LENGTH = 200;
+
+/**
+ * Check if a value should be shown with an expand button
+ */
+function isTruncatable(value) {
+  if (Array.isArray(value) && value.length > TRUNCATE_ARRAY_LENGTH) return true;
+  if (typeof value === "string" && value.length > TRUNCATE_STRING_LENGTH) return true;
+  return false;
+}
+
+/**
  * RowInfoModal component
  * Displays all fields from a data row in a scrollable modal
  */
@@ -124,27 +210,17 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
 
   // Get all keys from the datum, excluding internal/complex fields
   const excludeKeys = ["trees", "nodes", "seqs", "sequences", "__typename", "trees_meta"];
-  const omittedFields = [];
 
   // Flatten nested objects (like sample) for better display
   const flattenObject = (obj, prefix = "") => {
     const result = [];
     for (const [key, value] of Object.entries(obj)) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      if (excludeKeys.includes(key)) {
-        omittedFields.push(fullKey);
-        continue;
-      }
-      // Exclude very large arrays
-      if (Array.isArray(value) && value.length > 10) {
-        omittedFields.push(`${fullKey} (${value.length} items)`);
-        continue;
-      }
+      if (excludeKeys.includes(key)) continue;
       // Flatten nested plain objects (but not arrays or null)
       if (value && typeof value === "object" && !Array.isArray(value) && key !== "sample") {
         result.push(...flattenObject(value, fullKey));
       } else if (key === "sample" && value && typeof value === "object") {
-        // Special handling for sample - flatten it with "sample." prefix
         result.push(...flattenObject(value, "sample"));
       } else {
         result.push([fullKey, value]);
@@ -154,6 +230,9 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
   };
 
   const entries = flattenObject(datum);
+
+  // Build plain-text version for copy
+  const copyText = entries.map(([key, value]) => `${key}: ${formatValue(value)}`).join("\n");
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -194,16 +273,19 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
           <h3 id="row-info-title" style={{ margin: 0, fontSize: "16px", fontWeight: 600 }}>
             {title || "Row Details"}
           </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            onMouseEnter={() => setCloseHovered(true)}
-            onMouseLeave={() => setCloseHovered(false)}
-            style={closeButtonStyle}
-            aria-label="Close modal"
-          >
-            <FiX size={20} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <CopyButton text={copyText} />
+            <button
+              type="button"
+              onClick={onClose}
+              onMouseEnter={() => setCloseHovered(true)}
+              onMouseLeave={() => setCloseHovered(false)}
+              style={closeButtonStyle}
+              aria-label="Close modal"
+            >
+              <FiX size={20} />
+            </button>
+          </div>
         </div>
         <div style={bodyStyle}>
           <table style={tableStyle}>
@@ -212,7 +294,9 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
                 <tr key={key} style={rowStyle}>
                   <td style={labelCellStyle}>{formatLabel(key)}</td>
                   <td style={valueCellStyle}>
-                    {typeof value === "object" && value !== null ? (
+                    {isTruncatable(value) ? (
+                      <ExpandableValue value={value} label={key} />
+                    ) : typeof value === "object" && value !== null ? (
                       <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: "12px" }}>{formatValue(value)}</pre>
                     ) : (
                       formatValue(value)
@@ -222,11 +306,6 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
               ))}
             </tbody>
           </table>
-          {omittedFields.length > 0 && (
-            <div style={{ marginTop: "12px", color: "#888", fontStyle: "italic", fontSize: "13px" }}>
-              Fields not shown: {omittedFields.join(", ")}
-            </div>
-          )}
         </div>
       </div>
     </div>

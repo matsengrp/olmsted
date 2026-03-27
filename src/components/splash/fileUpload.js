@@ -5,6 +5,7 @@ import { CenterContent } from "./centerContent";
 import FileProcessor from "../../utils/fileProcessor";
 import SplitFileProcessor from "../../utils/splitFileProcessor";
 import clientDataStore from "../../utils/clientDataStore";
+import { getMissingFieldSummary } from "../../utils/fieldDefaults";
 import { getClientDatasets } from "../../actions/clientDataLoader";
 import { SimpleInProgress } from "../util/loading";
 
@@ -13,6 +14,7 @@ class FileUpload extends React.Component {
     super(props);
     this.state = {
       uploadedFiles: [],
+      dismissedWarnings: new Set(),
       isProcessing: false,
       error: null,
       loadingStage: "",
@@ -93,6 +95,10 @@ class FileUpload extends React.Component {
       this.updateLoadingStatus("Storing data in browser database...", 75);
       const datasetId = await clientDataStore.storeProcessedData(result);
 
+      // Check for missing fields and data modifications
+      const missingFieldWarnings = getMissingFieldSummary(result.datasets[0]?.missing_fields);
+      const dataModifications = result.datasets[0]?.data_modifications || [];
+
       // Add to uploaded files list
       this.updateLoadingStatus("Finalizing upload...", 90);
       this.setState((prevState) => ({
@@ -103,7 +109,9 @@ class FileUpload extends React.Component {
             datasetId: datasetId,
             fileType,
             dataset: result.datasets[0],
-            success: true
+            success: true,
+            missingFieldWarnings,
+            dataModifications
           }
         ]
       }));
@@ -414,6 +422,105 @@ class FileUpload extends React.Component {
           {uploadedFiles.length > 0 && (
             <div style={{ marginTop: 30 }}>
               <h4>Uploaded Files:</h4>
+              {/* Data warnings — shown between header and file list */}
+              {uploadedFiles.some(
+                (f) =>
+                  !this.state.dismissedWarnings.has(f.datasetId) &&
+                  (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+              ) && (
+                <div style={{ marginBottom: 10 }}>
+                  {uploadedFiles
+                    .filter(
+                      (f) =>
+                        !this.state.dismissedWarnings.has(f.datasetId) &&
+                        (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                    )
+                    .map((file) => (
+                      <div
+                        key={`warn-${file.datasetId}`}
+                        style={{
+                          marginBottom: 6,
+                          padding: "10px 14px",
+                          backgroundColor: "#fff3cd",
+                          border: "1px solid #ffc107",
+                          borderRadius: 4,
+                          color: "#856404",
+                          fontSize: 11
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom: 8
+                          }}
+                        >
+                          <div style={{ fontSize: 14 }}>
+                            <strong>{file.fileName}</strong> — uploaded successfully with warnings:
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              this.setState((prev) => ({
+                                dismissedWarnings: new Set([...prev.dismissedWarnings, file.datasetId])
+                              }))
+                            }
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "0 2px",
+                              fontSize: 16,
+                              color: "#856404",
+                              lineHeight: 1,
+                              flexShrink: 0
+                            }}
+                            title="Dismiss warning"
+                            aria-label="Dismiss warning"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                        {file.missingFieldWarnings?.length > 0 && (
+                          <div style={{ marginBottom: 4 }}>
+                            <strong>Missing data fields:</strong>
+                            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                              {file.missingFieldWarnings.map((w) => (
+                                <li key={w}>{w}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {file.dataModifications?.length > 0 && (
+                          <div>
+                            <strong>Data modifications applied:</strong>
+                            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                              {file.dataModifications.map((m) => {
+                                const label = typeof m === "string" ? m : m.label;
+                                const items = typeof m === "object" && m.items ? m.items : [];
+                                return (
+                                  <li key={label}>
+                                    {label}
+                                    {items.length > 0 && (
+                                      <ul style={{ margin: "2px 0 0 0", paddingLeft: 16 }}>
+                                        {items.map((item) => (
+                                          <li key={item} style={{ listStyleType: "circle" }}>
+                                            {item}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {uploadedFiles.map((file) => (
                   <li
@@ -428,7 +535,7 @@ class FileUpload extends React.Component {
                       alignItems: "center"
                     }}
                   >
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <strong>{file.fileName}</strong>
                       <span style={{ marginLeft: 10, color: "#666" }}>
                         ({file.fileType === "consolidated-split" ? "Consolidated Split" : "Consolidated"} format)
