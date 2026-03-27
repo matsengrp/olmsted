@@ -298,107 +298,114 @@ class FileUpload extends React.Component {
 
           <Dropzone
             onDrop={this.onDrop}
-            accept="application/json, application/gzip, .json, .gz"
+            accept={{ "application/json": [".json"], "application/gzip": [".gz"] }}
             multiple
             disabled={isProcessing}
-            onMouseEnter={() => this.setState({ dropzoneHovered: true })}
-            onMouseLeave={() => this.setState({ dropzoneHovered: false })}
-            style={{
-              border: this.state.dropzoneHovered ? "2px dashed #042a6b" : "2px dashed #05337f",
-              borderRadius: 5,
-              padding: 40,
-              textAlign: "center",
-              cursor: "pointer",
-              backgroundColor: this.state.dropzoneHovered ? "rgba(5, 51, 127, 0.08)" : "rgba(5, 51, 127, 0.03)",
-              transition: "background-color 0.15s ease, border-color 0.15s ease",
-              opacity: isProcessing ? 0.6 : 1,
-              minHeight: 150,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-            activeStyle={{
-              backgroundColor: "rgba(5, 51, 127, 0.15)",
-              borderColor: "#042a6b"
-            }}
           >
-            {isProcessing ? (
-              <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
-                <div
-                  style={{
-                    fontSize: 18,
-                    marginBottom: 15,
-                    fontWeight: "bold",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "10px"
-                  }}
-                >
-                  <SimpleInProgress />
-                  Processing Your Data
-                </div>
+            {({ getRootProps, getInputProps, isDragActive }) => (
+              <div
+                {...getRootProps()}
+                onMouseEnter={() => this.setState({ dropzoneHovered: true })}
+                onMouseLeave={() => this.setState({ dropzoneHovered: false })}
+                style={{
+                  border: isDragActive || this.state.dropzoneHovered ? "2px dashed #042a6b" : "2px dashed #05337f",
+                  borderRadius: 5,
+                  padding: 40,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  backgroundColor: isDragActive
+                    ? "rgba(5, 51, 127, 0.15)"
+                    : this.state.dropzoneHovered
+                      ? "rgba(5, 51, 127, 0.08)"
+                      : "rgba(5, 51, 127, 0.03)",
+                  transition: "background-color 0.15s ease, border-color 0.15s ease",
+                  opacity: isProcessing ? 0.6 : 1,
+                  minHeight: 150,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <input {...getInputProps()} />
+                {isProcessing ? (
+                  <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
+                    <div
+                      style={{
+                        fontSize: 18,
+                        marginBottom: 15,
+                        fontWeight: "bold",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "10px"
+                      }}
+                    >
+                      <SimpleInProgress />
+                      Processing Your Data
+                    </div>
 
-                {/* Progress Bar */}
-                <div
-                  style={{
-                    width: "100%",
-                    height: 8,
-                    backgroundColor: "#e9ecef",
-                    borderRadius: 4,
-                    overflow: "hidden",
-                    marginBottom: 10
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${loadingProgress}%`,
-                      height: "100%",
-                      backgroundColor: "#007bff",
-                      transition: "width 0.3s ease",
-                      borderRadius: 4
-                    }}
-                  />
-                </div>
+                    {/* Progress Bar */}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 8,
+                        backgroundColor: "#e9ecef",
+                        borderRadius: 4,
+                        overflow: "hidden",
+                        marginBottom: 10
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${loadingProgress}%`,
+                          height: "100%",
+                          backgroundColor: "#007bff",
+                          transition: "width 0.3s ease",
+                          borderRadius: 4
+                        }}
+                      />
+                    </div>
 
-                {/* Progress Text */}
-                <div
-                  style={{
-                    fontSize: 14,
-                    color: "#666",
-                    marginBottom: 5,
-                    minHeight: 20
-                  }}
-                >
-                  {loadingStage || "Initializing..."}
-                </div>
+                    {/* Progress Text */}
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#666",
+                        marginBottom: 5,
+                        minHeight: 20
+                      }}
+                    >
+                      {loadingStage || "Initializing..."}
+                    </div>
 
-                {/* Progress Percentage */}
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#999",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {loadingProgress}% Complete
-                </div>
-              </div>
-            ) : (
-              <div>
-                <FiUpload
-                  size={48}
-                  color="#05337f"
-                  style={{ marginBottom: 15, opacity: this.state.dropzoneHovered ? 1 : 0.7 }}
-                />
-                <div style={{ fontSize: 20, marginBottom: 10, color: "#05337f", fontWeight: 500 }}>
-                  Drag & drop files here
-                </div>
-                <div style={{ fontSize: 16, color: "#05337f", marginBottom: 15 }}>or click to browse</div>
-                <div style={{ fontSize: 14, color: "#666" }}>
-                  <strong>Supported format:</strong> olmsted-cli consolidated JSON (.json)
-                </div>
+                    {/* Progress Percentage */}
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#999",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {loadingProgress}% Complete
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <FiUpload
+                      size={48}
+                      color="#05337f"
+                      style={{ marginBottom: 15, opacity: this.state.dropzoneHovered ? 1 : 0.7 }}
+                    />
+                    <div style={{ fontSize: 20, marginBottom: 10, color: "#05337f", fontWeight: 500 }}>
+                      Drag & drop files here
+                    </div>
+                    <div style={{ fontSize: 16, color: "#05337f", marginBottom: 15 }}>or click to browse</div>
+                    <div style={{ fontSize: 14, color: "#666" }}>
+                      <strong>Supported format:</strong> olmsted-cli consolidated JSON (.json)
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </Dropzone>

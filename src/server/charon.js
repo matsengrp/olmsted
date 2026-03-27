@@ -2,7 +2,7 @@ const queryString = require("query-string");
 const getFiles = require("./getFiles");
 
 const applyCharonToApp = (app) => {
-  app.get("/charon*", async (req, res) => {
+  app.get("/charon{*path}", async (req, res) => {
     const query = queryString.parse(req.url.split("?")[1]);
     console.log("Charon API request: " + req.originalUrl);
     if (Object.keys(query).indexOf("request") === -1) {

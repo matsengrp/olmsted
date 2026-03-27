@@ -6,7 +6,7 @@ module.exports = {
   mode: "development",
   context: __dirname,
   devtool: "cheap-module-source-map",
-  entry: ["@babel/polyfill", "webpack-hot-middleware/client", "./src/index"],
+  entry: ["webpack-hot-middleware/client", "./src/index"],
   output: {
     path: path.join(__dirname, "devel"),
     filename: "bundle.js",

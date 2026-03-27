@@ -76,7 +76,7 @@ app.get("/favicon.png", (req, res) => {
 /* apply charon API routes for data fetching */
 charon.applyCharonToApp(app);
 
-app.get("*", (req, res) => {
+app.get("{*path}", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
