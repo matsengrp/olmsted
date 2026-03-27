@@ -1091,14 +1091,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
-      // Toggle to color mutations by surprise score
+      // Toggle to color mutations by surprise score (hidden when dataset has no surprise data)
       {
         name: "color_by_surprise",
         value: false,
-        ...maybeAddBind({
-          input: "checkbox",
-          name: "Color by surprise score"
-        })
+        ...(!missingSet || !missingSet.has("node.surprise_mutations")
+          ? maybeAddBind({ input: "checkbox", name: "Color by surprise score" })
+          : {})
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {

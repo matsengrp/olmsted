@@ -103,13 +103,6 @@ class FileProcessor {
       if (status.defaulted) missingFields.push(`clone.${field}`);
     }
     processedDataset.missing_fields = missingFields;
-    const dataModifications = [];
-    if (missingFields.length > 0) {
-      dataModifications.push({
-        label: `Default values applied for ${missingFields.length} missing field(s)`,
-        items: missingFields
-      });
-    }
 
     // CRITICAL: In consolidated format, trees are in data.trees (top-level), not embedded in clones
     // Process trees from top-level trees array (these have nodes)
@@ -149,17 +142,6 @@ class FileProcessor {
       };
     });
 
-    if (forestTreeCount > 0) {
-      dataModifications.push({
-        label:
-          `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
-          `A synthetic root with consensus sequence will be created for visualization.`,
-        items: []
-      });
-    }
-
-    processedDataset.data_modifications = dataModifications;
-
     // Process clones — apply defaults and extract germline from tree root if missing
     const processedClones = datasetClones.map((clone) => {
       const processed = {
@@ -180,6 +162,24 @@ class FileProcessor {
         missingFields.splice(idx, 1);
       }
     }
+
+    // Build data modifications after all mutations to missingFields are complete
+    const dataModifications = [];
+    if (missingFields.length > 0) {
+      dataModifications.push({
+        label: `Default values applied for ${missingFields.length} missing field(s)`,
+        items: [...missingFields]
+      });
+    }
+    if (forestTreeCount > 0) {
+      dataModifications.push({
+        label:
+          `${forestTreeCount} tree(s) contain disconnected subtrees (forests). ` +
+          `A synthetic root with consensus sequence will be created for visualization.`,
+        items: []
+      });
+    }
+    processedDataset.data_modifications = dataModifications;
 
     return {
       datasets: [processedDataset],

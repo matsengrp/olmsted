@@ -115,7 +115,7 @@ const valueCellStyle = {
  * Expandable value component for truncated large arrays/objects.
  * Shows a preview with expand/collapse toggle.
  */
-function ExpandableValue({ value, label }) {
+function ExpandableValue({ value }) {
   const [expanded, setExpanded] = useState(false);
   const formatted = formatValue(value);
   const itemCount = Array.isArray(value) ? `${value.length} items` : "object";

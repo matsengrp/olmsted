@@ -194,13 +194,6 @@ export function extractGermlineFromTree(clone, trees) {
  * @param {string[]} missingFields - Flat array of missing field names (e.g., ["node.lbi", "clone.d_call"])
  * @returns {string[]} Array of summary strings for missing categories
  */
-/**
- * Build a human-readable summary of which field categories are missing.
- * Used for the import warning banner.
- *
- * @param {string[]} missingFields - Flat array of missing field names (e.g., ["node.lbi", "clone.d_call"])
- * @returns {string[]} Array of summary strings for missing categories
- */
 export function getMissingFieldSummary(missingFields) {
   if (!missingFields || missingFields.length === 0) return [];
 

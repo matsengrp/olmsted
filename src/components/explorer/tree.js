@@ -22,6 +22,36 @@ import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
+/**
+ * Normalize nodes to an array (they may be an object keyed by sequence_id or an array).
+ */
+const normalizeNodes = (nodes) => {
+  if (!nodes) return [];
+  return Array.isArray(nodes) ? nodes : Object.values(nodes);
+};
+
+/**
+ * Filter tree data to a subtree rooted at the given node.
+ * The subtree root is re-parented to null and given type "root".
+ *
+ * @param {Object[]} nodes - Full tree nodes array
+ * @param {Object[]} alignment - Full alignment records
+ * @param {number} leavesCount - Original leaves count
+ * @param {string} subtreeRoot - sequence_id of the subtree root
+ * @param {Function} getSubtreeNodeIds - Function to collect descendant IDs
+ * @returns {{ nodes: Object[], alignment: Object[], leavesCount: number }}
+ */
+const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtreeNodeIds) => {
+  if (!subtreeRoot || !nodes) return { nodes, alignment, leavesCount };
+  const subtreeIds = getSubtreeNodeIds(nodes, subtreeRoot);
+  const filteredNodes = nodes
+    .filter((n) => subtreeIds.has(n.sequence_id))
+    .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
+  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
+  const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
+  return { nodes: filteredNodes, alignment: filteredAlignment, leavesCount: filteredCount };
+};
+
 // Tree header component
 // =================================
 // Describes the tree viz, includes dropdown for selecting trees.
@@ -596,9 +626,6 @@ class TreeViz extends React.Component {
   }
 
   /**
-   * Focus the tree view on the subtree rooted at the currently selected node.
-   */
-  /**
    * Save current Vega signal values so they can be restored after re-mount.
    */
   saveSignals() {
@@ -616,6 +643,9 @@ class TreeViz extends React.Component {
     this.savedSignals = saved;
   }
 
+  /**
+   * Focus the tree view on the subtree rooted at the currently selected node.
+   */
   focusSubtree() {
     const { selectedSeq } = this.props;
     if (selectedSeq) {
@@ -635,17 +665,9 @@ class TreeViz extends React.Component {
   /**
    * Get direct children of a given node from the tree's nodes array.
    */
-  /**
-   * Normalize nodes to an array (they may be an object keyed by sequence_id or an array).
-   */
-  normalizeNodes(nodes) {
-    if (!nodes) return [];
-    return Array.isArray(nodes) ? nodes : Object.values(nodes);
-  }
-
   getDirectChildren(nodes, parentId) {
     if (!parentId) return [];
-    const arr = this.normalizeNodes(nodes);
+    const arr = normalizeNodes(nodes);
     return arr
       .filter((n) => n.parent === parentId)
       .sort((a, b) => String(a.sequence_id).localeCompare(String(b.sequence_id)));
@@ -656,7 +678,7 @@ class TreeViz extends React.Component {
    */
   getEffectiveRootId(nodes) {
     if (this.state.subtreeRoot) return this.state.subtreeRoot;
-    const arr = this.normalizeNodes(nodes);
+    const arr = normalizeNodes(nodes);
     if (arr.length === 0) return null;
     const root = arr.find((n) => !n.parent || n.type === "root");
     return root ? root.sequence_id : null;
@@ -871,7 +893,7 @@ class TreeViz extends React.Component {
 
     // Auto-select the root node when a tree first loads and no node is selected
     if (tree && tree.nodes && !selectedSeq) {
-      const nodesArr = this.normalizeNodes(tree.nodes);
+      const nodesArr = normalizeNodes(tree.nodes);
       const rootNode = nodesArr.find((n) => !n.parent || n.type === "root");
       if (rootNode && rootNode.sequence_id) {
         dispatchSelectedSeq(rootNode.sequence_id);
@@ -906,26 +928,20 @@ class TreeViz extends React.Component {
     const cdrBounds = chain === CHAIN_TYPES.HEAVY ? heavyCdrBounds : lightCdrBounds;
 
     const { subtreeRoot } = this.state;
-    let nodes = tree.nodes;
-    let alignment = tree.tips_alignment;
-    let leavesCount = tree.leaves_count_incl_naive;
-
-    // Apply subtree filter if focused
-    if (subtreeRoot && nodes) {
-      const subtreeIds = this.getSubtreeNodeIds(nodes, subtreeRoot);
-      nodes = nodes
-        .filter((n) => subtreeIds.has(n.sequence_id))
-        .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
-      alignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
-      leavesCount = nodes.filter((n) => n.type === "root" || n.type === "leaf").length;
-    }
+    const filtered = applySubtreeFilter(
+      tree.nodes,
+      tree.tips_alignment,
+      tree.leaves_count_incl_naive,
+      subtreeRoot,
+      this.getSubtreeNodeIds
+    );
 
     return {
-      source_0: nodes,
-      source_1: alignment,
+      source_0: filtered.nodes,
+      source_1: filtered.alignment,
       naive_data: naiveData.source,
       cdr_bounds: cdrBounds,
-      leaves_count_incl_naive: leavesCount,
+      leaves_count_incl_naive: filtered.leavesCount,
       pts_tuple: cloneForChain,
       seed: cloneForChain.seed_id ? [{ id: cloneForChain.seed_id }] : []
     };
@@ -963,26 +979,20 @@ class TreeViz extends React.Component {
     const { tree, naiveData, cdrBounds, selectedFamily } = this.props;
     const { subtreeRoot } = this.state;
 
-    let nodes = tree.nodes;
-    let alignment = tree.tips_alignment;
-    let leavesCount = tree.leaves_count_incl_naive;
-
-    // Filter to subtree if focused
-    if (subtreeRoot) {
-      const subtreeIds = this.getSubtreeNodeIds(nodes, subtreeRoot);
-      nodes = nodes
-        .filter((n) => subtreeIds.has(n.sequence_id))
-        .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
-      alignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
-      leavesCount = nodes.filter((n) => n.type === "root" || n.type === "leaf").length;
-    }
+    const filtered = applySubtreeFilter(
+      tree.nodes,
+      tree.tips_alignment,
+      tree.leaves_count_incl_naive,
+      subtreeRoot,
+      this.getSubtreeNodeIds
+    );
 
     return {
-      source_0: nodes,
-      source_1: alignment,
+      source_0: filtered.nodes,
+      source_1: filtered.alignment,
       naive_data: naiveData.source,
       cdr_bounds: cdrBounds,
-      leaves_count_incl_naive: leavesCount,
+      leaves_count_incl_naive: filtered.leavesCount,
       pts_tuple: selectedFamily,
       seed: selectedFamily.seed_id ? [{ id: selectedFamily.seed_id }] : []
     };

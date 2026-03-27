@@ -220,17 +220,14 @@ describe("fieldDefaults", () => {
     });
 
     it("causes ValidationError when field is missing", () => {
-      // Temporarily add a REQUIRED field to test
-      const originalDefaults = { ...NODE_FIELD_DEFAULTS };
+      // Temporarily add a REQUIRED field to test — use try/finally to ensure cleanup
       NODE_FIELD_DEFAULTS.test_required_field = REQUIRED;
-
-      const node = { sequence_id: "n1" };
-
-      expect(() => applyNodeDefaults(node)).toThrow("Required node field");
-
-      // Clean up
-      delete NODE_FIELD_DEFAULTS.test_required_field;
-      Object.assign(NODE_FIELD_DEFAULTS, originalDefaults);
+      try {
+        const node = { sequence_id: "n1" };
+        expect(() => applyNodeDefaults(node)).toThrow("Required node field");
+      } finally {
+        delete NODE_FIELD_DEFAULTS.test_required_field;
+      }
     });
   });
 

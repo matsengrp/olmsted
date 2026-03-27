@@ -307,6 +307,21 @@ const ensureSingleRoot = (nodes) => {
   };
 };
 
+/**
+ * Normalize tree nodes: strip lbr from naive nodes and ensure a single root.
+ * Shared by computeTreeData and computeLineageData to avoid duplication.
+ *
+ * @param {Object[]} nodes - Array of tree node objects
+ * @returns {{ nodes: Object[], modification: string|null }} Normalized nodes and optional modification description
+ */
+const normalizeTreeNodes = (nodes) => {
+  let normalized = _.map(nodes, (x) =>
+    x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
+  );
+  const rootResult = ensureSingleRoot(normalized);
+  return { nodes: rootResult.nodes, modification: rootResult.modification };
+};
+
 export const computeTreeData = (tree) => {
   // Return empty object if tree is null or undefined
   if (!tree) {
@@ -314,17 +329,12 @@ export const computeTreeData = (tree) => {
   }
 
   const treeData = _.clone(tree); // clone for assign by value
-  // TODO Remove! Quick hack to fix really funky lbr values on naive nodes
   if (treeData.nodes) {
-    treeData.nodes = _.map(treeData.nodes, (x) =>
-      x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
-    );
-    // Ensure exactly one root for Vega's stratify transform
-    const rootResult = ensureSingleRoot(treeData.nodes);
-    treeData.nodes = rootResult.nodes;
-    if (rootResult.modification) {
+    const normalized = normalizeTreeNodes(treeData.nodes);
+    treeData.nodes = normalized.nodes;
+    if (normalized.modification) {
       treeData.data_modifications = treeData.data_modifications || [];
-      treeData.data_modifications.push(rootResult.modification);
+      treeData.data_modifications.push(normalized.modification);
     }
   }
 
@@ -384,11 +394,8 @@ const computeLineageData = (tree, seq, includeAllNodes = false) => {
 
   // Apply same root normalization as computeTreeData
   if (treeData.nodes) {
-    treeData.nodes = _.map(treeData.nodes, (x) =>
-      x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
-    );
-    const rootResult = ensureSingleRoot(treeData.nodes);
-    treeData.nodes = rootResult.nodes;
+    const normalized = normalizeTreeNodes(treeData.nodes);
+    treeData.nodes = normalized.nodes;
   }
 
   if (treeData["nodes"] && treeData["nodes"].length > 0 && !_.isEmpty(seq)) {

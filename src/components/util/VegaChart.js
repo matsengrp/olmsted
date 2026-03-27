@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect, useMemo, useState } from "react";
+import React, { useRef, useCallback, useEffect, useMemo } from "react";
 import { changeset } from "vega";
 import { VegaEmbed } from "react-vega";
 
@@ -46,7 +46,6 @@ function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
   const onNewViewRef = useRef(onNewView);
   const onErrorRef = useRef(onError);
   const dataRef = useRef(data);
-  const [embedError, setEmbedError] = useState(null);
   onNewViewRef.current = onNewView;
   onErrorRef.current = onError;
   dataRef.current = data;
@@ -92,17 +91,13 @@ function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
   const handleEmbed = useCallback((result) => {
     const { view } = result;
     viewRef.current = view;
-    setEmbedError(null);
-
     if (onNewViewRef.current) {
       onNewViewRef.current(view);
     }
   }, []);
 
   const handleError = useCallback((error) => {
-    const msg = error instanceof Error ? error.message : String(error);
     console.error("VegaChart error:", error);
-    setEmbedError(msg);
     if (onErrorRef.current) {
       onErrorRef.current(error);
     }
@@ -110,26 +105,7 @@ function VegaChart({ spec, data, onNewView, onError, options, ...rest }) {
 
   const embedOptions = { actions: false, ...options };
 
-  return (
-    <>
-      {embedError && (
-        <div
-          style={{
-            padding: "10px 14px",
-            marginBottom: "8px",
-            backgroundColor: "#f8d7da",
-            border: "1px solid #dc3545",
-            borderRadius: "4px",
-            color: "#721c24",
-            fontSize: "13px"
-          }}
-        >
-          <strong>Visualization error:</strong> {embedError}
-        </div>
-      )}
-      <VegaEmbed spec={mergedSpec} options={embedOptions} onEmbed={handleEmbed} onError={handleError} {...rest} />
-    </>
-  );
+  return <VegaEmbed spec={mergedSpec} options={embedOptions} onEmbed={handleEmbed} onError={handleError} {...rest} />;
 }
 
 export default VegaChart;
