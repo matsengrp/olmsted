@@ -1031,13 +1031,14 @@ class TreeViz extends React.Component {
       });
     }
     // Validate clone and tree completeness (#94)
+    // Clone warnings are non-blocking — tree renders if nodes are valid
     const familyValidation = validateCloneCompleteness(selectedFamily);
-    const incompleteFamily = !familyValidation.complete;
+    const familyWarnings = familyValidation.reasons;
 
     const treeLoading = !selectedTree;
     const treeValidation = !treeLoading ? validateTreeCompleteness(selectedTree) : { complete: false, reasons: [] };
     const incompleteTree = !treeLoading && !treeValidation.complete;
-    const completeData = familyValidation.complete && !treeLoading && treeValidation.complete;
+    const completeData = !treeLoading && treeValidation.complete;
 
     const isStacked = isStackedMode(selectedChain);
     const isSideBySide = isSideBySideMode(selectedChain);
@@ -1105,7 +1106,7 @@ class TreeViz extends React.Component {
           )}
 
           {/* Tree still loading aka undefined */}
-          {!incompleteFamily && treeLoading && (
+          {treeLoading && (
             <div>
               <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <SimpleInProgress />
@@ -1113,14 +1114,28 @@ class TreeViz extends React.Component {
               </h2>
             </div>
           )}
-          {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-          {incompleteFamily && (
-            <IncompleteDataWarning
-              data_type="clonal family"
-              datum={selectedFamily}
-              reasons={familyValidation.reasons}
-            />
+          {/* Non-blocking clone data warnings */}
+          {familyWarnings.length > 0 && (
+            <div
+              style={{
+                marginTop: 10,
+                padding: "8px 12px",
+                backgroundColor: "#fff3cd",
+                border: "1px solid #ffc107",
+                borderRadius: 4,
+                color: "#856404",
+                fontSize: 12
+              }}
+            >
+              <strong>Clonal family data warnings:</strong>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                {familyWarnings.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
           )}
+          {/* Blocking tree incompleteness error */}
           {incompleteTree && (
             <IncompleteDataWarning data_type="tree" datum={selectedTree} reasons={treeValidation.reasons} />
           )}
@@ -1261,7 +1276,7 @@ class TreeViz extends React.Component {
                 </div>
               );
             })()}
-          {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
+          {!isBothMode && !lightChainUnavailable && !completeData && !incompleteTree && (
             <div>
               {this.renderSubtreeNav(tree)}
               <VegaChart
