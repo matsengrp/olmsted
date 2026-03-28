@@ -563,8 +563,8 @@ class App extends React.Component {
                               recombination showing gene segments and CDR regions
                             </li>
                             <li>
-                              <strong>Metadata:</strong> Clone ID, unique sequence count, mutation frequency, and other
-                              family-level statistics
+                              <strong>Metadata:</strong> Clone ID, unique sequence count (equivalent to rearrangement
+                              count in AIRR terminology), mutation frequency, and other family-level statistics
                             </li>
                           </ul>
                           <strong>Table Interactions:</strong>

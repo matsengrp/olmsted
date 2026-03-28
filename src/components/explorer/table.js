@@ -515,7 +515,7 @@ class ClonalFamiliesTable extends React.Component {
     const csvColumns = [
       { header: "Starred", accessor: (d) => (starredFamilies.includes(d.ident) ? "Yes" : "No") },
       { header: "Family ID", accessor: "clone_id" },
-      { header: "Unique seqs", accessor: "unique_seqs_count" },
+      { header: "Unique Seq Count", accessor: "unique_seqs_count" },
       { header: "V gene", accessor: "v_call" },
       { header: "D gene", accessor: "d_call" },
       { header: "J gene", accessor: "j_call" },
@@ -659,7 +659,7 @@ class ClonalFamiliesTable extends React.Component {
       Info: 60,
       "Naive sequence": 260,
       "Family ID": 120,
-      "Unique seqs": 100,
+      "Unique Seq Count": 120,
       "V gene": 80,
       "D gene": 80,
       "J gene": 80,
@@ -687,8 +687,7 @@ class ClonalFamiliesTable extends React.Component {
           ["Info", InfoButtonCell, { sortable: false }],
           ["Naive sequence", NaiveSequence],
           ["Family ID", "clone_id"],
-          // TODO decide on language for unique seqs vs rearrangement count
-          ["Unique seqs", "unique_seqs_count"],
+          ["Unique Seq Count", "unique_seqs_count"],
           ["V gene", "v_call"],
           ["D gene", "d_call"],
           ["J gene", "j_call"],
