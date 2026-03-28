@@ -369,6 +369,13 @@ export const computeTreeData = (tree) => {
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
+
+    // Guard: if no root node or root lacks sequence data, mark tree as incomplete
+    if (!naive || !naive.sequence_alignment_aa) {
+      treeData.nodes = { error: "Tree has no root node with sequence alignment" };
+      return treeData;
+    }
+
     data = _.filter(data, (o) => o.type === "root" || o.type === "leaf");
     treeData["leaves_count_incl_naive"] = data.length;
     // Use the tree's own sequence alignment for computing mutations
