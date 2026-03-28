@@ -265,7 +265,7 @@ const isTreeComplete = (tree) => {
   if (!tree || !tree.nodes || tree.nodes.error) return false;
   // nodes may be an array or object — check it has content
   const nodeCount = Array.isArray(tree.nodes) ? tree.nodes.length : Object.keys(tree.nodes).length;
-  return nodeCount > 0 && tree.tips_alignment;
+  return nodeCount > 0;
 };
 
 // Phylogenetic tree & alignment viz
