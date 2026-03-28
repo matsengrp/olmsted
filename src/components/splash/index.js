@@ -391,8 +391,7 @@ class Splash extends React.Component {
             ref={this.fileUploadRef}
             dispatch={dispatch}
             onFileUpload={(result) => {
-              // Reload datasets after successful upload
-              // TODO: Add the uploaded dataset to availableDatasets
+              // Dataset list is refreshed via getClientDatasets(dispatch) in fileUpload.js
               console.log("File uploaded:", result);
             }}
           />
