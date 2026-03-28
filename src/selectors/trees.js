@@ -302,7 +302,7 @@ const ensureSingleRoot = (nodes) => {
   return {
     nodes: [syntheticRoot, ...modifiedNodes],
     modification:
-      `Created synthetic root from consensus of ${sequencedRoots.length} subtree roots` +
+      `Created synthetic root to join forest of ${sequencedRoots.length} disconnected subtree roots` +
       (emptyRoots.length > 0 ? `; removed ${emptyRoots.length} empty placeholder(s)` : "")
   };
 };
