@@ -10,6 +10,7 @@ import * as explorerActions from "../../actions/explorer";
 import DownloadFasta from "./downloadFasta";
 import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
+import { validateCloneCompleteness, validateTreeCompleteness } from "../../utils/fieldDefaults";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
 import {
@@ -1024,18 +1025,14 @@ class TreeViz extends React.Component {
         missingFields: dataFields?.missing_fields
       });
     }
-    // TODO #94: We need to have a better way to tell if a family should not be
-    // displayed because its data are incomplete. One idea is an 'incomplete' field
-    // that we can set to true (upon building and checking for valid data) and have some
-    // minimum bit of information saying the error that occured and/or the field that was not built.
-    const incompleteFamily = !selectedFamily.unique_seqs_count;
+    // Validate clone and tree completeness (#94)
+    const familyValidation = validateCloneCompleteness(selectedFamily);
+    const incompleteFamily = !familyValidation.complete;
 
-    // Being explicit about the fact that we are relying on the tree being
-    // defined vs undefined instead of keeping track of its true loading state
     const treeLoading = !selectedTree;
-
-    const incompleteTree = !treeLoading && !isTreeComplete(selectedTree);
-    const completeData = !incompleteFamily && !treeLoading && isTreeComplete(selectedTree);
+    const treeValidation = !treeLoading ? validateTreeCompleteness(selectedTree) : { complete: false, reasons: [] };
+    const incompleteTree = !treeLoading && !treeValidation.complete;
+    const completeData = familyValidation.complete && !treeLoading && treeValidation.complete;
 
     const isStacked = isStackedMode(selectedChain);
     const isSideBySide = isSideBySideMode(selectedChain);
@@ -1112,8 +1109,16 @@ class TreeViz extends React.Component {
             </div>
           )}
           {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-          {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
-          {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
+          {incompleteFamily && (
+            <IncompleteDataWarning
+              data_type="clonal family"
+              datum={selectedFamily}
+              reasons={familyValidation.reasons}
+            />
+          )}
+          {incompleteTree && (
+            <IncompleteDataWarning data_type="tree" datum={selectedTree} reasons={treeValidation.reasons} />
+          )}
 
           {/* Stacked mode: render two separate tree/alignment visualizations */}
           {/* Light chain has controls, heavy chain mirrors light chain settings */}

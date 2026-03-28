@@ -232,3 +232,59 @@ export function getMissingFieldSummary(missingFields) {
 
   return summary;
 }
+
+/**
+ * Validate that a clonal family has sufficient data to display its tree.
+ * Returns a result object indicating completeness and any reasons for incompleteness.
+ *
+ * @param {Object} clone - Clonal family object
+ * @returns {{ complete: boolean, reasons: string[] }}
+ */
+export function validateCloneCompleteness(clone) {
+  if (!clone) return { complete: false, reasons: ["No clonal family data available"] };
+
+  const reasons = [];
+
+  if (!clone.unique_seqs_count) {
+    reasons.push("Missing unique sequence count");
+  }
+  if (!clone.clone_id && !clone.ident) {
+    reasons.push("Missing clone identifier (clone_id or ident)");
+  }
+  if (!clone.v_call) {
+    reasons.push("Missing V gene call");
+  }
+
+  return { complete: reasons.length === 0, reasons };
+}
+
+/**
+ * Validate that a tree object has sufficient data to render.
+ *
+ * @param {Object} tree - Tree object from Redux store
+ * @returns {{ complete: boolean, reasons: string[] }}
+ */
+export function validateTreeCompleteness(tree) {
+  if (!tree) return { complete: false, reasons: ["Tree data not loaded"] };
+
+  const reasons = [];
+
+  if (!tree.nodes) {
+    reasons.push("No tree nodes available");
+  } else if (tree.nodes.error) {
+    reasons.push(`Tree loading error: ${tree.nodes.error}`);
+  } else {
+    const nodesArr = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+    if (nodesArr.length === 0) {
+      reasons.push("Tree has no nodes");
+    }
+    const root = nodesArr.find((n) => !n.parent || n.type === "root");
+    if (!root) {
+      reasons.push("Tree has no root node");
+    } else if (!root.sequence_alignment && !root.sequence_alignment_aa) {
+      reasons.push("Root node has no sequence alignment");
+    }
+  }
+
+  return { complete: reasons.length === 0, reasons };
+}

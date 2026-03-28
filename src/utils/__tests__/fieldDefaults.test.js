@@ -6,7 +6,9 @@ import {
   applyNodeDefaults,
   applyCloneDefaults,
   extractGermlineFromTree,
-  getMissingFieldSummary
+  getMissingFieldSummary,
+  validateCloneCompleteness,
+  validateTreeCompleteness
 } from "../fieldDefaults";
 
 describe("fieldDefaults", () => {
@@ -328,6 +330,90 @@ describe("fieldDefaults", () => {
 
     it("returns empty array for null input", () => {
       expect(getMissingFieldSummary(null)).toEqual([]);
+    });
+  });
+
+  describe("validateCloneCompleteness", () => {
+    it("returns complete for a valid clone", () => {
+      const clone = { clone_id: "c1", unique_seqs_count: 10, v_call: "IGHV1-2" };
+      const result = validateCloneCompleteness(clone);
+      expect(result.complete).toBe(true);
+      expect(result.reasons).toEqual([]);
+    });
+
+    it("returns incomplete for null input", () => {
+      const result = validateCloneCompleteness(null);
+      expect(result.complete).toBe(false);
+      expect(result.reasons.length).toBeGreaterThan(0);
+    });
+
+    it("flags missing unique_seqs_count", () => {
+      const clone = { clone_id: "c1", v_call: "IGHV1-2" };
+      const result = validateCloneCompleteness(clone);
+      expect(result.complete).toBe(false);
+      expect(result.reasons.some((r) => r.includes("unique sequence count"))).toBe(true);
+    });
+
+    it("flags missing clone identifier", () => {
+      const clone = { unique_seqs_count: 10, v_call: "IGHV1-2" };
+      const result = validateCloneCompleteness(clone);
+      expect(result.complete).toBe(false);
+      expect(result.reasons.some((r) => r.includes("clone identifier"))).toBe(true);
+    });
+
+    it("accepts ident as alternative to clone_id", () => {
+      const clone = { ident: "abc-123", unique_seqs_count: 10, v_call: "IGHV1-2" };
+      const result = validateCloneCompleteness(clone);
+      expect(result.complete).toBe(true);
+    });
+  });
+
+  describe("validateTreeCompleteness", () => {
+    it("returns complete for a valid tree", () => {
+      const tree = {
+        nodes: [
+          { sequence_id: "root", parent: null, type: "root", sequence_alignment: "ATCG" },
+          { sequence_id: "leaf1", parent: "root", type: "leaf", sequence_alignment: "ATTG" }
+        ]
+      };
+      const result = validateTreeCompleteness(tree);
+      expect(result.complete).toBe(true);
+      expect(result.reasons).toEqual([]);
+    });
+
+    it("returns incomplete for null tree", () => {
+      const result = validateTreeCompleteness(null);
+      expect(result.complete).toBe(false);
+      expect(result.reasons).toContain("Tree data not loaded");
+    });
+
+    it("flags missing nodes", () => {
+      const result = validateTreeCompleteness({});
+      expect(result.complete).toBe(false);
+      expect(result.reasons).toContain("No tree nodes available");
+    });
+
+    it("flags nodes with error", () => {
+      const result = validateTreeCompleteness({ nodes: { error: "fetch failed" } });
+      expect(result.complete).toBe(false);
+      expect(result.reasons.some((r) => r.includes("fetch failed"))).toBe(true);
+    });
+
+    it("flags empty nodes array", () => {
+      const result = validateTreeCompleteness({ nodes: [] });
+      expect(result.complete).toBe(false);
+      expect(result.reasons).toContain("Tree has no nodes");
+    });
+
+    it("works with object-format nodes", () => {
+      const tree = {
+        nodes: {
+          root: { sequence_id: "root", parent: null, type: "root", sequence_alignment: "ATCG" },
+          leaf1: { sequence_id: "leaf1", parent: "root", type: "leaf", sequence_alignment: "ATTG" }
+        }
+      };
+      const result = validateTreeCompleteness(tree);
+      expect(result.complete).toBe(true);
     });
   });
 });

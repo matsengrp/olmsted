@@ -1,8 +1,15 @@
 import React from "react";
 
-// Print an object to the DOM because it is broken somehow
-function IncompleteDataWarning({ datum, data_type }) {
-  const id_of_broken_data = datum.id || datum.ident;
+/**
+ * Warning banner shown when a clonal family or tree has insufficient data to display.
+ *
+ * @param {Object} props
+ * @param {Object} props.datum - The incomplete data object
+ * @param {string} props.data_type - Label for the data type (e.g., "clonal family", "tree")
+ * @param {string[]} [props.reasons] - Specific reasons for incompleteness
+ */
+function IncompleteDataWarning({ datum, data_type, reasons }) {
+  const id = datum.clone_id || datum.id || datum.ident || datum.tree_id;
   return (
     <div
       style={{
@@ -16,7 +23,7 @@ function IncompleteDataWarning({ datum, data_type }) {
     >
       <h3
         style={{
-          margin: "0 0 12px 0",
+          margin: "0 0 8px 0",
           display: "flex",
           alignItems: "center",
           gap: "10px",
@@ -25,25 +32,18 @@ function IncompleteDataWarning({ datum, data_type }) {
         }}
       >
         <span style={{ fontSize: "20px" }}>✖</span>
-        Loading error: Insufficient data to display {data_type}
-        {id_of_broken_data && ": " + id_of_broken_data}
+        Insufficient data to display {data_type}
+        {id && `: ${id}`}
       </h3>
-      <p style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
-        {data_type} object has been logged to the console for inspection:
-      </p>
-      <div
-        style={{
-          backgroundColor: "#ffffff",
-          border: "1px solid #dc3545",
-          borderRadius: "3px",
-          padding: "10px",
-          overflowX: "auto"
-        }}
-      >
-        <pre style={{ margin: 0, fontSize: "12px" }}>
-          <code>{JSON.stringify(datum, null, 2)}</code>
-        </pre>
-      </div>
+      {reasons && reasons.length > 0 ? (
+        <ul style={{ margin: "8px 0 0 0", paddingLeft: 20, fontSize: "14px" }}>
+          {reasons.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+      ) : (
+        <p style={{ margin: "8px 0 0 0", fontSize: "14px" }}>Check the browser console for details.</p>
+      )}
     </div>
   );
 }
