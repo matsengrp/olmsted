@@ -152,11 +152,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeMetadata = fieldMetadata?.node || null;
   const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null, missingSet);
 
-  // Check if a node-level field is available (for binary presence checks)
+  // Check if a node-level field is available (for binary presence checks).
+  // When no metadata is available, assume standard fields (distance) are present
+  // but non-standard fields (surprise_mutations) are absent.
+  const STANDARD_NODE_FIELDS = new Set(["distance", "lbi", "lbr", "affinity", "multiplicity", "cluster_multiplicity"]);
   const hasNodeField = (field) => {
     if (nodeMetadata) return field in nodeMetadata;
     if (missingSet) return !missingSet.has(`node.${field}`);
-    return true; // assume present when no metadata at all
+    return STANDARD_NODE_FIELDS.has(field);
   };
 
   // Build dynamic node tooltip signals (includes branch metrics on child nodes)
