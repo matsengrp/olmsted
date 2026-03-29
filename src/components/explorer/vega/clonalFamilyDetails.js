@@ -200,7 +200,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Build the dropdown option values and find the first AA option for default
   const mutationColorValues = mutationColorOptions.map((o) => o.value);
   const defaultMutationColor = mutationColorOptions.find((o) => o.scaleType === "aa")?.value || mutationColorValues[0];
-  // The first continuous field (if any) is used for the color_by_surprise backward compat signal
+  // The first continuous field (if any) is used for the color_by_mutation_metric backward compat signal
   const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
 
   return {
@@ -1274,7 +1274,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // Computed boolean: true when any continuous mutation field is selected (not AA)
       // Used by fill encoding and legend visibility throughout the spec
       {
-        name: "color_by_surprise",
+        name: "color_by_mutation_metric",
         update: firstContinuousMutField
           ? `indexof([${mutationColorOptions
               .filter((o) => o.scaleType === "continuous")
@@ -2481,12 +2481,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         value: null
                       },
                       {
-                        test: "color_by_surprise && datum[mutation_color_by] !== null",
+                        test: "color_by_mutation_metric && datum[mutation_color_by] !== null",
                         scale: "surprise_color",
                         field: { signal: "mutation_color_by" }
                       },
                       {
-                        test: "color_by_surprise && datum[mutation_color_by] === null",
+                        test: "color_by_mutation_metric && datum[mutation_color_by] === null",
                         value: null
                       },
                       { scale: "aa_color", field: "mut_to" }
@@ -2495,7 +2495,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal:
-                        'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                        'color_by_mutation_metric ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {
@@ -2794,7 +2794,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         title: "AA color",
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment && !color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && !color_by_mutation_metric ? 1 : 0" } }
           },
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }
@@ -2805,21 +2805,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "show_alignment && color_by_surprise ? 'Surprise score' : ''" },
+        title: { signal: "show_alignment && color_by_mutation_metric ? mutation_color_by : ''" },
         type: "gradient",
-        gradientLength: { signal: "show_alignment && color_by_surprise ? 100 : 0" },
+        gradientLength: { signal: "show_alignment && color_by_mutation_metric ? 100 : 0" },
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" } }
           },
           labels: {
             update: {
-              opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" },
-              fontSize: { signal: "show_alignment && color_by_surprise ? 10 : 0" }
+              opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" },
+              fontSize: { signal: "show_alignment && color_by_mutation_metric ? 10 : 0" }
             }
           },
           gradient: {
-            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" } }
           }
         }
       }
@@ -2828,7 +2828,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false, colorBySurprise = false } = options;
+  const { showMutationBorders = false, colorByMutationMetric = false } = options;
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -2918,8 +2918,8 @@ const seqAlignSpec = (family, options = {}) => {
       },
       // Toggle to color mutations by surprise score - controlled via React state
       {
-        name: "color_by_surprise",
-        value: colorBySurprise
+        name: "color_by_mutation_metric",
+        value: colorByMutationMetric
       }
     ],
     marks: [
@@ -3006,12 +3006,12 @@ const seqAlignSpec = (family, options = {}) => {
                 value: null
               },
               {
-                test: "color_by_surprise && datum.surprise_mutsel !== null",
+                test: "color_by_mutation_metric && datum.surprise_mutsel !== null",
                 scale: "surprise_color",
                 field: "surprise_mutsel"
               },
               {
-                test: "color_by_surprise && datum.surprise_mutsel === null",
+                test: "color_by_mutation_metric && datum.surprise_mutsel === null",
                 value: null
               },
               { scale: "aa_color", field: "mut_to" }
@@ -3020,7 +3020,7 @@ const seqAlignSpec = (family, options = {}) => {
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
               signal:
-                'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                'color_by_mutation_metric ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
@@ -3186,21 +3186,21 @@ const seqAlignSpec = (family, options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "color_by_surprise ? 'Surprise score' : ''" },
+        title: { signal: "color_by_mutation_metric ? 'Mutation metric' : ''" },
         type: "gradient",
-        gradientLength: { signal: "color_by_surprise ? 100 : 0" },
+        gradientLength: { signal: "color_by_mutation_metric ? 100 : 0" },
         encode: {
           legend: {
-            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "color_by_mutation_metric ? 1 : 0" } }
           },
           labels: {
             update: {
-              opacity: { signal: "color_by_surprise ? 1 : 0" },
-              fontSize: { signal: "color_by_surprise ? 10 : 0" }
+              opacity: { signal: "color_by_mutation_metric ? 1 : 0" },
+              fontSize: { signal: "color_by_mutation_metric ? 10 : 0" }
             }
           },
           gradient: {
-            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "color_by_mutation_metric ? 1 : 0" } }
           }
         }
       }
