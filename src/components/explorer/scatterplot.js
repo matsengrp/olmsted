@@ -41,7 +41,11 @@ class ClonalFamiliesViz extends React.Component {
       vegaView: null,
       hideControls: false
     };
-    this.spec = facetClonalFamiliesVizSpec();
+    // Build spec with field_metadata from loaded datasets (if available)
+    const loadedDataset = props.datasets?.find((d) => d.loading === "DONE");
+    const fieldMetadata = loadedDataset?.field_metadata?.clone || null;
+    this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
+    this.lastFieldMetadata = fieldMetadata;
     this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
@@ -101,6 +105,14 @@ class ClonalFamiliesViz extends React.Component {
       datasets
     } = this.props;
     const { hideControls } = this.state;
+
+    // Rebuild spec if field_metadata changed (e.g., different dataset loaded)
+    const loadedDataset = datasets?.find((d) => d.loading === "DONE");
+    const fieldMetadata = loadedDataset?.field_metadata?.clone || null;
+    if (fieldMetadata !== this.lastFieldMetadata) {
+      this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
+      this.lastFieldMetadata = fieldMetadata;
+    }
 
     if (availableClonalFamilies) {
       return (

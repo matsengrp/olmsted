@@ -87,6 +87,7 @@ class FileProcessor {
       name: dataset.name || data.metadata?.name || filename,
       description: dataset.description || data.metadata?.description || null,
       debug: dataset.debug || data.metadata?.debug || false,
+      field_metadata: dataset.field_metadata || data.metadata?.field_metadata || null,
       build: dataset.build || {
         time: data.metadata?.created_at || new Date().toISOString(),
         commit: "client-side-processing"

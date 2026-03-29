@@ -216,4 +216,56 @@ describe("facetClonalFamiliesVizSpec", () => {
       view.finalize();
     });
   });
+
+  describe("field_metadata support", () => {
+    it("uses default options when no fieldMetadata provided", () => {
+      const defaultSpec = facetClonalFamiliesVizSpec();
+      const signals = defaultSpec.signals;
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toContain("mean_mut_freq");
+      expect(yField.bind.options).toContain("unique_seqs_count");
+      expect(yField.bind.options).toContain("junction_length");
+    });
+
+    it("builds options from fieldMetadata when provided", () => {
+      const metadata = {
+        phylogenetic_diversity: { type: "continuous", label: "Phylogenetic Diversity" },
+        shm_variance: { type: "continuous", label: "SHM Variance" },
+        unique_seqs_count: { type: "continuous", label: "Unique Seq Count" },
+        v_call: { type: "categorical", label: "V Gene" },
+        tissue_type: { type: "categorical", label: "Tissue Type" }
+      };
+      const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
+      const signals = customSpec.signals;
+
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toContain("phylogenetic_diversity");
+      expect(yField.bind.options).toContain("shm_variance");
+      expect(yField.bind.options).toContain("unique_seqs_count");
+      // Should NOT contain defaults that aren't in metadata
+      expect(yField.bind.options).not.toContain("mean_mut_freq");
+
+      const colorBy = signals.find((s) => s.name === "colorBy");
+      expect(colorBy.bind.options).toContain("v_call");
+      expect(colorBy.bind.options).toContain("tissue_type");
+      // Should NOT contain defaults that aren't in metadata
+      expect(colorBy.bind.options).not.toContain("j_call");
+    });
+
+    it("produces a valid Vega spec with custom fieldMetadata", () => {
+      const metadata = {
+        pd: { type: "continuous", label: "PD" },
+        group: { type: "categorical", label: "Group" }
+      };
+      const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
+      expect(() => vega.parse(customSpec)).not.toThrow();
+    });
+
+    it("falls back to defaults when fieldMetadata is empty", () => {
+      const emptySpec = facetClonalFamiliesVizSpec({ fieldMetadata: {} });
+      const signals = emptySpec.signals;
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toContain("mean_mut_freq");
+    });
+  });
 });
