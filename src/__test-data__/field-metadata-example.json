@@ -48,11 +48,11 @@
             "label": "Sample"
           },
           "secret_note": {
-            "type": "tooltip",
+            "type": "categorical",
             "label": "Secret Note"
           },
           "subject_id": {
-            "type": "tooltip",
+            "type": "categorical",
             "label": "Subject"
           },
           "unique_seqs_count": {
@@ -127,11 +127,13 @@
           },
           "surprise_mutsel": {
             "type": "continuous",
-            "label": "Surprise Score"
+            "label": "Surprise Score",
+            "range": [0, 15]
           },
           "selection_contribution": {
             "type": "continuous",
-            "label": "Selection Contribution"
+            "label": "Selection Contribution",
+            "range": [-2, 5]
           },
           "region": {
             "type": "tooltip",

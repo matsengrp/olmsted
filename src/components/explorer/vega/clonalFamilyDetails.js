@@ -2848,7 +2848,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "surprise_color",
         type: "linear",
-        domainRaw: { signal: "mutation_color_domain" },
+        domain: { signal: "mutation_color_domain" },
         range: {
           scheme: { signal: "mutation_color_scheme" }
         },
