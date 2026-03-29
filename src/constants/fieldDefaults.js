@@ -1,6 +1,8 @@
 /**
  * Default field options for visualization dropdowns and tooltips.
  * Used as fallback when field_metadata is not provided in the dataset.
+ * These are intentionally minimal — olmsted-cli can enrich older files
+ * with full field_metadata via the enrichment command.
  *
  * field_metadata types:
  *   "continuous"  — numeric fields for x/y axes, size dropdowns + tooltip
@@ -19,64 +21,39 @@ export const BUILTIN_CLONE_TOOLTIP = [
 
 export const BUILTIN_CLONE_CATEGORICAL = [{ field: "dataset_name", label: "Dataset" }];
 
-// Scatterplot — clone-level fields
-export const DEFAULT_CLONE_CONTINUOUS = ["unique_seqs_count", "mean_mut_freq", "junction_length"];
-export const DEFAULT_CLONE_CATEGORICAL = [
-  "subject_id",
-  "sample.timepoint_id",
-  "v_call",
-  "d_call",
-  "j_call",
-  "has_seed",
-  "sample.locus",
-  "dataset_name"
-];
+// Scatterplot — clone-level fallback fields
+export const DEFAULT_CLONE_CONTINUOUS = ["unique_seqs_count", "mean_mut_freq"];
+export const DEFAULT_CLONE_CATEGORICAL = ["v_call", "d_call", "j_call", "subject_id", "dataset_name"];
 
 /**
- * Default tooltip field metadata for the scatterplot.
- * All continuous and categorical fields are included automatically;
- * these are additional tooltip-only fields with custom formatting.
+ * Default tooltip for scatterplot hover (fallback when no field_metadata).
  */
 export const DEFAULT_CLONE_TOOLTIP = [
   { field: "clone_id", label: "Clone ID" },
   { field: "dataset_name", label: "Dataset" },
-  { field: "sample.sample_id", label: "Sample", expr: "datum.sample ? datum.sample.sample_id : ''" },
-  { field: "subject_id", label: "Subject" },
-  { field: "sample.locus", label: "Locus", expr: "datum.sample ? datum.sample.locus : ''" },
   { field: "unique_seqs_count", label: "Unique Sequences" },
   { field: "mean_mut_freq", label: "Mean Mutation Freq", format: ".3f" },
-  { field: "junction_length", label: "Junction Length" },
   { field: "v_call", label: "V Gene" },
-  { field: "j_call", label: "J Gene" },
-  { field: "has_seed", label: "Has Seed", expr: "datum.has_seed ? 'Yes' : 'No'" }
+  { field: "d_call", label: "D Gene" },
+  { field: "j_call", label: "J Gene" }
 ];
 
-// Tree — node-level fields for leaf sizing
-export const DEFAULT_LEAF_SIZE_OPTIONS = [
-  "<none>",
-  "multiplicity",
-  "cluster_multiplicity",
-  "affinity",
-  "scaled_affinity"
-];
+// Tree — fallback leaf size options (just none when no metadata)
+export const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>"];
 
 /**
- * Default tooltip fields for tree node hover.
- * All node continuous fields are included automatically via field_metadata;
- * these are the fallback when field_metadata is absent.
+ * Default tooltip for tree node hover (structural fields only).
  */
 export const DEFAULT_NODE_TOOLTIP = [
   { field: "sequence_id", label: "Sequence ID" },
   { field: "parent", label: "Parent ID" },
   { field: "type", label: "Node Type" },
   { field: "distance", label: "Distance" },
-  { field: "node_depth", label: "Depth" },
-  { field: "multiplicity", label: "Multiplicity" }
+  { field: "node_depth", label: "Depth" }
 ];
 
 /**
- * Default tooltip fields for mutation hover (when field_metadata.mutation is absent).
- * Built-in structural mutation fields are always shown regardless of metadata.
+ * Default tooltip for mutation hover (structural fields only).
  */
 export const DEFAULT_MUTATION_TOOLTIP = [
   { field: "position", label: "Position", format: "" },
@@ -91,6 +68,6 @@ export const DEFAULT_MUTATION_TOOLTIP = [
  */
 export const BUILTIN_MUTATION_AA = { value: "child_aa", label: "Child Amino Acid", scaleType: "aa" };
 
-// Tree — branch-level fields for width and color
-export const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>", "lbr", "lbi"];
-export const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "lbr", "lbi", "parent"];
+// Tree — fallback branch options (just none + parent when no metadata)
+export const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>"];
+export const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "parent"];

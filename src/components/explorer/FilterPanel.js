@@ -23,16 +23,12 @@ import { BUILTIN_CLONE_CATEGORICAL } from "../../constants/fieldDefaults";
  */
 
 // Default filterable fields (used when field_metadata is absent)
+// Minimal fallback filter fields (when no field_metadata)
 const DEFAULT_FILTER_FIELDS = [
-  {
-    key: "sample.locus",
-    label: "Locus",
-    accessor: (f) => (f.sample && f.sample.locus ? f.sample.locus.toUpperCase() : null)
-  },
-  { key: "subject_id", label: "Subject", accessor: (f) => f.subject_id },
-  { key: "sample_id", label: "Sample", accessor: (f) => f.sample_id },
   { key: "v_call", label: "V Gene", accessor: (f) => f.v_call },
+  { key: "d_call", label: "D Gene", accessor: (f) => f.d_call },
   { key: "j_call", label: "J Gene", accessor: (f) => f.j_call },
+  { key: "subject_id", label: "Subject", accessor: (f) => f.subject_id },
   {
     key: "dataset_name",
     label: "Dataset",

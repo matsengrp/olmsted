@@ -224,7 +224,6 @@ describe("facetClonalFamiliesVizSpec", () => {
       const yField = signals.find((s) => s.name === "yField");
       expect(yField.bind.options).toContain("mean_mut_freq");
       expect(yField.bind.options).toContain("unique_seqs_count");
-      expect(yField.bind.options).toContain("junction_length");
     });
 
     it("builds options from fieldMetadata when provided", () => {
