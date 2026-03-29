@@ -4,15 +4,23 @@
     {
       "dataset_id": "test-field-metadata",
       "name": "Test: Dynamic Field Metadata",
-      "description": "Test fixture with field_metadata for dynamic dropdowns. Includes nonsense continuous (foobar_score, baz_index) and categorical (widget_type, color_group) fields on clones, plus custom node/branch metrics.",
+      "description": "4 clonal families with custom continuous (foobar_score, baz_index) and categorical (widget_type, color_group) fields. Tests dynamic dropdown and tooltip generation from field_metadata.",
       "debug": true,
-      "clone_count": 2,
-      "subjects_count": 1,
+      "clone_count": 4,
+      "subjects_count": 2,
       "build": {
         "commit": "test"
       },
       "field_metadata": {
         "clone": {
+          "clone_id": {
+            "type": "tooltip",
+            "label": "Clone ID"
+          },
+          "subject_id": {
+            "type": "tooltip",
+            "label": "Subject"
+          },
           "unique_seqs_count": {
             "type": "continuous",
             "label": "Unique Seq Count"
@@ -57,14 +65,6 @@
           "dataset_name": {
             "type": "categorical",
             "label": "Dataset"
-          },
-          "clone_id": {
-            "type": "tooltip",
-            "label": "Clone ID"
-          },
-          "subject_id": {
-            "type": "tooltip",
-            "label": "Subject"
           }
         },
         "node": {
@@ -109,53 +109,123 @@
   "clones": {
     "test-field-metadata": [
       {
-        "ident": "clone-sf-clone-1",
-        "clone_id": "sf-clone-1",
+        "ident": "clone-fm-clone-1",
+        "clone_id": "fm-clone-1",
         "dataset_id": "test-field-metadata",
         "unique_seqs_count": 5,
-        "mean_mut_freq": 0.03,
+        "mean_mut_freq": 0.02,
+        "junction_length": 15,
         "sample_id": "sample1",
+        "subject_id": "subject_A",
         "v_call": "IGHV1-2",
         "j_call": "IGHJ4",
-        "trees_meta": [
-          {
-            "ident": "tree-sf-clone-1",
-            "type": "parsimony"
-          }
-        ],
-        "foobar_score": 3.64,
+        "foobar_score": 3.14,
         "baz_index": 42.0,
         "widget_type": "Alpha",
         "color_group": "Red",
-        "junction_length": 15
-      },
-      {
-        "ident": "clone-sf-clone-2",
-        "clone_id": "sf-clone-2",
-        "dataset_id": "test-field-metadata",
-        "unique_seqs_count": 5,
-        "mean_mut_freq": 0.04,
-        "sample_id": "sample1",
-        "v_call": "IGHV1-2",
-        "j_call": "IGHJ4",
         "trees_meta": [
           {
-            "ident": "tree-sf-clone-2",
+            "ident": "tree-fm-clone-1",
             "type": "parsimony"
           }
         ],
-        "foobar_score": 6.78,
+        "sample": {
+          "ident": "s1",
+          "locus": "IGH",
+          "sample_id": "sample1",
+          "timepoint_id": "day0"
+        }
+      },
+      {
+        "ident": "clone-fm-clone-2",
+        "clone_id": "fm-clone-2",
+        "dataset_id": "test-field-metadata",
+        "unique_seqs_count": 12,
+        "mean_mut_freq": 0.07,
+        "junction_length": 21,
+        "sample_id": "sample1",
+        "subject_id": "subject_A",
+        "v_call": "IGHV3-30",
+        "j_call": "IGHJ6",
+        "foobar_score": 7.28,
         "baz_index": 21.0,
         "widget_type": "Beta",
         "color_group": "Blue",
-        "junction_length": 18
+        "trees_meta": [
+          {
+            "ident": "tree-fm-clone-2",
+            "type": "parsimony"
+          }
+        ],
+        "sample": {
+          "ident": "s1",
+          "locus": "IGK",
+          "sample_id": "sample1",
+          "timepoint_id": "day0"
+        }
+      },
+      {
+        "ident": "clone-fm-clone-3",
+        "clone_id": "fm-clone-3",
+        "dataset_id": "test-field-metadata",
+        "unique_seqs_count": 3,
+        "mean_mut_freq": 0.04,
+        "junction_length": 18,
+        "sample_id": "sample1",
+        "subject_id": "subject_B",
+        "v_call": "IGHV1-2",
+        "j_call": "IGHJ4",
+        "foobar_score": 1.59,
+        "baz_index": 14.0,
+        "widget_type": "Gamma",
+        "color_group": "Green",
+        "trees_meta": [
+          {
+            "ident": "tree-fm-clone-3",
+            "type": "parsimony"
+          }
+        ],
+        "sample": {
+          "ident": "s1",
+          "locus": "IGH",
+          "sample_id": "sample1",
+          "timepoint_id": "day0"
+        }
+      },
+      {
+        "ident": "clone-fm-clone-4",
+        "clone_id": "fm-clone-4",
+        "dataset_id": "test-field-metadata",
+        "unique_seqs_count": 8,
+        "mean_mut_freq": 0.11,
+        "junction_length": 24,
+        "sample_id": "sample1",
+        "subject_id": "subject_B",
+        "v_call": "IGHV4-34",
+        "j_call": "IGHJ5",
+        "foobar_score": 9.42,
+        "baz_index": 10.5,
+        "widget_type": "Delta",
+        "color_group": "Yellow",
+        "trees_meta": [
+          {
+            "ident": "tree-fm-clone-4",
+            "type": "parsimony"
+          }
+        ],
+        "sample": {
+          "ident": "s1",
+          "locus": "IGL",
+          "sample_id": "sample1",
+          "timepoint_id": "day0"
+        }
       }
     ]
   },
   "trees": [
     {
-      "ident": "tree-sf-clone-1",
-      "clone_id": "sf-clone-1",
+      "ident": "tree-fm-clone-1",
+      "clone_id": "fm-clone-1",
       "nodes": [
         {
           "sequence_id": "naive",
@@ -163,8 +233,8 @@
           "sequence_alignment_aa": "IDIDIDIDID",
           "type": "root",
           "parent": null,
-          "wobble_metric": 8.8,
-          "quux_weight": 3.3
+          "wobble_metric": 4.1,
+          "quux_weight": 4.1
         },
         {
           "sequence_id": "internal1",
@@ -172,132 +242,79 @@
           "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
           "type": "node",
           "parent": "naive",
-          "wobble_metric": 9.6,
+          "wobble_metric": 7.3,
           "quux_weight": 3.2
-        },
-        {
-          "sequence_id": "internal2",
-          "sequence_alignment_aa": "IDIDIDSDID",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGATCGATCG",
-          "type": "node",
-          "parent": "naive2",
-          "wobble_metric": 8.8,
-          "quux_weight": 4.3
         },
         {
           "sequence_id": "leaf1",
           "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILKDIDIDID",
+          "sequence_alignment_aa": "ILADIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 2,
-              "parent_aa": "I",
-              "child_aa": "K",
-              "surprise_mutsel": 5.7,
-              "surprise_neutral": 3.8,
-              "selection_contribution": 1.9,
-              "region": "CDR1"
-            }
-          ],
-          "wobble_metric": 8.8,
-          "quux_weight": 1.9
+          "multiplicity": 10,
+          "cluster_multiplicity": 10,
+          "lbi": 0.488,
+          "lbr": 0.315,
+          "wobble_metric": 6.6,
+          "quux_weight": 0.6
         },
         {
           "sequence_id": "leaf2",
           "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILINIDIDID",
+          "sequence_alignment_aa": "ILIBIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 3,
-              "parent_aa": "D",
-              "child_aa": "N",
-              "surprise_mutsel": 8.0,
-              "surprise_neutral": 5.3,
-              "selection_contribution": 2.7,
-              "region": "FWR2"
-            }
-          ],
-          "wobble_metric": 8.4,
-          "quux_weight": 3.7
+          "multiplicity": 18,
+          "cluster_multiplicity": 47,
+          "lbi": 0.118,
+          "lbr": 0.53,
+          "wobble_metric": 8.5,
+          "quux_weight": 2.6
         },
         {
           "sequence_id": "leaf3",
           "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILIDEDIDID",
+          "sequence_alignment_aa": "ILIDCDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 4,
-              "parent_aa": "I",
-              "child_aa": "E",
-              "surprise_mutsel": 10.3,
-              "surprise_neutral": 6.8,
-              "selection_contribution": 3.5,
-              "region": "CDR2"
-            }
-          ],
-          "wobble_metric": 0.8,
-          "quux_weight": 1.6
+          "multiplicity": 18,
+          "cluster_multiplicity": 24,
+          "lbi": 0.46,
+          "lbr": 1.904,
+          "wobble_metric": 3.8,
+          "quux_weight": 4.9
         },
         {
           "sequence_id": "leaf4",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATGGATCGATCG",
-          "sequence_alignment_aa": "IDIDIDSRID",
+          "sequence_alignment": "ATCGTTCGATCGATCGGTCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDIDID",
           "type": "leaf",
-          "parent": "internal2",
-          "surprise_mutations": [
-            {
-              "site": 7,
-              "parent_aa": "D",
-              "child_aa": "R",
-              "surprise_mutsel": 17.2,
-              "surprise_neutral": 11.3,
-              "selection_contribution": 5.9,
-              "region": "CDR3"
-            }
-          ],
-          "wobble_metric": 8.0,
-          "quux_weight": 0.4
+          "parent": "internal1",
+          "multiplicity": 17,
+          "cluster_multiplicity": 5,
+          "lbi": 0.388,
+          "lbr": 1.223,
+          "wobble_metric": 9.5,
+          "quux_weight": 4.4
         },
         {
           "sequence_id": "leaf5",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGAGCGATCG",
-          "sequence_alignment_aa": "IDIDIDSDWD",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDEDID",
           "type": "leaf",
-          "parent": "internal2",
-          "surprise_mutations": [
-            {
-              "site": 8,
-              "parent_aa": "I",
-              "child_aa": "W",
-              "surprise_mutsel": 19.5,
-              "surprise_neutral": 12.8,
-              "selection_contribution": 6.7,
-              "region": "FWR3"
-            }
-          ],
-          "wobble_metric": 8.0,
-          "quux_weight": 2.3
-        },
-        {
-          "sequence_id": "naive2",
-          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "IDIDIDIDID",
-          "type": "root",
-          "parent": null,
-          "wobble_metric": 2.4,
-          "quux_weight": 0.5
+          "parent": "internal1",
+          "multiplicity": 5,
+          "cluster_multiplicity": 13,
+          "lbi": 0.461,
+          "lbr": 1.933,
+          "wobble_metric": 0.6,
+          "quux_weight": 1.7
         }
       ]
     },
     {
-      "ident": "tree-sf-clone-2",
-      "clone_id": "sf-clone-2",
+      "ident": "tree-fm-clone-2",
+      "clone_id": "fm-clone-2",
       "nodes": [
         {
           "sequence_id": "naive",
@@ -305,8 +322,8 @@
           "sequence_alignment_aa": "IDIDIDIDID",
           "type": "root",
           "parent": null,
-          "wobble_metric": 8.8,
-          "quux_weight": 3.3
+          "wobble_metric": 2.9,
+          "quux_weight": 3.8
         },
         {
           "sequence_id": "internal1",
@@ -314,126 +331,225 @@
           "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
           "type": "node",
           "parent": "naive",
-          "wobble_metric": 9.6,
-          "quux_weight": 3.2
-        },
-        {
-          "sequence_id": "internal2",
-          "sequence_alignment_aa": "IDIDIDSDID",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGATCGATCG",
-          "type": "node",
-          "parent": "naive2",
-          "wobble_metric": 8.8,
-          "quux_weight": 4.3
+          "wobble_metric": 5.4,
+          "quux_weight": 3.1
         },
         {
           "sequence_id": "leaf1",
           "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILKDIDIDID",
+          "sequence_alignment_aa": "ILADIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 2,
-              "parent_aa": "I",
-              "child_aa": "K",
-              "surprise_mutsel": 5.7,
-              "surprise_neutral": 3.8,
-              "selection_contribution": 1.9,
-              "region": "CDR1"
-            }
-          ],
-          "wobble_metric": 8.8,
-          "quux_weight": 1.9
+          "multiplicity": 10,
+          "cluster_multiplicity": 33,
+          "lbi": 0.287,
+          "lbr": 1.1,
+          "wobble_metric": 5.9,
+          "quux_weight": 3.4
         },
         {
           "sequence_id": "leaf2",
           "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILINIDIDID",
+          "sequence_alignment_aa": "ILIBIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 3,
-              "parent_aa": "D",
-              "child_aa": "N",
-              "surprise_mutsel": 8.0,
-              "surprise_neutral": 5.3,
-              "selection_contribution": 2.7,
-              "region": "FWR2"
-            }
-          ],
-          "wobble_metric": 8.4,
-          "quux_weight": 3.7
+          "multiplicity": 8,
+          "cluster_multiplicity": 28,
+          "lbi": 0.237,
+          "lbr": 0.596,
+          "wobble_metric": 6.2,
+          "quux_weight": 0.9
         },
         {
           "sequence_id": "leaf3",
           "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
-          "sequence_alignment_aa": "ILIDEDIDID",
+          "sequence_alignment_aa": "ILIDCDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
-            {
-              "site": 4,
-              "parent_aa": "I",
-              "child_aa": "E",
-              "surprise_mutsel": 10.3,
-              "surprise_neutral": 6.8,
-              "selection_contribution": 3.5,
-              "region": "CDR2"
-            }
-          ],
-          "wobble_metric": 0.8,
-          "quux_weight": 1.6
+          "multiplicity": 7,
+          "cluster_multiplicity": 43,
+          "lbi": 0.283,
+          "lbr": 0.574,
+          "wobble_metric": 9.0,
+          "quux_weight": 1.3
         },
         {
           "sequence_id": "leaf4",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATGGATCGATCG",
-          "sequence_alignment_aa": "IDIDIDSRID",
+          "sequence_alignment": "ATCGTTCGATCGATCGGTCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDIDID",
           "type": "leaf",
-          "parent": "internal2",
-          "surprise_mutations": [
-            {
-              "site": 7,
-              "parent_aa": "D",
-              "child_aa": "R",
-              "surprise_mutsel": 17.2,
-              "surprise_neutral": 11.3,
-              "selection_contribution": 5.9,
-              "region": "CDR3"
-            }
-          ],
-          "wobble_metric": 8.0,
-          "quux_weight": 0.4
-        },
+          "parent": "internal1",
+          "multiplicity": 9,
+          "cluster_multiplicity": 12,
+          "lbi": 0.1,
+          "lbr": 0.56,
+          "wobble_metric": 9.4,
+          "quux_weight": 0.3
+        }
+      ]
+    },
+    {
+      "ident": "tree-fm-clone-3",
+      "clone_id": "fm-clone-3",
+      "nodes": [
         {
-          "sequence_id": "leaf5",
-          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGAGCGATCG",
-          "sequence_alignment_aa": "IDIDIDSDWD",
-          "type": "leaf",
-          "parent": "internal2",
-          "surprise_mutations": [
-            {
-              "site": 8,
-              "parent_aa": "I",
-              "child_aa": "W",
-              "surprise_mutsel": 19.5,
-              "surprise_neutral": 12.8,
-              "selection_contribution": 6.7,
-              "region": "FWR3"
-            }
-          ],
-          "wobble_metric": 8.0,
-          "quux_weight": 2.3
-        },
-        {
-          "sequence_id": "naive2",
+          "sequence_id": "naive",
           "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
           "sequence_alignment_aa": "IDIDIDIDID",
           "type": "root",
           "parent": null,
-          "wobble_metric": 2.4,
-          "quux_weight": 0.5
+          "wobble_metric": 1.8,
+          "quux_weight": 0.6
+        },
+        {
+          "sequence_id": "internal1",
+          "sequence_alignment_aa": "ILIDIDIDID",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "type": "node",
+          "parent": "naive",
+          "wobble_metric": 1.1,
+          "quux_weight": 2.0
+        },
+        {
+          "sequence_id": "leaf1",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILADIDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 20,
+          "cluster_multiplicity": 7,
+          "lbi": 0.287,
+          "lbr": 1.326,
+          "wobble_metric": 9.3,
+          "quux_weight": 3.2
+        },
+        {
+          "sequence_id": "leaf2",
+          "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIBIDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 18,
+          "cluster_multiplicity": 12,
+          "lbi": 0.231,
+          "lbr": 1.275,
+          "wobble_metric": 5.8,
+          "quux_weight": 4.2
+        },
+        {
+          "sequence_id": "leaf3",
+          "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDCDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 17,
+          "cluster_multiplicity": 37,
+          "lbi": 0.06,
+          "lbr": 0.847,
+          "wobble_metric": 1.6,
+          "quux_weight": 1.9
+        },
+        {
+          "sequence_id": "leaf4",
+          "sequence_alignment": "ATCGTTCGATCGATCGGTCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 3,
+          "cluster_multiplicity": 36,
+          "lbi": 0.167,
+          "lbr": 0.838,
+          "wobble_metric": 0.6,
+          "quux_weight": 2.1
+        },
+        {
+          "sequence_id": "leaf5",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDEDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 11,
+          "cluster_multiplicity": 42,
+          "lbi": 0.07,
+          "lbr": 0.64,
+          "wobble_metric": 6.9,
+          "quux_weight": 2.5
+        },
+        {
+          "sequence_id": "leaf6",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATGGATCGATCG",
+          "sequence_alignment_aa": "ILIDIDIFID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 17,
+          "cluster_multiplicity": 14,
+          "lbi": 0.261,
+          "lbr": 1.396,
+          "wobble_metric": 5.3,
+          "quux_weight": 4.2
+        }
+      ]
+    },
+    {
+      "ident": "tree-fm-clone-4",
+      "clone_id": "fm-clone-4",
+      "nodes": [
+        {
+          "sequence_id": "naive",
+          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDIDID",
+          "type": "root",
+          "parent": null,
+          "wobble_metric": 8.5,
+          "quux_weight": 2.5
+        },
+        {
+          "sequence_id": "internal1",
+          "sequence_alignment_aa": "ILIDIDIDID",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "type": "node",
+          "parent": "naive",
+          "wobble_metric": 1.1,
+          "quux_weight": 3.1
+        },
+        {
+          "sequence_id": "leaf1",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILADIDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 17,
+          "cluster_multiplicity": 48,
+          "lbi": 0.4,
+          "lbr": 1.128,
+          "wobble_metric": 2.2,
+          "quux_weight": 2.2
+        },
+        {
+          "sequence_id": "leaf2",
+          "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIBIDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 19,
+          "cluster_multiplicity": 32,
+          "lbi": 0.49,
+          "lbr": 1.167,
+          "wobble_metric": 7.6,
+          "quux_weight": 3.5
+        },
+        {
+          "sequence_id": "leaf3",
+          "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDCDIDID",
+          "type": "leaf",
+          "parent": "internal1",
+          "multiplicity": 9,
+          "cluster_multiplicity": 23,
+          "lbi": 0.452,
+          "lbr": 0.879,
+          "wobble_metric": 9.4,
+          "quux_weight": 1.6
         }
       ]
     }

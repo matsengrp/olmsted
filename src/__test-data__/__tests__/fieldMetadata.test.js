@@ -78,11 +78,17 @@ describe("Dynamic field_metadata integration", () => {
       }
     });
 
-    it("clones have custom categorical fields", () => {
-      for (const clone of clones) {
-        expect(["Alpha", "Beta"]).toContain(clone.widget_type);
-        expect(["Red", "Blue", "Green"]).toContain(clone.color_group);
-      }
+    it("has 4 clones with distinct values", () => {
+      expect(clones.length).toBe(4);
+      const foobarScores = clones.map((c) => c.foobar_score);
+      expect(new Set(foobarScores).size).toBe(4);
+    });
+
+    it("clones have custom categorical fields with distinct values", () => {
+      const widgetTypes = new Set(clones.map((c) => c.widget_type));
+      expect(widgetTypes).toEqual(new Set(["Alpha", "Beta", "Gamma", "Delta"]));
+      const colorGroups = new Set(clones.map((c) => c.color_group));
+      expect(colorGroups).toEqual(new Set(["Red", "Blue", "Green", "Yellow"]));
     });
 
     it("nodes have custom metrics", () => {
