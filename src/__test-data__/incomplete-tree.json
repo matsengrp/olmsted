@@ -1,0 +1,35 @@
+{
+  "metadata": {},
+  "datasets": [
+    {
+      "dataset_id": "test-incomplete-tree",
+      "name": "Test: Tree With Empty Nodes",
+      "description": "Tree has an empty nodes object. Should show a blocking error preventing tree rendering.",
+      "debug": true,
+      "clone_count": 1,
+      "subjects_count": 1,
+      "build": { "commit": "test" }
+    }
+  ],
+  "clones": {
+    "test-incomplete-tree": [
+      {
+        "ident": "clone-empty-tree",
+        "clone_id": "clone-empty-tree",
+        "dataset_id": "test-incomplete-tree",
+        "unique_seqs_count": 5,
+        "sample_id": "sample1",
+        "v_call": "IGHV1-2",
+        "mean_mut_freq": 0.05,
+        "trees_meta": [{ "ident": "tree-empty", "type": "parsimony" }]
+      }
+    ]
+  },
+  "trees": [
+    {
+      "ident": "tree-empty",
+      "clone_id": "clone-empty-tree",
+      "nodes": {}
+    }
+  ]
+}

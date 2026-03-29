@@ -1,4 +1,4 @@
-/* eslint-disable eqeqeq */
+ 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
@@ -200,9 +200,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with
       // one value), which explains the confusing logic going on here.
       {
-        // TODO
-        // Add another data collection here, "timepoint_multiplicity_sum", that sums over the timepoint_multiplicities
-        // in order to normalize by this sum instead of trusting the total multiplicity values
         name: "leaf_pies",
         transform: [
           {

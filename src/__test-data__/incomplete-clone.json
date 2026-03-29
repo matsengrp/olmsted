@@ -1,0 +1,49 @@
+{
+  "metadata": {},
+  "datasets": [
+    {
+      "dataset_id": "test-incomplete-clone",
+      "name": "Test: Clone Missing unique_seqs_count",
+      "description": "Clone is missing the unique_seqs_count field. Should render tree with a non-blocking warning.",
+      "debug": true,
+      "clone_count": 1,
+      "subjects_count": 1,
+      "build": { "commit": "test" }
+    }
+  ],
+  "clones": {
+    "test-incomplete-clone": [
+      {
+        "ident": "clone-no-seqcount",
+        "clone_id": "clone-no-seqcount",
+        "dataset_id": "test-incomplete-clone",
+        "sample_id": "sample1",
+        "v_call": "IGHV1-2",
+        "mean_mut_freq": 0.05,
+        "trees_meta": [{ "ident": "tree1", "type": "parsimony" }]
+      }
+    ]
+  },
+  "trees": [
+    {
+      "ident": "tree1",
+      "clone_id": "clone-no-seqcount",
+      "nodes": {
+        "naive": {
+          "sequence_id": "naive",
+          "sequence_alignment": "ATCGATCG",
+          "sequence_alignment_aa": "ID",
+          "type": "root",
+          "parent": null
+        },
+        "leaf1": {
+          "sequence_id": "leaf1",
+          "sequence_alignment": "ATCAATCG",
+          "sequence_alignment_aa": "IN",
+          "type": "leaf",
+          "parent": "naive"
+        }
+      }
+    }
+  ]
+}

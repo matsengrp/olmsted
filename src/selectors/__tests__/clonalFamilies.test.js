@@ -3,7 +3,6 @@ import {
   getAvailableClonalFamilies,
   getBrushedClonalFamilies,
   getClonalFamiliesPage,
-  getSelectedFamily,
   getCloneChain,
   getPairedClone,
   getHeavyLightClones
@@ -64,9 +63,9 @@ describe("getAvailableClonalFamilies", () => {
   it("applies high-level filters", () => {
     const state = makeState([mockFamily1, mockFamily2], [mockDataset], { "sample.locus": ["IGH"] });
     // Need to reset memoization
-    getAvailableClonalFamilies.recomputations &&
-      getAvailableClonalFamilies.resetRecomputations &&
+    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
       getAvailableClonalFamilies.resetRecomputations();
+    }
     const result = getAvailableClonalFamilies(state);
     // mockFamily1 has IGH, mockFamily2 has IGK
     expect(result).toHaveLength(1);

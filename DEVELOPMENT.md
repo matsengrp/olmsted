@@ -27,7 +27,7 @@ git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
 
 # Install dependencies
-npm install --legacy-peer-deps
+npm install
 
 # Start development server with hot reloading
 ./bin/olmsted-server-local.sh /path/to/data 3999 dev
@@ -38,14 +38,14 @@ open http://localhost:3999
 
 ## Prerequisites
 
-- **Node.js**: v18.x LTS (see `engines` in package.json)
+- **Node.js**: v20.x LTS (see `engines` in package.json)
 - **npm**: >= 9.0.0
 - **Git**: For version control
 
 ### Verifying Your Environment
 
 ```bash
-node --version   # Should output v18.x.x
+node --version   # Should output v20.x.x
 npm --version    # Should output 9.x.x or higher
 ```
 
@@ -143,7 +143,7 @@ Olmsted uses ESLint with the Airbnb style guide and Prettier for formatting.
 # Check for linting errors
 npm run lint
 
-# Common ESLint rules (see .eslintrc):
+# Common ESLint rules (see eslint.config.mjs):
 # - No console.log (use console.warn or console.error)
 # - Unused vars starting with _ are allowed
 # - Decorators (@connect) are supported
@@ -168,6 +168,7 @@ From CLAUDE.md:
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
 - **Documentation**: JSDoc for all public methods and complex functions
 - **Indentation**: 2 spaces
+- **No inline TODOs**: Do not leave TODO/FIXME/HACK comments in code. File a GitHub issue instead. Inline TODOs are easy to forget and hard to track; issues are searchable, assignable, and closeable
 
 ---
 
@@ -266,7 +267,7 @@ Import shared mock data from `src/__test-data__/mockState.js` rather than duplic
 | `jest.setup.js`         | `fake-indexeddb/auto` polyfill, `structuredClone` polyfill for Node 18, sessionStorage fallback, console noise suppression                |
 | `__mocks__/fileMock.js` | Stub for image/file imports                                                                                                               |
 | `.babelrc` `"test"` env | Avoids loading react-refresh plugin (crashes in Jest)                                                                                     |
-| `.eslintrc` `overrides` | Adds `jest: true` env for `__tests__/` files so ESLint recognizes `describe`, `it`, `expect`, etc.                                        |
+| `eslint.config.mjs` test override | Adds Jest globals for `__tests__/` files so ESLint recognizes `describe`, `it`, `expect`, etc.                                  |
 
 **Key dependencies:**
 
@@ -498,13 +499,7 @@ python bin/aws_invalidate_cloudfront.py
 
 ### `npm install` Fails
 
-Use the `--legacy-peer-deps` flag:
-
-```bash
-npm install --legacy-peer-deps
-```
-
-This is required due to some peer dependency conflicts with older packages.
+Ensure you are running Node.js v20.x (`node --version`). Peer dependency conflicts have been resolved via overrides in `package.json`, so `--legacy-peer-deps` should not be needed.
 
 ### Hot Reloading Not Working
 

@@ -20,22 +20,33 @@ describe("IncompleteDataWarning", () => {
     expect(heading.textContent).toContain("fam_7");
   });
 
-  it("renders without id when both id and ident are missing", () => {
+  it("uses clone_id for identification", () => {
+    render(<IncompleteDataWarning datum={{ clone_id: "CL-99" }} data_type="clonal family" />);
+    const heading = screen.getByRole("heading");
+    expect(heading.textContent).toContain("CL-99");
+  });
+
+  it("renders without id when no identifier fields exist", () => {
     render(<IncompleteDataWarning datum={{}} data_type="widget" />);
     const heading = screen.getByText(/Insufficient data to display widget/);
     expect(heading).toBeInTheDocument();
-    // No colon + id appended
     expect(heading.textContent).not.toMatch(/: $/);
   });
 
-  it("renders the datum as JSON in a code block", () => {
-    const datum = { id: "x", value: 99 };
-    render(<IncompleteDataWarning datum={datum} data_type="item" />);
-    expect(screen.getByText(/"value": 99/)).toBeInTheDocument();
+  it("renders specific reasons when provided", () => {
+    const reasons = ["Missing unique sequence count", "Missing V gene call"];
+    render(<IncompleteDataWarning datum={{ id: "x" }} data_type="clone" reasons={reasons} />);
+    expect(screen.getByText("Missing unique sequence count")).toBeInTheDocument();
+    expect(screen.getByText("Missing V gene call")).toBeInTheDocument();
   });
 
-  it("renders the instruction paragraph", () => {
+  it("renders fallback message when no reasons provided", () => {
     render(<IncompleteDataWarning datum={{ id: "z" }} data_type="node" />);
-    expect(screen.getByText(/object has been logged to the console for inspection/)).toBeInTheDocument();
+    expect(screen.getByText(/Check the browser console for details/)).toBeInTheDocument();
+  });
+
+  it("renders fallback message when reasons array is empty", () => {
+    render(<IncompleteDataWarning datum={{ id: "z" }} data_type="node" reasons={[]} />);
+    expect(screen.getByText(/Check the browser console for details/)).toBeInTheDocument();
   });
 });

@@ -302,7 +302,7 @@ const ensureSingleRoot = (nodes) => {
   return {
     nodes: [syntheticRoot, ...modifiedNodes],
     modification:
-      `Created synthetic root from consensus of ${sequencedRoots.length} subtree roots` +
+      `Created synthetic root to join forest of ${sequencedRoots.length} disconnected subtree roots` +
       (emptyRoots.length > 0 ? `; removed ${emptyRoots.length} empty placeholder(s)` : "")
   };
 };
@@ -315,7 +315,7 @@ const ensureSingleRoot = (nodes) => {
  * @returns {{ nodes: Object[], modification: string|null }} Normalized nodes and optional modification description
  */
 const normalizeTreeNodes = (nodes) => {
-  let normalized = _.map(nodes, (x) =>
+  const normalized = _.map(nodes, (x) =>
     x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
   );
   const rootResult = ensureSingleRoot(normalized);
@@ -369,6 +369,13 @@ export const computeTreeData = (tree) => {
   if (treeData["nodes"] && treeData["nodes"].length > 0) {
     let data = treeData["nodes"].slice(0);
     const naive = findNaive(data);
+
+    // Guard: if no root node or root lacks sequence data, mark tree as incomplete
+    if (!naive || !naive.sequence_alignment_aa) {
+      treeData.nodes = { error: "Tree has no root node with sequence alignment" };
+      return treeData;
+    }
+
     data = _.filter(data, (o) => o.type === "root" || o.type === "leaf");
     treeData["leaves_count_incl_naive"] = data.length;
     // Use the tree's own sequence alignment for computing mutations

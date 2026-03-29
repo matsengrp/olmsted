@@ -175,7 +175,7 @@ const loadServerDatasets = async (dispatch) => {
               server: serverDatasets.length,
               total: combinedDatasets.length
             });
-          } catch (error) {
+          } catch (_error) {
             // Silently fall back to client-only datasets
             if (clientDatasets.length > 0) {
               dispatch({

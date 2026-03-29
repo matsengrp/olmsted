@@ -8,7 +8,7 @@ export default function configureStore(initialState) {
   console.log("configure store!");
   const middleware = [
     thunk,
-    changeURLMiddleware // eslint-disable-line comma-dangle
+    changeURLMiddleware  
     // loggingMiddleware
   ];
 
@@ -30,7 +30,7 @@ export default function configureStore(initialState) {
     return state;
   };
   let composeEnhancers = compose;
-  /* eslint-disable no-underscore-dangle */
+   
   if (
     process.env.NODE_ENV !== "production" &&
     typeof window === "object" &&
@@ -44,7 +44,7 @@ export default function configureStore(initialState) {
   }
 
   const composedEnhancers = composeEnhancers(applyMiddleware(...middleware));
-  /* eslint-enable */
+   
   const store = createStore(rootReducer, initialState, composedEnhancers);
 
   return store;

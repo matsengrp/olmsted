@@ -1,4 +1,28 @@
-## version 2.3.0 - 2026/03/13
+## version 2.5.0 - 2026/03/28
+Changed:
+* Clone/tree completeness validation with specific error messages replacing fragile checks
+* Deduplicated server data loading code into shared helpers
+* Extracted DatasetsSection, ClonalFamiliesSection, SelectedFamiliesSection from App component
+* Renamed "Unique seqs" to "Unique Seq Count" with AIRR terminology note
+* 529 tests across 27 suites
+
+## version 2.4.1 - 2026/03/26
+Changed:
+* Node.js 18 → 20 LTS
+* React 18 → 19, Redux 3 → 5, ESLint 8 → 9 (flat config), Express 4 → 5
+* All dependencies updated to latest stable; 19 deprecated packages removed
+* --legacy-peer-deps no longer required
+* 0 high/critical vulnerabilities (down from 23)
+
+## version 2.4.0 - 2026/03/26
+Changed:
+* Per-mutation surprise score coloring in tree alignment and lineage views
+* Subtree focus: filter visualization to a selected node's descendants with children dropdown
+* Graceful handling of datasets with missing fields with auto-defaults and dismissible warning banners
+* Forest tree support with synthetic root consensus sequences for disconnected subtrees
+* Node depth in tooltips, info panel expand/copy, Delete Selected Datasets button
+
+## version 2.3.0 - 2026/03/16
 Changed:
 * Upgraded Vega 5→6, Vega-Lite 5→6, react-vega 4→8 to resolve 6 high-severity XSS vulnerabilities
 * Added VegaChart wrapper component bridging react-vega v8 API changes

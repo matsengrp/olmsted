@@ -14,8 +14,8 @@ export const NAV_BAR_HEIGHT = 50; // Collapsed height
 const EXPANDED_NAV_BAR_HEIGHT = 70; // Height when at top
 
 // SVG gear icon
-const GearIcon = ({ size = 16 }) => (
-  <svg
+function GearIcon({ size = 16 }) {
+  return <svg
     width={size}
     height={size}
     viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ const GearIcon = ({ size = 16 }) => (
     <circle cx="12" cy="12" r="3" />
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
   </svg>
-);
+}
 
 @connect((state) => ({
   currentSection: state.clonalFamilies.currentSection
@@ -261,6 +261,7 @@ class NavBar extends React.Component {
         {/* Centered section name with navigation */}
         <div style={centerSectionStyle}>
           <button
+            type="button"
             style={navButtonStyle(isUpHovered, canGoUp)}
             onClick={this.handlePrevSection}
             onMouseEnter={() => this.setState({ isUpHovered: true })}
@@ -273,6 +274,7 @@ class NavBar extends React.Component {
           </button>
           <span>{currentSection}</span>
           <button
+            type="button"
             style={navButtonStyle(isDownHovered, canGoDown)}
             onClick={this.handleNextSection}
             onMouseEnter={() => this.setState({ isDownHovered: true })}
@@ -288,6 +290,7 @@ class NavBar extends React.Component {
         <div style={rightSectionStyle}>
           {showSettings && (
             <button
+              type="button"
               style={configButtonStyle}
               onClick={this.handleConfigClick}
               onMouseEnter={() => this.setState({ isConfigHovered: true })}

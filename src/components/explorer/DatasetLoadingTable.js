@@ -2,8 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiRefreshCw, FiDatabase, FiStar } from "react-icons/fi";
-import { GreenCheckmark } from "../util/loading";
-import { LoadingStatus } from "../util/loading";
+import { GreenCheckmark , LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
@@ -94,7 +93,14 @@ export default class DatasetLoadingTable extends React.Component {
       if (savedSort !== null) sortStarredFirst = JSON.parse(savedSort);
       const savedFilter = sessionStorage.getItem("olmsted_datasets_show_only_starred");
       if (savedFilter !== null) showOnlyStarred = JSON.parse(savedFilter);
-    } catch (e) {
+    } catch (_e) {
+      // ignore
+    }
+    let hideServerData = false;
+    try {
+      const savedHide = sessionStorage.getItem("olmsted_datasets_hide_server");
+      if (savedHide !== null) hideServerData = JSON.parse(savedHide);
+    } catch (_e) {
       // ignore
     }
     this.state = {
@@ -102,6 +108,7 @@ export default class DatasetLoadingTable extends React.Component {
       manageHovered: false,
       sortStarredFirst,
       showOnlyStarred,
+      hideServerData,
       starAllHovered: false,
       unstarAllHovered: false,
       clearStarsHovered: false
@@ -113,7 +120,7 @@ export default class DatasetLoadingTable extends React.Component {
       const newValue = !prevState.sortStarredFirst;
       try {
         sessionStorage.setItem("olmsted_datasets_sort_starred_first", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         /* ignore */
       }
       return { sortStarredFirst: newValue };
@@ -125,10 +132,22 @@ export default class DatasetLoadingTable extends React.Component {
       const newValue = !prevState.showOnlyStarred;
       try {
         sessionStorage.setItem("olmsted_datasets_show_only_starred", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         /* ignore */
       }
       return { showOnlyStarred: newValue };
+    });
+  };
+
+  toggleHideServerData = () => {
+    this.setState((prevState) => {
+      const newValue = !prevState.hideServerData;
+      try {
+        sessionStorage.setItem("olmsted_datasets_hide_server", JSON.stringify(newValue));
+      } catch (_e) {
+        /* ignore */
+      }
+      return { hideServerData: newValue };
     });
   };
 
@@ -190,13 +209,18 @@ export default class DatasetLoadingTable extends React.Component {
   render() {
     // Use all datasets (including loaded ones)
     const { allDatasets, datasets, selectedDatasets, starredDatasets, dispatch, loadedClonalFamilies } = this.props;
-    const { sortStarredFirst, showOnlyStarred, starAllHovered, unstarAllHovered, clearStarsHovered } = this.state;
+    const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
+      this.state;
     const allDatasetsRaw = allDatasets || datasets || [];
 
-    // Filter to only starred if enabled
-    const filteredDatasets = showOnlyStarred
-      ? allDatasetsRaw.filter((d) => starredDatasets.includes(d.dataset_id))
-      : allDatasetsRaw;
+    // Filter datasets
+    let filteredDatasets = allDatasetsRaw;
+    if (hideServerData) {
+      filteredDatasets = filteredDatasets.filter((d) => d.isClientSide || d.temporary);
+    }
+    if (showOnlyStarred) {
+      filteredDatasets = filteredDatasets.filter((d) => starredDatasets.includes(d.dataset_id));
+    }
 
     // Sort datasets - optionally with starred first
     const allDatasetsToUse = sortStarredFirst
@@ -283,6 +307,17 @@ export default class DatasetLoadingTable extends React.Component {
               style={{ cursor: "pointer" }}
             />
             Only starred
+          </label>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              checked={hideServerData}
+              onChange={this.toggleHideServerData}
+              style={{ cursor: "pointer" }}
+            />
+            Hide server data
           </label>
           <button
             type="button"

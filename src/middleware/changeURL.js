@@ -10,7 +10,7 @@ The only modification of redux state by this app is (potentially) an action of t
 which is used to "save" the current page so we can diff against a new one!
 */
 
-// eslint-disable-next-line
+ 
 export const changeURLMiddleware = (store) => (next) => (action) => {
   const state = store.getState(); // this is "old" state, i.e. before the reducers have updated by this action
   const result = next(action); // send action to other middleware / reducers

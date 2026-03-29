@@ -71,12 +71,10 @@ const modifyStateViaMetadata = (state, metadata) => {
         }
       }
     }
-    // TODO: why are these false / False
-    if (metadata.defaults.mapTriplicate) {
-      // convert string to boolean; default is true; turned off with either false (js) or False (python)
-      state["mapTriplicate"] = !(
-        metadata.defaults.mapTriplicate === "false" || metadata.defaults.mapTriplicate === "False"
-      );
+    // Legacy Auspice field — handle both boolean and string representations
+    if (metadata.defaults.mapTriplicate !== undefined) {
+      const val = metadata.defaults.mapTriplicate;
+      state.mapTriplicate = val !== false && val !== "false" && val !== "False";
     }
   }
 

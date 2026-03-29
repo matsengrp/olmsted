@@ -77,12 +77,14 @@ const headerStyle = {
 const bodyStyle = {
   padding: "20px",
   overflowY: "auto",
+  overflowX: "hidden",
   flex: 1
 };
 
 const tableStyle = {
   width: "100%",
-  borderCollapse: "collapse"
+  borderCollapse: "collapse",
+  tableLayout: "fixed"
 };
 
 const rowStyle = {
@@ -95,7 +97,7 @@ const labelCellStyle = {
   padding: "8px 12px",
   verticalAlign: "top",
   whiteSpace: "nowrap",
-  width: "40%",
+  width: "35%",
   textAlign: "right",
   borderRight: "1px solid #dee2e6"
 };
@@ -104,9 +106,12 @@ const valueCellStyle = {
   padding: "8px 12px",
   verticalAlign: "top",
   wordBreak: "break-word",
+  overflowWrap: "anywhere",
+  whiteSpace: "pre-wrap",
   fontFamily: "monospace",
   fontSize: "13px",
-  textAlign: "left"
+  textAlign: "left",
+  overflow: "hidden"
 };
 
 // closeButtonStyle is now generated dynamically in the component for hover support

@@ -1,0 +1,192 @@
+{
+  "metadata": {},
+  "datasets": [
+    {
+      "dataset_id": "test-forest-only",
+      "name": "Test: Forest Without Surprise Scores",
+      "description": "Two clonal families, each with a disconnected forest (2 roots) but no surprise score data. Tests synthetic root creation in isolation.",
+      "debug": true,
+      "clone_count": 2,
+      "subjects_count": 1,
+      "build": {
+        "commit": "test"
+      }
+    }
+  ],
+  "clones": {
+    "test-forest-only": [
+      {
+        "ident": "clone-fo-clone-1",
+        "clone_id": "fo-clone-1",
+        "dataset_id": "test-forest-only",
+        "unique_seqs_count": 5,
+        "mean_mut_freq": 0.03,
+        "sample_id": "sample1",
+        "v_call": "IGHV1-2",
+        "j_call": "IGHJ4",
+        "trees_meta": [
+          {
+            "ident": "tree-fo-clone-1",
+            "type": "parsimony"
+          }
+        ]
+      },
+      {
+        "ident": "clone-fo-clone-2",
+        "clone_id": "fo-clone-2",
+        "dataset_id": "test-forest-only",
+        "unique_seqs_count": 5,
+        "mean_mut_freq": 0.04,
+        "sample_id": "sample1",
+        "v_call": "IGHV1-2",
+        "j_call": "IGHJ4",
+        "trees_meta": [
+          {
+            "ident": "tree-fo-clone-2",
+            "type": "parsimony"
+          }
+        ]
+      }
+    ]
+  },
+  "trees": [
+    {
+      "ident": "tree-fo-clone-1",
+      "clone_id": "fo-clone-1",
+      "nodes": [
+        {
+          "sequence_id": "naive",
+          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDIDID",
+          "type": "root",
+          "parent": null
+        },
+        {
+          "sequence_id": "internal1",
+          "sequence_alignment_aa": "ILIDIDIDID",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "type": "node",
+          "parent": "naive"
+        },
+        {
+          "sequence_id": "internal2",
+          "sequence_alignment_aa": "IDIDIDSDID",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGATCGATCG",
+          "type": "node",
+          "parent": "naive2"
+        },
+        {
+          "sequence_id": "leaf1",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILKDIDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf2",
+          "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILINIDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf3",
+          "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDEDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf4",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATGGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDSRID",
+          "type": "leaf",
+          "parent": "internal2"
+        },
+        {
+          "sequence_id": "leaf5",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGAGCGATCG",
+          "sequence_alignment_aa": "IDIDIDSDWD",
+          "type": "leaf",
+          "parent": "internal2"
+        },
+        {
+          "sequence_id": "naive2",
+          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDIDID",
+          "type": "root",
+          "parent": null
+        }
+      ]
+    },
+    {
+      "ident": "tree-fo-clone-2",
+      "clone_id": "fo-clone-2",
+      "nodes": [
+        {
+          "sequence_id": "naive",
+          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDIDID",
+          "type": "root",
+          "parent": null
+        },
+        {
+          "sequence_id": "internal1",
+          "sequence_alignment_aa": "ILIDIDIDID",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "type": "node",
+          "parent": "naive"
+        },
+        {
+          "sequence_id": "internal2",
+          "sequence_alignment_aa": "IDIDIDSDID",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGATCGATCG",
+          "type": "node",
+          "parent": "naive2"
+        },
+        {
+          "sequence_id": "leaf1",
+          "sequence_alignment": "ATCGTTCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILKDIDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf2",
+          "sequence_alignment": "ATCGTTCGATGGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILINIDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf3",
+          "sequence_alignment": "ATCGTTCGATCGAGCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "ILIDEDIDID",
+          "type": "leaf",
+          "parent": "internal1"
+        },
+        {
+          "sequence_id": "leaf4",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATGGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDSRID",
+          "type": "leaf",
+          "parent": "internal2"
+        },
+        {
+          "sequence_id": "leaf5",
+          "sequence_alignment": "ATCGATCGATCGATCGATCTATCGAGCGATCG",
+          "sequence_alignment_aa": "IDIDIDSDWD",
+          "type": "leaf",
+          "parent": "internal2"
+        },
+        {
+          "sequence_id": "naive2",
+          "sequence_alignment": "ATCGATCGATCGATCGATCGATCGATCGATCG",
+          "sequence_alignment_aa": "IDIDIDIDID",
+          "type": "root",
+          "parent": null
+        }
+      ]
+    }
+  ]
+}

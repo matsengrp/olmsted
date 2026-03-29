@@ -13,131 +13,102 @@ const charonErrorHandler = (dispatch) => {
   dispatch({ type: types.PROCEED_SANS_MANIFEST, datapath });
 };
 
-export const getTree = (dispatch, tree_id) => {
-  const processData = (data, requested_tree_id) => {
-    let tree;
-    try {
-      tree = JSON.parse(data);
-      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
-    } catch (err) {
-      alert(
-        "Failed parsing json for " +
-          requested_tree_id +
-          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
-      );
-      console.log(data.substring(0, 100));
-    }
+/**
+ * Safely parse JSON, showing an alert on failure.
+ * @param {string} data - Raw JSON string
+ * @param {string} identifier - Label for error messages
+ * @param {*} [fallback=null] - Value to return on parse failure
+ * @returns {*} Parsed data or fallback
+ */
+const safeJsonParse = (data, identifier, fallback = null) => {
+  try {
+    return JSON.parse(data);
+  } catch (_err) {
+    alert(
+      `Failed parsing json for ${identifier}. ` +
+        "This means either the data file wasn't found and index.html was returned or there was an error writing the data file"
+    );
+    console.error(data.substring(0, 100));
+    return fallback;
+  }
+};
 
-    dispatch({
-      type: types.TREE_RECEIVED,
-      tree_id,
-      tree
-    });
-  };
-
+/**
+ * Fetch JSON from the Charon API via XMLHttpRequest.
+ * @param {string} url - Full URL to fetch
+ * @param {Function} onSuccess - Callback receiving the response text
+ * @param {Function} dispatch - Redux dispatch (for error handling)
+ */
+const fetchFromCharon = (url, onSuccess, dispatch) => {
   const request = new XMLHttpRequest();
   request.onload = () => {
     if (request.readyState === 4 && request.status === 200) {
-      processData(request.responseText, tree_id);
+      onSuccess(request.responseText);
     } else {
       charonErrorHandler(dispatch);
     }
   };
-
   request.onerror = () => charonErrorHandler(dispatch);
-  request.open("get", `${charonAPIAddress}/tree.${tree_id}.json`, true); // true for asynchronous
-
+  request.open("get", url, true);
   request.send(null);
-  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+};
+
+export const getTree = (dispatch, tree_id) => {
+  fetchFromCharon(
+    `${charonAPIAddress}/tree.${tree_id}.json`,
+    (data) => {
+      const tree = safeJsonParse(data, tree_id);
+      dispatch({ type: types.TREE_RECEIVED, tree_id, tree });
+    },
+    dispatch
+  );
 };
 
 export const getClonalFamilies = (dispatch, dataset_id) => {
-  const processData = (data, requested_dataset_id) => {
-    let clonalFamilies = [];
-    try {
-      clonalFamilies = JSON.parse(data);
-      // timerEnd("LOADING CLONAL FAMILIES (including JSON.parse)", "clonal families loaded", clonalFamilies.length)
-    } catch (err) {
-      alert(
-        "Failed parsing json for " +
-          requested_dataset_id +
-          ". This means either the data file wasnt found and index.html was returned or there was an error writing the data file"
-      );
-      console.log(data.substring(0, 100));
-    }
-    dispatch({
-      type: types.CLONAL_FAMILIES_RECEIVED,
-      dataset_id,
-      clonalFamilies
-    });
-    dispatch({
-      type: types.LOADING_DATASET,
-      dataset_id,
-      loading: "DONE"
-    });
-  };
-
-  // const query = queryString.parse(window.location.search); // Currently unused
-  const request = new XMLHttpRequest();
-  request.onload = () => {
-    if (request.readyState === 4 && request.status === 200) {
-      processData(request.responseText, dataset_id);
-    } else {
-      charonErrorHandler(dispatch);
-    }
-  };
-
-  request.onerror = () => charonErrorHandler(dispatch);
-  request.open("get", `${charonAPIAddress}/clones.${dataset_id}.json`, true); // true for asynchronous
-
-  request.send(null);
-  // timerStart("LOADING CLONAL FAMILIES (including JSON.parse)")
+  fetchFromCharon(
+    `${charonAPIAddress}/clones.${dataset_id}.json`,
+    (data) => {
+      const clonalFamilies = safeJsonParse(data, dataset_id, []);
+      dispatch({ type: types.CLONAL_FAMILIES_RECEIVED, dataset_id, clonalFamilies });
+      dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "DONE" });
+    },
+    dispatch
+  );
 };
 
 export const getDatasets = (dispatch, s3bucket = "live") => {
-  const processData = (data, query) => {
-    // console.log("SERVER API REQUEST RETURNED:", datasets);
-    let availableDatasets = JSON.parse(data);
-    const selectedDatasets = [].concat(query.selectedDatasets);
-
-    availableDatasets = availableDatasets.map((dataset) => ({
-      ...dataset,
-      selected: selectedDatasets.includes(dataset.dataset_id)
-    }));
-
-    const datapath =
-      chooseDisplayComponentFromPathname(window.location.pathname) === "app"
-        ? // getDatapath(window.location.pathname, availableDatasets) :
-          window.location.pathname + window.location.search
-        : undefined;
-    dispatch({
-      type: types.DATASETS_RECEIVED,
-      s3bucket,
-      availableDatasets,
-      user: "guest",
-      datapath
-    });
-
-    dispatch(browserBackForward());
-  };
-
   const query = queryString.parse(window.location.search);
 
-  const request = new XMLHttpRequest();
-  request.onload = () => {
-    if (request.readyState === 4 && request.status === 200) {
-      processData(request.responseText, query);
-    } else {
-      charonErrorHandler(dispatch);
-    }
-  };
-  request.onerror = () => charonErrorHandler(dispatch);
-  request.open("get", `${charonAPIAddress}/datasets.json`, true); // true for asynchronous
-  request.send(null);
+  fetchFromCharon(
+    `${charonAPIAddress}/datasets.json`,
+    (data) => {
+      let availableDatasets = safeJsonParse(data, "datasets", []);
+      const selectedDatasets = [].concat(query.selectedDatasets);
+
+      availableDatasets = availableDatasets.map((dataset) => ({
+        ...dataset,
+        selected: selectedDatasets.includes(dataset.dataset_id)
+      }));
+
+      const datapath =
+        chooseDisplayComponentFromPathname(window.location.pathname) === "app"
+          ? window.location.pathname + window.location.search
+          : undefined;
+      dispatch({
+        type: types.DATASETS_RECEIVED,
+        s3bucket,
+        availableDatasets,
+        user: "guest",
+        datapath
+      });
+
+      dispatch(browserBackForward());
+    },
+    dispatch
+  );
 };
 
 const getSegmentName = (datapath, availableDatasets) => {
-  /* this code is duplicated too many times. TODO */
   const paramFields = parseParams(datapath, availableDatasets).dataset;
   const fields = Object.keys(paramFields).sort((a, b) => paramFields[a][0] > paramFields[b][0]);
   const choices = fields.map((d) => paramFields[d][1]);

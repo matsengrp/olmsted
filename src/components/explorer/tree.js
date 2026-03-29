@@ -10,6 +10,7 @@ import * as explorerActions from "../../actions/explorer";
 import DownloadFasta from "./downloadFasta";
 import DownloadText from "../util/downloadText";
 import { IncompleteDataWarning } from "../util/incomplete";
+import { validateCloneCompleteness, validateTreeCompleteness } from "../../utils/fieldDefaults";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { SimpleInProgress } from "../util/loading";
 import {
@@ -260,7 +261,9 @@ class TreeHeader extends React.Component {
   }
 }
 
-const isTreeComplete = (tree) => tree && tree.nodes && !tree.nodes.error;
+// Thin wrapper around validateTreeCompleteness for use in mapStateToProps
+// (runs on the raw cached tree before computeTreeData processing)
+const isTreeComplete = (tree) => validateTreeCompleteness(tree).complete;
 
 // Phylogenetic tree & alignment viz
 // =================================
@@ -440,7 +443,9 @@ class TreeViz extends React.Component {
       // Vega rendering error message (shown to user)
       vegaError: null,
       // Subtree focus: sequence_id of the root of the focused subtree (null = full tree)
-      subtreeRoot: null
+      subtreeRoot: null,
+      // Whether the user has dismissed the warnings banner for this family
+      warningsDismissed: false
     };
     this.handleVegaError = this.handleVegaError.bind(this);
     this.focusSubtree = this.focusSubtree.bind(this);
@@ -519,7 +524,7 @@ class TreeViz extends React.Component {
     if (this.heavyVegaRef.current) {
       try {
         this.heavyVegaRef.current.signal(signalName, value).run();
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist or view not ready
       }
     }
@@ -542,7 +547,7 @@ class TreeViz extends React.Component {
       for (const [name, value] of Object.entries(this.savedSignals)) {
         try {
           lightView.signal(name, value);
-        } catch (e) {
+        } catch (_e) {
           // Signal may not exist in this spec variant
         }
       }
@@ -573,7 +578,7 @@ class TreeViz extends React.Component {
     if (this.lightVegaRef.current) {
       try {
         this.lightVegaRef.current.signal(signalName, value).run();
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist or view not ready
       }
     }
@@ -598,7 +603,7 @@ class TreeViz extends React.Component {
       for (const [name, value] of Object.entries(this.savedSignals)) {
         try {
           view.signal(name, value);
-        } catch (e) {
+        } catch (_e) {
           // Signal may not exist in this spec variant
         }
       }
@@ -636,7 +641,7 @@ class TreeViz extends React.Component {
     for (const name of this.preservedSignalNames) {
       try {
         saved[name] = view.signal(name);
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist in this spec variant
       }
     }
@@ -777,6 +782,71 @@ class TreeViz extends React.Component {
     );
   }
 
+  /**
+   * Render the dismissible warnings banner (clone warnings + tree modifications).
+   */
+  renderWarningsBanner(familyWarnings, tree) {
+    const treeModifications = tree?.data_modifications || [];
+    const allWarnings = [...familyWarnings, ...treeModifications];
+    if (allWarnings.length === 0 || this.state.warningsDismissed) return null;
+    return (
+      <div
+        style={{
+          marginBottom: 10,
+          padding: "10px 14px",
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffc107",
+          borderRadius: 4,
+          color: "#856404",
+          fontSize: 12
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            {familyWarnings.length > 0 && (
+              <>
+                <strong>Clonal family data warnings:</strong>
+                <ul style={{ margin: "4px 0 6px 0", paddingLeft: 18 }}>
+                  {familyWarnings.map((r) => (
+                    <li key={r}>{r}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {treeModifications.length > 0 && (
+              <>
+                <strong>Data modifications:</strong>
+                <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                  {treeModifications.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => this.setState({ warningsDismissed: true })}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "0 2px",
+              fontSize: 16,
+              color: "#856404",
+              lineHeight: 1,
+              flexShrink: 0
+            }}
+            title="Dismiss warnings"
+            aria-label="Dismiss warnings"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
   setupHeavyChainSignalSync(heavyView) {
     this.heavyVegaRef.current = heavyView;
@@ -796,7 +866,7 @@ class TreeViz extends React.Component {
     if (this.lightVegaRef.current) {
       try {
         this.lightVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
-      } catch (e) {
+      } catch (_e) {
         // View not ready
       }
     }
@@ -807,7 +877,7 @@ class TreeViz extends React.Component {
     if (this.heavyVegaRef.current) {
       try {
         this.heavyVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
-      } catch (e) {
+      } catch (_e) {
         // View not ready
       }
     }
@@ -852,7 +922,7 @@ class TreeViz extends React.Component {
       if (this.heavyVegaRef.current) {
         try {
           this.heavyVegaRef.current.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -860,7 +930,7 @@ class TreeViz extends React.Component {
       if (this.lightVegaRef.current) {
         try {
           this.lightVegaRef.current.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -868,7 +938,7 @@ class TreeViz extends React.Component {
       if (this.singleVegaRef) {
         try {
           this.singleVegaRef.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -881,7 +951,7 @@ class TreeViz extends React.Component {
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
       // Clear any previous Vega error and subtree focus when switching families
       if (this.state.vegaError || this.state.subtreeRoot) {
-        this.setState({ vegaError: null, subtreeRoot: null });
+        this.setState({ vegaError: null, subtreeRoot: null, warningsDismissed: false });
       }
       const isBothMode = isBothChainsMode(selectedChain);
       const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
@@ -1024,18 +1094,14 @@ class TreeViz extends React.Component {
         missingFields: dataFields?.missing_fields
       });
     }
-    // TODO #94: We need to have a better way to tell if a family should not be
-    // displayed because its data are incomplete. One idea is an 'incomplete' field
-    // that we can set to true (upon building and checking for valid data) and have some
-    // minimum bit of information saying the error that occured and/or the field that was not built.
-    const incompleteFamily = !selectedFamily.unique_seqs_count;
+    // Validate clone and tree completeness (#94)
+    // Clone warnings are non-blocking — tree renders if nodes are valid
+    const { reasons: familyWarnings } = validateCloneCompleteness(selectedFamily);
 
-    // Being explicit about the fact that we are relying on the tree being
-    // defined vs undefined instead of keeping track of its true loading state
     const treeLoading = !selectedTree;
-
-    const incompleteTree = !treeLoading && !isTreeComplete(selectedTree);
-    const completeData = !incompleteFamily && !treeLoading && isTreeComplete(selectedTree);
+    const treeValidation = !treeLoading ? validateTreeCompleteness(selectedTree) : { complete: false, reasons: [] };
+    const incompleteTree = !treeLoading && !treeValidation.complete;
+    const completeData = !treeLoading && treeValidation.complete;
 
     const isStacked = isStackedMode(selectedChain);
     const isSideBySide = isSideBySideMode(selectedChain);
@@ -1062,26 +1128,7 @@ class TreeViz extends React.Component {
             <strong>Tree visualization error:</strong> {vegaError}
           </div>
         )}
-        {tree && tree.data_modifications && tree.data_modifications.length > 0 && (
-          <div
-            style={{
-              marginBottom: "10px",
-              padding: "10px 14px",
-              backgroundColor: "#fff3cd",
-              border: "1px solid #ffc107",
-              borderRadius: "4px",
-              color: "#856404",
-              fontSize: "12px"
-            }}
-          >
-            <strong>Data modifications:</strong>
-            <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-              {tree.data_modifications.map((m) => (
-                <li key={m}>{m}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {this.renderWarningsBanner(familyWarnings, tree)}
         <div
           className={hideControls ? "hide-vega-controls" : ""}
           style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}
@@ -1103,7 +1150,7 @@ class TreeViz extends React.Component {
           )}
 
           {/* Tree still loading aka undefined */}
-          {!incompleteFamily && treeLoading && (
+          {treeLoading && (
             <div>
               <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <SimpleInProgress />
@@ -1111,9 +1158,10 @@ class TreeViz extends React.Component {
               </h2>
             </div>
           )}
-          {/* Warn user if data does not have necessary fields according to incompleteFamily, incompleteTree */}
-          {incompleteFamily && <IncompleteDataWarning data_type="clonal family" datum={selectedFamily} />}
-          {incompleteTree && <IncompleteDataWarning data_type="tree" datum={selectedTree} />}
+          {/* Blocking tree incompleteness error */}
+          {incompleteTree && (
+            <IncompleteDataWarning data_type="tree" datum={selectedTree} reasons={treeValidation.reasons} />
+          )}
 
           {/* Stacked mode: render two separate tree/alignment visualizations */}
           {/* Light chain has controls, heavy chain mirrors light chain settings */}
@@ -1251,7 +1299,7 @@ class TreeViz extends React.Component {
                 </div>
               );
             })()}
-          {!isBothMode && !lightChainUnavailable && !completeData && !incompleteFamily && !incompleteTree && (
+          {!isBothMode && !lightChainUnavailable && !completeData && !incompleteTree && (
             <div>
               {this.renderSubtreeNav(tree)}
               <VegaChart
@@ -1268,6 +1316,7 @@ class TreeViz extends React.Component {
           {completeData && (
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <button
+                type="button"
                 onClick={this.toggleHideControls}
                 style={{
                   display: "inline-flex",
