@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
+import { BUILTIN_CLONE_CATEGORICAL } from "../../constants/fieldDefaults";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -49,38 +50,51 @@ const DEFAULT_FILTER_FIELDS = [
  * @param {Object|null} cloneMetadata - field_metadata.clone from dataset
  * @returns {Object[]} Array of { key, label, accessor } filter field configs
  */
+/**
+ * Build a single filter entry with the appropriate accessor.
+ */
+const buildFilterEntry = (field, label) => {
+  if (field.includes(".")) {
+    const [parent, child] = field.split(".");
+    return {
+      key: field,
+      label,
+      accessor: (f) => (f[parent] && f[parent][child] ? String(f[parent][child]) : null)
+    };
+  }
+  if (field === "dataset_name") {
+    return {
+      key: field,
+      label,
+      accessor: (f, datasets) => {
+        const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
+        return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
+      }
+    };
+  }
+  return {
+    key: field,
+    label,
+    accessor: (f) => (f[field] != null ? String(f[field]) : null)
+  };
+};
+
 const buildFilterFields = (cloneMetadata) => {
   if (!cloneMetadata) return DEFAULT_FILTER_FIELDS;
 
   const fields = [];
+  const seen = new Set();
+
   for (const [field, meta] of Object.entries(cloneMetadata)) {
     if (meta.type !== "categorical") continue;
-    const label = meta.label || field;
+    seen.add(field);
+    fields.push(buildFilterEntry(field, meta.label || field));
+  }
 
-    // Build accessor for nested fields (e.g., "sample.locus")
-    if (field.includes(".")) {
-      const [parent, child] = field.split(".");
-      fields.push({
-        key: field,
-        label,
-        accessor: (f) => (f[parent] && f[parent][child] ? String(f[parent][child]) : null)
-      });
-    } else if (field === "dataset_name") {
-      // Special case: dataset_name needs to look up from datasets array
-      fields.push({
-        key: field,
-        label,
-        accessor: (f, datasets) => {
-          const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
-          return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
-        }
-      });
-    } else {
-      fields.push({
-        key: field,
-        label,
-        accessor: (f) => (f[field] != null ? String(f[field]) : null)
-      });
+  // Add built-in categorical fields not already in metadata
+  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
+    if (!seen.has(builtin.field)) {
+      fields.push(buildFilterEntry(builtin.field, builtin.label));
     }
   }
 

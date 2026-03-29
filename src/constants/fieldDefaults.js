@@ -8,6 +8,17 @@
  *   "tooltip"     — tooltip display only, not shown in any dropdown
  */
 
+/**
+ * Built-in clone fields — always present regardless of field_metadata.
+ * Labels are overrideable by metadata.
+ */
+export const BUILTIN_CLONE_TOOLTIP = [
+  { field: "clone_id", label: "Clone ID" },
+  { field: "dataset_name", label: "Dataset", expr: "datum.dataset_name || ''" }
+];
+
+export const BUILTIN_CLONE_CATEGORICAL = [{ field: "dataset_name", label: "Dataset" }];
+
 // Scatterplot — clone-level fields
 export const DEFAULT_CLONE_CONTINUOUS = ["unique_seqs_count", "mean_mut_freq", "junction_length"];
 export const DEFAULT_CLONE_CATEGORICAL = [
