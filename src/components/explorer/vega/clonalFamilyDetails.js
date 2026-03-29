@@ -1,12 +1,73 @@
- 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 
+// Default tree dropdown options (used when field_metadata is absent)
+const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"];
+const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>", "lbr", "lbi"];
+const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "lbr", "lbi", "parent"];
+
+/**
+ * Build tree dropdown options from field_metadata, falling back to
+ * filtered defaults when metadata is absent.
+ *
+ * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @param {Object|null} branchMetadata - field_metadata.branch from dataset
+ * @param {Set|null} missingSet - Set of missing field names (e.g., "node.lbi")
+ * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
+ */
+const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
+  // If field_metadata is provided, build from it
+  if (nodeMetadata || branchMetadata) {
+    const leafSize = ["<none>"];
+    if (nodeMetadata) {
+      for (const [field, meta] of Object.entries(nodeMetadata)) {
+        if (meta.type === "continuous") leafSize.push(field);
+      }
+    }
+
+    const branchWidth = ["<none>"];
+    const branchColor = ["<none>"];
+    if (branchMetadata) {
+      for (const [field, meta] of Object.entries(branchMetadata)) {
+        if (meta.type === "continuous") {
+          branchWidth.push(field);
+          branchColor.push(field);
+        }
+      }
+    }
+    // "parent" is always available for branch coloring (computed from tree topology)
+    branchColor.push("parent");
+
+    return { leafSize, branchWidth, branchColor };
+  }
+
+  // Fallback: filter hardcoded defaults by missing fields
+  const filterByMissing = (opts, category) => {
+    if (!missingSet) return opts;
+    return opts.filter((opt) => {
+      if (opt === "<none>" || opt === "parent") return true;
+      return !missingSet.has(`${category}.${opt}`);
+    });
+  };
+
+  return {
+    leafSize: filterByMissing(DEFAULT_LEAF_SIZE_OPTIONS, "node"),
+    branchWidth: filterByMissing(DEFAULT_BRANCH_WIDTH_OPTIONS, "node"),
+    branchColor: filterByMissing(DEFAULT_BRANCH_COLOR_OPTIONS, "node")
+  };
+};
+
 const concatTreeWithAlignmentSpec = (options = {}) => {
-  const { showControls = true, showLegend = true, topPadding = 20, missingFields = null } = options;
+  const {
+    showControls = true,
+    showLegend = true,
+    topPadding = 20,
+    missingFields = null,
+    fieldMetadata = null
+  } = options;
 
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
@@ -14,18 +75,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
   const missingSet = missingFields ? new Set(missingFields) : null;
 
-  /**
-   * Filter dropdown options to exclude fields not present in the dataset.
-   * @param {string[]} opts - Full list of options
-   * @param {string} category - "node" or "clone"
-   * @returns {string[]} Filtered options
-   */
-  const filterOptions = (opts, category) => {
-    if (!missingSet) return opts;
-    return opts.filter((opt) => {
-      if (opt === "<none>" || opt === "parent") return true;
-      return !missingSet.has(`${category}.${opt}`);
-    });
+  // Build dropdown options from field_metadata or filtered defaults
+  const nodeMetadata = fieldMetadata?.node || null;
+  const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null, missingSet);
+
+  // Check if a node-level field is available (for binary presence checks)
+  const hasNodeField = (field) => {
+    if (nodeMetadata) return field in nodeMetadata;
+    if (missingSet) return !missingSet.has(`node.${field}`);
+    return true; // assume present when no metadata at all
   };
 
   return {
@@ -531,10 +589,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         value: "<none>",
         ...maybeAddBind({
           input: "select",
-          options: filterOptions(
-            ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"],
-            "node"
-          )
+          options: treeFields.leafSize
         })
       },
       {
@@ -552,14 +607,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // uses value from the child of the branch
         name: "branch_width_by",
         value: "<none>",
-        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi"], "node") })
+        ...maybeAddBind({ input: "select", options: treeFields.branchWidth })
       },
       {
         // Seq metric to use for coloring branches;
         // uses value from the child of the branch
         name: "branch_color_by",
         value: "parent",
-        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi", "parent"], "node") })
+        ...maybeAddBind({ input: "select", options: treeFields.branchColor })
       },
       {
         name: "branch_color_scheme",
@@ -606,7 +661,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "fixed_branch_lengths",
-        value: missingSet ? missingSet.has("node.distance") : false,
+        value: !hasNodeField("distance"),
         ...maybeAddBind({
           input: "checkbox",
           name: "Fixed branch lengths"
@@ -1088,13 +1143,20 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
-      // Toggle to color mutations by surprise score (hidden when dataset has no surprise data)
+      // Mutation coloring mode: "amino_acid" (default) or "surprise_score"
+      {
+        name: "mutation_color_by",
+        value: "amino_acid",
+        ...maybeAddBind({
+          input: "select",
+          name: "Color mutations by",
+          options: hasNodeField("surprise_mutations") ? ["amino_acid", "surprise_score"] : ["amino_acid"]
+        })
+      },
+      // Computed boolean for backward compatibility with spec conditionals
       {
         name: "color_by_surprise",
-        value: false,
-        ...(!missingSet || !missingSet.has("node.surprise_mutations")
-          ? maybeAddBind({ input: "checkbox", name: "Color by surprise score" })
-          : {})
+        update: 'mutation_color_by === "surprise_score"'
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {

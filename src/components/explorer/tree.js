@@ -466,7 +466,7 @@ class TreeViz extends React.Component {
       "viz_height_ratio",
       "show_alignment",
       "show_mutation_borders",
-      "color_by_surprise"
+      "mutation_color_by"
     ];
     // Specs are memoized and regenerated only when dataFields changes
     this.lastDataFields = null;
@@ -1086,12 +1086,16 @@ class TreeViz extends React.Component {
     // Regenerate Vega specs when dataset field availability changes
     if (dataFields !== this.lastDataFields) {
       this.lastDataFields = dataFields;
-      this.spec = concatTreeWithAlignmentSpec({ showControls: true, missingFields: dataFields?.missing_fields });
+      const specOpts = {
+        missingFields: dataFields?.missing_fields,
+        fieldMetadata: dataFields?.field_metadata || null
+      };
+      this.spec = concatTreeWithAlignmentSpec({ showControls: true, ...specOpts });
       this.specNoControls = concatTreeWithAlignmentSpec({
         showControls: false,
         showLegend: false,
         topPadding: 0,
-        missingFields: dataFields?.missing_fields
+        ...specOpts
       });
     }
     // Validate clone and tree completeness (#94)
