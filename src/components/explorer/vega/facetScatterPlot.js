@@ -199,9 +199,21 @@ const buildFieldOptions = (fieldMetadata) => {
     { field: "dataset_name", label: "Dataset", expr: "datum.dataset_name || ''" }
   ];
 
+  // Built-in categorical fields — always available regardless of metadata
+  const BUILTIN_CATEGORICAL = [{ field: "dataset_name", label: "Dataset" }];
+
   const continuous = [];
   const categorical = [];
   const seen = new Set();
+
+  // Add built-in categorical fields (label overrideable by metadata)
+  for (const builtin of BUILTIN_CATEGORICAL) {
+    const override = fieldMetadata[builtin.field];
+    if (!override) {
+      categorical.push(builtin.field);
+    }
+    seen.add(builtin.field);
+  }
 
   // Start tooltip with built-in fields (label overrideable)
   const tooltip = BUILTIN_CLONE_FIELDS.map((builtin) => {
