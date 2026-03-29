@@ -168,6 +168,7 @@ From CLAUDE.md:
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
 - **Documentation**: JSDoc for all public methods and complex functions
 - **Indentation**: 2 spaces
+- **No inline TODOs**: Do not leave TODO/FIXME/HACK comments in code. File a GitHub issue instead. Inline TODOs are easy to forget and hard to track; issues are searchable, assignable, and closeable
 
 ---
 

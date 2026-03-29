@@ -200,8 +200,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // we need to pass it some fake data that will just draw a cirlce (aka a pie chart with
       // one value), which explains the confusing logic going on here.
       {
-        // Future enhancement: add a "timepoint_multiplicity_sum" data collection that sums over
-        // timepoint_multiplicities for normalization instead of trusting total multiplicity values
         name: "leaf_pies",
         transform: [
           {

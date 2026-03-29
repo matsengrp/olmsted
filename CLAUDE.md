@@ -79,6 +79,7 @@ npm start
 - **Naming**: Consistent camelCase with verb prefixes (get, set, handle, process, validate)
 - **Documentation**: JSDoc for all public methods and complex functions
 - **Formatting**: 2-space indentation, consistent quote usage
+- **No inline TODOs**: Do not leave TODO/FIXME/HACK comments in code. File a GitHub issue instead
 
 ### Clean Code Principles
 - **Single Responsibility**: Each function/class does one thing well
