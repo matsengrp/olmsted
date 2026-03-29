@@ -192,10 +192,33 @@ const buildFieldOptions = (fieldMetadata) => {
       tooltip: DEFAULT_CLONE_TOOLTIP
     };
   }
+
+  // Structural clone fields — always in tooltip, labels overrideable by metadata
+  const BUILTIN_CLONE_FIELDS = [
+    { field: "clone_id", label: "Clone ID" },
+    { field: "dataset_name", label: "Dataset", expr: "datum.dataset_name || ''" }
+  ];
+
   const continuous = [];
   const categorical = [];
-  const tooltip = [];
+  const seen = new Set();
+
+  // Start tooltip with built-in fields (label overrideable)
+  const tooltip = BUILTIN_CLONE_FIELDS.map((builtin) => {
+    const override = fieldMetadata[builtin.field];
+    seen.add(builtin.field);
+    return {
+      field: builtin.field,
+      label: override?.label || builtin.label,
+      format: override?.format,
+      expr: override?.expr || builtin.expr
+    };
+  });
+
   for (const [field, meta] of Object.entries(fieldMetadata)) {
+    if (seen.has(field)) continue;
+    seen.add(field);
+
     const entry = { field, label: meta.label || field };
     if (meta.format) entry.format = meta.format;
     if (meta.expr) entry.expr = meta.expr;

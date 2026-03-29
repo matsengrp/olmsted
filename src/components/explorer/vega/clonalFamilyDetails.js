@@ -70,27 +70,29 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
  * @param {Object|null} branchMetadata - field_metadata.branch from dataset
  * @returns {string} Vega expression for the tooltip signal
  */
+// Structural node fields — always included in tooltip, labels can be overridden by metadata
+const BUILTIN_NODE_FIELDS = [
+  { field: "sequence_id", label: "Sequence ID" },
+  { field: "parent", label: "Parent ID" },
+  { field: "node_depth", label: "Depth" },
+  { field: "distance", label: "Distance" }
+];
+
 const buildNodeTooltipSignal = (nodeMetadata, branchMetadata) => {
   let fields;
   if (nodeMetadata || branchMetadata) {
-    // Always include id and parent first
-    fields = [
-      { field: "sequence_id", label: "id" },
-      { field: "parent", label: "parent" }
-    ];
-    const seen = new Set(["sequence_id", "parent"]);
+    const seen = new Set();
 
-    // Add node-level fields
+    // Start with built-in structural fields (label overrideable by metadata)
+    fields = BUILTIN_NODE_FIELDS.map((builtin) => {
+      const override = nodeMetadata?.[builtin.field] || branchMetadata?.[builtin.field];
+      seen.add(builtin.field);
+      return { field: builtin.field, label: override?.label || builtin.label, format: override?.format };
+    });
+
+    // Add node-level fields not already included
     if (nodeMetadata) {
       for (const [field, meta] of Object.entries(nodeMetadata)) {
-        fields.push({ field, label: meta.label || field, format: meta.format });
-        seen.add(field);
-      }
-    }
-
-    // Add branch-level fields not already included from node metadata
-    if (branchMetadata) {
-      for (const [field, meta] of Object.entries(branchMetadata)) {
         if (!seen.has(field)) {
           fields.push({ field, label: meta.label || field, format: meta.format });
           seen.add(field);
@@ -98,9 +100,14 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata) => {
       }
     }
 
-    // Always include node_depth (computed at render time, not in metadata)
-    if (!seen.has("node_depth")) {
-      fields.push({ field: "node_depth", label: "depth" });
+    // Add branch-level fields not already included
+    if (branchMetadata) {
+      for (const [field, meta] of Object.entries(branchMetadata)) {
+        if (!seen.has(field)) {
+          fields.push({ field, label: meta.label || field, format: meta.format });
+          seen.add(field);
+        }
+      }
     }
   } else {
     fields = DEFAULT_NODE_TOOLTIP;

@@ -55,16 +55,16 @@ export const DEFAULT_LEAF_SIZE_OPTIONS = [
  * these are the fallback when field_metadata is absent.
  */
 export const DEFAULT_NODE_TOOLTIP = [
-  { field: "sequence_id", label: "id" },
-  { field: "parent", label: "parent" },
-  { field: "distance", label: "distance" },
-  { field: "node_depth", label: "depth" },
-  { field: "lbi", label: "lbi" },
-  { field: "lbr", label: "lbr" },
-  { field: "affinity", label: "affinity" },
-  { field: "scaled_affinity", label: "scaled_affinity" },
-  { field: "multiplicity", label: "multiplicity" },
-  { field: "cluster_multiplicity", label: "cluster_multiplicity" }
+  { field: "sequence_id", label: "Sequence ID" },
+  { field: "parent", label: "Parent ID" },
+  { field: "distance", label: "Distance" },
+  { field: "node_depth", label: "Depth" },
+  { field: "lbi", label: "LBI" },
+  { field: "lbr", label: "LBR" },
+  { field: "affinity", label: "Affinity" },
+  { field: "scaled_affinity", label: "Scaled Affinity" },
+  { field: "multiplicity", label: "Multiplicity" },
+  { field: "cluster_multiplicity", label: "Cluster Multiplicity" }
 ];
 
 // Tree — branch-level fields for width and color
