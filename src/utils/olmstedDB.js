@@ -59,37 +59,14 @@ class OlmstedDB extends Dexie {
         const allCloneMeta = [];
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
-            // Lightweight clone metadata (no embedded trees)
+            // Clone metadata — spread all fields to preserve custom data,
+            // then override fields that need normalization
             const cloneMeta = {
-              clone_id: clone.clone_id,
+              ...clone,
               ident: clone.ident || clone.clone_id,
               dataset_id: clone.dataset_id || dataset_id,
-              subject_id: clone.subject_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
-              unique_seqs_count: clone.unique_seqs_count,
-              mean_mut_freq: clone.mean_mut_freq,
-              junction_length: clone.junction_length,
-              junction_start: clone.junction_start,
-              v_call: clone.v_call,
-              d_call: clone.d_call,
-              j_call: clone.j_call,
-              v_alignment_start: clone.v_alignment_start,
-              v_alignment_end: clone.v_alignment_end,
-              d_alignment_start: clone.d_alignment_start,
-              d_alignment_end: clone.d_alignment_end,
-              j_alignment_start: clone.j_alignment_start,
-              j_alignment_end: clone.j_alignment_end,
-              cdr1_alignment_start: clone.cdr1_alignment_start,
-              cdr1_alignment_end: clone.cdr1_alignment_end,
-              cdr2_alignment_start: clone.cdr2_alignment_start,
-              cdr2_alignment_end: clone.cdr2_alignment_end,
-              germline_alignment: clone.germline_alignment,
-              has_seed: clone.has_seed,
-              sample: clone.sample,
-              // Paired data fields (two-clone model: heavy and light are separate clones linked by pair_id)
-              is_paired: clone.is_paired,
-              pair_id: clone.pair_id,
               // Store tree metadata (lightweight, for dropdown display)
               trees_meta: clone.trees
                 ? clone.trees.map((t) => ({
@@ -98,8 +75,10 @@ class OlmstedDB extends Dexie {
                     type: t.type,
                     downsampling_strategy: t.downsampling_strategy
                   }))
-                : []
+                : clone.trees_meta || []
             };
+            // Remove embedded trees array (stored separately)
+            delete cloneMeta.trees;
 
             allCloneMeta.push(cloneMeta);
           }
