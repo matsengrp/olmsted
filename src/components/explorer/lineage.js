@@ -12,6 +12,7 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
 import * as explorerActions from "../../actions/explorer";
 import { VegaExportToolbar } from "../util/VegaExportButton";
+import VegaViewContext from "../config/VegaViewContext";
 
 // Lineage focus viz
 // =================
@@ -74,11 +75,12 @@ const mapStateToProps = (state) => {
   updateLineageChain: explorerActions.updateLineageChain
 })
 class Lineage extends React.Component {
+  static contextType = VegaViewContext;
+
   constructor(props) {
     super(props);
     this.state = {
-      vegaViewReady: false,
-      colorByMutationMetric: false
+      vegaViewReady: false
     };
     this.vegaViewRef = null;
   }
@@ -128,9 +130,26 @@ class Lineage extends React.Component {
     updateLineageShowBorders(event.target.checked);
   };
 
-  handleColorByMutationMetricChange = (event) => {
-    this.setState({ colorByMutationMetric: event.target.checked });
-  };
+  /**
+   * Read mutation coloring settings from the tree view via VegaViewContext.
+   * Returns defaults if the tree view isn't available yet.
+   */
+  getTreeMutationSettings() {
+    const treeView = this.context?.treeView;
+    if (!treeView) return { colorByMutationMetric: false, mutationColorScheme: "oranges" };
+    try {
+      const mutationColorBy = treeView.signal("mutation_color_by");
+      const colorByMetric = treeView.signal("color_by_mutation_metric");
+      const scheme = treeView.signal("mutation_color_scheme");
+      return {
+        colorByMutationMetric: !!colorByMetric,
+        mutationColorBy: mutationColorBy,
+        mutationColorScheme: scheme || "oranges"
+      };
+    } catch (_e) {
+      return { colorByMutationMetric: false, mutationColorScheme: "oranges" };
+    }
+  }
 
   handleLineageChainChange = (event) => {
     const { updateLineageChain } = this.props;
@@ -328,7 +347,7 @@ class Lineage extends React.Component {
                 <h3>Lineage</h3>
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
-                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.colorByMutationMetric ? "surprise" : "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.getTreeMutationSettings().colorByMutationMetric ? "metric" : "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
                     onNewView={(view) => {
                       this.vegaViewRef = view;
                       if (!this.state.vegaViewReady) {
@@ -343,7 +362,7 @@ class Lineage extends React.Component {
                     }}
                     spec={seqAlignSpec(lineageData, {
                       showMutationBorders,
-                      colorByMutationMetric: this.state.colorByMutationMetric
+                      colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric
                     })}
                   />
                 </div>
@@ -366,16 +385,6 @@ class Lineage extends React.Component {
                   style={{ marginRight: "6px" }}
                 />
                 Show mutation borders
-              </label>
-              <label htmlFor="color-by-mutation-metric" style={{ cursor: "pointer" }}>
-                <input
-                  id="color-by-mutation-metric"
-                  type="checkbox"
-                  checked={this.state.colorByMutationMetric}
-                  onChange={this.handleColorByMutationMetricChange}
-                  style={{ marginRight: "6px" }}
-                />
-                Color by mutation metric
               </label>
               <label htmlFor="show-entire-lineage" style={{ cursor: "pointer" }}>
                 <input
