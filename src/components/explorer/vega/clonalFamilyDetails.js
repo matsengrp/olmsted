@@ -795,19 +795,16 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         name: "branch_color_scheme",
-        value: "redblue",
-        ...maybeAddBind({ input: "select", name: "Branch color scheme", options: ["redblue", "purples"] })
+        value: "blueorange",
+        ...maybeAddBind({
+          input: "select",
+          name: "Branch color scheme",
+          options: ["blueorange", "purples", "viridis", "blues", "greens", "oranges"]
+        })
       },
       {
         name: "min_color_value",
-        value: 0,
-        ...maybeAddBind({
-          name: "Min color value",
-          input: "range",
-          min: 0,
-          max: 4,
-          step: 1
-        })
+        value: 0
       },
       // Internal: leaf/branch derived signals (no user controls)
       {
@@ -818,14 +815,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "leaf_data_map",
         update:
           '{"scaled_affinity": "scaled_affinity", "affinity": "affinity", "cluster_multiplicity": "cluster_timepoint_multiplicities", "multiplicity": "timepoint_multiplicities"}'
-      },
-      {
-        name: "branch_color_scheme_map",
-        update: '{purples: slice(full_purple_range, min_color_value), redblue: ["darkblue", "red"]}'
-      },
-      {
-        name: "full_purple_range",
-        value: ["#f7fcfd", "#e0ecf4", "#bfd3e6", "#9ebcda", "#8c96c6", "#8c6bb1", "#88419d", "#810f7c", "#4d004b"]
       },
       {
         name: "categorical_seq_metrics",
@@ -1338,7 +1327,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "select",
           name: "Mutation color scheme",
-          options: ["oranges", "blues", "greens", "reds", "purples", "viridis", "magma", "inferno", "plasma"]
+          options: [
+            "oranges",
+            "blues",
+            "greens",
+            "reds",
+            "purples",
+            "viridis",
+            "magma",
+            "inferno",
+            "plasma",
+            "blueorange"
+          ]
         })
       },
       // Computed boolean: true when any continuous mutation field is selected (not AA)
@@ -2782,7 +2782,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "branch_color_sequential",
         type: "sequential",
         domain: { signal: "branch_color_extent" },
-        range: { signal: "branch_color_scheme_map[branch_color_scheme]" }
+        range: { scheme: { signal: "branch_color_scheme" } }
       },
       {
         name: "branch_width",
@@ -2852,7 +2852,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "surprise_color",
         type: "linear",
         domainRaw: { signal: "mutation_color_domain" },
-        range: { scheme: { signal: "mutation_color_scheme" } },
+        range: {
+          scheme: { signal: "mutation_color_scheme" }
+        },
         clamp: true
       }
     ],
