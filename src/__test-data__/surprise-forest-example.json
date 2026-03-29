@@ -4,6 +4,8 @@
     {
       "dataset_id": "test-surprise-forest",
       "name": "Test: Surprise Scores + Forest",
+      "description": "Minimal fixture with per-mutation surprise scores and a disconnected forest (2 roots). Tests surprise coloring and synthetic root creation.",
+      "debug": true,
       "clone_count": 1,
       "subjects_count": 1,
       "build": {

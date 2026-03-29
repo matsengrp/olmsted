@@ -3,7 +3,9 @@
   "datasets": [
     {
       "dataset_id": "test-incomplete-tree",
-      "name": "Test: Incomplete Tree",
+      "name": "Test: Tree With Empty Nodes",
+      "description": "Tree has an empty nodes object. Should show a blocking error preventing tree rendering.",
+      "debug": true,
       "clone_count": 1,
       "subjects_count": 1,
       "build": { "commit": "test" }

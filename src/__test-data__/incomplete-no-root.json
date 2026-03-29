@@ -3,7 +3,9 @@
   "datasets": [
     {
       "dataset_id": "test-no-root",
-      "name": "Test: Tree Without Root",
+      "name": "Test: Tree Without Root Node",
+      "description": "Tree has leaf nodes but no root (all parents reference a missing node). Should show a blocking error.",
+      "debug": true,
       "clone_count": 1,
       "subjects_count": 1,
       "build": { "commit": "test" }

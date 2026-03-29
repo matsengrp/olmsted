@@ -3,7 +3,9 @@
   "datasets": [
     {
       "dataset_id": "test-forest-only",
-      "name": "Test: Forest Without Surprise",
+      "name": "Test: Forest Without Surprise Scores",
+      "description": "Minimal fixture with a disconnected forest (2 roots) but no surprise score data. Tests synthetic root creation in isolation.",
+      "debug": true,
       "clone_count": 1,
       "subjects_count": 1,
       "build": {

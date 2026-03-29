@@ -3,7 +3,9 @@
   "datasets": [
     {
       "dataset_id": "test-incomplete-clone",
-      "name": "Test: Incomplete Clone",
+      "name": "Test: Clone Missing unique_seqs_count",
+      "description": "Clone is missing the unique_seqs_count field. Should render tree with a non-blocking warning.",
+      "debug": true,
       "clone_count": 1,
       "subjects_count": 1,
       "build": { "commit": "test" }

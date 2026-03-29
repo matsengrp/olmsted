@@ -84,7 +84,9 @@ class FileProcessor {
       original_filename: filename,
       format_type: "consolidated",
       metadata: data.metadata,
-      name: data.metadata?.name || filename, // Use metadata name if available, otherwise filename
+      name: dataset.name || data.metadata?.name || filename,
+      description: dataset.description || data.metadata?.description || null,
+      debug: dataset.debug || data.metadata?.debug || false,
       build: dataset.build || {
         time: data.metadata?.created_at || new Date().toISOString(),
         commit: "client-side-processing"
