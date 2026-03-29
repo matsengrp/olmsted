@@ -2,6 +2,8 @@ import { validateCloneCompleteness, validateTreeCompleteness } from "../../utils
 import incompleteClone from "../incomplete-clone.json";
 import incompleteTree from "../incomplete-tree.json";
 import incompleteNoRoot from "../incomplete-no-root.json";
+import surpriseForest from "../surprise-forest-example.json";
+import forestOnly from "../forest-only-example.json";
 
 describe("Incomplete data detection with test fixtures", () => {
   describe("incomplete-clone.json — clone missing unique_seqs_count", () => {
@@ -64,29 +66,82 @@ describe("Incomplete data detection with test fixtures", () => {
     });
   });
 
-  describe("golden data — should be complete", () => {
-    // Use the smallest golden dataset for fast tests
-    const golden = require("../top20_olmsted.json");
+  describe("surprise-forest-example.json — surprise scores + forest tree", () => {
+    const clone = Object.values(surpriseForest.clones).flat()[0];
+    const tree = surpriseForest.trees[0];
+    const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
 
-    it("all clones are complete", () => {
-      // clones may be an array or object keyed by dataset_id
-      const clones = Array.isArray(golden.clones)
-        ? golden.clones
-        : Object.values(golden.clones).flat();
-      for (const clone of clones) {
-        const result = validateCloneCompleteness(clone);
-        expect(result.complete).toBe(true);
-      }
+    it("clone is complete", () => {
+      expect(validateCloneCompleteness(clone).complete).toBe(true);
     });
 
-    it("all trees are complete", () => {
-      const trees = Array.isArray(golden.trees)
-        ? golden.trees
-        : Object.values(golden.trees).flat();
-      for (const tree of trees) {
-        const result = validateTreeCompleteness(tree);
-        expect(result.complete).toBe(true);
-      }
+    it("tree is complete", () => {
+      expect(validateTreeCompleteness(tree).complete).toBe(true);
     });
+
+    it("has multiple roots (forest)", () => {
+      const roots = nodes.filter((n) => !n.parent);
+      expect(roots.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("has nodes with surprise_mutations", () => {
+      const withSurprise = nodes.filter((n) => n.surprise_mutations && n.surprise_mutations.length > 0);
+      expect(withSurprise.length).toBeGreaterThan(0);
+    });
+
+    it("surprise_mutations have expected fields", () => {
+      const node = nodes.find((n) => n.surprise_mutations && n.surprise_mutations.length > 0);
+      const mutation = node.surprise_mutations[0];
+      expect(mutation).toHaveProperty("site");
+      expect(mutation).toHaveProperty("surprise_mutsel");
+      expect(mutation).toHaveProperty("selection_contribution");
+      expect(mutation).toHaveProperty("region");
+    });
+  });
+
+  describe("forest-only-example.json — forest without surprise scores", () => {
+    const clone = Object.values(forestOnly.clones).flat()[0];
+    const tree = forestOnly.trees[0];
+    const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+
+    it("clone is complete", () => {
+      expect(validateCloneCompleteness(clone).complete).toBe(true);
+    });
+
+    it("tree is complete", () => {
+      expect(validateTreeCompleteness(tree).complete).toBe(true);
+    });
+
+    it("has multiple roots (forest)", () => {
+      const roots = nodes.filter((n) => !n.parent);
+      expect(roots.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("has no surprise_mutations on any node", () => {
+      const withSurprise = nodes.filter((n) => n.surprise_mutations);
+      expect(withSurprise.length).toBe(0);
+    });
+  });
+
+  describe("valid fixtures — should all pass completeness", () => {
+    const fixtures = [
+      { name: "surprise-forest", data: surpriseForest },
+      { name: "forest-only", data: forestOnly }
+    ];
+
+    for (const { name, data } of fixtures) {
+      it(`${name}: all clones are complete`, () => {
+        const clones = Object.values(data.clones).flat();
+        for (const clone of clones) {
+          expect(validateCloneCompleteness(clone).complete).toBe(true);
+        }
+      });
+
+      it(`${name}: all trees are complete`, () => {
+        for (const tree of data.trees) {
+          expect(validateTreeCompleteness(tree).complete).toBe(true);
+        }
+      });
+    }
   });
 });

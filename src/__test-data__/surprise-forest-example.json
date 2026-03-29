@@ -1,0 +1,76 @@
+{
+  "metadata": {},
+  "datasets": [
+    {
+      "dataset_id": "test-surprise-forest",
+      "name": "Test: Surprise Scores + Forest",
+      "clone_count": 1,
+      "subjects_count": 1,
+      "build": {
+        "commit": "test"
+      }
+    }
+  ],
+  "clones": {
+    "test-surprise-forest": [
+      {
+        "ident": "bc93c2a1-6abb-493b-8a7e-8a8f35b65839",
+        "clone_id": "2501-igk-2501",
+        "dataset_id": "dasm2-surprise-20260315",
+        "unique_seqs_count": 2,
+        "mean_mut_freq": 0.011784633,
+        "v_alignment_start": 1,
+        "v_alignment_end": 363,
+        "j_alignment_start": 323,
+        "j_alignment_end": 363,
+        "sample_id": "d1",
+        "subject_id": "d1",
+        "has_seed": false,
+        "v_call": "IGHV3-23*01",
+        "mean_surprise_mutsel": 15.080395605952043,
+        "num_mutations": 1
+      }
+    ]
+  },
+  "trees": [
+    {
+      "ident": "49a9946c-cb37-410d-a89b-3049db48e9de",
+      "clone_id": "2501-igk-2501",
+      "newick": "(naive:0.0073800586,CCGGTAGTCACCTTAT-1-1287196_contig_h:0.0044045744,GTGTGCGTCTGGGCCA-1-1287194_contig_h:0.0000010000)Node1;",
+      "nodes": [
+        {
+          "sequence_id": "Node1",
+          "sequence_alignment": "GAGGTGCAGCTGTTGGAGTCTGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTTCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGTTATGAGTGGTAGTGGTGGTACCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGAAAGATATTGGGAGCCGTCCGACTGAATACTTCCAGCACTGGGGCCAGGGCACCCTGGTCACCGTCTCCTCA",
+          "sequence_alignment_aa": "EVQLLESGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSVMSGSGGTTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAKDIGSRPTEYFQHWGQGTLVTVSS",
+          "type": "root",
+          "parent": null
+        },
+        {
+          "sequence_id": "CCGGTAGTCACCTTAT-1-1287196_contig_h",
+          "sequence_alignment": "GAGGTGCAGCTGTTGGAGCACGGGGGAGGCTTGGTACAGCCTGGGGGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTTAGCAGCTATGCCATGAGCTGGGTTCGCCAGGCTCCAGGGAAGGGGCTGGAGTGGGTCTCAGTTATGAGTGGTAGTGGTGGTACCACATACTACGCAGACTCCGTGAAGGGCCGGTTCACCATCTCCAGAGACAATTCCAAGAACACGCTGTATCTGCAAATGAACAGCCTGAGAGCCGAGGACACGGCCGTATATTACTGTGCGAAAGATATTGGGAGCCGTCCGACTGAATACTTCCAGCACTGGGGCCAGGGCACCCTGGTCACCGTCTCCTCA",
+          "sequence_alignment_aa": "EVQLLEHGGGLVQPGGSLRLSCAASGFTFSSYAMSWVRQAPGKGLEWVSVMSGSGGTTYYADSVKGRFTISRDNSKNTLYLQMNSLRAEDTAVYYCAKDIGSRPTEYFQHWGQGTLVTVSS",
+          "type": "leaf",
+          "parent": "Node1",
+          "surprise_mutations": [
+            {
+              "site": 6,
+              "parent_aa": "S",
+              "child_aa": "H",
+              "surprise_mutsel": 15.080395605952043,
+              "surprise_neutral": 13.151427113292796,
+              "selection_contribution": 1.928968492659246,
+              "region": "FWR1"
+            }
+          ]
+        },
+        {
+          "sequence_id": "naive",
+          "sequence_alignment": "",
+          "sequence_alignment_aa": "",
+          "type": "root",
+          "parent": null
+        }
+      ]
+    }
+  ]
+}
