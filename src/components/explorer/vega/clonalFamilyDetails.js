@@ -175,14 +175,8 @@ const buildMutationTooltipSignals = (mutationMetadata) => {
         metricParts.push(`"${label}": datum["${field}"] != null ? ''+datum["${field}"] : "N/A"`);
       }
     }
-  } else {
-    // Fallback: hardcoded surprise fields
-    metricParts.push('"surprise_mutsel": datum.surprise_mutsel != null ? format(datum.surprise_mutsel, ".1f") : "N/A"');
-    metricParts.push(
-      '"selection_contribution": datum.selection_contribution != null ? format(datum.selection_contribution, ".1f") : "N/A"'
-    );
-    metricParts.push('"region": datum.region != null ? \'\'+datum.region : "N/A"');
   }
+  // No fallback — without mutation metadata, only structural fields are shown
 
   const metricTooltip = "{" + metricParts.join(", ") + "}";
   return { metricTooltip, aaTooltip };
