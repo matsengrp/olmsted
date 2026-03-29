@@ -7,6 +7,10 @@
 - [Redux Store Structure](#redux-store-structure)
 - [Component Hierarchy](#component-hierarchy)
 - [Visualization System](#visualization-system)
+- [Surprise Score System](#surprise-score-system)
+- [Field Defaults and Validation](#field-defaults-and-validation)
+- [Forest Tree Handling](#forest-tree-handling)
+- [Subtree Focus](#subtree-focus)
 - [Key Files Reference](#key-files-reference)
 - [IndexedDB Schema](#indexeddb-schema)
 
@@ -18,8 +22,8 @@ Olmsted is a client-side B-cell lineage visualization tool for exploring immunol
 
 ### Technology Stack
 
-- **React 18** - UI component framework with class components and decorators
-- **Redux** - State management with thunk middleware for async operations
+- **React 19** - UI component framework with class components and decorators
+- **Redux 5** - State management with thunk middleware for async operations
 - **Vega 6** - Declarative visualization grammar for interactive plots
 - **Dexie (IndexedDB)** - Client-side persistent storage for large datasets
 - **D3** - Data manipulation and supplementary visualizations
@@ -443,6 +447,53 @@ The `VegaViewContext` (src/components/config/VegaViewContext.js) provides React 
 - Programmatic export (PNG/SVG)
 - State synchronization with saved configs
 - External control of Vega signals
+
+---
+
+## Surprise Score System
+
+Per-mutation surprise scores from DASM mutation-selection models can be visualized in the alignment view:
+
+1. **Data contract**: Each tree node may include a `surprise_mutations` array mapping positions to `{ surprise_mutsel, surprise_neutral, selection_contribution, region }`
+2. **Selector propagation**: `createAlignment()` in `selectors/trees.js` copies surprise fields from nodes onto each mutation record
+3. **Vega toggle**: A `color_by_surprise` signal controls the "Color by surprise score" checkbox. When active, mutations use an oranges sequential scale (domain [0, 15]); unscored mutations become invisible
+4. **Legend**: The surprise gradient legend appears/hides based on the toggle state
+5. **Field detection**: `fieldDefaults.js` detects `surprise_mutations` in `NODE_DETECTION_FIELDS`. The toggle is hidden when the field is absent
+
+---
+
+## Field Defaults and Validation
+
+`src/utils/fieldDefaults.js` provides a centralized system for handling optional and missing data fields:
+
+- **`NODE_FIELD_DEFAULTS` / `CLONE_FIELD_DEFAULTS`**: Default values applied during import for missing optional fields (e.g., `distance: null`, `multiplicity: 1`)
+- **`REQUIRED` sentinel**: A Symbol that, when used as a default value, causes `applyNodeDefaults`/`applyCloneDefaults` to throw a `ValidationError`
+- **`detectFieldPresence()`**: Samples nodes and clones at import time to build a status map of which fields are present vs defaulted
+- **`missing_fields`**: Stored per-dataset; used to filter Vega dropdown options and show upload warnings
+- **`validateCloneCompleteness()` / `validateTreeCompleteness()`**: Runtime checks used by the tree component to show non-blocking warnings (clone issues) or blocking errors (tree issues)
+
+---
+
+## Forest Tree Handling
+
+Datasets from some analysis pipelines produce trees with multiple disconnected subtrees (forests). The `ensureSingleRoot()` function in `selectors/trees.js` handles this:
+
+1. **Empty placeholder removal**: If a single sequenced root exists alongside empty "naive" placeholders, the placeholders are removed
+2. **Synthetic root creation**: For true forests (multiple sequenced roots), a `__synthetic_root__` node is created with consensus DNA/AA sequences built by majority vote across subtree roots. All subtree roots are re-parented under it
+3. **Metadata**: Modifications are recorded in `data_modifications` and shown to the user in warning banners
+
+The normalization is shared between `computeTreeData` and `computeLineageData` via the `normalizeTreeNodes()` helper.
+
+---
+
+## Subtree Focus
+
+The tree visualization supports focusing on a subtree:
+
+- **UI**: A navigation bar above the alignment shows the current root, selected node, children dropdown, Focus Subtree button, and Full Tree reset button
+- **Data filtering**: `applySubtreeFilter()` collects descendants via BFS, re-roots the selected node, and filters both nodes and alignment records
+- **Re-mount strategy**: Changing `subtreeRoot` updates the VegaChart `key` prop, forcing React to unmount/remount with clean data (required because Vega's stratify transform doesn't handle node removal via changesets)
+- **Signal preservation**: Plot settings (fixed branch lengths, color by surprise, etc.) are saved from the old Vega view and restored on the new one via `savedSignals`
 
 ---
 

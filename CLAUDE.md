@@ -46,18 +46,16 @@ olmsted/
 ## Development Environment
 
 ### Requirements
-- **Node.js**: v18.x LTS
+- **Node.js**: v20.x LTS
 - **npm**: >= 9.0.0
 
 ### Setup
 ```bash
 git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
-npm install --legacy-peer-deps
+npm install
 npm start
 ```
-
-The `--legacy-peer-deps` flag is required due to peer dependency conflicts with older packages.
 
 ### Common Commands
 
@@ -176,11 +174,11 @@ The public website is **NOT served from Docker**:
 
 ## Lessons Learned
 
-- Always use `--legacy-peer-deps` with npm install due to peer dependency conflicts
+- `--legacy-peer-deps` is no longer required for npm install
 - IndexedDB can be cleared in DevTools > Application > IndexedDB if database gets corrupted
 - Large datasets benefit from the lazy loading strategy (tree data loaded on-demand)
 - The `@connect` decorator syntax requires `@babel/eslint-parser` in editor ESLint config
 
 ---
 
-*Last updated: 2026-03-13*
+*Last updated: 2026-03-28*

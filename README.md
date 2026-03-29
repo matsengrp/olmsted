@@ -252,7 +252,7 @@ git clone https://github.com/matsengrp/olmsted.git
 cd olmsted
 git submodule update --init
 
-npm install --legacy-peer-deps
+npm install
 npm run start
 ```
 
@@ -310,14 +310,14 @@ For contributors and maintainers, we provide detailed documentation:
 
 ### Quick Start for New Maintainers
 
-1. Clone the repository and run `npm install --legacy-peer-deps`
+1. Clone the repository and run `npm install`
 2. Run `npm start` for the development server
 3. Read [ARCHITECTURE.md](./ARCHITECTURE.md) for system overview
 4. Read [DEVELOPMENT.md](./DEVELOPMENT.md) for common tasks
 
 ### Technology Stack
 
-- **React 18** with Redux for state management
+- **React 19** with Redux for state management
 - **Vega 5** for declarative visualizations
 - **Dexie (IndexedDB)** for client-side data persistence
 - **Express** server with webpack dev middleware
