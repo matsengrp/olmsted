@@ -216,25 +216,27 @@ export function RowInfoModal({ datum, isOpen, onClose, title }) {
   // Get all keys from the datum, excluding internal/complex fields
   const excludeKeys = ["trees", "nodes", "seqs", "sequences", "__typename", "trees_meta"];
 
-  // Flatten nested objects (like sample) for better display
-  const flattenObject = (obj, prefix = "") => {
+  // Keys to flatten one level deep (simple nested objects with scalar values)
+  const flattenKeys = new Set(["sample", "build"]);
+
+  // Build entries: flatten simple nested objects, keep complex ones as JSON blocks
+  const buildEntries = (obj) => {
     const result = [];
     for (const [key, value] of Object.entries(obj)) {
-      const fullKey = prefix ? `${prefix}.${key}` : key;
       if (excludeKeys.includes(key)) continue;
-      // Flatten nested plain objects (but not arrays or null)
-      if (value && typeof value === "object" && !Array.isArray(value) && key !== "sample") {
-        result.push(...flattenObject(value, fullKey));
-      } else if (key === "sample" && value && typeof value === "object") {
-        result.push(...flattenObject(value, "sample"));
+      if (flattenKeys.has(key) && value && typeof value === "object" && !Array.isArray(value)) {
+        // Flatten one level (e.g., sample.locus, build.time)
+        for (const [subKey, subValue] of Object.entries(value)) {
+          result.push([`${key}.${subKey}`, subValue]);
+        }
       } else {
-        result.push([fullKey, value]);
+        result.push([key, value]);
       }
     }
     return result;
   };
 
-  const entries = flattenObject(datum);
+  const entries = buildEntries(datum);
 
   // Build plain-text version for copy
   const copyText = entries.map(([key, value]) => `${key}: ${formatValue(value)}`).join("\n");
