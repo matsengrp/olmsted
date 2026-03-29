@@ -65,6 +65,10 @@
           "dataset_name": {
             "type": "categorical",
             "label": "Dataset"
+          },
+          "secret_note": {
+            "type": "tooltip",
+            "label": "Secret Note"
           }
         },
         "node": {
@@ -138,7 +142,8 @@
           "locus": "IGH",
           "sample_id": "sample1",
           "timepoint_id": "day0"
-        }
+        },
+        "secret_note": "This one is special"
       },
       {
         "ident": "clone-fm-clone-2",
@@ -166,7 +171,8 @@
           "locus": "IGK",
           "sample_id": "sample1",
           "timepoint_id": "day0"
-        }
+        },
+        "secret_note": "Nothing to see here"
       },
       {
         "ident": "clone-fm-clone-3",
@@ -194,7 +200,8 @@
           "locus": "IGH",
           "sample_id": "sample1",
           "timepoint_id": "day0"
-        }
+        },
+        "secret_note": "Top priority"
       },
       {
         "ident": "clone-fm-clone-4",
@@ -222,7 +229,8 @@
           "locus": "IGL",
           "sample_id": "sample1",
           "timepoint_id": "day0"
-        }
+        },
+        "secret_note": "Under review"
       }
     ]
   },

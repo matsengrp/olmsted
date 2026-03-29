@@ -63,24 +63,43 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
 
 /**
  * Build a Vega tooltip signal for tree node hover.
- * Uses field_metadata.node if provided, falls back to DEFAULT_NODE_TOOLTIP.
+ * Includes fields from both node and branch metadata (branch metrics are
+ * stored on the child node, so they're accessible on the same datum).
  *
  * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @param {Object|null} branchMetadata - field_metadata.branch from dataset
  * @returns {string} Vega expression for the tooltip signal
  */
-const buildNodeTooltipSignal = (nodeMetadata) => {
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata) => {
   let fields;
-  if (nodeMetadata) {
+  if (nodeMetadata || branchMetadata) {
     // Always include id and parent first
     fields = [
       { field: "sequence_id", label: "id" },
       { field: "parent", label: "parent" }
     ];
-    for (const [field, meta] of Object.entries(nodeMetadata)) {
-      fields.push({ field, label: meta.label || field, format: meta.format });
+    const seen = new Set(["sequence_id", "parent"]);
+
+    // Add node-level fields
+    if (nodeMetadata) {
+      for (const [field, meta] of Object.entries(nodeMetadata)) {
+        fields.push({ field, label: meta.label || field, format: meta.format });
+        seen.add(field);
+      }
     }
+
+    // Add branch-level fields not already included from node metadata
+    if (branchMetadata) {
+      for (const [field, meta] of Object.entries(branchMetadata)) {
+        if (!seen.has(field)) {
+          fields.push({ field, label: meta.label || field, format: meta.format });
+          seen.add(field);
+        }
+      }
+    }
+
     // Always include node_depth (computed at render time, not in metadata)
-    if (!nodeMetadata.node_depth) {
+    if (!seen.has("node_depth")) {
       fields.push({ field: "node_depth", label: "depth" });
     }
   } else {
@@ -99,8 +118,8 @@ const buildNodeTooltipSignal = (nodeMetadata) => {
 /**
  * Build a node tooltip signal that includes timepoint data.
  */
-const buildNodeTooltipWithTimepointSignal = (nodeMetadata) => {
-  const base = buildNodeTooltipSignal(nodeMetadata);
+const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata) => {
+  const base = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
   // Append timepoint fields to the base tooltip
   const timepointPart =
     '"timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]';
@@ -133,9 +152,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     return true; // assume present when no metadata at all
   };
 
-  // Build dynamic node tooltip signals
-  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata);
-  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata);
+  // Build dynamic node tooltip signals (includes branch metrics on child nodes)
+  const branchMetadata = fieldMetadata?.branch || null;
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
+  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata);
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",

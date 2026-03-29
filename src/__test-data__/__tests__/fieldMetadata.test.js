@@ -22,6 +22,13 @@ describe("Dynamic field_metadata integration", () => {
       const xField = getSignal("xField");
       expect(xField.bind.options).not.toContain("widget_type");
       expect(xField.bind.options).not.toContain("clone_id");
+      expect(xField.bind.options).not.toContain("secret_note");
+    });
+
+    it("tooltip includes tooltip-only clone fields", () => {
+      const specStr = JSON.stringify(spec);
+      expect(specStr).toContain("secret_note");
+      expect(specStr).toContain("Secret Note");
     });
 
     it("color/shape/facet include custom categorical fields", () => {
@@ -85,6 +92,12 @@ describe("Dynamic field_metadata integration", () => {
       expect(specStr).toContain("wobble_metric");
       expect(specStr).toContain("Wobble Metric");
     });
+
+    it("node tooltip includes branch-only metrics", () => {
+      const specStr = JSON.stringify(spec);
+      expect(specStr).toContain("quux_weight");
+      expect(specStr).toContain("Quux Weight");
+    });
   });
 
   describe("fixture data integrity", () => {
@@ -101,6 +114,12 @@ describe("Dynamic field_metadata integration", () => {
       expect(clones.length).toBe(4);
       const foobarScores = clones.map((c) => c.foobar_score);
       expect(new Set(foobarScores).size).toBe(4);
+    });
+
+    it("clones have tooltip-only field (secret_note)", () => {
+      for (const clone of clones) {
+        expect(typeof clone.secret_note).toBe("string");
+      }
     });
 
     it("clones have custom categorical fields with distinct values", () => {
