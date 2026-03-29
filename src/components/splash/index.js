@@ -49,12 +49,12 @@ class Splash extends React.Component {
     const { availableDatasets, dispatch } = this.props;
     const selected = availableDatasets.filter((d) => (d.isClientSide || d.temporary) && d.loading === "DONE");
     if (selected.length === 0) {
-      window.alert("No loaded local datasets to delete. Select datasets by clicking their checkboxes first.");
+      window.alert("No loaded local data to delete. Select datasets by clicking their checkboxes first.");
       return;
     }
     const names = selected.map((d) => d.name || d.dataset_id).join(", ");
     const confirmed = window.confirm(
-      `Delete ${selected.length} selected dataset(s)?\n\n${names}\n\nThis cannot be undone.`
+      `Delete ${selected.length} selected dataset(s) and associated data?\n\n${names}\n\nThis cannot be undone.`
     );
     if (confirmed) {
       try {
@@ -71,7 +71,7 @@ class Splash extends React.Component {
 
   handleClearAll = async () => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete ALL datasets from the database?\n\n" +
+      "Are you sure you want to delete ALL data from the database?\n\n" +
         "This action cannot be undone and will permanently remove all uploaded datasets and their data.\n\n" +
         "Click OK to confirm deletion, or Cancel to keep your data."
     );
@@ -214,8 +214,8 @@ class Splash extends React.Component {
                       dataset from your local storage. This action cannot be undone.
                     </li>
                     <li>
-                      <strong>Delete All:</strong> Use the &quot;Delete All Datasets&quot; button to remove all datasets
-                      at once. You will be prompted to confirm this action.
+                      <strong>Delete All:</strong> Use the &quot;Delete ALL Data&quot; button to remove all data at
+                      once. You will be prompted to confirm this action.
                     </li>
                   </ul>
                   <strong>Table Controls:</strong>
@@ -357,7 +357,7 @@ class Splash extends React.Component {
                 onClick={this.handleDeleteSelected}
               >
                 <FiTrash2 size={20} />
-                Delete Selected Datasets
+                Delete Selected Data
               </button>
               <button
                 type="button"
@@ -382,7 +382,7 @@ class Splash extends React.Component {
                 onClick={this.handleClearAll}
               >
                 <FiAlertTriangle size={20} />
-                Delete ALL Datasets
+                Delete ALL Data
               </button>
             </div>
           </CenterContent>

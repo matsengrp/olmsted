@@ -104,6 +104,8 @@ const valueCellStyle = {
   padding: "8px 12px",
   verticalAlign: "top",
   wordBreak: "break-word",
+  overflowWrap: "anywhere",
+  maxWidth: "500px",
   fontFamily: "monospace",
   fontSize: "13px",
   textAlign: "left"
