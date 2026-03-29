@@ -60,12 +60,7 @@ export const DEFAULT_NODE_TOOLTIP = [
   { field: "type", label: "Node Type" },
   { field: "distance", label: "Distance" },
   { field: "node_depth", label: "Depth" },
-  { field: "lbi", label: "LBI" },
-  { field: "lbr", label: "LBR" },
-  { field: "affinity", label: "Affinity" },
-  { field: "scaled_affinity", label: "Scaled Affinity" },
-  { field: "multiplicity", label: "Multiplicity" },
-  { field: "cluster_multiplicity", label: "Cluster Multiplicity" }
+  { field: "multiplicity", label: "Multiplicity" }
 ];
 
 /**

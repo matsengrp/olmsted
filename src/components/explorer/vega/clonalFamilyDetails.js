@@ -79,9 +79,9 @@ const BUILTIN_NODE_FIELDS = [
   { field: "distance", label: "Distance" }
 ];
 
-const buildNodeTooltipSignal = (nodeMetadata, branchMetadata) => {
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
   let fields;
-  if (nodeMetadata || branchMetadata) {
+  if (hasFieldMetadata || nodeMetadata || branchMetadata) {
     const seen = new Set();
 
     // Start with built-in structural fields (label overrideable by metadata)
@@ -126,8 +126,8 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata) => {
 /**
  * Build a node tooltip signal that includes timepoint data.
  */
-const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata) => {
-  const base = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
+const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
+  const base = buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata);
   // Append timepoint fields to the base tooltip
   const timepointPart =
     '"timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]';
@@ -219,8 +219,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 
   // Build dynamic node tooltip signals (includes branch metrics on child nodes)
   const branchMetadata = fieldMetadata?.branch || null;
-  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
-  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata);
+  const hasFieldMeta = !!fieldMetadata;
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMeta);
+  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
 
   // Build mutation coloring options from field_metadata.mutation
   // Types: "aa" → amino acid color scale, "continuous" → sequential heatmap, "tooltip" → tooltip only
