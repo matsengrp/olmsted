@@ -172,9 +172,17 @@ class DatasetManagementTableComponent extends React.Component {
     } catch (e) {
       // ignore
     }
+    let hideServerData = false;
+    try {
+      const savedHide = sessionStorage.getItem("olmsted_datasets_hide_server");
+      if (savedHide !== null) hideServerData = JSON.parse(savedHide);
+    } catch (e) {
+      // ignore
+    }
     this.state = {
       sortStarredFirst,
       showOnlyStarred,
+      hideServerData,
       starAllHovered: false,
       unstarAllHovered: false,
       clearStarsHovered: false
@@ -205,9 +213,22 @@ class DatasetManagementTableComponent extends React.Component {
     });
   };
 
+  toggleHideServerData = () => {
+    this.setState((prevState) => {
+      const newValue = !prevState.hideServerData;
+      try {
+        sessionStorage.setItem("olmsted_datasets_hide_server", JSON.stringify(newValue));
+      } catch (e) {
+        /* ignore */
+      }
+      return { hideServerData: newValue };
+    });
+  };
+
   render() {
     const { availableDatasets, starredDatasets, dispatch } = this.props;
-    const { sortStarredFirst, showOnlyStarred, starAllHovered, unstarAllHovered, clearStarsHovered } = this.state;
+    const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
+      this.state;
 
     if (!availableDatasets) {
       return (
@@ -215,10 +236,14 @@ class DatasetManagementTableComponent extends React.Component {
       );
     }
 
-    // Filter to only starred if enabled
-    let filteredDatasets = showOnlyStarred
-      ? availableDatasets.filter((d) => starredDatasets.includes(d.dataset_id))
-      : availableDatasets;
+    // Filter datasets
+    let filteredDatasets = availableDatasets;
+    if (hideServerData) {
+      filteredDatasets = filteredDatasets.filter((d) => d.isClientSide || d.temporary);
+    }
+    if (showOnlyStarred) {
+      filteredDatasets = filteredDatasets.filter((d) => starredDatasets.includes(d.dataset_id));
+    }
 
     // Sort datasets - optionally with starred first
     const sortedDatasets = sortStarredFirst
@@ -301,6 +326,17 @@ class DatasetManagementTableComponent extends React.Component {
               style={{ cursor: "pointer" }}
             />
             Only starred
+          </label>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              checked={hideServerData}
+              onChange={this.toggleHideServerData}
+              style={{ cursor: "pointer" }}
+            />
+            Hide server data
           </label>
           <button
             type="button"

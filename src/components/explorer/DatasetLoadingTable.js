@@ -97,11 +97,19 @@ export default class DatasetLoadingTable extends React.Component {
     } catch (e) {
       // ignore
     }
+    let hideServerData = false;
+    try {
+      const savedHide = sessionStorage.getItem("olmsted_datasets_hide_server");
+      if (savedHide !== null) hideServerData = JSON.parse(savedHide);
+    } catch (e) {
+      // ignore
+    }
     this.state = {
       updateHovered: false,
       manageHovered: false,
       sortStarredFirst,
       showOnlyStarred,
+      hideServerData,
       starAllHovered: false,
       unstarAllHovered: false,
       clearStarsHovered: false
@@ -129,6 +137,18 @@ export default class DatasetLoadingTable extends React.Component {
         /* ignore */
       }
       return { showOnlyStarred: newValue };
+    });
+  };
+
+  toggleHideServerData = () => {
+    this.setState((prevState) => {
+      const newValue = !prevState.hideServerData;
+      try {
+        sessionStorage.setItem("olmsted_datasets_hide_server", JSON.stringify(newValue));
+      } catch (e) {
+        /* ignore */
+      }
+      return { hideServerData: newValue };
     });
   };
 
@@ -190,13 +210,18 @@ export default class DatasetLoadingTable extends React.Component {
   render() {
     // Use all datasets (including loaded ones)
     const { allDatasets, datasets, selectedDatasets, starredDatasets, dispatch, loadedClonalFamilies } = this.props;
-    const { sortStarredFirst, showOnlyStarred, starAllHovered, unstarAllHovered, clearStarsHovered } = this.state;
+    const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
+      this.state;
     const allDatasetsRaw = allDatasets || datasets || [];
 
-    // Filter to only starred if enabled
-    const filteredDatasets = showOnlyStarred
-      ? allDatasetsRaw.filter((d) => starredDatasets.includes(d.dataset_id))
-      : allDatasetsRaw;
+    // Filter datasets
+    let filteredDatasets = allDatasetsRaw;
+    if (hideServerData) {
+      filteredDatasets = filteredDatasets.filter((d) => d.isClientSide || d.temporary);
+    }
+    if (showOnlyStarred) {
+      filteredDatasets = filteredDatasets.filter((d) => starredDatasets.includes(d.dataset_id));
+    }
 
     // Sort datasets - optionally with starred first
     const allDatasetsToUse = sortStarredFirst
@@ -283,6 +308,17 @@ export default class DatasetLoadingTable extends React.Component {
               style={{ cursor: "pointer" }}
             />
             Only starred
+          </label>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              checked={hideServerData}
+              onChange={this.toggleHideServerData}
+              style={{ cursor: "pointer" }}
+            />
+            Hide server data
           </label>
           <button
             type="button"
