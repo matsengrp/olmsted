@@ -21,8 +21,8 @@ import * as explorerActions from "../../actions/explorer";
  * - Clear all filters button
  */
 
-// Filterable fields configuration
-const FILTER_FIELDS = [
+// Default filterable fields (used when field_metadata is absent)
+const DEFAULT_FILTER_FIELDS = [
   {
     key: "sample.locus",
     label: "Locus",
@@ -41,6 +41,51 @@ const FILTER_FIELDS = [
     }
   }
 ];
+
+/**
+ * Build filter fields from field_metadata categorical entries.
+ * Falls back to DEFAULT_FILTER_FIELDS when metadata is absent.
+ *
+ * @param {Object|null} cloneMetadata - field_metadata.clone from dataset
+ * @returns {Object[]} Array of { key, label, accessor } filter field configs
+ */
+const buildFilterFields = (cloneMetadata) => {
+  if (!cloneMetadata) return DEFAULT_FILTER_FIELDS;
+
+  const fields = [];
+  for (const [field, meta] of Object.entries(cloneMetadata)) {
+    if (meta.type !== "categorical") continue;
+    const label = meta.label || field;
+
+    // Build accessor for nested fields (e.g., "sample.locus")
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".");
+      fields.push({
+        key: field,
+        label,
+        accessor: (f) => (f[parent] && f[parent][child] ? String(f[parent][child]) : null)
+      });
+    } else if (field === "dataset_name") {
+      // Special case: dataset_name needs to look up from datasets array
+      fields.push({
+        key: field,
+        label,
+        accessor: (f, datasets) => {
+          const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
+          return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
+        }
+      });
+    } else {
+      fields.push({
+        key: field,
+        label,
+        accessor: (f) => (f[field] != null ? String(f[field]) : null)
+      });
+    }
+  }
+
+  return fields.length > 0 ? fields : DEFAULT_FILTER_FIELDS;
+};
 
 /**
  * Extract unique values for a field from clonal families
@@ -120,7 +165,7 @@ function FilterSection({ field, uniqueValues, selectedValues, onToggleValue, exp
 /**
  * Active filter chips displayed above filter sections
  */
-function ActiveFilterChips({ filters, onRemoveFilter, onClearAll }) {
+function ActiveFilterChips({ filters, onRemoveFilter, onClearAll, filterFields }) {
   const filterEntries = Object.entries(filters).filter(([, values]) => values && values.length > 0);
 
   if (filterEntries.length === 0) {
@@ -128,7 +173,7 @@ function ActiveFilterChips({ filters, onRemoveFilter, onClearAll }) {
   }
 
   const fieldLabels = {};
-  FILTER_FIELDS.forEach((f) => {
+  (filterFields || DEFAULT_FILTER_FIELDS).forEach((f) => {
     fieldLabels[f.key] = f.label;
   });
 
@@ -222,11 +267,14 @@ class FilterPanel extends React.Component {
   };
 
   render() {
-    const { allClonalFamilies, datasets, filters, clearFilter, clearAllFilters } = this.props;
+    const { allClonalFamilies, datasets, filters, clearFilter, clearAllFilters, fieldMetadata } = this.props;
     const { expandedSections } = this.state;
 
     // Get loaded datasets for resolving dataset names
     const loadedDatasets = datasets.filter((d) => d.loading === "DONE");
+
+    // Build filter fields from field_metadata or use defaults
+    const filterFields = buildFilterFields(fieldMetadata);
 
     // Check if any filters are active
     const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0);
@@ -246,9 +294,14 @@ class FilterPanel extends React.Component {
           {!hasActiveFilters && <span style={{ marginLeft: 8, color: "#999", fontSize: 12 }}>(no filters active)</span>}
         </div>
 
-        <ActiveFilterChips filters={filters} onRemoveFilter={clearFilter} onClearAll={clearAllFilters} />
+        <ActiveFilterChips
+          filters={filters}
+          onRemoveFilter={clearFilter}
+          onClearAll={clearAllFilters}
+          filterFields={filterFields}
+        />
 
-        {FILTER_FIELDS.map((field) => (
+        {filterFields.map((field) => (
           <FilterSection
             key={field.key}
             field={field}
@@ -282,7 +335,11 @@ const mapStateToProps = (state) => ({
     return families;
   })(),
   datasets: state.datasets.availableDatasets || [],
-  filters: state.clonalFamilies.filters || {}
+  filters: state.clonalFamilies.filters || {},
+  fieldMetadata: (() => {
+    const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
+    return loaded?.field_metadata?.clone || null;
+  })()
 });
 
 const mapDispatchToProps = (dispatch) => ({
