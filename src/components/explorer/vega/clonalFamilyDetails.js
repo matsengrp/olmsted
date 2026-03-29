@@ -235,8 +235,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "aa" });
       } else if (meta.type === "continuous") {
         // Continuous fields use sequential heatmap coloring
-        const domain = meta.range || [0, 15];
-        mutationColorScales[field] = { domain, scheme: "oranges", label: meta.label || field };
+        // Extend domain to start at 0 (or min if negative) for full color range
+        const raw = meta.range || [0, 15];
+        const domain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
+        mutationColorScales[field] = { domain, label: meta.label || field };
         mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "continuous" });
       }
       // "categorical" and "tooltip" types are not colorable (yet)
@@ -1331,8 +1333,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         value: defaultMutationColor,
         ...maybeAddBind({
           input: "select",
-          name: "Color mutations by",
+          name: "Mutation color by",
           options: mutationColorValues
+        })
+      },
+      // Mutation color scheme (for continuous heatmap fields)
+      {
+        name: "mutation_color_scheme",
+        value: "oranges",
+        ...maybeAddBind({
+          input: "select",
+          name: "Mutation color scheme",
+          options: ["oranges", "blues", "greens", "reds", "purples", "viridis", "magma", "inferno", "plasma"]
         })
       },
       // Computed boolean: true when any continuous mutation field is selected (not AA)
@@ -2846,7 +2858,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "surprise_color",
         type: "linear",
         domainRaw: { signal: "mutation_color_domain" },
-        range: { scheme: "oranges" },
+        range: { scheme: { signal: "mutation_color_scheme" } },
         clamp: true
       }
     ],
