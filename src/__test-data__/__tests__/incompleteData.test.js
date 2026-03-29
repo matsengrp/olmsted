@@ -66,60 +66,98 @@ describe("Incomplete data detection with test fixtures", () => {
     });
   });
 
-  describe("surprise-forest-example.json — surprise scores + forest tree", () => {
-    const clone = Object.values(surpriseForest.clones).flat()[0];
-    const tree = surpriseForest.trees[0];
-    const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+  describe("surprise-forest-example.json — surprise scores + forest trees", () => {
+    const clones = Object.values(surpriseForest.clones).flat();
 
-    it("clone is complete", () => {
-      expect(validateCloneCompleteness(clone).complete).toBe(true);
+    it("has 2 clones and 2 trees", () => {
+      expect(clones.length).toBe(2);
+      expect(surpriseForest.trees.length).toBe(2);
     });
 
-    it("tree is complete", () => {
-      expect(validateTreeCompleteness(tree).complete).toBe(true);
+    it("all clones are complete", () => {
+      for (const clone of clones) {
+        expect(validateCloneCompleteness(clone).complete).toBe(true);
+      }
     });
 
-    it("has multiple roots (forest)", () => {
-      const roots = nodes.filter((n) => !n.parent);
-      expect(roots.length).toBeGreaterThanOrEqual(2);
+    it("all trees are complete", () => {
+      for (const tree of surpriseForest.trees) {
+        expect(validateTreeCompleteness(tree).complete).toBe(true);
+      }
     });
 
-    it("has nodes with surprise_mutations", () => {
+    it("each tree is a forest with 2 roots", () => {
+      for (const tree of surpriseForest.trees) {
+        const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+        const roots = nodes.filter((n) => !n.parent);
+        expect(roots.length).toBe(2);
+      }
+    });
+
+    it("each tree has 5 leaves", () => {
+      for (const tree of surpriseForest.trees) {
+        const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+        const leaves = nodes.filter((n) => n.type === "leaf");
+        expect(leaves.length).toBe(5);
+      }
+    });
+
+    it("leaf nodes have surprise_mutations with expected fields", () => {
+      const nodes = surpriseForest.trees[0].nodes;
       const withSurprise = nodes.filter((n) => n.surprise_mutations && n.surprise_mutations.length > 0);
-      expect(withSurprise.length).toBeGreaterThan(0);
-    });
-
-    it("surprise_mutations have expected fields", () => {
-      const node = nodes.find((n) => n.surprise_mutations && n.surprise_mutations.length > 0);
-      const mutation = node.surprise_mutations[0];
-      expect(mutation).toHaveProperty("site");
-      expect(mutation).toHaveProperty("surprise_mutsel");
-      expect(mutation).toHaveProperty("selection_contribution");
-      expect(mutation).toHaveProperty("region");
+      expect(withSurprise.length).toBe(5);
+      for (const node of withSurprise) {
+        const m = node.surprise_mutations[0];
+        expect(m).toHaveProperty("site");
+        expect(m).toHaveProperty("surprise_mutsel");
+        expect(m).toHaveProperty("selection_contribution");
+        expect(m).toHaveProperty("region");
+      }
     });
   });
 
-  describe("forest-only-example.json — forest without surprise scores", () => {
-    const clone = Object.values(forestOnly.clones).flat()[0];
-    const tree = forestOnly.trees[0];
-    const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+  describe("forest-only-example.json — forest trees without surprise scores", () => {
+    const clones = Object.values(forestOnly.clones).flat();
 
-    it("clone is complete", () => {
-      expect(validateCloneCompleteness(clone).complete).toBe(true);
+    it("has 2 clones and 2 trees", () => {
+      expect(clones.length).toBe(2);
+      expect(forestOnly.trees.length).toBe(2);
     });
 
-    it("tree is complete", () => {
-      expect(validateTreeCompleteness(tree).complete).toBe(true);
+    it("all clones are complete", () => {
+      for (const clone of clones) {
+        expect(validateCloneCompleteness(clone).complete).toBe(true);
+      }
     });
 
-    it("has multiple roots (forest)", () => {
-      const roots = nodes.filter((n) => !n.parent);
-      expect(roots.length).toBeGreaterThanOrEqual(2);
+    it("all trees are complete", () => {
+      for (const tree of forestOnly.trees) {
+        expect(validateTreeCompleteness(tree).complete).toBe(true);
+      }
     });
 
-    it("has no surprise_mutations on any node", () => {
-      const withSurprise = nodes.filter((n) => n.surprise_mutations);
-      expect(withSurprise.length).toBe(0);
+    it("each tree is a forest with 2 roots", () => {
+      for (const tree of forestOnly.trees) {
+        const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+        const roots = nodes.filter((n) => !n.parent);
+        expect(roots.length).toBe(2);
+      }
+    });
+
+    it("each tree has 5 leaves", () => {
+      for (const tree of forestOnly.trees) {
+        const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+        const leaves = nodes.filter((n) => n.type === "leaf");
+        expect(leaves.length).toBe(5);
+      }
+    });
+
+    it("no nodes have surprise_mutations", () => {
+      for (const tree of forestOnly.trees) {
+        const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
+        const withSurprise = nodes.filter((n) => n.surprise_mutations);
+        expect(withSurprise.length).toBe(0);
+      }
     });
   });
 
