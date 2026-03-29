@@ -648,101 +648,102 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "leaf_size",
         update: "clamp(height/leaves_count_incl_naive, 5, 1000)"
       },
-      // Size of leaves - they are mapped to a range with
-      // the value of this signal as the maximum
+      // === TREE CONTROLS ===
+      // Branch length mode: "distance" uses actual branch lengths, "fixed" uses equal lengths
       {
-        name: "max_leaf_size",
-        value: 50,
+        name: "branch_length_mode",
+        value: hasNodeField("distance") ? "distance" : "fixed",
         ...maybeAddBind({
-          max: 100,
-          step: 1,
-          input: "range",
-          min: 1
+          input: "select",
+          name: "Branch length",
+          options: hasNodeField("distance") ? ["distance", "fixed"] : ["fixed"]
         })
       },
-      // HEIGHTSCALE SIGNALS END
+      // Computed boolean for backward compat with existing spec conditionals
       {
-        // Metadata field to use for sizing the leaves
+        name: "fixed_branch_lengths",
+        update: 'branch_length_mode === "fixed"'
+      },
+      {
         name: "leaf_size_by",
         value: "<none>",
         ...maybeAddBind({
           input: "select",
+          name: "Leaf size by",
           options: treeFields.leafSize
         })
       },
+      {
+        name: "max_leaf_size",
+        value: 50,
+        ...maybeAddBind({
+          name: "Max leaf size",
+          input: "range",
+          min: 1,
+          max: 100,
+          step: 1
+        })
+      },
+      {
+        name: "branch_width_by",
+        value: "<none>",
+        ...maybeAddBind({ input: "select", name: "Branch width by", options: treeFields.branchWidth })
+      },
+      {
+        name: "branch_color_by",
+        value: "parent",
+        ...maybeAddBind({ input: "select", name: "Branch color by", options: treeFields.branchColor })
+      },
+      {
+        name: "branch_color_scheme",
+        value: "redblue",
+        ...maybeAddBind({ input: "select", name: "Color scheme", options: ["redblue", "purples"] })
+      },
+      {
+        name: "min_color_value",
+        value: 0,
+        ...maybeAddBind({
+          name: "Min color value",
+          input: "range",
+          min: 0,
+          max: 4,
+          step: 1
+        })
+      },
+      // Internal: leaf/branch derived signals (no user controls)
       {
         name: "leaf_size_by_legend_label",
         update: '"Timepoint color key (from "+leaf_size_by+"):"'
       },
       {
-        // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
         name: "leaf_data_map",
         update:
           '{"scaled_affinity": "scaled_affinity", "affinity": "affinity", "cluster_multiplicity": "cluster_timepoint_multiplicities", "multiplicity": "timepoint_multiplicities"}'
-      },
-      {
-        // Seq metric to use for sizing branches;
-        // uses value from the child of the branch
-        name: "branch_width_by",
-        value: "<none>",
-        ...maybeAddBind({ input: "select", options: treeFields.branchWidth })
-      },
-      {
-        // Seq metric to use for coloring branches;
-        // uses value from the child of the branch
-        name: "branch_color_by",
-        value: "parent",
-        ...maybeAddBind({ input: "select", options: treeFields.branchColor })
-      },
-      {
-        name: "branch_color_scheme",
-        value: "redblue",
-        ...maybeAddBind({ input: "select", options: ["redblue", "purples"] })
       },
       {
         name: "branch_color_scheme_map",
         update: '{purples: slice(full_purple_range, min_color_value), redblue: ["darkblue", "red"]}'
       },
       {
-        name: "min_color_value",
-        value: 0,
-        ...maybeAddBind({
-          input: "range",
-          max: 4,
-          step: 1,
-          min: 0
-        })
-      },
-      {
         name: "full_purple_range",
         value: ["#f7fcfd", "#e0ecf4", "#bfd3e6", "#9ebcda", "#8c96c6", "#8c6bb1", "#88419d", "#810f7c", "#4d004b"]
       },
       {
-        // If a branch_color_by option (a seq metric) should be colored categorically
-        // rather than sequentially, put its name here.
         name: "categorical_seq_metrics",
         value: '["parent"]'
       },
       {
-        // Choose the color scheme/scale to use depending on the selected metric
         name: "branch_color_scale",
         update:
           'indexof(categorical_seq_metrics, branch_color_by) > 0 ? "branch_color_categorical" : "branch_color_sequential"'
       },
+      // === DISPLAY CONTROLS ===
       {
         name: "show_labels",
         value: true,
         ...maybeAddBind({
           input: "checkbox",
           name: "Show labels"
-        })
-      },
-      {
-        name: "fixed_branch_lengths",
-        value: !hasNodeField("distance"),
-        ...maybeAddBind({
-          input: "checkbox",
-          name: "Fixed branch lengths"
         })
       },
       // Padding to add to the initial tree size to not clip labels

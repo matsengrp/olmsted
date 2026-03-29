@@ -150,7 +150,8 @@ describe("concatTreeWithAlignmentSpec", () => {
       expect(getSignal("branch_width_by").value).toBe("<none>");
       expect(getSignal("branch_color_by").value).toBe("parent");
       expect(getSignal("show_labels").value).toBe(true);
-      expect(getSignal("fixed_branch_lengths").value).toBe(false);
+      expect(getSignal("branch_length_mode").value).toBe("distance");
+      expect(getSignal("fixed_branch_lengths").update).toBe('branch_length_mode === "fixed"');
       expect(getSignal("alignment_zoom").value).toBe(1);
       expect(getSignal("alignment_pan").value).toBe(0);
     });
