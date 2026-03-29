@@ -85,6 +85,9 @@ const createAlignment = (naive_seq, tree) => {
           position: i,
           mut_from: naive_aa,
           mut_to: aa,
+          // Aliases for field_metadata compatibility (CLI uses parent_aa/child_aa)
+          parent_aa: naive_aa,
+          child_aa: aa,
           surprise_mutsel: surpriseData?.surprise_mutsel ?? null,
           surprise_neutral: surpriseData?.surprise_neutral ?? null,
           selection_contribution: surpriseData?.selection_contribution ?? null,
