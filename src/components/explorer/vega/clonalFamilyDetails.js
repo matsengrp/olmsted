@@ -2570,7 +2570,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         test: "color_by_mutation_metric && datum[mutation_color_by] === null",
                         value: null
                       },
-                      { scale: "aa_color", field: "mut_to" }
+                      { scale: "aa_color", field: { signal: "mutation_color_by" } }
                     ],
                     stroke: { signal: "show_mutation_borders ? 'black' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
