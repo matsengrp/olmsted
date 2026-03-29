@@ -715,7 +715,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "branch_color_scheme",
         value: "redblue",
-        ...maybeAddBind({ input: "select", name: "Color scheme", options: ["redblue", "purples"] })
+        ...maybeAddBind({ input: "select", name: "Branch color scheme", options: ["redblue", "purples"] })
       },
       {
         name: "min_color_value",
