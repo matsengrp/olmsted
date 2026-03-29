@@ -53,7 +53,6 @@ describe("fieldDefaults", () => {
       expect(result.node.distance.present).toBe(true);
       expect(result.node.distance.defaulted).toBe(false);
       expect(result.node.lbi.present).toBe(true);
-      expect(result.node.surprise_mutations.present).toBe(true);
 
       // All clone fields should be present
       expect(result.clone.d_call.present).toBe(true);
@@ -92,10 +91,6 @@ describe("fieldDefaults", () => {
       expect(result.node.distance.defaulted).toBe(true);
       expect(result.node.multiplicity.present).toBe(false);
       expect(result.node.multiplicity.defaulted).toBe(true);
-
-      // Surprise mutations should be present
-      expect(result.node.surprise_mutations.present).toBe(true);
-      expect(result.node.surprise_mutations.defaulted).toBe(false);
 
       // Clone gene calls should be missing
       expect(result.clone.d_call.present).toBe(false);

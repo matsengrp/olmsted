@@ -207,14 +207,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeMetadata = fieldMetadata?.node || null;
   const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null, missingSet);
 
-  // Check if a node-level field is available (for binary presence checks).
-  // When no metadata is available, assume standard fields (distance) are present
-  // but non-standard fields (surprise_mutations) are absent.
-  const STANDARD_NODE_FIELDS = new Set(["distance", "lbi", "lbr", "affinity", "multiplicity", "cluster_multiplicity"]);
+  // Check if a node-level field is available (used for branch length mode).
   const hasNodeField = (field) => {
     if (nodeMetadata) return field in nodeMetadata;
     if (missingSet) return !missingSet.has(`node.${field}`);
-    return STANDARD_NODE_FIELDS.has(field);
+    return field === "distance"; // only assume distance by default
   };
 
   // Build dynamic node tooltip signals (includes branch metrics on child nodes)
@@ -246,13 +243,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     }
   }
 
-  // Fallback: if no mutation metadata, detect surprise data from nodes
+  // Fallback: if no mutation metadata, default to amino acid coloring only
   if (mutationColorOptions.length === 0) {
     mutationColorOptions.push({ value: "amino_acid", label: "Amino acid", scaleType: "aa" });
-    if (hasNodeField("surprise_mutations")) {
-      mutationColorScales.surprise_mutsel = { domain: [0, 15], scheme: "oranges", label: "Surprise Score" };
-      mutationColorOptions.push({ value: "surprise_mutsel", label: "Surprise Score", scaleType: "continuous" });
-    }
   }
 
   // Build the dropdown option values and find the first AA option for default

@@ -43,7 +43,7 @@ export const CLONE_FIELD_DEFAULTS = {
  * Includes fields from NODE_FIELD_DEFAULTS plus additional fields
  * that aren't defaulted but whose presence we want to track.
  */
-const NODE_DETECTION_FIELDS = [...Object.keys(NODE_FIELD_DEFAULTS), "surprise_mutations"];
+const NODE_DETECTION_FIELDS = Object.keys(NODE_FIELD_DEFAULTS);
 
 /**
  * Fields to check for presence detection on clones.
