@@ -22,26 +22,27 @@ import {
  */
 const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
   // If field_metadata is provided, build from it
+  // Node and branch continuous fields are combined since branch metrics
+  // are stored on the child node (1:1 relationship)
   if (nodeMetadata || branchMetadata) {
-    const leafSize = ["<none>"];
-    if (nodeMetadata) {
-      for (const [field, meta] of Object.entries(nodeMetadata)) {
-        if (meta.type === "continuous") leafSize.push(field);
-      }
-    }
+    const seen = new Set();
+    const continuousFields = [];
 
-    const branchWidth = ["<none>"];
-    const branchColor = ["<none>"];
-    if (branchMetadata) {
-      for (const [field, meta] of Object.entries(branchMetadata)) {
-        if (meta.type === "continuous") {
-          branchWidth.push(field);
-          branchColor.push(field);
+    // Collect continuous fields from both node and branch metadata
+    for (const metadata of [nodeMetadata, branchMetadata]) {
+      if (!metadata) continue;
+      for (const [field, meta] of Object.entries(metadata)) {
+        if (meta.type === "continuous" && !seen.has(field)) {
+          continuousFields.push(field);
+          seen.add(field);
         }
       }
     }
-    // "parent" is always available for branch coloring (computed from tree topology)
-    branchColor.push("parent");
+
+    // All three dropdowns share the same continuous field pool
+    const leafSize = ["<none>", ...continuousFields];
+    const branchWidth = ["<none>", ...continuousFields];
+    const branchColor = ["<none>", ...continuousFields, "parent"];
 
     return { leafSize, branchWidth, branchColor };
   }
