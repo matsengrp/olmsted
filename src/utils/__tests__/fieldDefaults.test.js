@@ -1,7 +1,6 @@
 import {
   REQUIRED,
   NODE_FIELD_DEFAULTS,
-  CLONE_FIELD_DEFAULTS,
   detectFieldPresence,
   applyNodeDefaults,
   applyCloneDefaults,

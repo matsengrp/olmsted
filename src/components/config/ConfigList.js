@@ -49,13 +49,6 @@ const configMetaStyle = {
   color: "#888"
 };
 
-const configDescStyle = {
-  margin: "4px 0 0 0",
-  fontSize: "12px",
-  color: "#666",
-  fontStyle: "italic"
-};
-
 const actionsContainerStyle = {
   display: "flex",
   gap: "8px",
@@ -223,6 +216,7 @@ class ConfigList extends React.Component {
           <div style={actionsContainerStyle}>
             {isActive && (
               <button
+                type="button"
                 style={updateButtonStyle}
                 onClick={() => this.handleUpdate(config)}
                 title="Update with current settings"
@@ -230,20 +224,21 @@ class ConfigList extends React.Component {
                 <FiRefreshCw size={14} />
               </button>
             )}
-            <button style={applyButtonStyle} onClick={() => this.handleApply(config)} title="Apply this configuration">
+            <button type="button" style={applyButtonStyle} onClick={() => this.handleApply(config)} title="Apply this configuration">
               <FiCheck size={14} />
             </button>
             <button
+              type="button"
               style={{ ...infoButtonStyle, backgroundColor: isInfoExpanded ? "#e7f3ff" : "white" }}
               onClick={() => this.toggleInfo(config.id)}
               title="View configuration details"
             >
               <FiInfo size={14} />
             </button>
-            <button style={exportButtonStyle} onClick={() => this.handleExport(config)} title="Export configuration">
+            <button type="button" style={exportButtonStyle} onClick={() => this.handleExport(config)} title="Export configuration">
               <FiDownload size={14} />
             </button>
-            <button style={deleteButtonStyle} onClick={() => this.handleDelete(config)} title="Delete configuration">
+            <button type="button" style={deleteButtonStyle} onClick={() => this.handleDelete(config)} title="Delete configuration">
               <FiTrash2 size={14} />
             </button>
           </div>

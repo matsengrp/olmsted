@@ -13,7 +13,7 @@ const getClonalFamiliesDict = (state) => state.clonalFamilies.byDatasetId;
 
 const getDatasets = (state) => state.datasets.availableDatasets;
 
-const getLocusFilter = (state) => state.clonalFamilies.locus;
+const _getLocusFilter = (state) => state.clonalFamilies.locus;
 
 const getHighLevelFilters = (state) => state.clonalFamilies.filters;
 

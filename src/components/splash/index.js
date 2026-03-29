@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { FiHelpCircle, FiCompass, FiUpload, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import Flex from "../framework/flex";
 import { changePage } from "../../actions/navigation";
 import { DatasetManagementTable } from "./DatasetManagementTable";
@@ -10,7 +11,6 @@ import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
-import { FiHelpCircle, FiCompass, FiUpload, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
 import * as types from "../../actions/types";
 

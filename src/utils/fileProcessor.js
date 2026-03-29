@@ -23,7 +23,7 @@ class FileProcessor {
 
       try {
         data = JSON.parse(content);
-      } catch (parseError) {
+      } catch {
         throw new Error("Invalid JSON format");
       }
 

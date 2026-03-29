@@ -436,7 +436,7 @@ class ClonalFamiliesTable extends React.Component {
       if (savedFilter !== null) {
         showOnlyStarred = JSON.parse(savedFilter);
       }
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
     this.state = {
@@ -453,7 +453,7 @@ class ClonalFamiliesTable extends React.Component {
       const newValue = !prevState.sortStarredFirst;
       try {
         sessionStorage.setItem("olmsted_sort_starred_first", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
       return { sortStarredFirst: newValue };
@@ -465,7 +465,7 @@ class ClonalFamiliesTable extends React.Component {
       const newValue = !prevState.showOnlyStarred;
       try {
         sessionStorage.setItem("olmsted_families_show_only_starred", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
       return { showOnlyStarred: newValue };

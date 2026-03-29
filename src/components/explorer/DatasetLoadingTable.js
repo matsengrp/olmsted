@@ -2,8 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiRefreshCw, FiDatabase, FiStar } from "react-icons/fi";
-import { GreenCheckmark } from "../util/loading";
-import { LoadingStatus } from "../util/loading";
+import { GreenCheckmark , LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
@@ -94,14 +93,14 @@ export default class DatasetLoadingTable extends React.Component {
       if (savedSort !== null) sortStarredFirst = JSON.parse(savedSort);
       const savedFilter = sessionStorage.getItem("olmsted_datasets_show_only_starred");
       if (savedFilter !== null) showOnlyStarred = JSON.parse(savedFilter);
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
     let hideServerData = false;
     try {
       const savedHide = sessionStorage.getItem("olmsted_datasets_hide_server");
       if (savedHide !== null) hideServerData = JSON.parse(savedHide);
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
     this.state = {
@@ -121,7 +120,7 @@ export default class DatasetLoadingTable extends React.Component {
       const newValue = !prevState.sortStarredFirst;
       try {
         sessionStorage.setItem("olmsted_datasets_sort_starred_first", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         /* ignore */
       }
       return { sortStarredFirst: newValue };
@@ -133,7 +132,7 @@ export default class DatasetLoadingTable extends React.Component {
       const newValue = !prevState.showOnlyStarred;
       try {
         sessionStorage.setItem("olmsted_datasets_show_only_starred", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         /* ignore */
       }
       return { showOnlyStarred: newValue };
@@ -145,7 +144,7 @@ export default class DatasetLoadingTable extends React.Component {
       const newValue = !prevState.hideServerData;
       try {
         sessionStorage.setItem("olmsted_datasets_hide_server", JSON.stringify(newValue));
-      } catch (e) {
+      } catch (_e) {
         /* ignore */
       }
       return { hideServerData: newValue };

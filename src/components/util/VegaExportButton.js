@@ -39,7 +39,7 @@ class VegaExportButton extends React.Component {
     try {
       originalShowControls = vegaView.signal("show_controls");
       hasShowControls = originalShowControls !== undefined;
-    } catch (e) {
+    } catch (_e) {
       // Signal doesn't exist, ignore
     }
 
@@ -48,7 +48,9 @@ class VegaExportButton extends React.Component {
       if (hasShowControls) {
         vegaView.signal("show_controls", false).run();
         // Small delay to ensure view updates
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 50);
+        });
       }
 
       const timestamp = new Date().toISOString().slice(0, 10);
@@ -71,7 +73,7 @@ class VegaExportButton extends React.Component {
       if (hasShowControls && originalShowControls !== null) {
         try {
           vegaView.signal("show_controls", originalShowControls).run();
-        } catch (e) {
+        } catch (_e) {
           // Ignore restore errors
         }
       }
@@ -125,6 +127,7 @@ class VegaExportButton extends React.Component {
 
     return (
       <button
+        type="button"
         onClick={this.handleExport}
         disabled={isDisabled}
         onMouseEnter={this.handleMouseEnter}

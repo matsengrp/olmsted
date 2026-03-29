@@ -210,6 +210,7 @@ class ClonalFamiliesViz extends React.Component {
           {availableClonalFamilies.length > 0 && (
             <div style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <button
+                type="button"
                 onClick={this.toggleHideControls}
                 style={{
                   display: "inline-flex",

@@ -121,12 +121,6 @@ const buttonStyle = {
   transition: "background-color 0.2s"
 };
 
-const secondaryButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: "white",
-  color: "#4a90a4"
-};
-
 const resetButtonStyle = {
   ...buttonStyle,
   backgroundColor: "#6c757d",
@@ -375,6 +369,7 @@ class ConfigModal extends React.Component {
             {applySuccess && <div style={successMessageStyle}>{applySuccess}</div>}
             <div style={{ marginBottom: "16px" }}>
               <button
+                type="button"
                 style={resetButtonStyle}
                 onClick={this.handleResetToDefaults}
                 title="Reset all visualization settings to application defaults"
@@ -405,7 +400,7 @@ class ConfigModal extends React.Component {
               <p style={{ margin: "0 0 12px 0", color: "#666", fontSize: "13px" }}>
                 Import a previously exported configuration file (.olmsted-config.json)
               </p>
-              <button style={buttonStyle} onClick={this.handleImportClick}>
+              <button type="button" style={buttonStyle} onClick={this.handleImportClick}>
                 Choose File to Import
               </button>
               <input
@@ -507,7 +502,7 @@ class ConfigModal extends React.Component {
                 title="Click for help"
               />
             </h2>
-            <button style={closeButtonStyle} onClick={this.handleClose} aria-label="Close modal">
+            <button type="button" style={closeButtonStyle} onClick={this.handleClose} aria-label="Close modal">
               &times;
             </button>
           </div>
@@ -576,18 +571,21 @@ class ConfigModal extends React.Component {
 
           <div style={tabContainerStyle}>
             <button
+              type="button"
               style={activeTab === "saved" ? activeTabStyle : tabStyle}
               onClick={() => this.handleTabClick("saved")}
             >
               Saved Configs
             </button>
             <button
+              type="button"
               style={activeTab === "save" ? activeTabStyle : tabStyle}
               onClick={() => this.handleTabClick("save")}
             >
               Save Current
             </button>
             <button
+              type="button"
               style={activeTab === "importExport" ? activeTabStyle : tabStyle}
               onClick={() => this.handleTabClick("importExport")}
             >

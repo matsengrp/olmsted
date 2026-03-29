@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
-import { getAvailableClonalFamilies } from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
 
 /**
@@ -54,7 +53,7 @@ const getUniqueValues = (families, field, datasets) => {
 /**
  * Individual filter section with collapsible checkbox list
  */
-const FilterSection = ({ field, uniqueValues, selectedValues, onToggleValue, expanded, onToggleExpand }) => {
+function FilterSection({ field, uniqueValues, selectedValues, onToggleValue, expanded, onToggleExpand }) {
   const hasSelections = selectedValues && selectedValues.length > 0;
 
   return (
@@ -116,12 +115,12 @@ const FilterSection = ({ field, uniqueValues, selectedValues, onToggleValue, exp
       )}
     </div>
   );
-};
+}
 
 /**
  * Active filter chips displayed above filter sections
  */
-const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
+function ActiveFilterChips({ filters, onRemoveFilter, onClearAll }) {
   const filterEntries = Object.entries(filters).filter(([, values]) => values && values.length > 0);
 
   if (filterEntries.length === 0) {
@@ -158,6 +157,7 @@ const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
             <span style={{ fontWeight: "bold", marginRight: 4 }}>{fieldLabels[fieldKey] || fieldKey}:</span>
             <span>{values.length === 1 ? values[0] : `${values.length} selected`}</span>
             <button
+              type="button"
               onClick={() => onRemoveFilter(fieldKey)}
               style={{
                 marginLeft: 6,
@@ -175,6 +175,7 @@ const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
           </div>
         ))}
         <button
+          type="button"
           onClick={onClearAll}
           style={{
             background: "none",
@@ -191,7 +192,7 @@ const ActiveFilterChips = ({ filters, onRemoveFilter, onClearAll }) => {
       </div>
     </div>
   );
-};
+}
 
 class FilterPanel extends React.Component {
   constructor(props) {

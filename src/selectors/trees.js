@@ -315,7 +315,7 @@ const ensureSingleRoot = (nodes) => {
  * @returns {{ nodes: Object[], modification: string|null }} Normalized nodes and optional modification description
  */
 const normalizeTreeNodes = (nodes) => {
-  let normalized = _.map(nodes, (x) =>
+  const normalized = _.map(nodes, (x) =>
     x.parent === "inferred_naive" || x.sequence_id === "inferred_naive" ? dissoc(x, "lbr") : x
   );
   const rootResult = ensureSingleRoot(normalized);

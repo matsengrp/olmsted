@@ -524,7 +524,7 @@ class TreeViz extends React.Component {
     if (this.heavyVegaRef.current) {
       try {
         this.heavyVegaRef.current.signal(signalName, value).run();
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist or view not ready
       }
     }
@@ -547,7 +547,7 @@ class TreeViz extends React.Component {
       for (const [name, value] of Object.entries(this.savedSignals)) {
         try {
           lightView.signal(name, value);
-        } catch (e) {
+        } catch (_e) {
           // Signal may not exist in this spec variant
         }
       }
@@ -578,7 +578,7 @@ class TreeViz extends React.Component {
     if (this.lightVegaRef.current) {
       try {
         this.lightVegaRef.current.signal(signalName, value).run();
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist or view not ready
       }
     }
@@ -603,7 +603,7 @@ class TreeViz extends React.Component {
       for (const [name, value] of Object.entries(this.savedSignals)) {
         try {
           view.signal(name, value);
-        } catch (e) {
+        } catch (_e) {
           // Signal may not exist in this spec variant
         }
       }
@@ -641,7 +641,7 @@ class TreeViz extends React.Component {
     for (const name of this.preservedSignalNames) {
       try {
         saved[name] = view.signal(name);
-      } catch (e) {
+      } catch (_e) {
         // Signal may not exist in this spec variant
       }
     }
@@ -866,7 +866,7 @@ class TreeViz extends React.Component {
     if (this.lightVegaRef.current) {
       try {
         this.lightVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
-      } catch (e) {
+      } catch (_e) {
         // View not ready
       }
     }
@@ -877,7 +877,7 @@ class TreeViz extends React.Component {
     if (this.heavyVegaRef.current) {
       try {
         this.heavyVegaRef.current.signal("selected_leaf_y_tree", yTree).run();
-      } catch (e) {
+      } catch (_e) {
         // View not ready
       }
     }
@@ -922,7 +922,7 @@ class TreeViz extends React.Component {
       if (this.heavyVegaRef.current) {
         try {
           this.heavyVegaRef.current.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -930,7 +930,7 @@ class TreeViz extends React.Component {
       if (this.lightVegaRef.current) {
         try {
           this.lightVegaRef.current.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -938,7 +938,7 @@ class TreeViz extends React.Component {
       if (this.singleVegaRef) {
         try {
           this.singleVegaRef.signal("viz_focused", false).run();
-        } catch (e) {
+        } catch (_e) {
           // View may not be ready
         }
       }
@@ -1316,6 +1316,7 @@ class TreeViz extends React.Component {
           {completeData && (
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <button
+                type="button"
                 onClick={this.toggleHideControls}
                 style={{
                   display: "inline-flex",

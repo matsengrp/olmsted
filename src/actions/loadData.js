@@ -23,7 +23,7 @@ const charonErrorHandler = (dispatch) => {
 const safeJsonParse = (data, identifier, fallback = null) => {
   try {
     return JSON.parse(data);
-  } catch (err) {
+  } catch (_err) {
     alert(
       `Failed parsing json for ${identifier}. ` +
         "This means either the data file wasn't found and index.html was returned or there was an error writing the data file"

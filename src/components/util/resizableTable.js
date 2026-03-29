@@ -180,13 +180,12 @@ export class ResizableTable extends React.Component {
           height: "40px",
           minHeight: "40px",
           maxHeight: "40px",
-          backgroundColor,
           cursor: onRowClick ? "pointer" : "default",
           transition: "background-color 0.15s ease",
           overflow: "hidden",
           boxSizing: "border-box",
           ...rowStyle,
-          backgroundColor // Override rowStyle.backgroundColor with our computed value
+          backgroundColor: backgroundColor // Override rowStyle.backgroundColor with our computed value
         }}
         onClick={() => onRowClick && onRowClick(datum)}
         onKeyDown={handleRowKeyDown}
