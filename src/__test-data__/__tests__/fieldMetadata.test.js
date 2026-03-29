@@ -66,6 +66,19 @@ describe("Dynamic field_metadata integration", () => {
       expect(branchColor.bind.options).toContain("quux_weight");
       expect(branchColor.bind.options).toContain("parent");
     });
+
+    it("leaf_size_by excludes tooltip-only fields", () => {
+      const leafSize = getSignal("leaf_size_by");
+      expect(leafSize.bind.options).not.toContain("snark_label");
+    });
+
+    it("node tooltip includes tooltip-only fields", () => {
+      // The tooltip signal for nodes should include snark_label
+      // (it's in field_metadata.node with type: "tooltip")
+      const nodeMetadata = fieldMetadata.node;
+      expect(nodeMetadata.snark_label).toBeDefined();
+      expect(nodeMetadata.snark_label.type).toBe("tooltip");
+    });
   });
 
   describe("fixture data integrity", () => {
@@ -96,6 +109,14 @@ describe("Dynamic field_metadata integration", () => {
         for (const node of tree.nodes) {
           expect(typeof node.wobble_metric).toBe("number");
           expect(typeof node.quux_weight).toBe("number");
+        }
+      }
+    });
+
+    it("nodes have tooltip-only field (snark_label)", () => {
+      for (const tree of fieldMetadataFixture.trees) {
+        for (const node of tree.nodes) {
+          expect(typeof node.snark_label).toBe("string");
         }
       }
     });

@@ -6,7 +6,8 @@ import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAci
 import {
   DEFAULT_LEAF_SIZE_OPTIONS,
   DEFAULT_BRANCH_WIDTH_OPTIONS,
-  DEFAULT_BRANCH_COLOR_OPTIONS
+  DEFAULT_BRANCH_COLOR_OPTIONS,
+  DEFAULT_NODE_TOOLTIP
 } from "../../../constants/fieldDefaults";
 
 /**
@@ -60,6 +61,52 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
   };
 };
 
+/**
+ * Build a Vega tooltip signal for tree node hover.
+ * Uses field_metadata.node if provided, falls back to DEFAULT_NODE_TOOLTIP.
+ *
+ * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @returns {string} Vega expression for the tooltip signal
+ */
+const buildNodeTooltipSignal = (nodeMetadata) => {
+  let fields;
+  if (nodeMetadata) {
+    // Always include id and parent first
+    fields = [
+      { field: "sequence_id", label: "id" },
+      { field: "parent", label: "parent" }
+    ];
+    for (const [field, meta] of Object.entries(nodeMetadata)) {
+      fields.push({ field, label: meta.label || field, format: meta.format });
+    }
+    // Always include node_depth (computed at render time, not in metadata)
+    if (!nodeMetadata.node_depth) {
+      fields.push({ field: "node_depth", label: "depth" });
+    }
+  } else {
+    fields = DEFAULT_NODE_TOOLTIP;
+  }
+
+  const parts = fields.map((f) => {
+    if (f.format) {
+      return `"${f.label}": datum["${f.field}"] != null ? format(datum["${f.field}"], "${f.format}") : "N/A"`;
+    }
+    return `"${f.label}": datum["${f.field}"] != null ? datum["${f.field}"] : "N/A"`;
+  });
+  return "{" + parts.join(", ") + "}";
+};
+
+/**
+ * Build a node tooltip signal that includes timepoint data.
+ */
+const buildNodeTooltipWithTimepointSignal = (nodeMetadata) => {
+  const base = buildNodeTooltipSignal(nodeMetadata);
+  // Append timepoint fields to the base tooltip
+  const timepointPart =
+    '"timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]';
+  return base.slice(0, -1) + ", " + timepointPart + "}";
+};
+
 const concatTreeWithAlignmentSpec = (options = {}) => {
   const {
     showControls = true,
@@ -85,6 +132,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     if (missingSet) return !missingSet.has(`node.${field}`);
     return true; // assume present when no metadata at all
   };
+
+  // Build dynamic node tooltip signals
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata);
+  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata);
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -1593,8 +1644,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   field: "x"
                 },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
+                  signal: nodeTooltip
                 }
               },
               enter: {
@@ -1626,8 +1676,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // Set inner radius to get donuts instead of pie charts
                 // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 },
                 outerRadius: {
                   scale: "leaf_size_scale",
@@ -1655,8 +1704,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 size: [{ test: "show_labels", value: 1 }, { signal: "leaf_size*2" }],
                 cursor: { value: "pointer" },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 }
               }
             },
@@ -1693,8 +1741,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   field: "x"
                 },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 }
               }
             },

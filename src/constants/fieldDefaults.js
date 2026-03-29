@@ -49,6 +49,24 @@ export const DEFAULT_LEAF_SIZE_OPTIONS = [
   "scaled_affinity"
 ];
 
+/**
+ * Default tooltip fields for tree node hover.
+ * All node continuous fields are included automatically via field_metadata;
+ * these are the fallback when field_metadata is absent.
+ */
+export const DEFAULT_NODE_TOOLTIP = [
+  { field: "sequence_id", label: "id" },
+  { field: "parent", label: "parent" },
+  { field: "distance", label: "distance" },
+  { field: "node_depth", label: "depth" },
+  { field: "lbi", label: "lbi" },
+  { field: "lbr", label: "lbr" },
+  { field: "affinity", label: "affinity" },
+  { field: "scaled_affinity", label: "scaled_affinity" },
+  { field: "multiplicity", label: "multiplicity" },
+  { field: "cluster_multiplicity", label: "cluster_multiplicity" }
+];
+
 // Tree — branch-level fields for width and color
 export const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>", "lbr", "lbi"];
 export const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "lbr", "lbi", "parent"];
