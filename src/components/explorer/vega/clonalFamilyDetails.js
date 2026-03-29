@@ -3,11 +3,11 @@
 
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
-
-// Default tree dropdown options (used when field_metadata is absent)
-const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"];
-const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>", "lbr", "lbi"];
-const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "lbr", "lbi", "parent"];
+import {
+  DEFAULT_LEAF_SIZE_OPTIONS,
+  DEFAULT_BRANCH_WIDTH_OPTIONS,
+  DEFAULT_BRANCH_COLOR_OPTIONS
+} from "../../../constants/fieldDefaults";
 
 /**
  * Build tree dropdown options from field_metadata, falling back to

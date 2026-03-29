@@ -1,3 +1,5 @@
+import { DEFAULT_CLONE_CONTINUOUS, DEFAULT_CLONE_CATEGORICAL } from "../../../constants/fieldDefaults";
+
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
@@ -171,19 +173,6 @@ const createSelectionSignals = () => [
   }
 ];
 
-// Default field options used when field_metadata is not provided
-const DEFAULT_CONTINUOUS = ["unique_seqs_count", "mean_mut_freq", "junction_length"];
-const DEFAULT_CATEGORICAL = [
-  "subject_id",
-  "sample.timepoint_id",
-  "v_call",
-  "d_call",
-  "j_call",
-  "has_seed",
-  "sample.locus",
-  "dataset_name"
-];
-
 /**
  * Build continuous and categorical option arrays from field_metadata.
  * Falls back to hardcoded defaults when metadata is absent.
@@ -193,7 +182,7 @@ const DEFAULT_CATEGORICAL = [
  */
 const buildFieldOptions = (fieldMetadata) => {
   if (!fieldMetadata) {
-    return { continuous: DEFAULT_CONTINUOUS, categorical: DEFAULT_CATEGORICAL };
+    return { continuous: DEFAULT_CLONE_CONTINUOUS, categorical: DEFAULT_CLONE_CATEGORICAL };
   }
   const continuous = [];
   const categorical = [];
@@ -206,8 +195,8 @@ const buildFieldOptions = (fieldMetadata) => {
   }
   // Fall back to defaults if metadata was present but empty
   return {
-    continuous: continuous.length > 0 ? continuous : DEFAULT_CONTINUOUS,
-    categorical: categorical.length > 0 ? categorical : DEFAULT_CATEGORICAL
+    continuous: continuous.length > 0 ? continuous : DEFAULT_CLONE_CONTINUOUS,
+    categorical: categorical.length > 0 ? categorical : DEFAULT_CLONE_CATEGORICAL
   };
 };
 
