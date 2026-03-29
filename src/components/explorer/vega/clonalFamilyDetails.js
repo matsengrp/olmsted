@@ -74,6 +74,7 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
 const BUILTIN_NODE_FIELDS = [
   { field: "sequence_id", label: "Sequence ID" },
   { field: "parent", label: "Parent ID" },
+  { field: "type", label: "Node Type" },
   { field: "node_depth", label: "Depth" },
   { field: "distance", label: "Distance" }
 ];
@@ -131,6 +132,60 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata) => {
   const timepointPart =
     '"timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]';
   return base.slice(0, -1) + ", " + timepointPart + "}";
+};
+
+// Built-in mutation fields — always in tooltip regardless of metadata
+const BUILTIN_MUTATION_FIELDS = [
+  { field: "position", label: "Position", format: "" },
+  { field: "seq_id", label: "Sequence" },
+  { field: "mut_from", label: "From" },
+  { field: "mut_to", label: "To" }
+];
+
+/**
+ * Build mutation tooltip signals — one for when coloring by a metric, one for default AA view.
+ * When coloring by a metric, shows all mutation metadata fields.
+ * When in AA mode, shows only the built-in structural fields.
+ *
+ * @param {Object|null} mutationMetadata - field_metadata.mutation from dataset
+ * @returns {{ metricTooltip: string, aaTooltip: string }}
+ */
+const buildMutationTooltipSignals = (mutationMetadata) => {
+  // Build the AA-mode tooltip (always just structural fields)
+  const aaParts = BUILTIN_MUTATION_FIELDS.map((f) => {
+    if (f.format !== undefined) {
+      return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
+    }
+    return `"${f.label}": ''+datum["${f.field}"]`;
+  });
+  const aaTooltip = "{" + aaParts.join(", ") + "}";
+
+  // Build the metric-mode tooltip (structural fields + all mutation metadata fields)
+  const seen = new Set(BUILTIN_MUTATION_FIELDS.map((f) => f.field));
+  const metricParts = [...aaParts];
+
+  if (mutationMetadata) {
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      if (seen.has(field)) continue;
+      seen.add(field);
+      const label = meta.label || field;
+      if (meta.type === "continuous") {
+        metricParts.push(`"${label}": datum["${field}"] != null ? format(datum["${field}"], ".2f") : "N/A"`);
+      } else {
+        metricParts.push(`"${label}": datum["${field}"] != null ? ''+datum["${field}"] : "N/A"`);
+      }
+    }
+  } else {
+    // Fallback: hardcoded surprise fields
+    metricParts.push('"surprise_mutsel": datum.surprise_mutsel != null ? format(datum.surprise_mutsel, ".1f") : "N/A"');
+    metricParts.push(
+      '"selection_contribution": datum.selection_contribution != null ? format(datum.selection_contribution, ".1f") : "N/A"'
+    );
+    metricParts.push('"region": datum.region != null ? \'\'+datum.region : "N/A"');
+  }
+
+  const metricTooltip = "{" + metricParts.join(", ") + "}";
+  return { metricTooltip, aaTooltip };
 };
 
 const concatTreeWithAlignmentSpec = (options = {}) => {
@@ -202,6 +257,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const defaultMutationColor = mutationColorOptions.find((o) => o.scaleType === "aa")?.value || mutationColorValues[0];
   // The first continuous field (if any) is used for the color_by_mutation_metric backward compat signal
   const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
+
+  // Build dynamic mutation tooltips
+  const { metricTooltip: mutMetricTooltip, aaTooltip: mutAaTooltip } = buildMutationTooltipSignals(mutationMetadata);
+  const mutationTooltipSignal = `color_by_mutation_metric ? ${mutMetricTooltip} : ${mutAaTooltip}`;
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -2494,8 +2553,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     stroke: { signal: "show_mutation_borders ? 'black' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
-                      signal:
-                        'color_by_mutation_metric ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: mutationTooltipSignal
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {

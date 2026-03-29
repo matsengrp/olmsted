@@ -57,6 +57,7 @@ export const DEFAULT_LEAF_SIZE_OPTIONS = [
 export const DEFAULT_NODE_TOOLTIP = [
   { field: "sequence_id", label: "Sequence ID" },
   { field: "parent", label: "Parent ID" },
+  { field: "type", label: "Node Type" },
   { field: "distance", label: "Distance" },
   { field: "node_depth", label: "Depth" },
   { field: "lbi", label: "LBI" },
@@ -65,6 +66,17 @@ export const DEFAULT_NODE_TOOLTIP = [
   { field: "scaled_affinity", label: "Scaled Affinity" },
   { field: "multiplicity", label: "Multiplicity" },
   { field: "cluster_multiplicity", label: "Cluster Multiplicity" }
+];
+
+/**
+ * Default tooltip fields for mutation hover (when field_metadata.mutation is absent).
+ * Built-in structural mutation fields are always shown regardless of metadata.
+ */
+export const DEFAULT_MUTATION_TOOLTIP = [
+  { field: "position", label: "Position", format: "" },
+  { field: "seq_id", label: "Sequence" },
+  { field: "mut_from", label: "From" },
+  { field: "mut_to", label: "To" }
 ];
 
 // Tree — branch-level fields for width and color
