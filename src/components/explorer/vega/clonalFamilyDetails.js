@@ -168,19 +168,40 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata);
 
   // Build mutation coloring options from field_metadata.mutation
-  // Currently only "surprise_score" is supported as an alternative to "amino_acid";
-  // future mutation-level fields would need additional color scales in the spec.
+  // Types: "aa" → amino acid color scale, "continuous" → sequential heatmap, "tooltip" → tooltip only
   const mutationMetadata = fieldMetadata?.mutation || null;
-  const mutationColorOptions = ["amino_acid"];
+  const mutationColorOptions = [];
+  const mutationColorScales = {}; // field → { domain, scheme } for continuous heatmap fields
+
   if (mutationMetadata) {
-    // Add options from mutation metadata (currently only surprise_mutsel → "surprise_score")
-    if (mutationMetadata.surprise_mutsel) {
-      mutationColorOptions.push("surprise_score");
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      if (meta.type === "aa") {
+        // AA fields use the standard amino acid color scale
+        mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "aa" });
+      } else if (meta.type === "continuous") {
+        // Continuous fields use sequential heatmap coloring
+        const domain = meta.range || [0, 15];
+        mutationColorScales[field] = { domain, scheme: "oranges", label: meta.label || field };
+        mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "continuous" });
+      }
+      // "categorical" and "tooltip" types are not colorable (yet)
     }
-  } else if (hasNodeField("surprise_mutations")) {
-    // Fallback: detect surprise data from node-level field presence
-    mutationColorOptions.push("surprise_score");
   }
+
+  // Fallback: if no mutation metadata, detect surprise data from nodes
+  if (mutationColorOptions.length === 0) {
+    mutationColorOptions.push({ value: "amino_acid", label: "Amino acid", scaleType: "aa" });
+    if (hasNodeField("surprise_mutations")) {
+      mutationColorScales.surprise_mutsel = { domain: [0, 15], scheme: "oranges", label: "Surprise Score" };
+      mutationColorOptions.push({ value: "surprise_mutsel", label: "Surprise Score", scaleType: "continuous" });
+    }
+  }
+
+  // Build the dropdown option values and find the first AA option for default
+  const mutationColorValues = mutationColorOptions.map((o) => o.value);
+  const defaultMutationColor = mutationColorOptions.find((o) => o.scaleType === "aa")?.value || mutationColorValues[0];
+  // The first continuous field (if any) is used for the color_by_surprise backward compat signal
+  const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -1243,17 +1264,23 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // Mutation coloring mode: built from field_metadata.mutation or fallback detection
       {
         name: "mutation_color_by",
-        value: "amino_acid",
+        value: defaultMutationColor,
         ...maybeAddBind({
           input: "select",
           name: "Color mutations by",
-          options: mutationColorOptions
+          options: mutationColorValues
         })
       },
-      // Computed boolean for backward compatibility with spec conditionals
+      // Computed boolean: true when any continuous mutation field is selected (not AA)
+      // Used by fill encoding and legend visibility throughout the spec
       {
         name: "color_by_surprise",
-        update: 'mutation_color_by === "surprise_score"'
+        update: firstContinuousMutField
+          ? `indexof([${mutationColorOptions
+              .filter((o) => o.scaleType === "continuous")
+              .map((o) => `"${o.value}"`)
+              .join(", ")}], mutation_color_by) >= 0`
+          : "false"
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
@@ -2454,12 +2481,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         value: null
                       },
                       {
-                        test: "color_by_surprise && datum.surprise_mutsel !== null",
+                        test: "color_by_surprise && datum[mutation_color_by] !== null",
                         scale: "surprise_color",
-                        field: "surprise_mutsel"
+                        field: { signal: "mutation_color_by" }
                       },
                       {
-                        test: "color_by_surprise && datum.surprise_mutsel === null",
+                        test: "color_by_surprise && datum[mutation_color_by] === null",
                         value: null
                       },
                       { scale: "aa_color", field: "mut_to" }
@@ -2744,8 +2771,16 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "surprise_color",
         type: "linear",
-        domain: [0, 15],
-        range: { scheme: "oranges" },
+        domain:
+          firstContinuousMutField && mutationColorScales[firstContinuousMutField]
+            ? mutationColorScales[firstContinuousMutField].domain
+            : [0, 15],
+        range: {
+          scheme:
+            firstContinuousMutField && mutationColorScales[firstContinuousMutField]
+              ? mutationColorScales[firstContinuousMutField].scheme
+              : "oranges"
+        },
         clamp: true
       }
     ],
@@ -3070,6 +3105,7 @@ const seqAlignSpec = (family, options = {}) => {
         range: AMINO_ACID_RANGE
       },
       {
+        // Lineage spec: hardcoded surprise scale (dynamic scales are in the main tree spec)
         name: "surprise_color",
         type: "linear",
         domain: [0, 15],

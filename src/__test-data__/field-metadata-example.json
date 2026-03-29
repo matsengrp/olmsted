@@ -1,5 +1,7 @@
 {
-  "metadata": {},
+  "metadata": {
+    "format": "olmsted"
+  },
   "datasets": [
     {
       "dataset_id": "test-field-metadata",
@@ -13,9 +15,41 @@
       },
       "field_metadata": {
         "clone": {
-          "clone_id": {
+          "baz_index": {
+            "type": "continuous",
+            "label": "Baz Index"
+          },
+          "color_group": {
+            "type": "categorical",
+            "label": "Color Group"
+          },
+          "foobar_score": {
+            "type": "continuous",
+            "label": "Foobar Score"
+          },
+          "j_call": {
+            "type": "categorical",
+            "label": "J Gene"
+          },
+          "junction_length": {
+            "type": "continuous",
+            "label": "Junction Length"
+          },
+          "locus": {
+            "type": "categorical",
+            "label": "Locus"
+          },
+          "mean_mut_freq": {
+            "type": "continuous",
+            "label": "Mean Mutation Frequency"
+          },
+          "sample_id": {
+            "type": "categorical",
+            "label": "Sample"
+          },
+          "secret_note": {
             "type": "tooltip",
-            "label": "Clone ID"
+            "label": "Secret Note"
           },
           "subject_id": {
             "type": "tooltip",
@@ -23,55 +57,26 @@
           },
           "unique_seqs_count": {
             "type": "continuous",
-            "label": "Unique Seq Count"
-          },
-          "mean_mut_freq": {
-            "type": "continuous",
-            "label": "Mean Mutation Freq",
-            "format": ".3f"
-          },
-          "junction_length": {
-            "type": "continuous",
-            "label": "CDR3 Length"
-          },
-          "foobar_score": {
-            "type": "continuous",
-            "label": "Foobar Score"
-          },
-          "baz_index": {
-            "type": "continuous",
-            "label": "Baz Index"
+            "label": "Unique Sequences Count"
           },
           "v_call": {
             "type": "categorical",
             "label": "V Gene"
           },
-          "j_call": {
-            "type": "categorical",
-            "label": "J Gene"
-          },
           "widget_type": {
             "type": "categorical",
             "label": "Widget Type"
           },
-          "color_group": {
-            "type": "categorical",
-            "label": "Color Group"
-          },
-          "sample.locus": {
-            "type": "categorical",
-            "label": "Locus"
-          },
-          "dataset_name": {
-            "type": "categorical",
-            "label": "Dataset"
-          },
-          "secret_note": {
+          "clone_id": {
             "type": "tooltip",
-            "label": "Secret Note"
+            "label": "Clone ID"
           }
         },
         "node": {
+          "cluster_multiplicity": {
+            "type": "continuous",
+            "label": "Cluster Multiplicity"
+          },
           "lbi": {
             "type": "continuous",
             "label": "LBI"
@@ -84,17 +89,17 @@
             "type": "continuous",
             "label": "Multiplicity"
           },
-          "cluster_multiplicity": {
+          "quux_weight": {
             "type": "continuous",
-            "label": "Cluster Multiplicity"
+            "label": "Quux Weight"
+          },
+          "snark_label": {
+            "type": "categorical",
+            "label": "Snark Label"
           },
           "wobble_metric": {
             "type": "continuous",
             "label": "Wobble Metric"
-          },
-          "snark_label": {
-            "type": "tooltip",
-            "label": "Snark Label"
           }
         },
         "branch": {
@@ -112,6 +117,14 @@
           }
         },
         "mutation": {
+          "child_aa": {
+            "type": "aa",
+            "label": "Child Amino Acid"
+          },
+          "parent_aa": {
+            "type": "aa",
+            "label": "Parent Amino Acid"
+          },
           "surprise_mutsel": {
             "type": "continuous",
             "label": "Surprise Score"

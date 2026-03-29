@@ -1,5 +1,7 @@
 {
-  "metadata": {},
+  "metadata": {
+    "format": "olmsted"
+  },
   "datasets": [
     {
       "dataset_id": "test-surprise-forest",
@@ -12,18 +14,55 @@
         "commit": "test"
       },
       "field_metadata": {
-        "mutation": {
-          "surprise_mutsel": {
+        "clone": {
+          "j_call": {
+            "type": "categorical",
+            "label": "J Gene"
+          },
+          "mean_mut_freq": {
             "type": "continuous",
-            "label": "Surprise Score"
+            "label": "Mean Mutation Frequency"
+          },
+          "sample_id": {
+            "type": "categorical",
+            "label": "Sample"
+          },
+          "unique_seqs_count": {
+            "type": "continuous",
+            "label": "Unique Sequences Count"
+          },
+          "v_call": {
+            "type": "categorical",
+            "label": "V Gene"
+          }
+        },
+        "mutation": {
+          "child_aa": {
+            "type": "aa",
+            "label": "Child Amino Acid"
+          },
+          "parent_aa": {
+            "type": "aa",
+            "label": "Parent Amino Acid"
+          },
+          "region": {
+            "type": "categorical",
+            "label": "Region"
           },
           "selection_contribution": {
             "type": "continuous",
-            "label": "Selection Contribution"
+            "label": "Selection Contribution",
+            "range": [1.9, 6.7]
           },
-          "region": {
-            "type": "tooltip",
-            "label": "Region"
+          "surprise_mutsel": {
+            "type": "continuous",
+            "label": "Surprise (MutSel)",
+            "range": [5.7, 19.5]
+          },
+          "surprise_neutral": {
+            "type": "continuous",
+            "label": "Surprise (Neutral)",
+            "range": [3.8, 12.8]
           }
         }
       }
