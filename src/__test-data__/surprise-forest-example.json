@@ -10,6 +10,22 @@
       "subjects_count": 1,
       "build": {
         "commit": "test"
+      },
+      "field_metadata": {
+        "mutation": {
+          "surprise_mutsel": {
+            "type": "continuous",
+            "label": "Surprise Score"
+          },
+          "selection_contribution": {
+            "type": "continuous",
+            "label": "Selection Contribution"
+          },
+          "region": {
+            "type": "tooltip",
+            "label": "Region"
+          }
+        }
       }
     }
   ],

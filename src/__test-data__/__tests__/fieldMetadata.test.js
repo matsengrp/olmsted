@@ -87,6 +87,21 @@ describe("Dynamic field_metadata integration", () => {
       expect(specStr).toContain("Snark Label");
     });
 
+    it("mutation_color_by includes surprise_score from mutation metadata", () => {
+      const mutColorBy = getSignal("mutation_color_by");
+      expect(mutColorBy.bind.options).toContain("amino_acid");
+      expect(mutColorBy.bind.options).toContain("surprise_score");
+    });
+
+    it("mutation_color_by only shows amino_acid when no mutation metadata", () => {
+      const noMutSpec = concatTreeWithAlignmentSpec({
+        showControls: true,
+        fieldMetadata: { node: fieldMetadata.node, branch: fieldMetadata.branch }
+      });
+      const mutColorBy = noMutSpec.signals.find((s) => s.name === "mutation_color_by");
+      expect(mutColorBy.bind.options).toEqual(["amino_acid"]);
+    });
+
     it("node tooltip includes all node metadata fields", () => {
       const specStr = JSON.stringify(spec);
       expect(specStr).toContain("wobble_metric");

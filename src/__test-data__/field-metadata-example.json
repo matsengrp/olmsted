@@ -110,6 +110,20 @@
             "type": "continuous",
             "label": "Quux Weight"
           }
+        },
+        "mutation": {
+          "surprise_mutsel": {
+            "type": "continuous",
+            "label": "Surprise Score"
+          },
+          "selection_contribution": {
+            "type": "continuous",
+            "label": "Selection Contribution"
+          },
+          "region": {
+            "type": "tooltip",
+            "label": "Region"
+          }
         }
       }
     }

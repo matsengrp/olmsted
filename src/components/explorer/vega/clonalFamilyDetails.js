@@ -167,6 +167,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
   const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata);
 
+  // Build mutation coloring options from field_metadata.mutation
+  // Currently only "surprise_score" is supported as an alternative to "amino_acid";
+  // future mutation-level fields would need additional color scales in the spec.
+  const mutationMetadata = fieldMetadata?.mutation || null;
+  const mutationColorOptions = ["amino_acid"];
+  if (mutationMetadata) {
+    // Add options from mutation metadata (currently only surprise_mutsel → "surprise_score")
+    if (mutationMetadata.surprise_mutsel) {
+      mutationColorOptions.push("surprise_score");
+    }
+  } else if (hasNodeField("surprise_mutations")) {
+    // Fallback: detect surprise data from node-level field presence
+    mutationColorOptions.push("surprise_score");
+  }
+
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
     description: "",
@@ -1225,14 +1240,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
-      // Mutation coloring mode: "amino_acid" (default) or "surprise_score"
+      // Mutation coloring mode: built from field_metadata.mutation or fallback detection
       {
         name: "mutation_color_by",
         value: "amino_acid",
         ...maybeAddBind({
           input: "select",
           name: "Color mutations by",
-          options: hasNodeField("surprise_mutations") ? ["amino_acid", "surprise_score"] : ["amino_acid"]
+          options: mutationColorOptions
         })
       },
       // Computed boolean for backward compatibility with spec conditionals
