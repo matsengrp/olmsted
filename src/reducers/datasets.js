@@ -8,14 +8,12 @@ export const getSelectedDatasets = (datasets) => {
 /* eslint-disable default-param-last */
 const datasets = (
   state = {
-    // TODO: remove
-    s3bucket: "live",
+    s3bucket: "live", // Legacy field — still used by server dataset loading path
     availableDatasets: [],
     selectedDatasets: [], // Array of dataset IDs selected for batch loading
     pendingDatasetLoads: [], // Array of dataset IDs that need to be loaded from URL query string
     starredDatasets: [], // Array of dataset IDs that are starred/favorited
-    // TODO: remove
-    splash: undefined,
+    splash: undefined, // Legacy field — stored from server response but never read
     datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
     displayComponent: chooseDisplayComponentFromPathname(window.location.pathname),
     urlPath: window.location.pathname,
