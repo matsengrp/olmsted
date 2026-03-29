@@ -85,6 +85,12 @@ export const DEFAULT_MUTATION_TOOLTIP = [
   { field: "mut_to", label: "To" }
 ];
 
+/**
+ * Built-in mutation color option — always available as the default AA coloring.
+ * Used when field_metadata.mutation has no "aa" type entries.
+ */
+export const BUILTIN_MUTATION_AA = { value: "child_aa", label: "Child Amino Acid", scaleType: "aa" };
+
 // Tree — branch-level fields for width and color
 export const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>", "lbr", "lbi"];
 export const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "lbr", "lbi", "parent"];

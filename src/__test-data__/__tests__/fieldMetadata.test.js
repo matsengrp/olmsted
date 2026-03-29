@@ -103,14 +103,14 @@ describe("Dynamic field_metadata integration", () => {
       expect(mutColorBy.value).toBe("child_aa");
     });
 
-    it("mutation_color_by falls back to amino_acid when no mutation metadata", () => {
+    it("mutation_color_by falls back to child_aa when no mutation metadata", () => {
       const noMutSpec = concatTreeWithAlignmentSpec({
         showControls: true,
         fieldMetadata: { node: fieldMetadata.node, branch: fieldMetadata.branch }
       });
       const mutColorBy = noMutSpec.signals.find((s) => s.name === "mutation_color_by");
-      expect(mutColorBy.bind.options).toContain("amino_acid");
-      expect(mutColorBy.value).toBe("amino_acid");
+      expect(mutColorBy.bind.options).toContain("child_aa");
+      expect(mutColorBy.value).toBe("child_aa");
     });
 
     it("node tooltip includes all node metadata fields", () => {

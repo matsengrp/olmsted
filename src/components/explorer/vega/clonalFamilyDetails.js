@@ -7,7 +7,8 @@ import {
   DEFAULT_LEAF_SIZE_OPTIONS,
   DEFAULT_BRANCH_WIDTH_OPTIONS,
   DEFAULT_BRANCH_COLOR_OPTIONS,
-  DEFAULT_NODE_TOOLTIP
+  DEFAULT_NODE_TOOLTIP,
+  BUILTIN_MUTATION_AA
 } from "../../../constants/fieldDefaults";
 
 /**
@@ -237,9 +238,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     }
   }
 
-  // Fallback: if no mutation metadata, default to amino acid coloring only
-  if (mutationColorOptions.length === 0) {
-    mutationColorOptions.push({ value: "amino_acid", label: "Amino acid", scaleType: "aa" });
+  // Ensure an AA coloring option always exists
+  const hasAaOption = mutationColorOptions.some((o) => o.scaleType === "aa");
+  if (!hasAaOption) {
+    mutationColorOptions.unshift(BUILTIN_MUTATION_AA);
   }
 
   // Build the dropdown option values and find the first AA option for default
