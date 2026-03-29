@@ -1,4 +1,8 @@
-import { DEFAULT_CLONE_CONTINUOUS, DEFAULT_CLONE_CATEGORICAL } from "../../../constants/fieldDefaults";
+import {
+  DEFAULT_CLONE_CONTINUOUS,
+  DEFAULT_CLONE_CATEGORICAL,
+  DEFAULT_CLONE_TOOLTIP
+} from "../../../constants/fieldDefaults";
 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
@@ -174,30 +178,68 @@ const createSelectionSignals = () => [
 ];
 
 /**
- * Build continuous and categorical option arrays from field_metadata.
+ * Build continuous, categorical, and tooltip arrays from field_metadata.
  * Falls back to hardcoded defaults when metadata is absent.
  *
  * @param {Object|null} fieldMetadata - field_metadata.clone from dataset
- * @returns {{ continuous: string[], categorical: string[] }}
+ * @returns {{ continuous: string[], categorical: string[], tooltip: Object[] }}
  */
 const buildFieldOptions = (fieldMetadata) => {
   if (!fieldMetadata) {
-    return { continuous: DEFAULT_CLONE_CONTINUOUS, categorical: DEFAULT_CLONE_CATEGORICAL };
+    return {
+      continuous: DEFAULT_CLONE_CONTINUOUS,
+      categorical: DEFAULT_CLONE_CATEGORICAL,
+      tooltip: DEFAULT_CLONE_TOOLTIP
+    };
   }
   const continuous = [];
   const categorical = [];
+  const tooltip = [];
   for (const [field, meta] of Object.entries(fieldMetadata)) {
+    const entry = { field, label: meta.label || field };
+    if (meta.format) entry.format = meta.format;
+    if (meta.expr) entry.expr = meta.expr;
+
     if (meta.type === "continuous") {
       continuous.push(field);
+      tooltip.push(entry);
     } else if (meta.type === "categorical") {
       categorical.push(field);
+      tooltip.push(entry);
+    } else if (meta.type === "tooltip") {
+      tooltip.push(entry);
     }
   }
-  // Fall back to defaults if metadata was present but empty
   return {
     continuous: continuous.length > 0 ? continuous : DEFAULT_CLONE_CONTINUOUS,
-    categorical: categorical.length > 0 ? categorical : DEFAULT_CLONE_CATEGORICAL
+    categorical: categorical.length > 0 ? categorical : DEFAULT_CLONE_CATEGORICAL,
+    tooltip: tooltip.length > 0 ? tooltip : DEFAULT_CLONE_TOOLTIP
   };
+};
+
+/**
+ * Build a Vega tooltip signal expression from tooltip field entries.
+ * Each entry can have: field, label, format (for numbers), expr (custom expression).
+ *
+ * @param {Object[]} tooltipFields - Array of { field, label, format?, expr? }
+ * @returns {string} Vega expression string for the tooltip signal
+ */
+const buildTooltipSignal = (tooltipFields) => {
+  const parts = tooltipFields.map((t) => {
+    const label = t.label.replace(/'/g, "\\'");
+    if (t.expr) {
+      return `'${label}': ${t.expr}`;
+    }
+    if (t.format) {
+      return `'${label}': format(datum['${t.field}'], '${t.format}')`;
+    }
+    // Access nested fields (e.g., "sample.locus") via bracket notation
+    const accessor = t.field.includes(".")
+      ? `datum['${t.field.split(".")[0]}'] ? datum['${t.field.split(".")[0]}']['${t.field.split(".")[1]}'] : ''`
+      : `datum['${t.field}']`;
+    return `'${label}': ${accessor}`;
+  });
+  return "{" + parts.join(", ") + "}";
 };
 
 // Helper function to create control signals (dropdowns)
@@ -1000,7 +1042,7 @@ const createBrushTranslateSignals = () => [
 ];
 
 // Helper function to create brush marks
-const createBrushMarks = () => [
+const createBrushMarks = (tooltipSignal) => [
   {
     name: "brush_brush_bg",
     type: "rect",
@@ -1026,7 +1068,7 @@ const createBrushMarks = () => [
     clip: true,
     encode: {
       // eslint-disable-next-line no-use-before-define
-      update: createSymbolEncoding()
+      update: createSymbolEncoding(tooltipSignal)
     }
   },
   {
@@ -1361,25 +1403,12 @@ const createBrushMarks = () => [
 ];
 
 // Helper function to create symbol encoding
-const createSymbolEncoding = () => ({
+const createSymbolEncoding = (tooltipSignal) => ({
   x: { scale: "x", field: { signal: "xField" } },
   y: { scale: "y", field: { signal: "yField" } },
   opacity: [{ test: "indata('selected', 'ident', datum.ident)", value: 1 }, { signal: "symbolOpacity" }],
   tooltip: {
-    signal:
-      "{" +
-      "'Clone ID': datum.clone_id, " +
-      "'Dataset': datum.dataset_name || '', " +
-      "'Sample': datum.sample ? datum.sample.sample_id : '', " +
-      "'Subject': datum.subject_id, " +
-      "'Locus': datum.sample ? datum.sample.locus : '', " +
-      "'Unique Sequences': datum.unique_seqs_count, " +
-      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
-      "'Junction Length': datum.junction_length, " +
-      "'V Gene': datum.v_call, " +
-      "'J Gene': datum.j_call, " +
-      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
-      "}"
+    signal: tooltipSignal
   },
   fill: [
     { test: "!filledShapes", value: "transparent" },
@@ -1431,27 +1460,32 @@ const createCellAxes = () => [
 ];
 
 // Helper function to create the complete cell mark
-const createCellMark = () => ({
-  name: "cell",
-  type: "group",
-  style: "cell",
-  clip: true,
-  from: {
-    facet: { name: "facet", data: "data_0", groupby: ["facet_col_field"] }
-  },
-  sort: { field: ["datum.facet_col_field"], order: "ascending" },
-  encode: {
-    update: {
-      width: { signal: "child_width" },
-      height: { signal: "child_height" },
-      // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
-      cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'crosshair'" }
-    }
-  },
-  signals: createCellSignals(),
-  marks: createBrushMarks(),
-  axes: createCellAxes()
-});
+const createCellMark = (fieldMetadata) => {
+  const { tooltip: tooltipFields } = buildFieldOptions(fieldMetadata);
+  const tooltipSignal = buildTooltipSignal(tooltipFields);
+
+  return {
+    name: "cell",
+    type: "group",
+    style: "cell",
+    clip: true,
+    from: {
+      facet: { name: "facet", data: "data_0", groupby: ["facet_col_field"] }
+    },
+    sort: { field: ["datum.facet_col_field"], order: "ascending" },
+    encode: {
+      update: {
+        width: { signal: "child_width" },
+        height: { signal: "child_height" },
+        // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
+        cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'crosshair'" }
+      }
+    },
+    signals: createCellSignals(),
+    marks: createBrushMarks(tooltipSignal),
+    axes: createCellAxes()
+  };
+};
 
 // Helper function to create bottom divider for height resizing
 const createBottomDivider = () => ({
@@ -1474,7 +1508,7 @@ const createBottomDivider = () => ({
 });
 
 // Helper function to create all marks
-const createMarks = () => [...createHeaderMarks(), createCellMark(), createBottomDivider()];
+const createMarks = (fieldMetadata) => [...createHeaderMarks(), createCellMark(fieldMetadata), createBottomDivider()];
 
 // Main function that composes the complete spec
 /**
@@ -1489,7 +1523,7 @@ const facetClonalFamiliesVizSpec = ({ fieldMetadata } = {}) => {
     data: createDataConfiguration(),
     signals: createSignals(fieldMetadata),
     layout: createLayout(),
-    marks: createMarks(),
+    marks: createMarks(fieldMetadata),
     scales: createScales(),
     legends: createLegends(),
     config: {
