@@ -366,6 +366,12 @@ describe("fieldDefaults", () => {
       const result = validateCloneCompleteness(clone);
       expect(result.complete).toBe(true);
     });
+
+    it("treats unique_seqs_count of 0 as present (not missing)", () => {
+      const clone = { clone_id: "c1", unique_seqs_count: 0, v_call: "IGHV1-2" };
+      const result = validateCloneCompleteness(clone);
+      expect(result.reasons.some((r) => r.includes("unique sequence count"))).toBe(false);
+    });
   });
 
   describe("validateTreeCompleteness", () => {
@@ -403,6 +409,26 @@ describe("fieldDefaults", () => {
       const result = validateTreeCompleteness({ nodes: [] });
       expect(result.complete).toBe(false);
       expect(result.reasons).toContain("Tree has no nodes");
+    });
+
+    it("flags root node without sequence alignment", () => {
+      const tree = {
+        nodes: [
+          { sequence_id: "root", parent: null, type: "root" },
+          { sequence_id: "leaf1", parent: "root", type: "leaf", sequence_alignment: "ATTG" }
+        ]
+      };
+      const result = validateTreeCompleteness(tree);
+      expect(result.complete).toBe(false);
+      expect(result.reasons).toContain("Root node has no sequence alignment");
+    });
+
+    it("accepts root with sequence_alignment_aa only", () => {
+      const tree = {
+        nodes: [{ sequence_id: "root", parent: null, type: "root", sequence_alignment_aa: "ID" }]
+      };
+      const result = validateTreeCompleteness(tree);
+      expect(result.complete).toBe(true);
     });
 
     it("works with object-format nodes", () => {

@@ -74,7 +74,7 @@ const modifyStateViaMetadata = (state, metadata) => {
     // Legacy Auspice field — handle both boolean and string representations
     if (metadata.defaults.mapTriplicate !== undefined) {
       const val = metadata.defaults.mapTriplicate;
-      state["mapTriplicate"] = val !== false && val !== "false" && val !== "False";
+      state.mapTriplicate = val !== false && val !== "false" && val !== "False";
     }
   }
 

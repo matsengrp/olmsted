@@ -261,12 +261,9 @@ class TreeHeader extends React.Component {
   }
 }
 
-const isTreeComplete = (tree) => {
-  if (!tree || !tree.nodes || tree.nodes.error) return false;
-  // nodes may be an array or object — check it has content
-  const nodeCount = Array.isArray(tree.nodes) ? tree.nodes.length : Object.keys(tree.nodes).length;
-  return nodeCount > 0;
-};
+// Thin wrapper around validateTreeCompleteness for use in mapStateToProps
+// (runs on the raw cached tree before computeTreeData processing)
+const isTreeComplete = (tree) => validateTreeCompleteness(tree).complete;
 
 // Phylogenetic tree & alignment viz
 // =================================
@@ -785,6 +782,71 @@ class TreeViz extends React.Component {
     );
   }
 
+  /**
+   * Render the dismissible warnings banner (clone warnings + tree modifications).
+   */
+  renderWarningsBanner(familyWarnings, tree) {
+    const treeModifications = tree?.data_modifications || [];
+    const allWarnings = [...familyWarnings, ...treeModifications];
+    if (allWarnings.length === 0 || this.state.warningsDismissed) return null;
+    return (
+      <div
+        style={{
+          marginBottom: 10,
+          padding: "10px 14px",
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffc107",
+          borderRadius: 4,
+          color: "#856404",
+          fontSize: 12
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            {familyWarnings.length > 0 && (
+              <>
+                <strong>Clonal family data warnings:</strong>
+                <ul style={{ margin: "4px 0 6px 0", paddingLeft: 18 }}>
+                  {familyWarnings.map((r) => (
+                    <li key={r}>{r}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {treeModifications.length > 0 && (
+              <>
+                <strong>Data modifications:</strong>
+                <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                  {treeModifications.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => this.setState({ warningsDismissed: true })}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "0 2px",
+              fontSize: 16,
+              color: "#856404",
+              lineHeight: 1,
+              flexShrink: 0
+            }}
+            title="Dismiss warnings"
+            aria-label="Dismiss warnings"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Set up signal listeners on the heavy chain view for bidirectional sync (divider drag)
   setupHeavyChainSignalSync(heavyView) {
     this.heavyVegaRef.current = heavyView;
@@ -1034,8 +1096,7 @@ class TreeViz extends React.Component {
     }
     // Validate clone and tree completeness (#94)
     // Clone warnings are non-blocking — tree renders if nodes are valid
-    const familyValidation = validateCloneCompleteness(selectedFamily);
-    const familyWarnings = familyValidation.reasons;
+    const { reasons: familyWarnings } = validateCloneCompleteness(selectedFamily);
 
     const treeLoading = !selectedTree;
     const treeValidation = !treeLoading ? validateTreeCompleteness(selectedTree) : { complete: false, reasons: [] };
@@ -1067,67 +1128,7 @@ class TreeViz extends React.Component {
             <strong>Tree visualization error:</strong> {vegaError}
           </div>
         )}
-        {(() => {
-          const treeModifications = tree?.data_modifications || [];
-          const allWarnings = [...familyWarnings, ...treeModifications];
-          if (allWarnings.length === 0 || this.state.warningsDismissed) return null;
-          return (
-            <div
-              style={{
-                marginBottom: 10,
-                padding: "10px 14px",
-                backgroundColor: "#fff3cd",
-                border: "1px solid #ffc107",
-                borderRadius: 4,
-                color: "#856404",
-                fontSize: 12
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  {familyWarnings.length > 0 && (
-                    <>
-                      <strong>Clonal family data warnings:</strong>
-                      <ul style={{ margin: "4px 0 6px 0", paddingLeft: 18 }}>
-                        {familyWarnings.map((r) => (
-                          <li key={r}>{r}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {treeModifications.length > 0 && (
-                    <>
-                      <strong>Data modifications:</strong>
-                      <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                        {treeModifications.map((m) => (
-                          <li key={m}>{m}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => this.setState({ warningsDismissed: true })}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "0 2px",
-                    fontSize: 16,
-                    color: "#856404",
-                    lineHeight: 1,
-                    flexShrink: 0
-                  }}
-                  title="Dismiss warnings"
-                  aria-label="Dismiss warnings"
-                >
-                  &times;
-                </button>
-              </div>
-            </div>
-          );
-        })()}
+        {this.renderWarningsBanner(familyWarnings, tree)}
         <div
           className={hideControls ? "hide-vega-controls" : ""}
           style={{ border: "1px solid #ddd", borderRadius: "4px", padding: "8px" }}

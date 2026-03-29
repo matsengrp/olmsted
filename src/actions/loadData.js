@@ -82,7 +82,7 @@ export const getDatasets = (dispatch, s3bucket = "live") => {
   fetchFromCharon(
     `${charonAPIAddress}/datasets.json`,
     (data) => {
-      let availableDatasets = JSON.parse(data);
+      let availableDatasets = safeJsonParse(data, "datasets", []);
       const selectedDatasets = [].concat(query.selectedDatasets);
 
       availableDatasets = availableDatasets.map((dataset) => ({

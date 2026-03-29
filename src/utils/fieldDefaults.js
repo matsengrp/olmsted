@@ -245,7 +245,7 @@ export function validateCloneCompleteness(clone) {
 
   const reasons = [];
 
-  if (!clone.unique_seqs_count) {
+  if (clone.unique_seqs_count == null) {
     reasons.push("Missing unique sequence count");
   }
   if (!clone.clone_id && !clone.ident) {
@@ -277,12 +277,13 @@ export function validateTreeCompleteness(tree) {
     const nodesArr = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
     if (nodesArr.length === 0) {
       reasons.push("Tree has no nodes");
-    }
-    const root = nodesArr.find((n) => !n.parent || n.type === "root");
-    if (!root) {
-      reasons.push("Tree has no root node");
-    } else if (!root.sequence_alignment && !root.sequence_alignment_aa) {
-      reasons.push("Root node has no sequence alignment");
+    } else {
+      const root = nodesArr.find((n) => !n.parent || n.type === "root");
+      if (!root) {
+        reasons.push("Tree has no root node");
+      } else if (!root.sequence_alignment && !root.sequence_alignment_aa) {
+        reasons.push("Root node has no sequence alignment");
+      }
     }
   }
 
