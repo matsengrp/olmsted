@@ -264,9 +264,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     mutationDomainMap[field] = scale.domain;
   }
 
-  // Build dynamic mutation tooltips
-  const { metricTooltip: mutMetricTooltip, aaTooltip: mutAaTooltip } = buildMutationTooltipSignals(mutationMetadata);
-  const mutationTooltipSignal = `color_by_mutation_metric ? ${mutMetricTooltip} : ${mutAaTooltip}`;
+  // Build dynamic mutation tooltip — always shows all fields regardless of color mode
+  const { metricTooltip: mutationTooltipSignal } = buildMutationTooltipSignals(mutationMetadata);
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
