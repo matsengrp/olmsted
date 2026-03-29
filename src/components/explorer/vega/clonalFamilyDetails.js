@@ -258,6 +258,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // The first continuous field (if any) is used for the color_by_mutation_metric backward compat signal
   const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
 
+  // Build a domain lookup for continuous mutation fields (used by scale signal)
+  const mutationDomainMap = {};
+  for (const [field, scale] of Object.entries(mutationColorScales)) {
+    mutationDomainMap[field] = scale.domain;
+  }
+
   // Build dynamic mutation tooltips
   const { metricTooltip: mutMetricTooltip, aaTooltip: mutAaTooltip } = buildMutationTooltipSignals(mutationMetadata);
   const mutationTooltipSignal = `color_by_mutation_metric ? ${mutMetricTooltip} : ${mutAaTooltip}`;
@@ -1340,6 +1346,17 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               .map((o) => `"${o.value}"`)
               .join(", ")}], mutation_color_by) >= 0`
           : "false"
+      },
+      // Dynamic domain for the mutation heatmap color scale
+      // Switches based on which continuous mutation field is selected
+      {
+        name: "mutation_domain_map",
+        value: mutationDomainMap
+      },
+      {
+        name: "mutation_color_domain",
+        update:
+          Object.keys(mutationDomainMap).length > 0 ? `mutation_domain_map[mutation_color_by] || [0, 15]` : "[0, 15]"
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
@@ -2829,16 +2846,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "surprise_color",
         type: "linear",
-        domain:
-          firstContinuousMutField && mutationColorScales[firstContinuousMutField]
-            ? mutationColorScales[firstContinuousMutField].domain
-            : [0, 15],
-        range: {
-          scheme:
-            firstContinuousMutField && mutationColorScales[firstContinuousMutField]
-              ? mutationColorScales[firstContinuousMutField].scheme
-              : "oranges"
-        },
+        domainRaw: { signal: "mutation_color_domain" },
+        range: { scheme: "oranges" },
         clamp: true
       }
     ],
