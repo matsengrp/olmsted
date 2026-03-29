@@ -1,5 +1,6 @@
 import facetClonalFamiliesVizSpec from "../../components/explorer/vega/facetScatterPlot";
 import { concatTreeWithAlignmentSpec } from "../../components/explorer/vega/clonalFamilyDetails";
+import { computeTreeData } from "../../selectors/trees";
 import fieldMetadataFixture from "../field-metadata-example.json";
 
 const fieldMetadata = fieldMetadataFixture.datasets[0].field_metadata;
@@ -72,12 +73,17 @@ describe("Dynamic field_metadata integration", () => {
       expect(leafSize.bind.options).not.toContain("snark_label");
     });
 
-    it("node tooltip includes tooltip-only fields", () => {
-      // The tooltip signal for nodes should include snark_label
-      // (it's in field_metadata.node with type: "tooltip")
-      const nodeMetadata = fieldMetadata.node;
-      expect(nodeMetadata.snark_label).toBeDefined();
-      expect(nodeMetadata.snark_label.type).toBe("tooltip");
+    it("node tooltip includes tooltip-only fields in spec", () => {
+      // snark_label should appear in the generated tooltip signal
+      const specStr = JSON.stringify(spec);
+      expect(specStr).toContain("snark_label");
+      expect(specStr).toContain("Snark Label");
+    });
+
+    it("node tooltip includes all node metadata fields", () => {
+      const specStr = JSON.stringify(spec);
+      expect(specStr).toContain("wobble_metric");
+      expect(specStr).toContain("Wobble Metric");
     });
   });
 
@@ -126,6 +132,31 @@ describe("Dynamic field_metadata integration", () => {
       expect(types).toContain("continuous");
       expect(types).toContain("categorical");
       expect(types).toContain("tooltip");
+    });
+  });
+
+  describe("data pipeline — custom fields survive computeTreeData", () => {
+    it("snark_label survives through computeTreeData nodes", () => {
+      // Simulate what fileProcessor does: convert array nodes to object
+      const rawTree = fieldMetadataFixture.trees[0];
+      const nodesObj = {};
+      for (const node of rawTree.nodes) {
+        nodesObj[node.sequence_id] = node;
+      }
+      // Convert back to array (like convertAndFilterNodes)
+      const nodesArray = Object.entries(nodesObj).map(([nodeId, nodeData]) => ({
+        sequence_id: nodeId,
+        ...nodeData
+      }));
+
+      const mockTree = { ...rawTree, nodes: nodesArray };
+      const processed = computeTreeData(mockTree);
+
+      // Check that custom fields survive
+      const nodeWithSnark = processed.nodes.find((n) => n.snark_label);
+      expect(nodeWithSnark).toBeDefined();
+      expect(typeof nodeWithSnark.snark_label).toBe("string");
+      expect(typeof nodeWithSnark.wobble_metric).toBe("number");
     });
   });
 });
