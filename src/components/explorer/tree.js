@@ -48,7 +48,8 @@ const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtr
   const filteredNodes = nodes
     .filter((n) => subtreeIds.has(n.sequence_id))
     .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
-  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
+  // Keep naive (type: "naive") alignment rows — they define the x-axis and gene regions
+  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id) || m.type === "naive");
   const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
   return { nodes: filteredNodes, alignment: filteredAlignment, leavesCount: filteredCount };
 };
