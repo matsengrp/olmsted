@@ -152,6 +152,16 @@ const BUILTIN_MUTATION_FIELDS = [
   { field: "mut_to", label: "To", expr: "datum.to_codon ? datum.mut_to + ' (' + datum.to_codon + ')' : datum.mut_to" }
 ];
 
+// Pre-built basic mutation tooltip (used by naive row and lineage tooltips)
+const BASIC_MUTATION_TOOLTIP = (() => {
+  const parts = BUILTIN_MUTATION_FIELDS.map((f) => {
+    if (f.expr) return `"${f.label}": ${f.expr}`;
+    if (f.format !== undefined) return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
+    return `"${f.label}": ''+datum["${f.field}"]`;
+  });
+  return "{" + parts.join(", ") + "}";
+})();
+
 /**
  * Build mutation tooltip signals — one for when coloring by a metric, one for default AA view.
  * When coloring by a metric, shows all mutation metadata fields.
@@ -2367,8 +2377,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     stroke: { value: "black" },
                     strokeWidth: { value: 0.5 },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: { signal: "3*naive_group_height/4" },
@@ -2400,8 +2409,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     y: { signal: "3*naive_group_height/4" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -2609,8 +2617,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     stroke: { signal: "show_mutation_borders ? '#333' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -2636,8 +2643,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -3101,8 +3107,7 @@ const seqAlignSpec = (family, options = {}) => {
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
-              signal:
-                'color_by_mutation_metric ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: BASIC_MUTATION_TOOLTIP
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
@@ -3126,8 +3131,7 @@ const seqAlignSpec = (family, options = {}) => {
             stroke: { signal: "show_mutation_borders ? '#333' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
-              signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: BASIC_MUTATION_TOOLTIP
             }
           }
         }
@@ -3151,8 +3155,7 @@ const seqAlignSpec = (family, options = {}) => {
             y: { scale: "y", field: "seq_id" },
             x: { scale: "aa_position", field: "position" },
             tooltip: {
-              signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: BASIC_MUTATION_TOOLTIP
             }
           }
         }

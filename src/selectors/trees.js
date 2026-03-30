@@ -67,13 +67,17 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
         // CRITICAL: For naive sequence, ALWAYS add an entry at EVERY position
         // This ensures the x-axis extends to the full length of the naive sequence
         // even if there are no mutations at the end positions
+        const codonStart = i * 3;
+        const naiveCodon = naiveDna ? naiveDna.substring(codonStart, codonStart + 3) : null;
         mutations.push({
           type: "naive",
           parent: node.parent,
           seq_id: seq_id,
           position: i,
           mut_from: naive_aa,
-          mut_to: naive_aa // naive sequence shows its own AA
+          mut_to: naive_aa, // naive sequence shows its own AA
+          from_codon: naiveCodon,
+          to_codon: naiveCodon
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
