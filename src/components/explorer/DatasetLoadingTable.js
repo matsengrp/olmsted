@@ -209,6 +209,116 @@ export default class DatasetLoadingTable extends React.Component {
     dispatch(explorerActions.clearDatasetSelections());
   }
 
+  /**
+   * Render a summary of available fields across loaded datasets with metadata.
+   * @param {Object[]} allDatasetsToUse - The datasets currently displayed in the table
+   * @returns {React.ReactNode|null}
+   */
+  renderFieldSummary(allDatasetsToUse) {
+    const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
+    const datasetsWithMeta = loadedDatasets.filter((d) => d.field_metadata);
+    if (datasetsWithMeta.length === 0) return null;
+
+    // Collect all fields across all loaded datasets with metadata
+    const allFields = {}; // field → { level, label, datasets: Set }
+    for (const ds of datasetsWithMeta) {
+      const dsName = ds.name || ds.dataset_id;
+      for (const [level, fields] of Object.entries(ds.field_metadata)) {
+        for (const [field, meta] of Object.entries(fields)) {
+          const key = `${level}.${field}`;
+          if (!allFields[key]) {
+            allFields[key] = { level, field, label: meta.label || field, type: meta.type, datasets: new Set() };
+          }
+          allFields[key].datasets.add(dsName);
+        }
+      }
+    }
+
+    const totalDatasets = datasetsWithMeta.length;
+    const fieldList = Object.values(allFields);
+    const sharedFields = fieldList.filter((f) => f.datasets.size === totalDatasets);
+    const partialFields = fieldList.filter((f) => f.datasets.size < totalDatasets);
+
+    // Group shared fields by level
+    const groupByLevel = (fields) => {
+      const groups = {};
+      for (const f of fields) {
+        if (!groups[f.level]) groups[f.level] = [];
+        groups[f.level].push(f);
+      }
+      return groups;
+    };
+
+    const sharedByLevel = groupByLevel(sharedFields);
+
+    return (
+      <div
+        style={{
+          marginTop: 10,
+          padding: "10px 14px",
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #dee2e6",
+          borderRadius: 4,
+          fontSize: 12
+        }}
+      >
+        <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 13 }}>
+          Available Fields ({datasetsWithMeta.length} dataset{datasetsWithMeta.length > 1 ? "s" : ""} with metadata)
+        </div>
+        {Object.entries(sharedByLevel).map(([level, fields]) => (
+          <div key={level} style={{ marginBottom: 4 }}>
+            <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
+            <span style={{ color: "#333" }}>{fields.map((f) => f.label).join(", ")}</span>
+          </div>
+        ))}
+        {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "6px 10px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: 4,
+              color: "#856404",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start"
+            }}
+          >
+            <div>
+              <strong>Fields not shared across all datasets:</strong>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                {partialFields.map((f) => (
+                  <li key={`${f.level}.${f.field}`}>
+                    {f.label} ({f.level}) — only in: {[...f.datasets].join(", ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button
+              type="button"
+              onClick={() => this.setState({ fieldWarningDismissed: true })}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 2px",
+                fontSize: 16,
+                color: "#856404",
+                lineHeight: 1,
+                flexShrink: 0
+              }}
+              title="Dismiss"
+              aria-label="Dismiss"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   render() {
     // Use all datasets (including loaded ones)
     const { allDatasets, datasets, selectedDatasets, starredDatasets, dispatch, loadedClonalFamilies } = this.props;
@@ -502,115 +612,7 @@ export default class DatasetLoadingTable extends React.Component {
         >
           Number of clonal families loaded: {loadedClonalFamilies}
         </div>
-        {loadedClonalFamilies > 0 &&
-          (() => {
-            const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
-            const datasetsWithMeta = loadedDatasets.filter((d) => d.field_metadata);
-            if (datasetsWithMeta.length === 0) return null;
-
-            // Collect all fields across all loaded datasets with metadata
-            const fieldsByDataset = {};
-            const allFields = {}; // field → { level, label, datasets: Set }
-            for (const ds of datasetsWithMeta) {
-              const dsName = ds.name || ds.dataset_id;
-              fieldsByDataset[dsName] = new Set();
-              for (const [level, fields] of Object.entries(ds.field_metadata)) {
-                for (const [field, meta] of Object.entries(fields)) {
-                  const key = `${level}.${field}`;
-                  fieldsByDataset[dsName].add(key);
-                  if (!allFields[key]) {
-                    allFields[key] = { level, field, label: meta.label || field, type: meta.type, datasets: new Set() };
-                  }
-                  allFields[key].datasets.add(dsName);
-                }
-              }
-            }
-
-            const totalDatasets = datasetsWithMeta.length;
-            const fieldList = Object.values(allFields);
-            const sharedFields = fieldList.filter((f) => f.datasets.size === totalDatasets);
-            const partialFields = fieldList.filter((f) => f.datasets.size < totalDatasets);
-
-            // Group shared fields by level
-            const groupByLevel = (fields) => {
-              const groups = {};
-              for (const f of fields) {
-                if (!groups[f.level]) groups[f.level] = [];
-                groups[f.level].push(f);
-              }
-              return groups;
-            };
-
-            const sharedByLevel = groupByLevel(sharedFields);
-
-            return (
-              <div
-                style={{
-                  marginTop: 10,
-                  padding: "10px 14px",
-                  backgroundColor: "#f8f9fa",
-                  border: "1px solid #dee2e6",
-                  borderRadius: 4,
-                  fontSize: 12
-                }}
-              >
-                <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 13 }}>
-                  Available Fields ({datasetsWithMeta.length} dataset{datasetsWithMeta.length > 1 ? "s" : ""} with
-                  metadata)
-                </div>
-                {Object.entries(sharedByLevel).map(([level, fields]) => (
-                  <div key={level} style={{ marginBottom: 4 }}>
-                    <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
-                    <span style={{ color: "#333" }}>{fields.map((f) => f.label).join(", ")}</span>
-                  </div>
-                ))}
-                {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
-                  <div
-                    style={{
-                      marginTop: 8,
-                      padding: "6px 10px",
-                      backgroundColor: "#fff3cd",
-                      border: "1px solid #ffc107",
-                      borderRadius: 4,
-                      color: "#856404",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start"
-                    }}
-                  >
-                    <div>
-                      <strong>Fields not shared across all datasets:</strong>
-                      <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                        {partialFields.map((f) => (
-                          <li key={`${f.level}.${f.field}`}>
-                            {f.label} ({f.level}) — only in: {[...f.datasets].join(", ")}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => this.setState({ fieldWarningDismissed: true })}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "0 2px",
-                        fontSize: 16,
-                        color: "#856404",
-                        lineHeight: 1,
-                        flexShrink: 0
-                      }}
-                      title="Dismiss"
-                      aria-label="Dismiss"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+        {loadedClonalFamilies > 0 && this.renderFieldSummary(allDatasetsToUse)}
         {loadedClonalFamilies === 0 && (
           <div
             style={{

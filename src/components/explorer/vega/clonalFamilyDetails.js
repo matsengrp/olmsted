@@ -81,7 +81,7 @@ const BUILTIN_NODE_FIELDS = [
   { field: "distance", label: "Distance" }
 ];
 
-const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false, extraFields = []) => {
   let fields;
   if (hasFieldMetadata || nodeMetadata || branchMetadata) {
     const seen = new Set();
@@ -116,6 +116,9 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
     fields = DEFAULT_NODE_TOOLTIP;
   }
 
+  // Append any extra fields (e.g., timepoint data)
+  fields = fields.concat(extraFields);
+
   const parts = fields.map((f) => {
     if (f.format) {
       return `"${f.label}": datum["${f.field}"] != null ? format(datum["${f.field}"], "${f.format}") : "N/A"`;
@@ -129,11 +132,11 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
  * Build a node tooltip signal that includes timepoint data.
  */
 const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
-  const base = buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata);
-  // Append timepoint fields to the base tooltip
-  const timepointPart =
-    '"timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]';
-  return base.slice(0, -1) + ", " + timepointPart + "}";
+  const timepointFields = [
+    { field: "timepoint_multiplicity_key", label: "timepoint" },
+    { field: "timepoint_multiplicity_value", label: "timepoint multiplicity" }
+  ];
+  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata, timepointFields);
 };
 
 // Built-in mutation fields — always in tooltip regardless of metadata

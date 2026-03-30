@@ -22,7 +22,6 @@ import { BUILTIN_CLONE_CATEGORICAL } from "../../constants/fieldDefaults";
  * - Clear all filters button
  */
 
-// Default filterable fields (used when field_metadata is absent)
 // Minimal fallback filter fields (when no field_metadata)
 const DEFAULT_FILTER_FIELDS = [
   { key: "v_call", label: "V Gene", accessor: (f) => f.v_call },
@@ -346,6 +345,8 @@ const mapStateToProps = (state) => ({
   })(),
   datasets: state.datasets.availableDatasets || [],
   filters: state.clonalFamilies.filters || {},
+  // NOTE: .find() returns the first loaded dataset's metadata; when multiple
+  // datasets are loaded their metadata is not merged.
   fieldMetadata: (() => {
     const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
     return loaded?.field_metadata?.clone || null;

@@ -87,6 +87,29 @@ class Lineage extends React.Component {
     };
     this.vegaViewRef = null;
     this.treeViewListenerAttached = false;
+    this.treeViewListeners = [];
+  }
+
+  componentWillUnmount() {
+    this.removeTreeViewListeners();
+  }
+
+  /**
+   * Remove any signal listeners attached to the tree view.
+   */
+  removeTreeViewListeners() {
+    const treeView = this.context?.treeView;
+    if (treeView && this.treeViewListeners.length > 0) {
+      for (const { signal, handler } of this.treeViewListeners) {
+        try {
+          treeView.removeSignalListener(signal, handler);
+        } catch (_e) {
+          // View may already be disposed
+        }
+      }
+    }
+    this.treeViewListeners = [];
+    this.treeViewListenerAttached = false;
   }
 
   componentDidUpdate(prevProps) {
@@ -95,12 +118,18 @@ class Lineage extends React.Component {
     if (treeView && !this.treeViewListenerAttached) {
       this.treeViewListenerAttached = true;
       try {
-        treeView.addSignalListener("mutation_color_by", (_name, value) => {
+        const mutationColorByHandler = (_name, value) => {
           this.setState({ treeMutationColorBy: value });
-        });
-        treeView.addSignalListener("color_by_mutation_metric", (_name, value) => {
+        };
+        const colorByMetricHandler = (_name, value) => {
           this.setState({ treeColorByMetric: !!value });
-        });
+        };
+        treeView.addSignalListener("mutation_color_by", mutationColorByHandler);
+        treeView.addSignalListener("color_by_mutation_metric", colorByMetricHandler);
+        this.treeViewListeners = [
+          { signal: "mutation_color_by", handler: mutationColorByHandler },
+          { signal: "color_by_mutation_metric", handler: colorByMetricHandler }
+        ];
         // Read initial values
         this.setState({
           treeMutationColorBy: treeView.signal("mutation_color_by"),
@@ -110,9 +139,9 @@ class Lineage extends React.Component {
         // View may not be ready
       }
     }
-    // Reset listener flag if tree view changes
+    // Reset listener references if tree view changes
     if (!treeView) {
-      this.treeViewListenerAttached = false;
+      this.removeTreeViewListeners();
     }
     const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
 

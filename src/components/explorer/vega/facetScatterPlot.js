@@ -262,9 +262,13 @@ const buildTooltipSignal = (tooltipFields) => {
       return `'${label}': format(datum['${t.field}'], '${t.format}')`;
     }
     // Access nested fields (e.g., "sample.locus") via bracket notation
-    const accessor = t.field.includes(".")
-      ? `datum['${t.field.split(".")[0]}'] ? datum['${t.field.split(".")[0]}']['${t.field.split(".")[1]}'] : ''`
-      : `datum['${t.field}']`;
+    let accessor;
+    if (t.field.includes(".")) {
+      const [parent, child] = t.field.split(".");
+      accessor = `datum['${parent}'] ? datum['${parent}']['${child}'] : ''`;
+    } else {
+      accessor = `datum['${t.field}']`;
+    }
     return `'${label}': ${accessor}`;
   });
   return "{" + parts.join(", ") + "}";
@@ -1488,10 +1492,7 @@ const createCellAxes = () => [
 ];
 
 // Helper function to create the complete cell mark
-const createCellMark = (fieldMetadata) => {
-  const { tooltip: tooltipFields } = buildFieldOptions(fieldMetadata);
-  const tooltipSignal = buildTooltipSignal(tooltipFields);
-
+const createCellMark = (tooltipSignal) => {
   return {
     name: "cell",
     type: "group",
@@ -1536,7 +1537,7 @@ const createBottomDivider = () => ({
 });
 
 // Helper function to create all marks
-const createMarks = (fieldMetadata) => [...createHeaderMarks(), createCellMark(fieldMetadata), createBottomDivider()];
+const createMarks = (tooltipSignal) => [...createHeaderMarks(), createCellMark(tooltipSignal), createBottomDivider()];
 
 // Main function that composes the complete spec
 /**
@@ -1545,13 +1546,16 @@ const createMarks = (fieldMetadata) => [...createHeaderMarks(), createCellMark(f
  * @param {Object} [options.fieldMetadata] - field_metadata.clone from dataset; if provided, dropdown options are built dynamically
  */
 const facetClonalFamiliesVizSpec = ({ fieldMetadata } = {}) => {
+  const { tooltip: tooltipFields } = buildFieldOptions(fieldMetadata);
+  const tooltipSignal = buildTooltipSignal(tooltipFields);
+
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
     autosize: { type: "pad", resize: true },
     data: createDataConfiguration(),
     signals: createSignals(fieldMetadata),
     layout: createLayout(),
-    marks: createMarks(fieldMetadata),
+    marks: createMarks(tooltipSignal),
     scales: createScales(),
     legends: createLegends(),
     config: {

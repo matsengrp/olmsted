@@ -41,7 +41,9 @@ class ClonalFamiliesViz extends React.Component {
       vegaView: null,
       hideControls: false
     };
-    // Build spec with field_metadata from loaded datasets (if available)
+    // Build spec with field_metadata from loaded datasets (if available).
+    // NOTE: .find() returns the first loaded dataset's metadata; when multiple
+    // datasets are loaded their metadata is not merged.
     const loadedDataset = props.datasets?.find((d) => d.loading === "DONE");
     const fieldMetadata = loadedDataset?.field_metadata?.clone || null;
     this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
@@ -130,6 +132,7 @@ class ClonalFamiliesViz extends React.Component {
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <VegaChart
+              key={`scatterplot-${fieldMetadata ? "meta" : "default"}`}
               onNewView={(view) => {
                 this.setState({ vegaView: view });
                 // Register view with context for config management
