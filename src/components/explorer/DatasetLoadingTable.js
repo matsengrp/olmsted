@@ -106,6 +106,7 @@ export default class DatasetLoadingTable extends React.Component {
     this.state = {
       updateHovered: false,
       manageHovered: false,
+      fieldWarningDismissed: false,
       sortStarredFirst,
       showOnlyStarred,
       hideServerData,
@@ -165,6 +166,8 @@ export default class DatasetLoadingTable extends React.Component {
   }
 
   async handleBatchUpdate() {
+    // Reset field warning when datasets change
+    this.setState({ fieldWarningDismissed: false });
     const { selectedDatasets, allDatasets, dispatch } = this.props;
 
     // Get currently loaded dataset IDs
@@ -561,7 +564,7 @@ export default class DatasetLoadingTable extends React.Component {
                     <span style={{ color: "#333" }}>{fields.map((f) => f.label).join(", ")}</span>
                   </div>
                 ))}
-                {partialFields.length > 0 && totalDatasets > 1 && (
+                {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
                   <div
                     style={{
                       marginTop: 8,
@@ -569,17 +572,40 @@ export default class DatasetLoadingTable extends React.Component {
                       backgroundColor: "#fff3cd",
                       border: "1px solid #ffc107",
                       borderRadius: 4,
-                      color: "#856404"
+                      color: "#856404",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start"
                     }}
                   >
-                    <strong>Fields not shared across all datasets:</strong>
-                    <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
-                      {partialFields.map((f) => (
-                        <li key={`${f.level}.${f.field}`}>
-                          {f.label} ({f.level}) — only in: {[...f.datasets].join(", ")}
-                        </li>
-                      ))}
-                    </ul>
+                    <div>
+                      <strong>Fields not shared across all datasets:</strong>
+                      <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                        {partialFields.map((f) => (
+                          <li key={`${f.level}.${f.field}`}>
+                            {f.label} ({f.level}) — only in: {[...f.datasets].join(", ")}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => this.setState({ fieldWarningDismissed: true })}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "0 2px",
+                        fontSize: 16,
+                        color: "#856404",
+                        lineHeight: 1,
+                        flexShrink: 0
+                      }}
+                      title="Dismiss"
+                      aria-label="Dismiss"
+                    >
+                      &times;
+                    </button>
                   </div>
                 )}
               </div>
