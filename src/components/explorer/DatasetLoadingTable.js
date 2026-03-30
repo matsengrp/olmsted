@@ -79,8 +79,7 @@ LoadStatusDisplay.isReactComponent = true;
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
   selectedDatasets: state.datasets.selectedDatasets,
   allDatasets: state.datasets.availableDatasets,
-  starredDatasets: state.datasets.starredDatasets || [],
-  commonFieldsOnly: state.datasets.commonFieldsOnly
+  starredDatasets: state.datasets.starredDatasets || []
 }))
 export default class DatasetLoadingTable extends React.Component {
   constructor(props) {
@@ -212,15 +211,7 @@ export default class DatasetLoadingTable extends React.Component {
 
   render() {
     // Use all datasets (including loaded ones)
-    const {
-      allDatasets,
-      datasets,
-      selectedDatasets,
-      starredDatasets,
-      dispatch,
-      loadedClonalFamilies,
-      commonFieldsOnly
-    } = this.props;
+    const { allDatasets, datasets, selectedDatasets, starredDatasets, dispatch, loadedClonalFamilies } = this.props;
     const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
       this.state;
     const allDatasetsRaw = allDatasets || datasets || [];
@@ -563,26 +554,9 @@ export default class DatasetLoadingTable extends React.Component {
                   fontSize: 12
                 }}
               >
-                <div
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}
-                >
-                  <span style={{ fontWeight: "bold", fontSize: 13 }}>
-                    Available Fields ({datasetsWithMeta.length} dataset{datasetsWithMeta.length > 1 ? "s" : ""} with
-                    metadata)
-                  </span>
-                  {totalDatasets > 1 && partialFields.length > 0 && (
-                    <label
-                      style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, cursor: "pointer" }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={commonFieldsOnly}
-                        onChange={(e) => dispatch(explorerActions.setCommonFieldsOnly(e.target.checked))}
-                        style={{ cursor: "pointer" }}
-                      />
-                      Common fields only
-                    </label>
-                  )}
+                <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 13 }}>
+                  Available Fields ({datasetsWithMeta.length} dataset{datasetsWithMeta.length > 1 ? "s" : ""} with
+                  metadata)
                 </div>
                 {Object.entries(sharedByLevel).map(([level, fields]) => (
                   <div key={level} style={{ marginBottom: 4 }}>

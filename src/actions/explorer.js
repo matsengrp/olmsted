@@ -141,10 +141,6 @@ export const toggleDatasetSelection = (dataset_id) => {
   return { type: types.TOGGLE_DATASET_SELECTION, dataset_id };
 };
 
-export const setCommonFieldsOnly = (enabled) => {
-  return { type: types.SET_COMMON_FIELDS_ONLY, enabled };
-};
-
 export const clearDatasetSelections = () => {
   return { type: types.CLEAR_DATASET_SELECTIONS };
 };

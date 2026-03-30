@@ -18,8 +18,7 @@ const datasets = (
     displayComponent: chooseDisplayComponentFromPathname(window.location.pathname),
     urlPath: window.location.pathname,
     urlQuery: window.location.search,
-    errorMessage: undefined,
-    commonFieldsOnly: false
+    errorMessage: undefined
   },
   action
 ) => {
@@ -64,9 +63,6 @@ const datasets = (
     }
     case types.PROCEED_SANS_MANIFEST: {
       return { ...state, datapath: action.datapath };
-    }
-    case types.SET_COMMON_FIELDS_ONLY: {
-      return { ...state, commonFieldsOnly: action.enabled };
     }
     case types.REMOVE_DATASET: {
       // Filter out the removed dataset from availableDatasets

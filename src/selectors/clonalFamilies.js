@@ -273,48 +273,7 @@ export const getHeavyLightClones = (selectedFamily, pairedClone) => {
  * Get the dataset metadata (including missing_fields) for the selected family's dataset.
  * Returns null if no family is selected.
  */
-export const getSelectedDatasetFields = createSelector(
-  [getSelectedFamily, getDatasets, (state) => state.datasets.commonFieldsOnly],
-  (family, datasets, commonFieldsOnly) => {
-    if (!family || !datasets) return null;
-    const dataset = datasets.find((d) => d.dataset_id === family.dataset_id);
-    if (!dataset) return null;
-
-    // If not limiting to common fields, return dataset as-is
-    if (!commonFieldsOnly || !dataset.field_metadata) return dataset;
-
-    // Compute intersection of field_metadata across all loaded datasets with metadata
-    const loadedWithMeta = datasets.filter((d) => d.loading === "DONE" && d.field_metadata);
-    if (loadedWithMeta.length <= 1) return dataset;
-
-    // For each metadata level, keep only fields present in ALL loaded datasets
-    const intersected = {};
-    const levels = new Set();
-    for (const ds of loadedWithMeta) {
-      for (const level of Object.keys(ds.field_metadata)) {
-        levels.add(level);
-      }
-    }
-
-    for (const level of levels) {
-      // Get fields present at this level in each dataset
-      const fieldSets = loadedWithMeta
-        .map((ds) => (ds.field_metadata[level] ? new Set(Object.keys(ds.field_metadata[level])) : new Set()))
-        .filter((s) => s.size > 0);
-
-      if (fieldSets.length === 0) continue;
-
-      // Intersect all field sets
-      const common = [...fieldSets[0]].filter((field) => fieldSets.every((s) => s.has(field)));
-      if (common.length > 0) {
-        intersected[level] = {};
-        for (const field of common) {
-          // Use the selected dataset's metadata entry
-          intersected[level][field] = dataset.field_metadata[level]?.[field];
-        }
-      }
-    }
-
-    return { ...dataset, field_metadata: intersected };
-  }
-);
+export const getSelectedDatasetFields = createSelector([getSelectedFamily, getDatasets], (family, datasets) => {
+  if (!family || !datasets) return null;
+  return datasets.find((d) => d.dataset_id === family.dataset_id) || null;
+});
