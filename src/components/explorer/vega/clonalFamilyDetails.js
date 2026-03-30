@@ -140,11 +140,16 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 };
 
 // Built-in mutation fields — always in tooltip regardless of metadata
+// From/To show AA with codon in parentheses: e.g., "S (AGC)"
 const BUILTIN_MUTATION_FIELDS = [
   { field: "position", label: "Position", format: "" },
   { field: "seq_id", label: "Sequence" },
-  { field: "mut_from", label: "From" },
-  { field: "mut_to", label: "To" }
+  {
+    field: "mut_from",
+    label: "From",
+    expr: "datum.from_codon ? datum.mut_from + ' (' + datum.from_codon + ')' : datum.mut_from"
+  },
+  { field: "mut_to", label: "To", expr: "datum.to_codon ? datum.mut_to + ' (' + datum.to_codon + ')' : datum.mut_to" }
 ];
 
 /**
@@ -158,6 +163,9 @@ const BUILTIN_MUTATION_FIELDS = [
 const buildMutationTooltipSignals = (mutationMetadata) => {
   // Build the AA-mode tooltip (always just structural fields)
   const aaParts = BUILTIN_MUTATION_FIELDS.map((f) => {
+    if (f.expr) {
+      return `"${f.label}": ${f.expr}`;
+    }
     if (f.format !== undefined) {
       return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
     }
