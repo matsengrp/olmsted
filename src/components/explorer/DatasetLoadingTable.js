@@ -8,6 +8,7 @@ import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -216,40 +217,41 @@ export default class DatasetLoadingTable extends React.Component {
    */
   renderFieldSummary(allDatasetsToUse) {
     const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
-    const datasetsWithMeta = loadedDatasets.filter((d) => d.field_metadata);
-    if (datasetsWithMeta.length === 0) return null;
+    if (loadedDatasets.length === 0) return null;
 
-    // Collect all fields across all loaded datasets with metadata
-    const allFields = {}; // field → { level, label, datasets: Set }
-    for (const ds of datasetsWithMeta) {
-      const dsName = ds.name || ds.dataset_id;
-      for (const [level, fields] of Object.entries(ds.field_metadata)) {
+    // Resolve metadata for each loaded dataset (includes builtins/defaults)
+    const resolvedDatasets = loadedDatasets.map((ds) => ({
+      name: ds.name || ds.dataset_id,
+      metadata: resolveFieldMetadata(ds.field_metadata || null)
+    }));
+
+    // Collect all fields across all loaded datasets
+    const allFields = {}; // key → { level, label, datasets: Set }
+    const allLevels = ["clone", "node", "branch", "mutation"];
+    for (const ds of resolvedDatasets) {
+      for (const level of allLevels) {
+        const fields = ds.metadata[level];
+        if (!fields) continue;
         for (const [field, meta] of Object.entries(fields)) {
           const key = `${level}.${field}`;
           if (!allFields[key]) {
             allFields[key] = { level, field, label: meta.label || field, type: meta.type, datasets: new Set() };
           }
-          allFields[key].datasets.add(dsName);
+          allFields[key].datasets.add(ds.name);
         }
       }
     }
 
-    const totalDatasets = datasetsWithMeta.length;
+    const totalDatasets = resolvedDatasets.length;
     const fieldList = Object.values(allFields);
     const sharedFields = fieldList.filter((f) => f.datasets.size === totalDatasets);
     const partialFields = fieldList.filter((f) => f.datasets.size < totalDatasets);
 
-    // Group shared fields by level
-    const groupByLevel = (fields) => {
-      const groups = {};
-      for (const f of fields) {
-        if (!groups[f.level]) groups[f.level] = [];
-        groups[f.level].push(f);
-      }
-      return groups;
-    };
-
-    const sharedByLevel = groupByLevel(sharedFields);
+    // Group shared fields by level, show all levels
+    const sharedByLevel = {};
+    for (const level of allLevels) {
+      sharedByLevel[level] = sharedFields.filter((f) => f.level === level);
+    }
 
     return (
       <div
@@ -263,12 +265,14 @@ export default class DatasetLoadingTable extends React.Component {
         }}
       >
         <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 13 }}>
-          Available Fields ({datasetsWithMeta.length} dataset{datasetsWithMeta.length > 1 ? "s" : ""} with metadata)
+          Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
         </div>
-        {Object.entries(sharedByLevel).map(([level, fields]) => (
+        {allLevels.map((level) => (
           <div key={level} style={{ marginBottom: 4 }}>
             <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
-            <span style={{ color: "#333" }}>{fields.map((f) => f.label).join(", ")}</span>
+            <span style={{ color: sharedByLevel[level].length > 0 ? "#333" : "#999" }}>
+              {sharedByLevel[level].length > 0 ? sharedByLevel[level].map((f) => f.label).join(", ") : "(none)"}
+            </span>
           </div>
         ))}
         {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
