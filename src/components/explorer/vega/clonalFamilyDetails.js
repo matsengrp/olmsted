@@ -130,11 +130,18 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
 
 /**
  * Build a node tooltip signal that includes timepoint data.
+ * Only adds timepoint fields when metadata is absent (fallback) or
+ * when metadata explicitly declares timepoint fields.
  */
 const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
+  // Only include timepoint fields when no metadata exists (old data likely has timepoints)
+  // When metadata is present, timepoint fields should be declared there if available
+  if (hasFieldMetadata) {
+    return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata);
+  }
   const timepointFields = [
-    { field: "timepoint_multiplicity_key", label: "timepoint" },
-    { field: "timepoint_multiplicity_value", label: "timepoint multiplicity" }
+    { field: "timepoint_multiplicity_key", label: "Timepoint" },
+    { field: "timepoint_multiplicity_value", label: "Timepoint Multiplicity" }
   ];
   return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata, timepointFields);
 };
