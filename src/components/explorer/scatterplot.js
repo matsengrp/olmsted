@@ -6,6 +6,7 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 import VegaViewContext from "../config/VegaViewContext";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Clonal Families Viz
@@ -45,7 +46,10 @@ class ClonalFamiliesViz extends React.Component {
     // NOTE: .find() returns the first loaded dataset's metadata; when multiple
     // datasets are loaded their metadata is not merged.
     const loadedDataset = props.datasets?.find((d) => d.loading === "DONE");
-    const fieldMetadata = loadedDataset?.field_metadata?.clone || null;
+    const resolvedMeta = loadedDataset?.field_metadata
+      ? resolveFieldMetadata(loadedDataset.field_metadata)
+      : resolveFieldMetadata(null);
+    const fieldMetadata = resolvedMeta.clone || null;
     this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
     this.lastFieldMetadata = fieldMetadata;
     this.lastClearTrigger = 0;
@@ -110,7 +114,10 @@ class ClonalFamiliesViz extends React.Component {
 
     // Rebuild spec if field_metadata changed (e.g., different dataset loaded)
     const loadedDataset = datasets?.find((d) => d.loading === "DONE");
-    const fieldMetadata = loadedDataset?.field_metadata?.clone || null;
+    const resolvedMeta = loadedDataset?.field_metadata
+      ? resolveFieldMetadata(loadedDataset.field_metadata)
+      : resolveFieldMetadata(null);
+    const fieldMetadata = resolvedMeta.clone || null;
     if (fieldMetadata !== this.lastFieldMetadata) {
       this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
       this.lastFieldMetadata = fieldMetadata;

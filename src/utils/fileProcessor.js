@@ -1,4 +1,87 @@
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
+import {
+  DEFAULT_CLONE_CONTINUOUS,
+  DEFAULT_CLONE_CATEGORICAL,
+  DEFAULT_CLONE_TOOLTIP,
+  BUILTIN_CLONE_TOOLTIP,
+  BUILTIN_CLONE_CATEGORICAL,
+  BUILTIN_MUTATION_AA
+} from "../constants/fieldDefaults";
+
+/**
+ * Resolve field_metadata for a dataset. When field_metadata is provided by the CLI,
+ * merge in built-in fields (dataset_name, child_aa). When absent, build a default
+ * metadata object from constants so all downstream code reads a uniform structure.
+ *
+ * @param {Object|null} rawMetadata - field_metadata from dataset or null
+ * @returns {Object} Resolved field_metadata with clone, node, branch, mutation levels
+ */
+export function resolveFieldMetadata(rawMetadata) {
+  if (rawMetadata) {
+    // Merge builtins into existing metadata
+    const clone = { ...(rawMetadata.clone || {}) };
+
+    // Ensure built-in categoricals are present
+    for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
+      if (!(builtin.field in clone)) {
+        clone[builtin.field] = { type: "categorical", label: builtin.label };
+      }
+    }
+
+    // Ensure built-in tooltip fields are present
+    for (const builtin of BUILTIN_CLONE_TOOLTIP) {
+      if (!(builtin.field in clone)) {
+        clone[builtin.field] = { type: "tooltip", label: builtin.label };
+      }
+    }
+
+    // Ensure mutation has at least the built-in AA option
+    const mutation = { ...(rawMetadata.mutation || {}) };
+    const hasAa = Object.values(mutation).some((m) => m.type === "aa");
+    if (!hasAa) {
+      mutation[BUILTIN_MUTATION_AA.value] = { type: "aa", label: BUILTIN_MUTATION_AA.label };
+    }
+
+    return {
+      clone,
+      node: rawMetadata.node || null,
+      branch: rawMetadata.branch || null,
+      mutation: Object.keys(mutation).length > 0 ? mutation : null
+    };
+  }
+
+  // No metadata at all — build defaults
+  const clone = {};
+  for (const field of DEFAULT_CLONE_CONTINUOUS) {
+    clone[field] = { type: "continuous", label: field };
+  }
+  for (const field of DEFAULT_CLONE_CATEGORICAL) {
+    clone[field] = { type: "categorical", label: field };
+  }
+  for (const entry of DEFAULT_CLONE_TOOLTIP) {
+    if (!(entry.field in clone)) {
+      clone[entry.field] = { type: "tooltip", label: entry.label, format: entry.format, expr: entry.expr };
+    }
+  }
+  // Ensure built-in categoricals
+  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
+    if (!(builtin.field in clone)) {
+      clone[builtin.field] = { type: "categorical", label: builtin.label };
+    }
+  }
+  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
+    if (!(builtin.field in clone)) {
+      clone[builtin.field] = { type: "tooltip", label: builtin.label };
+    }
+  }
+
+  return {
+    clone,
+    node: null,
+    branch: null,
+    mutation: { [BUILTIN_MUTATION_AA.value]: { type: "aa", label: BUILTIN_MUTATION_AA.label } }
+  };
+}
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
@@ -87,7 +170,7 @@ class FileProcessor {
       name: dataset.name || data.metadata?.name || filename,
       description: dataset.description || data.metadata?.description || null,
       debug: dataset.debug || data.metadata?.debug || false,
-      field_metadata: dataset.field_metadata || data.metadata?.field_metadata || null,
+      field_metadata: resolveFieldMetadata(dataset.field_metadata || data.metadata?.field_metadata || null),
       build: dataset.build || {
         time: data.metadata?.created_at || new Date().toISOString(),
         commit: "client-side-processing"

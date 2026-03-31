@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
-import { BUILTIN_CLONE_CATEGORICAL } from "../../constants/fieldDefaults";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -77,20 +77,12 @@ const buildFilterEntry = (field, label) => {
 const buildFilterFields = (cloneMetadata) => {
   if (!cloneMetadata) return DEFAULT_FILTER_FIELDS;
 
+  // field_metadata is already resolved with builtins merged (by resolveFieldMetadata)
   const fields = [];
-  const seen = new Set();
 
   for (const [field, meta] of Object.entries(cloneMetadata)) {
     if (meta.type !== "categorical") continue;
-    seen.add(field);
     fields.push(buildFilterEntry(field, meta.label || field));
-  }
-
-  // Add built-in categorical fields not already in metadata
-  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
-    if (!seen.has(builtin.field)) {
-      fields.push(buildFilterEntry(builtin.field, builtin.label));
-    }
   }
 
   return fields.length > 0 ? fields : DEFAULT_FILTER_FIELDS;
@@ -349,7 +341,8 @@ const mapStateToProps = (state) => ({
   // datasets are loaded their metadata is not merged.
   fieldMetadata: (() => {
     const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
-    return loaded?.field_metadata?.clone || null;
+    const resolved = resolveFieldMetadata(loaded?.field_metadata || null);
+    return resolved.clone || null;
   })()
 });
 

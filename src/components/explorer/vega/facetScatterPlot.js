@@ -1,9 +1,7 @@
 import {
   DEFAULT_CLONE_CONTINUOUS,
   DEFAULT_CLONE_CATEGORICAL,
-  DEFAULT_CLONE_TOOLTIP,
-  BUILTIN_CLONE_TOOLTIP,
-  BUILTIN_CLONE_CATEGORICAL
+  DEFAULT_CLONE_TOOLTIP
 } from "../../../constants/fieldDefaults";
 
 // Note: Vega expressions use == for comparison within expression strings
@@ -197,33 +195,10 @@ const buildFieldOptions = (fieldMetadata) => {
 
   const continuous = [];
   const categorical = [];
-  const seen = new Set();
+  const tooltip = [];
 
-  // Add built-in categorical fields (label overrideable by metadata)
-  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
-    const override = fieldMetadata[builtin.field];
-    if (!override) {
-      categorical.push(builtin.field);
-    }
-    seen.add(builtin.field);
-  }
-
-  // Start tooltip with built-in fields (label overrideable)
-  const tooltip = BUILTIN_CLONE_TOOLTIP.map((builtin) => {
-    const override = fieldMetadata[builtin.field];
-    seen.add(builtin.field);
-    return {
-      field: builtin.field,
-      label: override?.label || builtin.label,
-      format: override?.format,
-      expr: override?.expr || builtin.expr
-    };
-  });
-
+  // field_metadata is already resolved with builtins merged (by resolveFieldMetadata)
   for (const [field, meta] of Object.entries(fieldMetadata)) {
-    if (seen.has(field)) continue;
-    seen.add(field);
-
     const entry = { field, label: meta.label || field };
     if (meta.format) entry.format = meta.format;
     if (meta.expr) entry.expr = meta.expr;
