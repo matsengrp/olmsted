@@ -143,7 +143,7 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
 const BUILTIN_MUTATION_FIELDS = [
   { field: "position", label: "Position", format: "" },
-  { field: "seq_id", label: "Sequence" },
+  { field: "seq_id", label: "Sequence ID" },
   {
     field: "mut_from",
     label: "From",
