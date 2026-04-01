@@ -2930,7 +2930,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false, colorByMutationMetric = false } = options;
+  const { showMutationBorders = false, colorByMutationMetric = false, mutationMetadata = null } = options;
+
+  // Build dynamic mutation tooltip (same as main tree spec)
+  const { metricTooltip: lineageMutationTooltip } = buildMutationTooltipSignals(mutationMetadata);
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -3121,7 +3124,7 @@ const seqAlignSpec = (family, options = {}) => {
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
-              signal: BASIC_MUTATION_TOOLTIP
+              signal: lineageMutationTooltip
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },

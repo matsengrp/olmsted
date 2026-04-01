@@ -3,7 +3,12 @@ import React from "react";
 import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
+import {
+  getPairedClone,
+  getAllClonalFamilies,
+  getHeavyLightClones,
+  getSelectedDatasetFields
+} from "../../selectors/clonalFamilies";
 import { seqAlignSpec } from "./vega/clonalFamilyDetails";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadFasta";
@@ -63,7 +68,8 @@ const mapStateToProps = (state) => {
     // Lineage settings from Redux
     lineageShowEntire: state.clonalFamilies.lineageShowEntire,
     lineageShowBorders: state.clonalFamilies.lineageShowBorders,
-    lineageChain: state.clonalFamilies.lineageChain
+    lineageChain: state.clonalFamilies.lineageChain,
+    dataFields: getSelectedDatasetFields(state)
   };
 };
 
@@ -414,7 +420,8 @@ class Lineage extends React.Component {
                     }}
                     spec={seqAlignSpec(lineageData, {
                       showMutationBorders,
-                      colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric
+                      colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric,
+                      mutationMetadata: this.props.dataFields?.field_metadata?.mutation || null
                     })}
                   />
                 </div>
