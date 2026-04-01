@@ -1,12 +1,15 @@
 import * as vega from "vega";
 import facetClonalFamiliesVizSpec from "../facetScatterPlot";
+import { resolveFieldMetadata } from "../../../../utils/fileProcessor";
 import { scatterplotSourceData, scatterplotDatasetsData } from "./vegaMockData";
 
 describe("facetClonalFamiliesVizSpec", () => {
   let spec;
 
   beforeAll(() => {
-    spec = facetClonalFamiliesVizSpec();
+    // Use resolved default metadata (same as what the app provides)
+    const resolved = resolveFieldMetadata(null);
+    spec = facetClonalFamiliesVizSpec({ fieldMetadata: resolved.clone });
   });
 
   it("returns a valid Vega v5 spec", () => {
@@ -218,8 +221,9 @@ describe("facetClonalFamiliesVizSpec", () => {
   });
 
   describe("field_metadata support", () => {
-    it("uses default options when no fieldMetadata provided", () => {
-      const defaultSpec = facetClonalFamiliesVizSpec();
+    it("uses resolved default options when no CLI metadata provided", () => {
+      const resolved = resolveFieldMetadata(null);
+      const defaultSpec = facetClonalFamiliesVizSpec({ fieldMetadata: resolved.clone });
       const signals = defaultSpec.signals;
       const yField = signals.find((s) => s.name === "yField");
       expect(yField.bind.options).toContain("mean_mut_freq");
@@ -260,11 +264,11 @@ describe("facetClonalFamiliesVizSpec", () => {
       expect(() => vega.parse(customSpec)).not.toThrow();
     });
 
-    it("falls back to defaults when fieldMetadata is empty", () => {
+    it("returns empty options when fieldMetadata is empty object", () => {
       const emptySpec = facetClonalFamiliesVizSpec({ fieldMetadata: {} });
       const signals = emptySpec.signals;
       const yField = signals.find((s) => s.name === "yField");
-      expect(yField.bind.options).toContain("mean_mut_freq");
+      expect(yField.bind.options).toEqual([]);
     });
   });
 });

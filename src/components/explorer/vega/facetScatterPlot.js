@@ -1,9 +1,4 @@
-import {
-  DEFAULT_CLONE_CONTINUOUS,
-  DEFAULT_CLONE_CATEGORICAL,
-  DEFAULT_CLONE_TOOLTIP,
-  DEFAULT_DISPLAY
-} from "../../../constants/fieldDefaults";
+import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
@@ -186,12 +181,9 @@ const createSelectionSignals = () => [
  * @returns {{ continuous: string[], categorical: string[], tooltip: Object[] }}
  */
 const buildFieldOptions = (fieldMetadata) => {
+  // fieldMetadata should always be resolved by resolveFieldMetadata before reaching here
   if (!fieldMetadata) {
-    return {
-      continuous: DEFAULT_CLONE_CONTINUOUS,
-      categorical: DEFAULT_CLONE_CATEGORICAL,
-      tooltip: DEFAULT_CLONE_TOOLTIP
-    };
+    return { continuous: [], categorical: [], tooltip: [] };
   }
 
   const continuous = [];
@@ -223,11 +215,7 @@ const buildFieldOptions = (fieldMetadata) => {
       tooltip.push(entry);
     }
   }
-  return {
-    continuous: continuous.length > 0 ? continuous : DEFAULT_CLONE_CONTINUOUS,
-    categorical: categorical.length > 0 ? categorical : DEFAULT_CLONE_CATEGORICAL,
-    tooltip: tooltip.length > 0 ? tooltip : DEFAULT_CLONE_TOOLTIP
-  };
+  return { continuous, categorical, tooltip };
 };
 
 /**

@@ -1,106 +1,59 @@
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
 import {
-  DEFAULT_CLONE_CONTINUOUS,
-  DEFAULT_CLONE_CATEGORICAL,
-  DEFAULT_CLONE_TOOLTIP,
-  BUILTIN_CLONE_TOOLTIP,
-  BUILTIN_CLONE_CATEGORICAL,
-  BUILTIN_MUTATION_AA
+  DEFAULT_CLONE_FIELDS,
+  DEFAULT_NODE_FIELDS,
+  DEFAULT_BRANCH_FIELDS,
+  DEFAULT_MUTATION_FIELDS,
+  BUILTIN_CLONE_FIELDS,
+  BUILTIN_NODE_FIELDS,
+  BUILTIN_BRANCH_FIELDS,
+  BUILTIN_MUTATION_FIELDS
 } from "../constants/fieldDefaults";
 
 /**
- * Inject built-in clone fields (categoricals and tooltip) into a clone metadata object.
- * When a CATEGORICAL builtin is added and a matching TOOLTIP builtin has an expr,
- * the expr is included so tooltip rendering works correctly.
+ * Inject built-in fields into a metadata level object.
+ * Built-in entries are only added if not already present (CLI can override labels).
  *
- * @param {Object} clone - Mutable clone metadata object to inject into
+ * @param {Object} metadata - Mutable metadata object to inject into
+ * @param {Object} builtins - Built-in field definitions { field: { type, display, label, ... } }
  */
-function injectCloneBuiltins(clone) {
-  // Build a lookup from TOOLTIP builtins for expr fallback
-  const tooltipByField = {};
-  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
-    tooltipByField[builtin.field] = builtin;
-  }
-
-  // Ensure built-in categoricals are present
-  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
-    if (!(builtin.field in clone)) {
-      const entry = { type: "categorical", display: "dropdown", label: builtin.label };
-      // Include expr from tooltip builtin if available (needed for tooltip rendering)
-      if (tooltipByField[builtin.field]?.expr) {
-        entry.expr = tooltipByField[builtin.field].expr;
-      }
-      clone[builtin.field] = entry;
-    }
-  }
-
-  // Ensure built-in tooltip fields are present
-  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
-    if (!(builtin.field in clone)) {
-      clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
-      if (builtin.expr) {
-        clone[builtin.field].expr = builtin.expr;
-      }
+function injectBuiltins(metadata, builtins) {
+  for (const [field, entry] of Object.entries(builtins)) {
+    if (!(field in metadata)) {
+      metadata[field] = { ...entry };
     }
   }
 }
 
 /**
  * Resolve field_metadata for a dataset. When field_metadata is provided by the CLI,
- * merge in built-in fields (dataset_name, child_aa). When absent, build a default
- * metadata object from constants so all downstream code reads a uniform structure.
+ * merge in built-in fields. When absent, build default metadata from constants.
+ * All downstream code reads a uniform { clone, node, branch, mutation } structure.
  *
  * @param {Object|null} rawMetadata - field_metadata from dataset or null
  * @returns {Object} Resolved field_metadata with clone, node, branch, mutation levels
  */
 export function resolveFieldMetadata(rawMetadata) {
-  if (rawMetadata) {
-    // Accept "family" as alias for "clone" level
-    const clone = { ...(rawMetadata.clone || rawMetadata.family || {}) };
+  // Accept "family" as alias for "clone" level
+  const raw = rawMetadata || {};
+  const hasMetadata = !!rawMetadata;
 
-    injectCloneBuiltins(clone);
+  const clone = { ...(hasMetadata ? raw.clone || raw.family || {} : DEFAULT_CLONE_FIELDS) };
+  const node = { ...(hasMetadata ? raw.node || {} : DEFAULT_NODE_FIELDS) };
+  const branch = { ...(hasMetadata ? raw.branch || {} : DEFAULT_BRANCH_FIELDS) };
+  const mutation = { ...(hasMetadata ? raw.mutation || {} : DEFAULT_MUTATION_FIELDS) };
 
-    // Ensure mutation has at least the built-in AA option
-    const mutation = { ...(rawMetadata.mutation || {}) };
-    const hasAa = Object.values(mutation).some((m) => m.type === "aa");
-    if (!hasAa) {
-      mutation[BUILTIN_MUTATION_AA.value] = { type: "aa", display: "dropdown", label: BUILTIN_MUTATION_AA.label };
-    }
-
-    return {
-      clone,
-      node: rawMetadata.node || null,
-      branch: rawMetadata.branch || null,
-      mutation: Object.keys(mutation).length > 0 ? mutation : null
-    };
-  }
-
-  // No metadata at all — build defaults
-  const clone = {};
-  for (const field of DEFAULT_CLONE_CONTINUOUS) {
-    clone[field] = { type: "continuous", display: "dropdown", label: field };
-  }
-  for (const field of DEFAULT_CLONE_CATEGORICAL) {
-    clone[field] = { type: "categorical", display: "dropdown", label: field };
-  }
-  for (const entry of DEFAULT_CLONE_TOOLTIP) {
-    if (!(entry.field in clone)) {
-      clone[entry.field] = {
-        type: "categorical",
-        display: "tooltip",
-        label: entry.label,
-        format: entry.format,
-        expr: entry.expr
-      };
-    }
-  }
-  injectCloneBuiltins(clone);
+  // Inject builtins into each level
+  injectBuiltins(clone, BUILTIN_CLONE_FIELDS);
+  injectBuiltins(node, BUILTIN_NODE_FIELDS);
+  injectBuiltins(branch, BUILTIN_BRANCH_FIELDS);
+  injectBuiltins(mutation, BUILTIN_MUTATION_FIELDS);
 
   return {
     clone,
-    node: null,
-    branch: null,
-    mutation: { [BUILTIN_MUTATION_AA.value]: { type: "aa", display: "dropdown", label: BUILTIN_MUTATION_AA.label } }
+    node: Object.keys(node).length > 0 ? node : null,
+    branch: Object.keys(branch).length > 0 ? branch : null,
+    mutation: Object.keys(mutation).length > 0 ? mutation : null
   };
 }
 

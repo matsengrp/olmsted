@@ -1,21 +1,14 @@
 /**
- * Default field options for visualization dropdowns and tooltips.
- * Used as fallback when field_metadata is not provided in the dataset.
- * These are intentionally minimal — olmsted-cli can enrich older files
- * with full field_metadata via the enrichment command.
+ * Default and built-in field metadata for each visualization level.
  *
- * field_metadata types (data shape):
- *   "continuous"  — numeric values
- *   "categorical" — string/enum values
- *   "aa"          — amino acid character
- *   "dna"         — nucleotide character
- *   "list"        — ordered array
- *   "json"        — structured key-value data
+ * DEFAULTS: Used as fallback when field_metadata is not provided by the CLI.
+ * BUILTINS: Always injected regardless of field_metadata (structural fields
+ *           computed by the web app, not declared by the CLI).
  *
- * field_metadata display modes (UI behavior):
- *   "dropdown" — shown in visualization controls + tooltip
- *   "tooltip"  — shown on hover only
- *   "skip"     — excluded from display entirely
+ * Each entry has: { type, display, label, format?, expr? }
+ *
+ * Types (data shape): continuous, categorical, aa, dna, list, json
+ * Display modes (UI): dropdown, tooltip, skip
  */
 
 /**
@@ -24,64 +17,62 @@
  */
 export const DEFAULT_DISPLAY = "skip";
 
-/**
- * Built-in clone fields — always present regardless of field_metadata.
- * Labels are overrideable by metadata.
- */
-export const BUILTIN_CLONE_TOOLTIP = [
-  { field: "clone_id", label: "Clone ID", display: "tooltip" },
-  { field: "dataset_name", label: "Dataset", display: "tooltip", expr: "datum.dataset_name || ''" }
-];
+// ============================================================
+// Clone / Family level
+// ============================================================
 
-export const BUILTIN_CLONE_CATEGORICAL = [{ field: "dataset_name", label: "Dataset" }];
+/** Defaults for clone-level fields (used when no field_metadata.clone exists) */
+export const DEFAULT_CLONE_FIELDS = {
+  unique_seqs_count: { type: "continuous", display: "dropdown", label: "Unique Sequences" },
+  mean_mut_freq: { type: "continuous", display: "dropdown", label: "Mean Mutation Freq", format: ".3f" },
+  v_call: { type: "categorical", display: "dropdown", label: "V Gene" },
+  d_call: { type: "categorical", display: "dropdown", label: "D Gene" },
+  j_call: { type: "categorical", display: "dropdown", label: "J Gene" },
+  subject_id: { type: "categorical", display: "dropdown", label: "Subject" }
+};
 
-// Scatterplot — clone-level fallback fields
-export const DEFAULT_CLONE_CONTINUOUS = ["unique_seqs_count", "mean_mut_freq"];
-export const DEFAULT_CLONE_CATEGORICAL = ["v_call", "d_call", "j_call", "subject_id", "dataset_name"];
+/** Built-in clone fields — always present regardless of metadata */
+export const BUILTIN_CLONE_FIELDS = {
+  clone_id: { type: "categorical", display: "tooltip", label: "Clone ID" },
+  dataset_name: { type: "categorical", display: "dropdown", label: "Dataset", expr: "datum.dataset_name || ''" }
+};
 
-/**
- * Default tooltip for scatterplot hover (fallback when no field_metadata).
- */
-export const DEFAULT_CLONE_TOOLTIP = [
-  { field: "clone_id", label: "Clone ID" },
-  { field: "dataset_name", label: "Dataset" },
-  { field: "unique_seqs_count", label: "Unique Sequences" },
-  { field: "mean_mut_freq", label: "Mean Mutation Freq", format: ".3f" },
-  { field: "v_call", label: "V Gene" },
-  { field: "d_call", label: "D Gene" },
-  { field: "j_call", label: "J Gene" }
-];
+// ============================================================
+// Node level
+// ============================================================
 
-// Tree — fallback leaf size options (none + multiplicity for pre-metadata datasets)
-export const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>", "multiplicity"];
+/** Defaults for node-level fields (used when no field_metadata.node exists) */
+export const DEFAULT_NODE_FIELDS = {
+  multiplicity: { type: "continuous", display: "dropdown", label: "Multiplicity" }
+};
 
-/**
- * Default tooltip for tree node hover (structural fields only).
- */
-export const DEFAULT_NODE_TOOLTIP = [
-  { field: "sequence_id", label: "Sequence ID" },
-  { field: "parent", label: "Parent ID" },
-  { field: "type", label: "Node Type" },
-  { field: "distance", label: "Distance" },
-  { field: "node_depth", label: "Depth" }
-];
+/** Built-in node fields — always present (structural, computed by web app) */
+export const BUILTIN_NODE_FIELDS = {
+  sequence_id: { type: "categorical", display: "tooltip", label: "Sequence ID" },
+  parent: { type: "categorical", display: "tooltip", label: "Parent ID" },
+  type: { type: "categorical", display: "tooltip", label: "Node Type" },
+  distance: { type: "continuous", display: "tooltip", label: "Distance" },
+  node_depth: { type: "continuous", display: "tooltip", label: "Depth" }
+};
 
-/**
- * Default tooltip for mutation hover (structural fields only).
- */
-export const DEFAULT_MUTATION_TOOLTIP = [
-  { field: "position", label: "Position", format: "" },
-  { field: "seq_id", label: "Sequence" },
-  { field: "mut_from", label: "From" },
-  { field: "mut_to", label: "To" }
-];
+// ============================================================
+// Branch level
+// ============================================================
 
-/**
- * Built-in mutation color option — always available as the default AA coloring.
- * Used when field_metadata.mutation has no "aa" type entries.
- */
-export const BUILTIN_MUTATION_AA = { value: "child_aa", label: "Child Amino Acid", scaleType: "aa" };
+/** Defaults for branch-level fields (used when no field_metadata.branch exists) */
+export const DEFAULT_BRANCH_FIELDS = {};
 
-// Tree — fallback branch options (just none + parent when no metadata)
-export const DEFAULT_BRANCH_WIDTH_OPTIONS = ["<none>"];
-export const DEFAULT_BRANCH_COLOR_OPTIONS = ["<none>", "parent"];
+/** Built-in branch fields — none currently (parent coloring is always appended by spec) */
+export const BUILTIN_BRANCH_FIELDS = {};
+
+// ============================================================
+// Mutation level
+// ============================================================
+
+/** Defaults for mutation-level fields (used when no field_metadata.mutation exists) */
+export const DEFAULT_MUTATION_FIELDS = {};
+
+/** Built-in mutation fields — child_aa always available as default AA coloring */
+export const BUILTIN_MUTATION_FIELDS = {
+  child_aa: { type: "aa", display: "dropdown", label: "Child Amino Acid" }
+};

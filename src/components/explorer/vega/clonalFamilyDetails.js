@@ -3,14 +3,7 @@
 
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
-import {
-  DEFAULT_LEAF_SIZE_OPTIONS,
-  DEFAULT_BRANCH_WIDTH_OPTIONS,
-  DEFAULT_BRANCH_COLOR_OPTIONS,
-  DEFAULT_NODE_TOOLTIP,
-  BUILTIN_MUTATION_AA,
-  DEFAULT_DISPLAY
-} from "../../../constants/fieldDefaults";
+import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
 
 /**
  * Build tree dropdown options from field_metadata, falling back to
@@ -21,47 +14,31 @@ import {
  * @param {Set|null} missingSet - Set of missing field names (e.g., "node.lbi")
  * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
  */
-const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
-  // If field_metadata is provided, build from it
-  // Node and branch continuous fields are combined since branch metrics
-  // are stored on the child node (1:1 relationship)
-  if (nodeMetadata || branchMetadata) {
-    const seen = new Set();
-    const continuousFields = [];
+/**
+ * Build tree dropdown options from node and branch metadata.
+ * Node and branch continuous fields are combined since branch metrics
+ * are stored on the child node (1:1 relationship).
+ * "<none>" is always the first option. "parent" is always available for branch color.
+ */
+const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
+  const seen = new Set();
+  const continuousFields = [];
 
-    // Collect continuous dropdown fields from both node and branch metadata
-    for (const metadata of [nodeMetadata, branchMetadata]) {
-      if (!metadata) continue;
-      for (const [field, meta] of Object.entries(metadata)) {
-        const display = meta.display || DEFAULT_DISPLAY;
-        if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
-          continuousFields.push(field);
-          seen.add(field);
-        }
+  for (const metadata of [nodeMetadata, branchMetadata]) {
+    if (!metadata) continue;
+    for (const [field, meta] of Object.entries(metadata)) {
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
+        continuousFields.push(field);
+        seen.add(field);
       }
     }
-
-    // All three dropdowns share the same continuous field pool
-    const leafSize = ["<none>", ...continuousFields];
-    const branchWidth = ["<none>", ...continuousFields];
-    const branchColor = ["<none>", ...continuousFields, "parent"];
-
-    return { leafSize, branchWidth, branchColor };
   }
 
-  // Fallback: filter hardcoded defaults by missing fields
-  const filterByMissing = (opts, category) => {
-    if (!missingSet) return opts;
-    return opts.filter((opt) => {
-      if (opt === "<none>" || opt === "parent") return true;
-      return !missingSet.has(`${category}.${opt}`);
-    });
-  };
-
   return {
-    leafSize: filterByMissing(DEFAULT_LEAF_SIZE_OPTIONS, "node"),
-    branchWidth: filterByMissing(DEFAULT_BRANCH_WIDTH_OPTIONS, "node"),
-    branchColor: filterByMissing(DEFAULT_BRANCH_COLOR_OPTIONS, "node")
+    leafSize: ["<none>", ...continuousFields],
+    branchWidth: ["<none>", ...continuousFields],
+    branchColor: ["<none>", ...continuousFields, "parent"]
   };
 };
 
@@ -115,7 +92,8 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
       }
     }
   } else {
-    fields = DEFAULT_NODE_TOOLTIP;
+    // Should not be reached — resolveFieldMetadata always provides node metadata
+    fields = [];
   }
 
   // Append any extra fields (e.g., timepoint data)
@@ -273,10 +251,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
     }
   }
 
-  // Ensure an AA coloring option always exists
+  // Safety: ensure an AA coloring option always exists (should be injected by resolveFieldMetadata)
   const hasAaOption = mutationColorOptions.some((o) => o.scaleType === "aa");
   if (!hasAaOption) {
-    mutationColorOptions.unshift(BUILTIN_MUTATION_AA);
+    mutationColorOptions.unshift({ value: "child_aa", label: "Child Amino Acid", scaleType: "aa" });
   }
 
   // Build the dropdown option values and find the first AA option for default
