@@ -38,8 +38,10 @@ export function resolveFieldMetadata(rawMetadata) {
   const raw = rawMetadata || {};
   const hasMetadata = !!rawMetadata;
 
-  const clone = { ...(hasMetadata ? raw.clone || raw.family || {} : DEFAULT_CLONE_FIELDS) };
-  const node = { ...(hasMetadata ? raw.node || {} : DEFAULT_NODE_FIELDS) };
+  // Build each level: builtins first (for tooltip ordering), then defaults/CLI fields on top
+  // Builtins won't be overwritten by injectBuiltins since they're already present
+  const clone = { ...BUILTIN_CLONE_FIELDS, ...(hasMetadata ? raw.clone || raw.family || {} : DEFAULT_CLONE_FIELDS) };
+  const node = { ...BUILTIN_NODE_FIELDS, ...(hasMetadata ? raw.node || {} : DEFAULT_NODE_FIELDS) };
   const branch = { ...(hasMetadata ? raw.branch || {} : DEFAULT_BRANCH_FIELDS) };
   const mutation = { ...(hasMetadata ? raw.mutation || {} : DEFAULT_MUTATION_FIELDS) };
 

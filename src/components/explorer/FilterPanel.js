@@ -23,25 +23,9 @@ import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
  * - Clear all filters button
  */
 
-// Minimal fallback filter fields (when no field_metadata)
-const DEFAULT_FILTER_FIELDS = [
-  { key: "v_call", label: "V Gene", accessor: (f) => f.v_call },
-  { key: "d_call", label: "D Gene", accessor: (f) => f.d_call },
-  { key: "j_call", label: "J Gene", accessor: (f) => f.j_call },
-  { key: "subject_id", label: "Subject", accessor: (f) => f.subject_id },
-  {
-    key: "dataset_name",
-    label: "Dataset",
-    accessor: (f, datasets) => {
-      const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
-      return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
-    }
-  }
-];
-
 /**
  * Build filter fields from field_metadata categorical entries.
- * Falls back to DEFAULT_FILTER_FIELDS when metadata is absent.
+ * Falls back to [] when metadata is absent.
  *
  * @param {Object|null} cloneMetadata - field_metadata.clone from dataset
  * @returns {Object[]} Array of { key, label, accessor } filter field configs
@@ -76,7 +60,7 @@ const buildFilterEntry = (field, label) => {
 };
 
 const buildFilterFields = (cloneMetadata) => {
-  if (!cloneMetadata) return DEFAULT_FILTER_FIELDS;
+  if (!cloneMetadata) return [];
 
   // field_metadata is already resolved with builtins merged (by resolveFieldMetadata)
   const fields = [];
@@ -87,7 +71,7 @@ const buildFilterFields = (cloneMetadata) => {
     fields.push(buildFilterEntry(field, meta.label || field));
   }
 
-  return fields.length > 0 ? fields : DEFAULT_FILTER_FIELDS;
+  return fields.length > 0 ? fields : [];
 };
 
 /**
@@ -176,7 +160,7 @@ function ActiveFilterChips({ filters, onRemoveFilter, onClearAll, filterFields }
   }
 
   const fieldLabels = {};
-  (filterFields || DEFAULT_FILTER_FIELDS).forEach((f) => {
+  (filterFields || []).forEach((f) => {
     fieldLabels[f.key] = f.label;
   });
 

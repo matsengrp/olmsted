@@ -51,55 +51,31 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
  * @param {Object|null} branchMetadata - field_metadata.branch from dataset
  * @returns {string} Vega expression for the tooltip signal
  */
-// Structural node fields — always included in tooltip, labels can be overridden by metadata
-const BUILTIN_NODE_FIELDS = [
-  { field: "sequence_id", label: "Sequence ID" },
-  { field: "parent", label: "Parent ID" },
-  { field: "type", label: "Node Type" },
-  { field: "node_depth", label: "Depth" },
-  { field: "distance", label: "Distance" }
-];
+/**
+ * Build node tooltip by iterating resolved node + branch metadata.
+ * Builtins are already in the metadata (injected by resolveFieldMetadata).
+ * Order follows metadata key order (builtins first, then CLI fields).
+ */
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, _hasFieldMetadata = false, extraFields = []) => {
+  const fields = [];
+  const seen = new Set();
 
-const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false, extraFields = []) => {
-  let fields;
-  if (hasFieldMetadata || nodeMetadata || branchMetadata) {
-    const seen = new Set();
-
-    // Start with built-in structural fields (label overrideable by metadata)
-    fields = BUILTIN_NODE_FIELDS.map((builtin) => {
-      const override = nodeMetadata?.[builtin.field] || branchMetadata?.[builtin.field];
-      seen.add(builtin.field);
-      return { field: builtin.field, label: override?.label || builtin.label, format: override?.format };
-    });
-
-    // Add node-level fields not already included (skip display: "skip")
-    if (nodeMetadata) {
-      for (const [field, meta] of Object.entries(nodeMetadata)) {
-        if (!seen.has(field) && (meta.display || DEFAULT_DISPLAY) !== "skip") {
-          fields.push({ field, label: meta.label || field, format: meta.format });
-          seen.add(field);
-        }
+  // Add all node-level fields (builtins are already first in the metadata)
+  for (const metadata of [nodeMetadata, branchMetadata]) {
+    if (!metadata) continue;
+    for (const [field, meta] of Object.entries(metadata)) {
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (!seen.has(field) && display !== "skip") {
+        fields.push({ field, label: meta.label || field, format: meta.format });
+        seen.add(field);
       }
     }
-
-    // Add branch-level fields not already included (skip display: "skip")
-    if (branchMetadata) {
-      for (const [field, meta] of Object.entries(branchMetadata)) {
-        if (!seen.has(field) && (meta.display || DEFAULT_DISPLAY) !== "skip") {
-          fields.push({ field, label: meta.label || field, format: meta.format });
-          seen.add(field);
-        }
-      }
-    }
-  } else {
-    // Should not be reached — resolveFieldMetadata always provides node metadata
-    fields = [];
   }
 
   // Append any extra fields (e.g., timepoint data)
-  fields = fields.concat(extraFields);
+  const allFields = fields.concat(extraFields);
 
-  const parts = fields.map((f) => {
+  const parts = allFields.map((f) => {
     if (f.format) {
       return `"${f.label}": datum["${f.field}"] != null ? format(datum["${f.field}"], "${f.format}") : "N/A"`;
     }
@@ -128,7 +104,8 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
-const BUILTIN_MUTATION_FIELDS = [
+// Structural mutation tooltip fields — always shown, with Vega rendering expressions
+const MUTATION_TOOLTIP_TEMPLATE = [
   { field: "position", label: "Position", format: "" },
   { field: "seq_id", label: "Sequence ID" },
   {
@@ -141,7 +118,7 @@ const BUILTIN_MUTATION_FIELDS = [
 
 // Pre-built basic mutation tooltip (used by naive row and lineage tooltips)
 const BASIC_MUTATION_TOOLTIP = (() => {
-  const parts = BUILTIN_MUTATION_FIELDS.map((f) => {
+  const parts = MUTATION_TOOLTIP_TEMPLATE.map((f) => {
     if (f.expr) return `"${f.label}": ${f.expr}`;
     if (f.format !== undefined) return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
     return `"${f.label}": ''+datum["${f.field}"]`;
@@ -159,7 +136,7 @@ const BASIC_MUTATION_TOOLTIP = (() => {
  */
 const buildMutationTooltipSignals = (mutationMetadata) => {
   // Build the AA-mode tooltip (always just structural fields)
-  const aaParts = BUILTIN_MUTATION_FIELDS.map((f) => {
+  const aaParts = MUTATION_TOOLTIP_TEMPLATE.map((f) => {
     if (f.expr) {
       return `"${f.label}": ${f.expr}`;
     }
@@ -171,7 +148,7 @@ const buildMutationTooltipSignals = (mutationMetadata) => {
   const aaTooltip = "{" + aaParts.join(", ") + "}";
 
   // Build the metric-mode tooltip (structural fields + all mutation metadata fields)
-  const seen = new Set(BUILTIN_MUTATION_FIELDS.map((f) => f.field));
+  const seen = new Set(MUTATION_TOOLTIP_TEMPLATE.map((f) => f.field));
   const metricParts = [...aaParts];
 
   if (mutationMetadata) {
