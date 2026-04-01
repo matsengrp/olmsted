@@ -235,7 +235,14 @@ export default class DatasetLoadingTable extends React.Component {
         for (const [field, meta] of Object.entries(fields)) {
           const key = `${level}.${field}`;
           if (!allFields[key]) {
-            allFields[key] = { level, field, label: meta.label || field, type: meta.type, datasets: new Set() };
+            allFields[key] = {
+              level,
+              field,
+              label: meta.label || field,
+              type: meta.type,
+              display: meta.display || "dropdown",
+              datasets: new Set()
+            };
           }
           allFields[key].datasets.add(ds.name);
         }
@@ -264,17 +271,30 @@ export default class DatasetLoadingTable extends React.Component {
           fontSize: 12
         }}
       >
-        <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 13 }}>
-          Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <span style={{ fontWeight: "bold", fontSize: 13 }}>
+            Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
+          </span>
+          <span style={{ color: "#888", fontSize: 11 }}>{"🔵 dropdown  ⚪ tooltip  ⊘ skip"}</span>
         </div>
-        {allLevels.map((level) => (
-          <div key={level} style={{ marginBottom: 4 }}>
-            <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
-            <span style={{ color: sharedByLevel[level].length > 0 ? "#333" : "#999" }}>
-              {sharedByLevel[level].length > 0 ? sharedByLevel[level].map((f) => f.label).join(", ") : "(none)"}
-            </span>
-          </div>
-        ))}
+        {allLevels.map((level) => {
+          const fields = sharedByLevel[level];
+          return (
+            <div key={level} style={{ marginBottom: 4 }}>
+              <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
+              <span style={{ color: fields.length > 0 ? "#333" : "#999" }}>
+                {fields.length > 0
+                  ? fields
+                      .map((f) => {
+                        const icon = f.display === "skip" ? "⊘" : f.display === "tooltip" ? "⚪" : "🔵";
+                        return `${icon}\u00A0${f.label}`;
+                      })
+                      .join(",  ")
+                  : "(none)"}
+              </span>
+            </div>
+          );
+        })}
         {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
           <div
             style={{
