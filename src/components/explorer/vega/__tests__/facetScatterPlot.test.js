@@ -228,11 +228,11 @@ describe("facetClonalFamiliesVizSpec", () => {
 
     it("builds options from fieldMetadata when provided", () => {
       const metadata = {
-        phylogenetic_diversity: { type: "continuous", label: "Phylogenetic Diversity" },
-        shm_variance: { type: "continuous", label: "SHM Variance" },
-        unique_seqs_count: { type: "continuous", label: "Unique Seq Count" },
-        v_call: { type: "categorical", label: "V Gene" },
-        tissue_type: { type: "categorical", label: "Tissue Type" }
+        phylogenetic_diversity: { type: "continuous", display: "dropdown", label: "Phylogenetic Diversity" },
+        shm_variance: { type: "continuous", display: "dropdown", label: "SHM Variance" },
+        unique_seqs_count: { type: "continuous", display: "dropdown", label: "Unique Seq Count" },
+        v_call: { type: "categorical", display: "dropdown", label: "V Gene" },
+        tissue_type: { type: "categorical", display: "dropdown", label: "Tissue Type" }
       };
       const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
       const signals = customSpec.signals;
@@ -253,8 +253,8 @@ describe("facetClonalFamiliesVizSpec", () => {
 
     it("produces a valid Vega spec with custom fieldMetadata", () => {
       const metadata = {
-        pd: { type: "continuous", label: "PD" },
-        group: { type: "categorical", label: "Group" }
+        pd: { type: "continuous", display: "dropdown", label: "PD" },
+        group: { type: "categorical", display: "dropdown", label: "Group" }
       };
       const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
       expect(() => vega.parse(customSpec)).not.toThrow();

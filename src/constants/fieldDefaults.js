@@ -4,11 +4,25 @@
  * These are intentionally minimal — olmsted-cli can enrich older files
  * with full field_metadata via the enrichment command.
  *
- * field_metadata types:
- *   "continuous"  — numeric fields for x/y axes, size dropdowns + tooltip
- *   "categorical" — string fields for color/shape/facet dropdowns + tooltip
- *   "tooltip"     — tooltip display only, not shown in any dropdown
+ * field_metadata types (data shape):
+ *   "continuous"  — numeric values
+ *   "categorical" — string/enum values
+ *   "aa"          — amino acid character
+ *   "dna"         — nucleotide character
+ *   "list"        — ordered array
+ *   "json"        — structured key-value data
+ *
+ * field_metadata display modes (UI behavior):
+ *   "dropdown" — shown in visualization controls + tooltip
+ *   "tooltip"  — shown on hover only
+ *   "skip"     — excluded from display entirely
  */
+
+/**
+ * Default display mode for fields without an explicit display property.
+ * Fields without display are skipped — olmsted-cli sets display explicitly.
+ */
+export const DEFAULT_DISPLAY = "skip";
 
 /**
  * Built-in clone fields — always present regardless of field_metadata.

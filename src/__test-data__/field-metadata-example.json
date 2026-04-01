@@ -17,55 +17,68 @@
         "clone": {
           "baz_index": {
             "type": "continuous",
-            "label": "Baz Index"
+            "label": "Baz Index",
+            "display": "dropdown"
           },
           "color_group": {
             "type": "categorical",
-            "label": "Color Group"
+            "label": "Color Group",
+            "display": "dropdown"
           },
           "foobar_score": {
             "type": "continuous",
-            "label": "Foobar Score"
+            "label": "Foobar Score",
+            "display": "dropdown"
           },
           "j_call": {
             "type": "categorical",
-            "label": "J Gene"
+            "label": "J Gene",
+            "display": "dropdown"
           },
           "junction_length": {
             "type": "continuous",
-            "label": "Junction Length"
+            "label": "Junction Length",
+            "display": "dropdown"
           },
           "locus": {
             "type": "categorical",
-            "label": "Locus"
+            "label": "Locus",
+            "display": "dropdown"
           },
           "mean_mut_freq": {
             "type": "continuous",
-            "label": "Mean Mutation Frequency"
+            "label": "Mean Mutation Frequency",
+            "display": "dropdown"
           },
           "sample_id": {
             "type": "categorical",
-            "label": "Sample"
+            "label": "Sample",
+            "display": "dropdown"
           },
           "secret_note": {
             "type": "categorical",
-            "label": "Secret Note"
+            "label": "Secret Note",
+            "display": "dropdown"
           },
           "subject_id": {
             "type": "categorical",
-            "label": "Subject"
+            "label": "Subject",
+            "display": "dropdown"
           },
           "unique_seqs_count": {
             "type": "continuous",
-            "label": "Unique Sequences Count"
+            "label": "Unique Sequences Count",
+            "display": "dropdown"
           },
           "v_call": {
             "type": "categorical",
-            "label": "V Gene"
+            "label": "V Gene",
+            "display": "dropdown"
           },
           "widget_type": {
             "type": "categorical",
-            "label": "Widget Type"
+            "label": "Widget Type",
+            "display": "dropdown"
           },
           "clone_id": {
             "type": "categorical",
@@ -76,65 +89,79 @@
         "node": {
           "cluster_multiplicity": {
             "type": "continuous",
-            "label": "Cluster Multiplicity"
+            "label": "Cluster Multiplicity",
+            "display": "dropdown"
           },
           "lbi": {
             "type": "continuous",
-            "label": "LBI"
+            "label": "LBI",
+            "display": "dropdown"
           },
           "lbr": {
             "type": "continuous",
-            "label": "LBR"
+            "label": "LBR",
+            "display": "dropdown"
           },
           "multiplicity": {
             "type": "continuous",
-            "label": "Multiplicity"
+            "label": "Multiplicity",
+            "display": "dropdown"
           },
           "quux_weight": {
             "type": "continuous",
-            "label": "Quux Weight"
+            "label": "Quux Weight",
+            "display": "dropdown"
           },
           "snark_label": {
             "type": "categorical",
-            "label": "Snark Label"
+            "label": "Snark Label",
+            "display": "dropdown"
           },
           "wobble_metric": {
             "type": "continuous",
-            "label": "Wobble Metric"
+            "label": "Wobble Metric",
+            "display": "dropdown"
           }
         },
         "branch": {
           "lbi": {
             "type": "continuous",
-            "label": "LBI"
+            "label": "LBI",
+            "display": "dropdown"
           },
           "lbr": {
             "type": "continuous",
-            "label": "LBR"
+            "label": "LBR",
+            "display": "dropdown"
           },
           "quux_weight": {
             "type": "continuous",
-            "label": "Quux Weight"
+            "label": "Quux Weight",
+            "display": "dropdown"
           }
         },
         "mutation": {
           "child_aa": {
             "type": "aa",
-            "label": "Child Amino Acid"
+            "label": "Child Amino Acid",
+            "display": "dropdown"
           },
           "parent_aa": {
             "type": "aa",
-            "label": "Parent Amino Acid"
+            "label": "Parent Amino Acid",
+            "display": "dropdown"
           },
           "surprise_mutsel": {
             "type": "continuous",
             "label": "Surprise Score",
-            "range": [0, 15]
+            "range": [0, 15],
+            "display": "dropdown"
           },
           "selection_contribution": {
             "type": "continuous",
             "label": "Selection Contribution",
-            "range": [-2, 5]
+            "range": [-2, 5],
+            "display": "dropdown"
           },
           "region": {
             "type": "categorical",

@@ -24,7 +24,7 @@ export function resolveFieldMetadata(rawMetadata) {
     // Ensure built-in categoricals are present
     for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
       if (!(builtin.field in clone)) {
-        clone[builtin.field] = { type: "categorical", label: builtin.label };
+        clone[builtin.field] = { type: "categorical", display: "dropdown", label: builtin.label };
       }
     }
 
@@ -39,7 +39,7 @@ export function resolveFieldMetadata(rawMetadata) {
     const mutation = { ...(rawMetadata.mutation || {}) };
     const hasAa = Object.values(mutation).some((m) => m.type === "aa");
     if (!hasAa) {
-      mutation[BUILTIN_MUTATION_AA.value] = { type: "aa", label: BUILTIN_MUTATION_AA.label };
+      mutation[BUILTIN_MUTATION_AA.value] = { type: "aa", display: "dropdown", label: BUILTIN_MUTATION_AA.label };
     }
 
     return {
@@ -53,10 +53,10 @@ export function resolveFieldMetadata(rawMetadata) {
   // No metadata at all — build defaults
   const clone = {};
   for (const field of DEFAULT_CLONE_CONTINUOUS) {
-    clone[field] = { type: "continuous", label: field };
+    clone[field] = { type: "continuous", display: "dropdown", label: field };
   }
   for (const field of DEFAULT_CLONE_CATEGORICAL) {
-    clone[field] = { type: "categorical", label: field };
+    clone[field] = { type: "categorical", display: "dropdown", label: field };
   }
   for (const entry of DEFAULT_CLONE_TOOLTIP) {
     if (!(entry.field in clone)) {
@@ -85,7 +85,7 @@ export function resolveFieldMetadata(rawMetadata) {
     clone,
     node: null,
     branch: null,
-    mutation: { [BUILTIN_MUTATION_AA.value]: { type: "aa", label: BUILTIN_MUTATION_AA.label } }
+    mutation: { [BUILTIN_MUTATION_AA.value]: { type: "aa", display: "dropdown", label: BUILTIN_MUTATION_AA.label } }
   };
 }
 

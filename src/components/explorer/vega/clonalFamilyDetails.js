@@ -8,7 +8,8 @@ import {
   DEFAULT_BRANCH_WIDTH_OPTIONS,
   DEFAULT_BRANCH_COLOR_OPTIONS,
   DEFAULT_NODE_TOOLTIP,
-  BUILTIN_MUTATION_AA
+  BUILTIN_MUTATION_AA,
+  DEFAULT_DISPLAY
 } from "../../../constants/fieldDefaults";
 
 /**
@@ -32,7 +33,7 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
     for (const metadata of [nodeMetadata, branchMetadata]) {
       if (!metadata) continue;
       for (const [field, meta] of Object.entries(metadata)) {
-        const display = meta.display || "dropdown";
+        const display = meta.display || DEFAULT_DISPLAY;
         if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
           continuousFields.push(field);
           seen.add(field);
@@ -97,7 +98,7 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
     // Add node-level fields not already included (skip display: "skip")
     if (nodeMetadata) {
       for (const [field, meta] of Object.entries(nodeMetadata)) {
-        if (!seen.has(field) && (meta.display || "dropdown") !== "skip") {
+        if (!seen.has(field) && (meta.display || DEFAULT_DISPLAY) !== "skip") {
           fields.push({ field, label: meta.label || field, format: meta.format });
           seen.add(field);
         }
@@ -107,7 +108,7 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
     // Add branch-level fields not already included (skip display: "skip")
     if (branchMetadata) {
       for (const [field, meta] of Object.entries(branchMetadata)) {
-        if (!seen.has(field) && (meta.display || "dropdown") !== "skip") {
+        if (!seen.has(field) && (meta.display || DEFAULT_DISPLAY) !== "skip") {
           fields.push({ field, label: meta.label || field, format: meta.format });
           seen.add(field);
         }
@@ -198,7 +199,7 @@ const buildMutationTooltipSignals = (mutationMetadata) => {
   if (mutationMetadata) {
     for (const [field, meta] of Object.entries(mutationMetadata)) {
       if (seen.has(field)) continue;
-      const display = meta.display || "dropdown";
+      const display = meta.display || DEFAULT_DISPLAY;
       if (display === "skip") continue;
       seen.add(field);
       const label = meta.label || field;
@@ -258,7 +259,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 
   if (mutationMetadata) {
     for (const [field, meta] of Object.entries(mutationMetadata)) {
-      const display = meta.display || "dropdown";
+      const display = meta.display || DEFAULT_DISPLAY;
       if (display === "skip") continue;
       if (display === "tooltip") continue; // tooltip-only mutations not in color dropdown
 

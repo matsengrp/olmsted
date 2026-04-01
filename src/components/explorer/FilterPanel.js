@@ -4,6 +4,7 @@ import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
 import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -81,7 +82,7 @@ const buildFilterFields = (cloneMetadata) => {
   const fields = [];
 
   for (const [field, meta] of Object.entries(cloneMetadata)) {
-    const display = meta.display || "dropdown";
+    const display = meta.display || DEFAULT_DISPLAY;
     if (meta.type !== "categorical" || display !== "dropdown") continue;
     fields.push(buildFilterEntry(field, meta.label || field));
   }

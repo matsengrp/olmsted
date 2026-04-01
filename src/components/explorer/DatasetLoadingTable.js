@@ -9,6 +9,7 @@ import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -240,7 +241,7 @@ export default class DatasetLoadingTable extends React.Component {
               field,
               label: meta.label || field,
               type: meta.type,
-              display: meta.display || "dropdown",
+              display: meta.display || DEFAULT_DISPLAY,
               datasets: new Set()
             };
           }
@@ -275,7 +276,7 @@ export default class DatasetLoadingTable extends React.Component {
           <span style={{ fontWeight: "bold", fontSize: 13 }}>
             Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
           </span>
-          <span style={{ color: "#888", fontSize: 11 }}>{"🔵 dropdown  ⚪ tooltip  ⊘ skip"}</span>
+          <span style={{ color: "#888", fontSize: 11 }}>🔵 dropdown  ⚪ tooltip  ⊘ skip</span>
         </div>
         {allLevels.map((level) => {
           const fields = sharedByLevel[level];

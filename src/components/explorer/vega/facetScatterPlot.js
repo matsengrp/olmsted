@@ -1,7 +1,8 @@
 import {
   DEFAULT_CLONE_CONTINUOUS,
   DEFAULT_CLONE_CATEGORICAL,
-  DEFAULT_CLONE_TOOLTIP
+  DEFAULT_CLONE_TOOLTIP,
+  DEFAULT_DISPLAY
 } from "../../../constants/fieldDefaults";
 
 // Note: Vega expressions use == for comparison within expression strings
@@ -202,7 +203,7 @@ const buildFieldOptions = (fieldMetadata) => {
   // display: "tooltip" → tooltip only
   // display: "skip" → excluded entirely
   for (const [field, meta] of Object.entries(fieldMetadata)) {
-    const display = meta.display || "dropdown";
+    const display = meta.display || DEFAULT_DISPLAY;
     if (display === "skip") continue;
 
     const entry = { field, label: meta.label || field };
