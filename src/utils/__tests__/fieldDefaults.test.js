@@ -41,7 +41,7 @@ describe("fieldDefaults", () => {
               lbr: 0.2,
               affinity: 0.3,
               timepoint_multiplicities: [{ timepoint_id: "t1", multiplicity: 2 }],
-              surprise_mutations: []
+              mutations: []
             }
           ]
         }
@@ -53,7 +53,6 @@ describe("fieldDefaults", () => {
       expect(result.node.distance.present).toBe(true);
       expect(result.node.distance.defaulted).toBe(false);
       expect(result.node.lbi.present).toBe(true);
-      expect(result.node.surprise_mutations.present).toBe(true);
 
       // All clone fields should be present
       expect(result.clone.d_call.present).toBe(true);
@@ -77,7 +76,7 @@ describe("fieldDefaults", () => {
               sequence_alignment: "ATCG",
               type: "root",
               parent: null,
-              surprise_mutations: [{ site: 1, surprise_mutsel: 3.5 }]
+              mutations: [{ site: 1, surprise_mutsel: 3.5 }]
             }
           ]
         }
@@ -92,10 +91,6 @@ describe("fieldDefaults", () => {
       expect(result.node.distance.defaulted).toBe(true);
       expect(result.node.multiplicity.present).toBe(false);
       expect(result.node.multiplicity.defaulted).toBe(true);
-
-      // Surprise mutations should be present
-      expect(result.node.surprise_mutations.present).toBe(true);
-      expect(result.node.surprise_mutations.defaulted).toBe(false);
 
       // Clone gene calls should be missing
       expect(result.clone.d_call.present).toBe(false);
@@ -173,13 +168,13 @@ describe("fieldDefaults", () => {
     it("preserves fields not in the defaults map", () => {
       const node = {
         sequence_id: "n1",
-        surprise_mutations: [{ site: 1 }],
+        mutations: [{ site: 1 }],
         custom_field: "preserved"
       };
 
       applyNodeDefaults(node);
 
-      expect(node.surprise_mutations).toEqual([{ site: 1 }]);
+      expect(node.mutations).toEqual([{ site: 1 }]);
       expect(node.custom_field).toBe("preserved");
     });
   });

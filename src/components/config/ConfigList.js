@@ -224,7 +224,12 @@ class ConfigList extends React.Component {
                 <FiRefreshCw size={14} />
               </button>
             )}
-            <button type="button" style={applyButtonStyle} onClick={() => this.handleApply(config)} title="Apply this configuration">
+            <button
+              type="button"
+              style={applyButtonStyle}
+              onClick={() => this.handleApply(config)}
+              title="Apply this configuration"
+            >
               <FiCheck size={14} />
             </button>
             <button
@@ -235,10 +240,20 @@ class ConfigList extends React.Component {
             >
               <FiInfo size={14} />
             </button>
-            <button type="button" style={exportButtonStyle} onClick={() => this.handleExport(config)} title="Export configuration">
+            <button
+              type="button"
+              style={exportButtonStyle}
+              onClick={() => this.handleExport(config)}
+              title="Export configuration"
+            >
               <FiDownload size={14} />
             </button>
-            <button type="button" style={deleteButtonStyle} onClick={() => this.handleDelete(config)} title="Delete configuration">
+            <button
+              type="button"
+              style={deleteButtonStyle}
+              onClick={() => this.handleDelete(config)}
+              title="Delete configuration"
+            >
               <FiTrash2 size={14} />
             </button>
           </div>

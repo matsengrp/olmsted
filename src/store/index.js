@@ -8,7 +8,7 @@ export default function configureStore(initialState) {
   console.log("configure store!");
   const middleware = [
     thunk,
-    changeURLMiddleware  
+    changeURLMiddleware
     // loggingMiddleware
   ];
 
@@ -30,7 +30,7 @@ export default function configureStore(initialState) {
     return state;
   };
   let composeEnhancers = compose;
-   
+
   if (
     process.env.NODE_ENV !== "production" &&
     typeof window === "object" &&
@@ -44,7 +44,7 @@ export default function configureStore(initialState) {
   }
 
   const composedEnhancers = composeEnhancers(applyMiddleware(...middleware));
-   
+
   const store = createStore(rootReducer, initialState, composedEnhancers);
 
   return store;

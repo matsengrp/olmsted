@@ -102,12 +102,12 @@ describe("Incomplete data detection with test fixtures", () => {
       }
     });
 
-    it("leaf nodes have surprise_mutations with expected fields", () => {
+    it("leaf nodes have mutations with expected fields", () => {
       const nodes = surpriseForest.trees[0].nodes;
-      const withSurprise = nodes.filter((n) => n.surprise_mutations && n.surprise_mutations.length > 0);
+      const withSurprise = nodes.filter((n) => n.mutations && n.mutations.length > 0);
       expect(withSurprise.length).toBe(5);
       for (const node of withSurprise) {
-        const m = node.surprise_mutations[0];
+        const m = node.mutations[0];
         expect(m).toHaveProperty("site");
         expect(m).toHaveProperty("surprise_mutsel");
         expect(m).toHaveProperty("selection_contribution");
@@ -152,10 +152,10 @@ describe("Incomplete data detection with test fixtures", () => {
       }
     });
 
-    it("no nodes have surprise_mutations", () => {
+    it("no nodes have mutations", () => {
       for (const tree of forestOnly.trees) {
         const nodes = Array.isArray(tree.nodes) ? tree.nodes : Object.values(tree.nodes);
-        const withSurprise = nodes.filter((n) => n.surprise_mutations);
+        const withSurprise = nodes.filter((n) => n.mutations);
         expect(withSurprise.length).toBe(0);
       }
     });

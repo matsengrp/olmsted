@@ -48,7 +48,8 @@ const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtr
   const filteredNodes = nodes
     .filter((n) => subtreeIds.has(n.sequence_id))
     .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
-  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id));
+  // Keep naive (type: "naive") alignment rows — they define the x-axis and gene regions
+  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id) || m.type === "naive");
   const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
   return { nodes: filteredNodes, alignment: filteredAlignment, leavesCount: filteredCount };
 };
@@ -454,19 +455,19 @@ class TreeViz extends React.Component {
     this.savedSignals = null;
     // User-configurable signals to preserve across re-mounts
     this.preservedSignalNames = [
-      "max_leaf_size",
+      "branch_length_mode",
       "leaf_size_by",
+      "max_leaf_size",
       "branch_width_by",
       "branch_color_by",
       "branch_color_scheme",
-      "min_color_value",
-      "show_labels",
-      "fixed_branch_lengths",
-      "tree_group_width_ratio",
-      "viz_height_ratio",
-      "show_alignment",
+      "mutation_color_by",
+      "mutation_color_scheme",
       "show_mutation_borders",
-      "color_by_surprise"
+      "show_labels",
+      "show_alignment",
+      "tree_group_width_ratio",
+      "viz_height_ratio"
     ];
     // Specs are memoized and regenerated only when dataFields changes
     this.lastDataFields = null;
@@ -489,17 +490,18 @@ class TreeViz extends React.Component {
     this.setupSingleChainView = this.setupSingleChainView.bind(this);
     // List of signals to synchronize between light and heavy chain
     this.syncedSignals = [
-      "max_leaf_size",
+      "branch_length_mode",
       "leaf_size_by",
+      "max_leaf_size",
       "branch_width_by",
       "branch_color_by",
       "branch_color_scheme",
-      "min_color_value",
-      "show_labels",
-      "fixed_branch_lengths",
-      "tree_group_width_ratio",
-      "show_alignment",
+      "mutation_color_by",
+      "mutation_color_scheme",
       "show_mutation_borders",
+      "show_labels",
+      "show_alignment",
+      "tree_group_width_ratio",
       "viz_height_ratio"
     ];
     // Signals that can be changed via drag on either view (bidirectional)
@@ -1086,12 +1088,16 @@ class TreeViz extends React.Component {
     // Regenerate Vega specs when dataset field availability changes
     if (dataFields !== this.lastDataFields) {
       this.lastDataFields = dataFields;
-      this.spec = concatTreeWithAlignmentSpec({ showControls: true, missingFields: dataFields?.missing_fields });
+      const specOpts = {
+        missingFields: dataFields?.missing_fields,
+        fieldMetadata: dataFields?.field_metadata || null
+      };
+      this.spec = concatTreeWithAlignmentSpec({ showControls: true, ...specOpts });
       this.specNoControls = concatTreeWithAlignmentSpec({
         showControls: false,
         showLegend: false,
         topPadding: 0,
-        missingFields: dataFields?.missing_fields
+        ...specOpts
       });
     }
     // Validate clone and tree completeness (#94)

@@ -1,4 +1,5 @@
- 
+import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
+
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
@@ -172,183 +173,263 @@ const createSelectionSignals = () => [
   }
 ];
 
-// Helper function to create control signals (dropdowns)
-const createControlSignals = () => [
-  // Facet control - columns only (row faceting deferred to future PR due to gridline clipping issues)
-  {
-    name: "facet_col_signal",
-    value: "<none>",
-    bind: {
-      name: "Facet by",
-      input: "select",
-      options: ["<none>", "has_seed", "dataset_name", "subject_id", "sample.timepoint_id", "sample.locus"]
-    }
-  },
-  {
-    name: "yField",
-    value: "mean_mut_freq",
-    bind: {
-      name: "Y variable ",
-      input: "select",
-      options: ["mean_mut_freq", "junction_length", "unique_seqs_count"]
-    }
-  },
-  {
-    name: "xField",
-    value: "unique_seqs_count",
-    bind: {
-      name: "X variable ",
-      input: "select",
-      options: ["unique_seqs_count", "junction_length", "mean_mut_freq"]
-    }
-  },
-  {
-    name: "colorBy",
-    value: "<none>",
-    bind: {
-      name: "Color by ",
-      input: "select",
-      options: ["<none>", "subject_id", "sample.timepoint_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]
-    }
-  },
-  {
-    name: "shapeBy",
-    value: "<none>",
-    bind: {
-      name: "Shape by ",
-      input: "select",
-      options: ["<none>", "sample.timepoint_id", "subject_id", "v_call", "d_call", "j_call", "has_seed", "sample.locus"]
-    }
-  },
-  {
-    name: "sizeBy",
-    value: "<none>",
-    bind: {
-      name: "Size by ",
-      input: "select",
-      options: ["<none>", "unique_seqs_count", "mean_mut_freq", "junction_length"]
-    }
-  },
-  {
-    name: "symbolSize",
-    value: 1,
-    bind: {
-      name: "Symbol size ",
-      input: "range",
-      min: 0.1,
-      max: 3,
-      step: 0.1
-    }
-  },
-  {
-    name: "symbolOpacity",
-    value: 0.4,
-    bind: {
-      name: "Symbol opacity ",
-      input: "range",
-      min: 0.1,
-      max: 1,
-      step: 0.05
-    }
-  },
-  {
-    name: "filledShapes",
-    value: false,
-    bind: {
-      input: "checkbox",
-      name: "Filled shapes"
-    }
-  },
-  // Plot height ratio control - allows adjusting plot height as fraction of window
-  // Also controlled by dragging the bottom divider
-  {
-    name: "bottom_divider_dragging",
-    value: false,
-    on: [
-      {
-        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
-        update: "true"
-      },
-      {
-        events: "window:mouseup, window:touchend",
-        update: "false"
-      }
-    ]
-  },
-  {
-    name: "bottom_divider_drag_start_y",
-    value: 0,
-    on: [
-      {
-        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
-        update: "event.clientY"
-      }
-    ]
-  },
-  {
-    name: "bottom_divider_drag_start_ratio",
-    value: 1.0,
-    on: [
-      {
-        events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
-        update: "plot_height_ratio"
-      }
-    ]
-  },
-  {
-    name: "plot_height_ratio",
-    value: 1.0,
-    bind: {
-      name: "Plot height",
-      input: "range",
-      min: 0.75,
-      max: 1.5,
-      step: 0.05
-    },
-    on: [
-      {
-        events: {
-          source: "window",
-          type: "mousemove",
-          between: [
-            { source: "scope", type: "mousedown", markname: "bottom_divider" },
-            { source: "window", type: "mouseup" }
-          ]
-        },
-        // Calculate new ratio based on drag distance relative to window height
-        // Round to 0.05 increments for cleaner values
-        update:
-          "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
-      },
-      {
-        events: {
-          type: "touchmove",
-          between: [
-            { source: "scope", type: "touchstart", markname: "bottom_divider" },
-            { source: "window", type: "touchend" }
-          ]
-        },
-        // Round to 0.05 increments for cleaner values
-        update:
-          "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
-      }
-    ]
-  },
-  {
-    name: "brush_x_field",
-    value: null,
-    on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
-  },
-  {
-    name: "brush_y_field",
-    value: null,
-    on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
-  },
-  {
-    name: "locus_value",
-    update: "data('locus').length ? data('locus')[0].locus : null"
+/**
+ * Build continuous, categorical, and tooltip arrays from field_metadata.
+ * Falls back to hardcoded defaults when metadata is absent.
+ *
+ * @param {Object|null} fieldMetadata - field_metadata.clone from dataset
+ * @returns {{ continuous: string[], categorical: string[], tooltip: Object[] }}
+ */
+const buildFieldOptions = (fieldMetadata) => {
+  // fieldMetadata should always be resolved by resolveFieldMetadata before reaching here
+  if (!fieldMetadata) {
+    return { continuous: [], categorical: [], tooltip: [] };
   }
-];
+
+  const continuous = [];
+  const categorical = [];
+  const tooltip = [];
+
+  // field_metadata is resolved with builtins merged (by resolveFieldMetadata)
+  // display: "dropdown" (default) → dropdown + tooltip based on type
+  // display: "tooltip" → tooltip only
+  // display: "skip" → excluded entirely
+  for (const [field, meta] of Object.entries(fieldMetadata)) {
+    const display = meta.display || DEFAULT_DISPLAY;
+    if (display === "skip") continue;
+
+    const entry = { field, label: meta.label || field };
+    if (meta.format) entry.format = meta.format;
+    if (meta.expr) entry.expr = meta.expr;
+
+    if (display === "tooltip") {
+      tooltip.push(entry);
+    } else if (meta.type === "continuous") {
+      continuous.push(field);
+      tooltip.push(entry);
+    } else if (meta.type === "categorical") {
+      categorical.push(field);
+      tooltip.push(entry);
+    } else {
+      // Other types (json, list, dna, etc.) → tooltip only
+      tooltip.push(entry);
+    }
+  }
+  return { continuous, categorical, tooltip };
+};
+
+/**
+ * Build a Vega tooltip signal expression from tooltip field entries.
+ * Each entry can have: field, label, format (for numbers), expr (custom expression).
+ *
+ * @param {Object[]} tooltipFields - Array of { field, label, format?, expr? }
+ * @returns {string} Vega expression string for the tooltip signal
+ */
+const buildTooltipSignal = (tooltipFields) => {
+  const parts = tooltipFields.map((t) => {
+    const label = t.label.replace(/'/g, "\\'");
+    if (t.expr) {
+      return `'${label}': ${t.expr}`;
+    }
+    if (t.format) {
+      return `'${label}': format(datum['${t.field}'], '${t.format}')`;
+    }
+    // Access nested fields (e.g., "sample.locus") via bracket notation
+    let accessor;
+    if (t.field.includes(".")) {
+      const [parent, child] = t.field.split(".");
+      accessor = `datum['${parent}'] ? datum['${parent}']['${child}'] : ''`;
+    } else {
+      accessor = `datum['${t.field}']`;
+    }
+    return `'${label}': ${accessor}`;
+  });
+  return "{" + parts.join(", ") + "}";
+};
+
+// Helper function to create control signals (dropdowns)
+const createControlSignals = (fieldMetadata) => {
+  const { continuous, categorical } = buildFieldOptions(fieldMetadata);
+  const yDefault = continuous.includes("mean_mut_freq") ? "mean_mut_freq" : continuous[0];
+  const xDefault = continuous.includes("unique_seqs_count") ? "unique_seqs_count" : continuous[0];
+
+  return [
+    // Facet control - columns only (row faceting deferred to future PR due to gridline clipping issues)
+    {
+      name: "facet_col_signal",
+      value: "<none>",
+      bind: {
+        name: "Facet by",
+        input: "select",
+        options: ["<none>", ...categorical]
+      }
+    },
+    {
+      name: "yField",
+      value: yDefault,
+      bind: {
+        name: "Y variable ",
+        input: "select",
+        options: continuous
+      }
+    },
+    {
+      name: "xField",
+      value: xDefault,
+      bind: {
+        name: "X variable ",
+        input: "select",
+        options: continuous
+      }
+    },
+    {
+      name: "colorBy",
+      value: "<none>",
+      bind: {
+        name: "Color by ",
+        input: "select",
+        options: ["<none>", ...categorical]
+      }
+    },
+    {
+      name: "shapeBy",
+      value: "<none>",
+      bind: {
+        name: "Shape by ",
+        input: "select",
+        options: ["<none>", ...categorical]
+      }
+    },
+    {
+      name: "sizeBy",
+      value: "<none>",
+      bind: {
+        name: "Size by ",
+        input: "select",
+        options: ["<none>", ...continuous]
+      }
+    },
+    {
+      name: "symbolSize",
+      value: 1,
+      bind: {
+        name: "Symbol size ",
+        input: "range",
+        min: 0.1,
+        max: 3,
+        step: 0.1
+      }
+    },
+    {
+      name: "symbolOpacity",
+      value: 0.4,
+      bind: {
+        name: "Symbol opacity ",
+        input: "range",
+        min: 0.1,
+        max: 1,
+        step: 0.05
+      }
+    },
+    {
+      name: "filledShapes",
+      value: false,
+      bind: {
+        input: "checkbox",
+        name: "Filled shapes"
+      }
+    },
+    // Plot height ratio control - allows adjusting plot height as fraction of window
+    // Also controlled by dragging the bottom divider
+    {
+      name: "bottom_divider_dragging",
+      value: false,
+      on: [
+        {
+          events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+          update: "true"
+        },
+        {
+          events: "window:mouseup, window:touchend",
+          update: "false"
+        }
+      ]
+    },
+    {
+      name: "bottom_divider_drag_start_y",
+      value: 0,
+      on: [
+        {
+          events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+          update: "event.clientY"
+        }
+      ]
+    },
+    {
+      name: "bottom_divider_drag_start_ratio",
+      value: 1.0,
+      on: [
+        {
+          events: "@bottom_divider:mousedown, @bottom_divider:touchstart",
+          update: "plot_height_ratio"
+        }
+      ]
+    },
+    {
+      name: "plot_height_ratio",
+      value: 1.0,
+      bind: {
+        name: "Plot height",
+        input: "range",
+        min: 0.75,
+        max: 1.5,
+        step: 0.05
+      },
+      on: [
+        {
+          events: {
+            source: "window",
+            type: "mousemove",
+            between: [
+              { source: "scope", type: "mousedown", markname: "bottom_divider" },
+              { source: "window", type: "mouseup" }
+            ]
+          },
+          // Calculate new ratio based on drag distance relative to window height
+          // Round to 0.05 increments for cleaner values
+          update:
+            "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+        },
+        {
+          events: {
+            type: "touchmove",
+            between: [
+              { source: "scope", type: "touchstart", markname: "bottom_divider" },
+              { source: "window", type: "touchend" }
+            ]
+          },
+          // Round to 0.05 increments for cleaner values
+          update:
+            "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.75, 1.5)"
+        }
+      ]
+    },
+    {
+      name: "brush_x_field",
+      value: null,
+      on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
+    },
+    {
+      name: "brush_y_field",
+      value: null,
+      on: [{ events: { signal: "facet_col_signal" }, update: "null" }]
+    },
+    {
+      name: "locus_value",
+      update: "data('locus').length ? data('locus')[0].locus : null"
+    }
+  ];
+};
 
 // Helper function to create zoom/pan signals
 const createZoomPanSignals = () => [
@@ -613,10 +694,10 @@ const createZoomPanSignals = () => [
 ];
 
 // Helper function to create all signals
-const createSignals = () => [
+const createSignals = (fieldMetadata) => [
   ...createLayoutSignals(),
   ...createSelectionSignals(),
-  ...createControlSignals(),
+  ...createControlSignals(fieldMetadata),
   ...createZoomPanSignals()
 ];
 
@@ -966,7 +1047,7 @@ const createBrushTranslateSignals = () => [
 ];
 
 // Helper function to create brush marks
-const createBrushMarks = () => [
+const createBrushMarks = (tooltipSignal) => [
   {
     name: "brush_brush_bg",
     type: "rect",
@@ -992,7 +1073,7 @@ const createBrushMarks = () => [
     clip: true,
     encode: {
       // eslint-disable-next-line no-use-before-define
-      update: createSymbolEncoding()
+      update: createSymbolEncoding(tooltipSignal)
     }
   },
   {
@@ -1327,25 +1408,12 @@ const createBrushMarks = () => [
 ];
 
 // Helper function to create symbol encoding
-const createSymbolEncoding = () => ({
+const createSymbolEncoding = (tooltipSignal) => ({
   x: { scale: "x", field: { signal: "xField" } },
   y: { scale: "y", field: { signal: "yField" } },
   opacity: [{ test: "indata('selected', 'ident', datum.ident)", value: 1 }, { signal: "symbolOpacity" }],
   tooltip: {
-    signal:
-      "{" +
-      "'Clone ID': datum.clone_id, " +
-      "'Dataset': datum.dataset_name || '', " +
-      "'Sample': datum.sample ? datum.sample.sample_id : '', " +
-      "'Subject': datum.subject_id, " +
-      "'Locus': datum.sample ? datum.sample.locus : '', " +
-      "'Unique Sequences': datum.unique_seqs_count, " +
-      "'Mean Mutation Freq': format(datum.mean_mut_freq, '.3f'), " +
-      "'Junction Length': datum.junction_length, " +
-      "'V Gene': datum.v_call, " +
-      "'J Gene': datum.j_call, " +
-      "'Has Seed': datum.has_seed ? 'Yes' : 'No'" +
-      "}"
+    signal: tooltipSignal
   },
   fill: [
     { test: "!filledShapes", value: "transparent" },
@@ -1397,27 +1465,29 @@ const createCellAxes = () => [
 ];
 
 // Helper function to create the complete cell mark
-const createCellMark = () => ({
-  name: "cell",
-  type: "group",
-  style: "cell",
-  clip: true,
-  from: {
-    facet: { name: "facet", data: "data_0", groupby: ["facet_col_field"] }
-  },
-  sort: { field: ["datum.facet_col_field"], order: "ascending" },
-  encode: {
-    update: {
-      width: { signal: "child_width" },
-      height: { signal: "child_height" },
-      // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
-      cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'crosshair'" }
-    }
-  },
-  signals: createCellSignals(),
-  marks: createBrushMarks(),
-  axes: createCellAxes()
-});
+const createCellMark = (tooltipSignal) => {
+  return {
+    name: "cell",
+    type: "group",
+    style: "cell",
+    clip: true,
+    from: {
+      facet: { name: "facet", data: "data_0", groupby: ["facet_col_field"] }
+    },
+    sort: { field: ["datum.facet_col_field"], order: "ascending" },
+    encode: {
+      update: {
+        width: { signal: "child_width" },
+        height: { signal: "child_height" },
+        // Show move cursor (cross with arrows) in zoom mode, default pointer in select mode
+        cursor: { signal: "interaction_mode === 'zoom' ? 'move' : 'crosshair'" }
+      }
+    },
+    signals: createCellSignals(),
+    marks: createBrushMarks(tooltipSignal),
+    axes: createCellAxes()
+  };
+};
 
 // Helper function to create bottom divider for height resizing
 const createBottomDivider = () => ({
@@ -1440,17 +1510,25 @@ const createBottomDivider = () => ({
 });
 
 // Helper function to create all marks
-const createMarks = () => [...createHeaderMarks(), createCellMark(), createBottomDivider()];
+const createMarks = (tooltipSignal) => [...createHeaderMarks(), createCellMark(tooltipSignal), createBottomDivider()];
 
 // Main function that composes the complete spec
-const facetClonalFamiliesVizSpec = () => {
+/**
+ * Generate the scatterplot Vega spec.
+ * @param {Object} [options]
+ * @param {Object} [options.fieldMetadata] - field_metadata.clone from dataset; if provided, dropdown options are built dynamically
+ */
+const facetClonalFamiliesVizSpec = ({ fieldMetadata } = {}) => {
+  const { tooltip: tooltipFields } = buildFieldOptions(fieldMetadata);
+  const tooltipSignal = buildTooltipSignal(tooltipFields);
+
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
     autosize: { type: "pad", resize: true },
     data: createDataConfiguration(),
-    signals: createSignals(),
+    signals: createSignals(fieldMetadata),
     layout: createLayout(),
-    marks: createMarks(),
+    marks: createMarks(tooltipSignal),
     scales: createScales(),
     legends: createLegends(),
     config: {

@@ -1,12 +1,184 @@
- 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
 
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
+import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
+
+/**
+ * Build tree dropdown options from field_metadata, falling back to
+ * filtered defaults when metadata is absent.
+ *
+ * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @param {Object|null} branchMetadata - field_metadata.branch from dataset
+ * @param {Set|null} missingSet - Set of missing field names (e.g., "node.lbi")
+ * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
+ */
+/**
+ * Build tree dropdown options from node and branch metadata.
+ * Node and branch continuous fields are combined since branch metrics
+ * are stored on the child node (1:1 relationship).
+ * "<none>" is always the first option. "parent" is always available for branch color.
+ */
+const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
+  const seen = new Set();
+  const continuousFields = [];
+
+  for (const metadata of [nodeMetadata, branchMetadata]) {
+    if (!metadata) continue;
+    for (const [field, meta] of Object.entries(metadata)) {
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
+        continuousFields.push(field);
+        seen.add(field);
+      }
+    }
+  }
+
+  return {
+    leafSize: ["<none>", ...continuousFields],
+    branchWidth: ["<none>", ...continuousFields],
+    branchColor: ["<none>", ...continuousFields, "parent"]
+  };
+};
+
+/**
+ * Build a Vega tooltip signal for tree node hover.
+ * Includes fields from both node and branch metadata (branch metrics are
+ * stored on the child node, so they're accessible on the same datum).
+ *
+ * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @param {Object|null} branchMetadata - field_metadata.branch from dataset
+ * @returns {string} Vega expression for the tooltip signal
+ */
+/**
+ * Build node tooltip by iterating resolved node + branch metadata.
+ * Builtins are already in the metadata (injected by resolveFieldMetadata).
+ * Order follows metadata key order (builtins first, then CLI fields).
+ */
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, _hasFieldMetadata = false, extraFields = []) => {
+  const fields = [];
+  const seen = new Set();
+
+  // Add all node-level fields (builtins are already first in the metadata)
+  for (const metadata of [nodeMetadata, branchMetadata]) {
+    if (!metadata) continue;
+    for (const [field, meta] of Object.entries(metadata)) {
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (!seen.has(field) && display !== "skip") {
+        fields.push({ field, label: meta.label || field, format: meta.format });
+        seen.add(field);
+      }
+    }
+  }
+
+  // Append any extra fields (e.g., timepoint data)
+  const allFields = fields.concat(extraFields);
+
+  const parts = allFields.map((f) => {
+    if (f.format) {
+      return `"${f.label}": datum["${f.field}"] != null ? format(datum["${f.field}"], "${f.format}") : "N/A"`;
+    }
+    return `"${f.label}": datum["${f.field}"] != null ? datum["${f.field}"] : "N/A"`;
+  });
+  return "{" + parts.join(", ") + "}";
+};
+
+/**
+ * Build a node tooltip signal that includes timepoint data.
+ * Only adds timepoint fields when metadata is absent (fallback) or
+ * when metadata explicitly declares timepoint fields.
+ */
+const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
+  // Only include timepoint fields when no metadata exists (old data likely has timepoints)
+  // When metadata is present, timepoint fields should be declared there if available
+  if (hasFieldMetadata) {
+    return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata);
+  }
+  const timepointFields = [
+    { field: "timepoint_multiplicity_key", label: "Timepoint" },
+    { field: "timepoint_multiplicity_value", label: "Timepoint Multiplicity" }
+  ];
+  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata, timepointFields);
+};
+
+// Built-in mutation fields — always in tooltip regardless of metadata
+// From/To show AA with codon in parentheses: e.g., "S (AGC)"
+// Structural mutation tooltip fields — always shown, with Vega rendering expressions
+const MUTATION_TOOLTIP_TEMPLATE = [
+  { field: "position", label: "Position", format: "" },
+  { field: "seq_id", label: "Sequence ID" },
+  {
+    field: "mut_from",
+    label: "From",
+    expr: "datum.from_codon ? datum.mut_from + ' (' + datum.from_codon + ')' : datum.mut_from"
+  },
+  { field: "mut_to", label: "To", expr: "datum.to_codon ? datum.mut_to + ' (' + datum.to_codon + ')' : datum.mut_to" }
+];
+
+// Pre-built basic mutation tooltip (used by naive row and lineage tooltips)
+const BASIC_MUTATION_TOOLTIP = (() => {
+  const parts = MUTATION_TOOLTIP_TEMPLATE.map((f) => {
+    if (f.expr) return `"${f.label}": ${f.expr}`;
+    if (f.format !== undefined) return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
+    return `"${f.label}": ''+datum["${f.field}"]`;
+  });
+  return "{" + parts.join(", ") + "}";
+})();
+
+/**
+ * Build mutation tooltip signals — one for when coloring by a metric, one for default AA view.
+ * When coloring by a metric, shows all mutation metadata fields.
+ * When in AA mode, shows only the built-in structural fields.
+ *
+ * @param {Object|null} mutationMetadata - field_metadata.mutation from dataset
+ * @returns {{ metricTooltip: string, aaTooltip: string }}
+ */
+const buildMutationTooltipSignals = (mutationMetadata) => {
+  // Build the AA-mode tooltip (always just structural fields)
+  const aaParts = MUTATION_TOOLTIP_TEMPLATE.map((f) => {
+    if (f.expr) {
+      return `"${f.label}": ${f.expr}`;
+    }
+    if (f.format !== undefined) {
+      return `"${f.label}": format(datum["${f.field}"], "${f.format}")`;
+    }
+    return `"${f.label}": ''+datum["${f.field}"]`;
+  });
+  const aaTooltip = "{" + aaParts.join(", ") + "}";
+
+  // Build the metric-mode tooltip (structural fields + all mutation metadata fields)
+  const seen = new Set(MUTATION_TOOLTIP_TEMPLATE.map((f) => f.field));
+  const metricParts = [...aaParts];
+
+  if (mutationMetadata) {
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      if (seen.has(field)) continue;
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (display === "skip") continue;
+      seen.add(field);
+      const label = meta.label || field;
+      if (meta.type === "continuous") {
+        metricParts.push(`"${label}": datum["${field}"] != null ? format(datum["${field}"], ".2f") : "N/A"`);
+      } else {
+        metricParts.push(`"${label}": datum["${field}"] != null ? ''+datum["${field}"] : "N/A"`);
+      }
+    }
+  }
+  // No fallback — without mutation metadata, only structural fields are shown
+
+  const metricTooltip = "{" + metricParts.join(", ") + "}";
+  return { metricTooltip, aaTooltip };
+};
 
 const concatTreeWithAlignmentSpec = (options = {}) => {
-  const { showControls = true, showLegend = true, topPadding = 20, missingFields = null } = options;
+  const {
+    showControls = true,
+    showLegend = true,
+    topPadding = 20,
+    missingFields = null,
+    fieldMetadata = null
+  } = options;
 
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
@@ -14,19 +186,70 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
   const missingSet = missingFields ? new Set(missingFields) : null;
 
-  /**
-   * Filter dropdown options to exclude fields not present in the dataset.
-   * @param {string[]} opts - Full list of options
-   * @param {string} category - "node" or "clone"
-   * @returns {string[]} Filtered options
-   */
-  const filterOptions = (opts, category) => {
-    if (!missingSet) return opts;
-    return opts.filter((opt) => {
-      if (opt === "<none>" || opt === "parent") return true;
-      return !missingSet.has(`${category}.${opt}`);
-    });
+  // Build dropdown options from field_metadata or filtered defaults
+  const nodeMetadata = fieldMetadata?.node || null;
+  const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null, missingSet);
+
+  // Check if a node-level field is available (used for branch length mode).
+  const hasNodeField = (field) => {
+    if (nodeMetadata) return field in nodeMetadata;
+    if (missingSet) return !missingSet.has(`node.${field}`);
+    return field === "distance"; // only assume distance by default
   };
+
+  // Build dynamic node tooltip signals (includes branch metrics on child nodes)
+  const branchMetadata = fieldMetadata?.branch || null;
+  const hasFieldMeta = !!fieldMetadata;
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMeta);
+  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
+
+  // Build mutation coloring options from field_metadata.mutation
+  // display: "dropdown" (default) → color option based on type
+  // display: "tooltip" → tooltip only, not in color dropdown
+  // display: "skip" → excluded entirely
+  const mutationMetadata = fieldMetadata?.mutation || null;
+  const mutationColorOptions = [];
+  const mutationColorScales = {}; // field → { domain } for continuous heatmap fields
+
+  if (mutationMetadata) {
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      const display = meta.display || DEFAULT_DISPLAY;
+      if (display === "skip") continue;
+      if (display === "tooltip") continue; // tooltip-only mutations not in color dropdown
+
+      if (meta.type === "aa" || meta.type === "dna") {
+        mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "aa" });
+      } else if (meta.type === "continuous") {
+        const raw = meta.range || [0, 15];
+        const domain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
+        mutationColorScales[field] = { domain, label: meta.label || field };
+        mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "continuous" });
+      }
+    }
+  }
+
+  // Safety: ensure an AA coloring option always exists (should be injected by resolveFieldMetadata)
+  const hasAaOption = mutationColorOptions.some((o) => o.scaleType === "aa");
+  if (!hasAaOption) {
+    mutationColorOptions.unshift({ value: "child_aa", label: "Child Amino Acid", scaleType: "aa" });
+  }
+
+  // Build the dropdown option values and find the first AA option for default
+  const mutationColorValues = mutationColorOptions.map((o) => o.value);
+  const defaultMutationColor = mutationColorOptions.find((o) => o.scaleType === "aa")?.value || mutationColorValues[0];
+  // The first continuous field (if any) is used for the color_by_mutation_metric backward compat signal
+  const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
+
+  // Build domain and label lookups for continuous mutation fields (used by scale/legend signals)
+  const mutationDomainMap = {};
+  const mutationLabelMap = {};
+  for (const [field, scale] of Object.entries(mutationColorScales)) {
+    mutationDomainMap[field] = scale.domain;
+    mutationLabelMap[field] = scale.label;
+  }
+
+  // Build dynamic mutation tooltip — always shows all fields regardless of color mode
+  const { metricTooltip: mutationTooltipSignal } = buildMutationTooltipSignals(mutationMetadata);
 
   return {
     $schema: "https://vega.github.io/schema/vega/v6.json",
@@ -512,104 +735,91 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "leaf_size",
         update: "clamp(height/leaves_count_incl_naive, 5, 1000)"
       },
-      // Size of leaves - they are mapped to a range with
-      // the value of this signal as the maximum
+      // === TREE CONTROLS ===
+      // Branch length mode: "distance" uses actual branch lengths, "fixed" uses equal lengths
       {
-        name: "max_leaf_size",
-        value: 50,
+        name: "branch_length_mode",
+        value: hasNodeField("distance") ? "distance" : "fixed",
         ...maybeAddBind({
-          max: 100,
-          step: 1,
-          input: "range",
-          min: 1
+          input: "select",
+          name: "Branch length",
+          options: hasNodeField("distance") ? ["distance", "fixed"] : ["fixed"]
         })
       },
-      // HEIGHTSCALE SIGNALS END
+      // Computed boolean for backward compat with existing spec conditionals
       {
-        // Metadata field to use for sizing the leaves
+        name: "fixed_branch_lengths",
+        update: 'branch_length_mode === "fixed"'
+      },
+      {
         name: "leaf_size_by",
         value: "<none>",
         ...maybeAddBind({
           input: "select",
-          options: filterOptions(
-            ["<none>", "multiplicity", "cluster_multiplicity", "affinity", "scaled_affinity"],
-            "node"
-          )
+          name: "Leaf size by",
+          options: treeFields.leafSize
         })
       },
+      {
+        name: "max_leaf_size",
+        value: 50,
+        ...maybeAddBind({
+          name: "Max leaf size",
+          input: "range",
+          min: 1,
+          max: 100,
+          step: 1
+        })
+      },
+      {
+        name: "branch_width_by",
+        value: "<none>",
+        ...maybeAddBind({ input: "select", name: "Branch width by", options: treeFields.branchWidth })
+      },
+      {
+        name: "branch_color_by",
+        value: "parent",
+        ...maybeAddBind({ input: "select", name: "Branch color by", options: treeFields.branchColor })
+      },
+      {
+        name: "branch_color_scheme",
+        value: "blueorange",
+        ...maybeAddBind({
+          input: "select",
+          name: "Branch color scheme",
+          options: ["blueorange", "purples", "viridis", "blues", "greens", "oranges"]
+        })
+      },
+      {
+        name: "min_color_value",
+        value: 0
+      },
+      // Internal: leaf/branch derived signals (no user controls)
       {
         name: "leaf_size_by_legend_label",
         update: '"Timepoint color key (from "+leaf_size_by+"):"'
       },
       {
-        // Defines what key to use for leaf pie chart values, specifically in the cases of timepoint multiplicities
         name: "leaf_data_map",
         update:
           '{"scaled_affinity": "scaled_affinity", "affinity": "affinity", "cluster_multiplicity": "cluster_timepoint_multiplicities", "multiplicity": "timepoint_multiplicities"}'
       },
       {
-        // Seq metric to use for sizing branches;
-        // uses value from the child of the branch
-        name: "branch_width_by",
-        value: "<none>",
-        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi"], "node") })
-      },
-      {
-        // Seq metric to use for coloring branches;
-        // uses value from the child of the branch
-        name: "branch_color_by",
-        value: "parent",
-        ...maybeAddBind({ input: "select", options: filterOptions(["<none>", "lbr", "lbi", "parent"], "node") })
-      },
-      {
-        name: "branch_color_scheme",
-        value: "redblue",
-        ...maybeAddBind({ input: "select", options: ["redblue", "purples"] })
-      },
-      {
-        name: "branch_color_scheme_map",
-        update: '{purples: slice(full_purple_range, min_color_value), redblue: ["darkblue", "red"]}'
-      },
-      {
-        name: "min_color_value",
-        value: 0,
-        ...maybeAddBind({
-          input: "range",
-          max: 4,
-          step: 1,
-          min: 0
-        })
-      },
-      {
-        name: "full_purple_range",
-        value: ["#f7fcfd", "#e0ecf4", "#bfd3e6", "#9ebcda", "#8c96c6", "#8c6bb1", "#88419d", "#810f7c", "#4d004b"]
-      },
-      {
-        // If a branch_color_by option (a seq metric) should be colored categorically
-        // rather than sequentially, put its name here.
         name: "categorical_seq_metrics",
         value: '["parent"]'
       },
       {
-        // Choose the color scheme/scale to use depending on the selected metric
         name: "branch_color_scale",
         update:
           'indexof(categorical_seq_metrics, branch_color_by) > 0 ? "branch_color_categorical" : "branch_color_sequential"'
       },
+      // === DISPLAY CONTROLS ===
       {
         name: "show_labels",
         value: true,
         ...maybeAddBind({
           input: "checkbox",
           name: "Show labels"
-        })
-      },
-      {
-        name: "fixed_branch_lengths",
-        value: missingSet ? missingSet.has("node.distance") : false,
-        ...maybeAddBind({
-          input: "checkbox",
-          name: "Fixed branch lengths"
         })
       },
       // Padding to add to the initial tree size to not clip labels
@@ -1088,13 +1298,69 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show mutation borders"
         })
       },
-      // Toggle to color mutations by surprise score (hidden when dataset has no surprise data)
+      // Mutation coloring mode: built from field_metadata.mutation or fallback detection
       {
-        name: "color_by_surprise",
-        value: false,
-        ...(!missingSet || !missingSet.has("node.surprise_mutations")
-          ? maybeAddBind({ input: "checkbox", name: "Color by surprise score" })
-          : {})
+        name: "mutation_color_by",
+        value: defaultMutationColor,
+        ...maybeAddBind({
+          input: "select",
+          name: "Mutation color by",
+          options: mutationColorValues
+        })
+      },
+      // Mutation color scheme (for continuous heatmap fields)
+      {
+        name: "mutation_color_scheme",
+        value: "oranges",
+        ...maybeAddBind({
+          input: "select",
+          name: "Mutation color scheme",
+          options: [
+            "oranges",
+            "blues",
+            "greens",
+            "reds",
+            "purples",
+            "viridis",
+            "magma",
+            "inferno",
+            "plasma",
+            "blueorange"
+          ]
+        })
+      },
+      // Computed boolean: true when any continuous mutation field is selected (not AA)
+      // Used by fill encoding and legend visibility throughout the spec
+      {
+        name: "color_by_mutation_metric",
+        update: firstContinuousMutField
+          ? `indexof([${mutationColorOptions
+              .filter((o) => o.scaleType === "continuous")
+              .map((o) => `"${o.value}"`)
+              .join(", ")}], mutation_color_by) >= 0`
+          : "false"
+      },
+      // Dynamic domain for the mutation heatmap color scale
+      // Switches based on which continuous mutation field is selected
+      {
+        name: "mutation_domain_map",
+        value: mutationDomainMap
+      },
+      {
+        name: "mutation_color_domain",
+        update:
+          Object.keys(mutationDomainMap).length > 0 ? `mutation_domain_map[mutation_color_by] || [0, 15]` : "[0, 15]"
+      },
+      {
+        name: "mutation_label_map",
+        value: mutationLabelMap
+      },
+      {
+        name: "mutation_color_label",
+        update:
+          Object.keys(mutationLabelMap).length > 0
+            ? `mutation_label_map[mutation_color_by] || mutation_color_by`
+            : "mutation_color_by"
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
@@ -1531,8 +1797,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   field: "x"
                 },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A"}'
+                  signal: nodeTooltip
                 }
               },
               enter: {
@@ -1564,8 +1829,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // Set inner radius to get donuts instead of pie charts
                 // "innerRadius": {"scale": "leaf_size_scale", "field": {"signal": "leaf_size_by"}},
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 },
                 outerRadius: {
                   scale: "leaf_size_scale",
@@ -1593,8 +1857,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 size: [{ test: "show_labels", value: 1 }, { signal: "leaf_size*2" }],
                 cursor: { value: "pointer" },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 }
               }
             },
@@ -1631,8 +1894,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   field: "x"
                 },
                 tooltip: {
-                  signal:
-                    '{"id": datum["sequence_id"], "parent": datum["parent"], "distance": datum["distance"] != null ? datum["distance"] : "N/A", "depth": datum["node_depth"] != null ? datum["node_depth"] : "N/A", "lbi": datum["lbi"] != null ? datum["lbi"] : "N/A", "lbr": datum["lbr"] != null ? datum["lbr"] : "N/A", "affinity": datum["affinity"] != null ? datum["affinity"] : "N/A", "scaled_affinity": datum["scaled_affinity"] != null ? datum["scaled_affinity"] : "N/A", "multiplicity": datum["multiplicity"] != null ? datum["multiplicity"] : "N/A", "cluster_multiplicity": datum["cluster_multiplicity"] != null ? datum["cluster_multiplicity"] : "N/A", "timepoint": datum["timepoint_multiplicity_key"], "timepoint multiplicity": datum["timepoint_multiplicity_value"]}'
+                  signal: nodeTooltipWithTimepoint
                 }
               }
             },
@@ -2096,8 +2358,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     stroke: { value: "black" },
                     strokeWidth: { value: 0.5 },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: { signal: "3*naive_group_height/4" },
@@ -2129,8 +2390,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     y: { signal: "3*naive_group_height/4" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -2299,21 +2559,20 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         value: null
                       },
                       {
-                        test: "color_by_surprise && datum.surprise_mutsel !== null",
+                        test: "color_by_mutation_metric && datum[mutation_color_by] !== null",
                         scale: "surprise_color",
-                        field: "surprise_mutsel"
+                        field: { signal: "mutation_color_by" }
                       },
                       {
-                        test: "color_by_surprise && datum.surprise_mutsel === null",
+                        test: "color_by_mutation_metric && datum[mutation_color_by] === null",
                         value: null
                       },
-                      { scale: "aa_color", field: "mut_to" }
+                      { scale: "aa_color", field: { signal: "mutation_color_by" } }
                     ],
                     stroke: { signal: "show_mutation_borders ? 'black' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
-                      signal:
-                        'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: mutationTooltipSignal
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: {
@@ -2339,8 +2598,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     stroke: { signal: "show_mutation_borders ? '#333' : null" },
                     strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -2366,8 +2624,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
-                      signal:
-                        '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+                      signal: BASIC_MUTATION_TOOLTIP
                     }
                   }
                 }
@@ -2520,7 +2777,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "branch_color_sequential",
         type: "sequential",
         domain: { signal: "branch_color_extent" },
-        range: { signal: "branch_color_scheme_map[branch_color_scheme]" }
+        range: { scheme: { signal: "branch_color_scheme" } }
       },
       {
         name: "branch_width",
@@ -2589,8 +2846,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "surprise_color",
         type: "linear",
-        domain: [0, 15],
-        range: { scheme: "oranges" },
+        domain: { signal: "mutation_color_domain" },
+        range: {
+          scheme: { signal: "mutation_color_scheme" }
+        },
         clamp: true
       }
     ],
@@ -2604,7 +2863,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         title: "AA color",
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment && !color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && !color_by_mutation_metric ? 1 : 0" } }
           },
           symbols: {
             update: { shape: { value: "square" }, opacity: { value: 0.9 } }
@@ -2615,21 +2874,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "show_alignment && color_by_surprise ? 'Surprise score' : ''" },
+        title: { signal: "show_alignment && color_by_mutation_metric ? mutation_color_label : ''" },
         type: "gradient",
-        gradientLength: { signal: "show_alignment && color_by_surprise ? 100 : 0" },
+        gradientLength: { signal: "show_alignment && color_by_mutation_metric ? 100 : 0" },
         encode: {
           legend: {
-            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" } }
           },
           labels: {
             update: {
-              opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" },
-              fontSize: { signal: "show_alignment && color_by_surprise ? 10 : 0" }
+              opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" },
+              fontSize: { signal: "show_alignment && color_by_mutation_metric ? 10 : 0" }
             }
           },
           gradient: {
-            update: { opacity: { signal: "show_alignment && color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "show_alignment && color_by_mutation_metric ? 1 : 0" } }
           }
         }
       }
@@ -2638,7 +2897,30 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false, colorBySurprise = false } = options;
+  const {
+    showMutationBorders = false,
+    colorByMutationMetric = false,
+    mutationColorField = "surprise_mutsel",
+    mutationMetadata = null
+  } = options;
+
+  // Build dynamic mutation tooltip (same as main tree spec)
+  const { metricTooltip: lineageMutationTooltip } = buildMutationTooltipSignals(mutationMetadata);
+
+  // Compute color scale domain and label from first continuous mutation field
+  let lineageColorDomain = [0, 15];
+  let lineageColorLabel = "Mutation metric";
+  if (mutationMetadata) {
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      if (meta.type === "continuous" && (meta.display || DEFAULT_DISPLAY) !== "skip") {
+        const raw = meta.range || [0, 15];
+        lineageColorDomain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
+        lineageColorLabel = meta.label || field;
+        break;
+      }
+    }
+  }
+
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -2728,8 +3010,13 @@ const seqAlignSpec = (family, options = {}) => {
       },
       // Toggle to color mutations by surprise score - controlled via React state
       {
-        name: "color_by_surprise",
-        value: colorBySurprise
+        name: "color_by_mutation_metric",
+        value: colorByMutationMetric
+      },
+      // The mutation field to color by (e.g., "surprise_mutsel") - synced from tree view
+      {
+        name: "mutation_color_field",
+        value: mutationColorField
       }
     ],
     marks: [
@@ -2816,21 +3103,20 @@ const seqAlignSpec = (family, options = {}) => {
                 value: null
               },
               {
-                test: "color_by_surprise && datum.surprise_mutsel !== null",
+                test: "color_by_mutation_metric && datum[mutation_color_field] !== null",
                 scale: "surprise_color",
-                field: "surprise_mutsel"
+                field: { signal: "mutation_color_field" }
               },
               {
-                test: "color_by_surprise && datum.surprise_mutsel === null",
+                test: "color_by_mutation_metric && datum[mutation_color_field] === null",
                 value: null
               },
-              { scale: "aa_color", field: "mut_to" }
+              { scale: "aa_color", field: { signal: "mutation_color_field" } }
             ],
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
-              signal:
-                'color_by_surprise ? {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"], "surprise_mutsel": datum.surprise_mutsel !== null ? format(datum["surprise_mutsel"], ".1f") : "0.0", "selection_contribution": datum.selection_contribution !== null ? format(datum["selection_contribution"], ".1f") : "N/A", "region": datum.region !== null ? \'\'+datum["region"] : "N/A"} : {"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: lineageMutationTooltip
             },
             xc: { scale: "aa_position", field: "position" },
             yc: { scale: "y", field: "seq_id" },
@@ -2854,8 +3140,7 @@ const seqAlignSpec = (family, options = {}) => {
             stroke: { signal: "show_mutation_borders ? '#333' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
             tooltip: {
-              signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: BASIC_MUTATION_TOOLTIP
             }
           }
         }
@@ -2879,8 +3164,7 @@ const seqAlignSpec = (family, options = {}) => {
             y: { scale: "y", field: "seq_id" },
             x: { scale: "aa_position", field: "position" },
             tooltip: {
-              signal:
-                '{"position": format(datum["position"], ""), "seq_id": \'\'+datum["seq_id"], "mut_to": \'\'+datum["mut_to"], "mut_from": \'\'+datum["mut_from"]}'
+              signal: BASIC_MUTATION_TOOLTIP
             }
           }
         }
@@ -2917,7 +3201,7 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "surprise_color",
         type: "linear",
-        domain: [0, 15],
+        domain: lineageColorDomain,
         range: { scheme: "oranges" },
         clamp: true
       }
@@ -2995,21 +3279,21 @@ const seqAlignSpec = (family, options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "color_by_surprise ? 'Surprise score' : ''" },
+        title: { signal: `color_by_mutation_metric ? '${lineageColorLabel}' : ''` },
         type: "gradient",
-        gradientLength: { signal: "color_by_surprise ? 100 : 0" },
+        gradientLength: { signal: "color_by_mutation_metric ? 100 : 0" },
         encode: {
           legend: {
-            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "color_by_mutation_metric ? 1 : 0" } }
           },
           labels: {
             update: {
-              opacity: { signal: "color_by_surprise ? 1 : 0" },
-              fontSize: { signal: "color_by_surprise ? 10 : 0" }
+              opacity: { signal: "color_by_mutation_metric ? 1 : 0" },
+              fontSize: { signal: "color_by_mutation_metric ? 10 : 0" }
             }
           },
           gradient: {
-            update: { opacity: { signal: "color_by_surprise ? 1 : 0" } }
+            update: { opacity: { signal: "color_by_mutation_metric ? 1 : 0" } }
           }
         }
       }

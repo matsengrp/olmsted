@@ -1,5 +1,6 @@
 import * as vega from "vega";
 import { concatTreeWithAlignmentSpec, seqAlignSpec } from "../clonalFamilyDetails";
+import { resolveFieldMetadata } from "../../../../utils/fileProcessor";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../../constants/aminoAcidColors";
 import {
@@ -15,7 +16,8 @@ describe("concatTreeWithAlignmentSpec", () => {
   let spec;
 
   beforeAll(() => {
-    spec = concatTreeWithAlignmentSpec();
+    const resolved = resolveFieldMetadata(null);
+    spec = concatTreeWithAlignmentSpec({ fieldMetadata: resolved });
   });
 
   it("returns a valid Vega v5 spec", () => {
@@ -150,7 +152,8 @@ describe("concatTreeWithAlignmentSpec", () => {
       expect(getSignal("branch_width_by").value).toBe("<none>");
       expect(getSignal("branch_color_by").value).toBe("parent");
       expect(getSignal("show_labels").value).toBe(true);
-      expect(getSignal("fixed_branch_lengths").value).toBe(false);
+      expect(getSignal("branch_length_mode").value).toBe("distance");
+      expect(getSignal("fixed_branch_lengths").update).toBe('branch_length_mode === "fixed"');
       expect(getSignal("alignment_zoom").value).toBe(1);
       expect(getSignal("alignment_pan").value).toBe(0);
     });

@@ -3,7 +3,12 @@ import React from "react";
 import VegaChart from "../util/VegaChart";
 import * as treesSelector from "../../selectors/trees";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
-import { getPairedClone, getAllClonalFamilies, getHeavyLightClones } from "../../selectors/clonalFamilies";
+import {
+  getPairedClone,
+  getAllClonalFamilies,
+  getHeavyLightClones,
+  getSelectedDatasetFields
+} from "../../selectors/clonalFamilies";
 import { seqAlignSpec } from "./vega/clonalFamilyDetails";
 import Copy from "../util/copy";
 import DownloadFasta from "./downloadFasta";
@@ -12,6 +17,7 @@ import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
 import * as explorerActions from "../../actions/explorer";
 import { VegaExportToolbar } from "../util/VegaExportButton";
+import VegaViewContext from "../config/VegaViewContext";
 
 // Lineage focus viz
 // =================
@@ -62,7 +68,8 @@ const mapStateToProps = (state) => {
     // Lineage settings from Redux
     lineageShowEntire: state.clonalFamilies.lineageShowEntire,
     lineageShowBorders: state.clonalFamilies.lineageShowBorders,
-    lineageChain: state.clonalFamilies.lineageChain
+    lineageChain: state.clonalFamilies.lineageChain,
+    dataFields: getSelectedDatasetFields(state)
   };
 };
 
@@ -74,16 +81,74 @@ const mapStateToProps = (state) => {
   updateLineageChain: explorerActions.updateLineageChain
 })
 class Lineage extends React.Component {
+  static contextType = VegaViewContext;
+
   constructor(props) {
     super(props);
     this.state = {
       vegaViewReady: false,
-      colorBySurprise: false
+      // Cascaded from tree view
+      treeMutationColorBy: null,
+      treeColorByMetric: false
     };
     this.vegaViewRef = null;
+    this.treeViewListenerAttached = false;
+    this.treeViewListeners = [];
+  }
+
+  componentWillUnmount() {
+    this.removeTreeViewListeners();
+  }
+
+  /**
+   * Remove any signal listeners attached to the tree view.
+   */
+  removeTreeViewListeners() {
+    const treeView = this.context?.treeView;
+    if (treeView && this.treeViewListeners.length > 0) {
+      for (const { signal, handler } of this.treeViewListeners) {
+        try {
+          treeView.removeSignalListener(signal, handler);
+        } catch (_e) {
+          // View may already be disposed
+        }
+      }
+    }
+    this.treeViewListeners = [];
+    this.treeViewListenerAttached = false;
   }
 
   componentDidUpdate(prevProps) {
+    // Attach listener to tree view for mutation setting changes
+    const treeView = this.context?.treeView;
+    if (treeView && !this.treeViewListenerAttached) {
+      this.treeViewListenerAttached = true;
+      try {
+        const mutationColorByHandler = (_name, value) => {
+          this.setState({ treeMutationColorBy: value });
+        };
+        const colorByMetricHandler = (_name, value) => {
+          this.setState({ treeColorByMetric: !!value });
+        };
+        treeView.addSignalListener("mutation_color_by", mutationColorByHandler);
+        treeView.addSignalListener("color_by_mutation_metric", colorByMetricHandler);
+        this.treeViewListeners = [
+          { signal: "mutation_color_by", handler: mutationColorByHandler },
+          { signal: "color_by_mutation_metric", handler: colorByMetricHandler }
+        ];
+        // Read initial values
+        this.setState({
+          treeMutationColorBy: treeView.signal("mutation_color_by"),
+          treeColorByMetric: !!treeView.signal("color_by_mutation_metric")
+        });
+      } catch (_e) {
+        // View may not be ready
+      }
+    }
+    // Reset listener references if tree view changes
+    if (!treeView) {
+      this.removeTreeViewListeners();
+    }
     const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
 
     // When family changes, infer the appropriate chain
@@ -128,9 +193,15 @@ class Lineage extends React.Component {
     updateLineageShowBorders(event.target.checked);
   };
 
-  handleColorBySurpriseChange = (event) => {
-    this.setState({ colorBySurprise: event.target.checked });
-  };
+  /**
+   * Get mutation coloring settings cascaded from the tree view.
+   */
+  getTreeMutationSettings() {
+    return {
+      colorByMutationMetric: this.state.treeColorByMetric,
+      mutationColorBy: this.state.treeMutationColorBy
+    };
+  }
 
   handleLineageChainChange = (event) => {
     const { updateLineageChain } = this.props;
@@ -326,9 +397,15 @@ class Lineage extends React.Component {
                 </div>
 
                 <h3>Lineage</h3>
+                {this.state.treeMutationColorBy && (
+                  <div style={{ fontSize: 12, color: "#666", marginBottom: 6 }}>
+                    Coloring by: <strong>{this.state.treeMutationColorBy}</strong>
+                    {this.state.treeColorByMetric && " (heatmap)"}
+                  </div>
+                )}
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
-                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.colorBySurprise ? "surprise" : "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.treeMutationColorBy || "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
                     onNewView={(view) => {
                       this.vegaViewRef = view;
                       if (!this.state.vegaViewReady) {
@@ -343,7 +420,9 @@ class Lineage extends React.Component {
                     }}
                     spec={seqAlignSpec(lineageData, {
                       showMutationBorders,
-                      colorBySurprise: this.state.colorBySurprise
+                      colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric,
+                      mutationColorField: this.getTreeMutationSettings().mutationColorBy || "surprise_mutsel",
+                      mutationMetadata: this.props.dataFields?.field_metadata?.mutation || null
                     })}
                   />
                 </div>
@@ -366,16 +445,6 @@ class Lineage extends React.Component {
                   style={{ marginRight: "6px" }}
                 />
                 Show mutation borders
-              </label>
-              <label htmlFor="color-by-surprise" style={{ cursor: "pointer" }}>
-                <input
-                  id="color-by-surprise"
-                  type="checkbox"
-                  checked={this.state.colorBySurprise}
-                  onChange={this.handleColorBySurpriseChange}
-                  style={{ marginRight: "6px" }}
-                />
-                Color by surprise score
               </label>
               <label htmlFor="show-entire-lineage" style={{ cursor: "pointer" }}>
                 <input

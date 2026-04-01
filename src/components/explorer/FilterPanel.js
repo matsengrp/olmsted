@@ -3,6 +3,8 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -21,26 +23,56 @@ import * as explorerActions from "../../actions/explorer";
  * - Clear all filters button
  */
 
-// Filterable fields configuration
-const FILTER_FIELDS = [
-  {
-    key: "sample.locus",
-    label: "Locus",
-    accessor: (f) => (f.sample && f.sample.locus ? f.sample.locus.toUpperCase() : null)
-  },
-  { key: "subject_id", label: "Subject", accessor: (f) => f.subject_id },
-  { key: "sample_id", label: "Sample", accessor: (f) => f.sample_id },
-  { key: "v_call", label: "V Gene", accessor: (f) => f.v_call },
-  { key: "j_call", label: "J Gene", accessor: (f) => f.j_call },
-  {
-    key: "dataset_name",
-    label: "Dataset",
-    accessor: (f, datasets) => {
-      const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
-      return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
-    }
+/**
+ * Build filter fields from field_metadata categorical entries.
+ * Falls back to [] when metadata is absent.
+ *
+ * @param {Object|null} cloneMetadata - field_metadata.clone from dataset
+ * @returns {Object[]} Array of { key, label, accessor } filter field configs
+ */
+/**
+ * Build a single filter entry with the appropriate accessor.
+ */
+const buildFilterEntry = (field, label) => {
+  if (field.includes(".")) {
+    const [parent, child] = field.split(".");
+    return {
+      key: field,
+      label,
+      accessor: (f) => (f[parent] && f[parent][child] ? String(f[parent][child]) : null)
+    };
   }
-];
+  if (field === "dataset_name") {
+    return {
+      key: field,
+      label,
+      accessor: (f, datasets) => {
+        const dataset = datasets.find((d) => d.dataset_id === f.dataset_id);
+        return dataset ? dataset.name || dataset.dataset_id : f.dataset_id;
+      }
+    };
+  }
+  return {
+    key: field,
+    label,
+    accessor: (f) => (f[field] != null ? String(f[field]) : null)
+  };
+};
+
+const buildFilterFields = (cloneMetadata) => {
+  if (!cloneMetadata) return [];
+
+  // field_metadata is already resolved with builtins merged (by resolveFieldMetadata)
+  const fields = [];
+
+  for (const [field, meta] of Object.entries(cloneMetadata)) {
+    const display = meta.display || DEFAULT_DISPLAY;
+    if (meta.type !== "categorical" || display !== "dropdown") continue;
+    fields.push(buildFilterEntry(field, meta.label || field));
+  }
+
+  return fields.length > 0 ? fields : [];
+};
 
 /**
  * Extract unique values for a field from clonal families
@@ -120,7 +152,7 @@ function FilterSection({ field, uniqueValues, selectedValues, onToggleValue, exp
 /**
  * Active filter chips displayed above filter sections
  */
-function ActiveFilterChips({ filters, onRemoveFilter, onClearAll }) {
+function ActiveFilterChips({ filters, onRemoveFilter, onClearAll, filterFields }) {
   const filterEntries = Object.entries(filters).filter(([, values]) => values && values.length > 0);
 
   if (filterEntries.length === 0) {
@@ -128,7 +160,7 @@ function ActiveFilterChips({ filters, onRemoveFilter, onClearAll }) {
   }
 
   const fieldLabels = {};
-  FILTER_FIELDS.forEach((f) => {
+  (filterFields || []).forEach((f) => {
     fieldLabels[f.key] = f.label;
   });
 
@@ -222,11 +254,14 @@ class FilterPanel extends React.Component {
   };
 
   render() {
-    const { allClonalFamilies, datasets, filters, clearFilter, clearAllFilters } = this.props;
+    const { allClonalFamilies, datasets, filters, clearFilter, clearAllFilters, fieldMetadata } = this.props;
     const { expandedSections } = this.state;
 
     // Get loaded datasets for resolving dataset names
     const loadedDatasets = datasets.filter((d) => d.loading === "DONE");
+
+    // Build filter fields from field_metadata or use defaults
+    const filterFields = buildFilterFields(fieldMetadata);
 
     // Check if any filters are active
     const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0);
@@ -246,9 +281,14 @@ class FilterPanel extends React.Component {
           {!hasActiveFilters && <span style={{ marginLeft: 8, color: "#999", fontSize: 12 }}>(no filters active)</span>}
         </div>
 
-        <ActiveFilterChips filters={filters} onRemoveFilter={clearFilter} onClearAll={clearAllFilters} />
+        <ActiveFilterChips
+          filters={filters}
+          onRemoveFilter={clearFilter}
+          onClearAll={clearAllFilters}
+          filterFields={filterFields}
+        />
 
-        {FILTER_FIELDS.map((field) => (
+        {filterFields.map((field) => (
           <FilterSection
             key={field.key}
             field={field}
@@ -282,7 +322,14 @@ const mapStateToProps = (state) => ({
     return families;
   })(),
   datasets: state.datasets.availableDatasets || [],
-  filters: state.clonalFamilies.filters || {}
+  filters: state.clonalFamilies.filters || {},
+  // NOTE: .find() returns the first loaded dataset's metadata; when multiple
+  // datasets are loaded their metadata is not merged.
+  fieldMetadata: (() => {
+    const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
+    const resolved = resolveFieldMetadata(loaded?.field_metadata || null);
+    return resolved.clone || null;
+  })()
 });
 
 const mapDispatchToProps = (dispatch) => ({

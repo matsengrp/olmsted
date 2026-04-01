@@ -45,7 +45,7 @@ export const getSelectedSeq = createSelector([getSelectedSeqId, getSelectedTree]
 
 // computing mutations for tree node records relative to naive_seq
 
-const createAlignment = (naive_seq, tree) => {
+const createAlignment = (naive_seq, tree, naiveDna = null) => {
   let all_mutations = [];
   // Get the length of the naive sequence to determine alignment width
   const naive_length = _.isObject(naive_seq) ? Object.keys(naive_seq).length : naive_seq ? naive_seq.length : 0;
@@ -67,17 +67,26 @@ const createAlignment = (naive_seq, tree) => {
         // CRITICAL: For naive sequence, ALWAYS add an entry at EVERY position
         // This ensures the x-axis extends to the full length of the naive sequence
         // even if there are no mutations at the end positions
+        const codonStart = i * 3;
+        const naiveCodon = naiveDna ? naiveDna.substring(codonStart, codonStart + 3) : null;
         mutations.push({
           type: "naive",
           parent: node.parent,
           seq_id: seq_id,
           position: i,
           mut_from: naive_aa,
-          mut_to: naive_aa // naive sequence shows its own AA
+          mut_to: naive_aa, // naive sequence shows its own AA
+          from_codon: naiveCodon,
+          to_codon: naiveCodon
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
-        const surpriseData = node.surprise_mutations?.find((m) => m.site === i);
+        const siteData = node.mutations?.find((m) => m.site === i);
+        // Extract codon triplets from DNA sequences (AA position i → DNA positions i*3 to i*3+2)
+        const codonStart = i * 3;
+        const nodeDna = node.sequence_alignment;
+        const fromCodon = naiveDna ? naiveDna.substring(codonStart, codonStart + 3) : null;
+        const toCodon = nodeDna ? nodeDna.substring(codonStart, codonStart + 3) : null;
         mutations.push({
           type: node.type,
           parent: node.parent,
@@ -85,10 +94,13 @@ const createAlignment = (naive_seq, tree) => {
           position: i,
           mut_from: naive_aa,
           mut_to: aa,
-          surprise_mutsel: surpriseData?.surprise_mutsel ?? null,
-          surprise_neutral: surpriseData?.surprise_neutral ?? null,
-          selection_contribution: surpriseData?.selection_contribution ?? null,
-          region: surpriseData?.region ?? null
+          parent_aa: naive_aa,
+          child_aa: aa,
+          from_codon: fromCodon,
+          to_codon: toCodon,
+          // Spread all per-site mutation data from the node's mutations array
+          // (CLI produces fields like surprise_mutsel, selection_contribution, region, etc.)
+          ...(siteData || {})
         });
       }
     }
@@ -380,7 +392,8 @@ export const computeTreeData = (tree) => {
     treeData["leaves_count_incl_naive"] = data.length;
     // Use the tree's own sequence alignment for computing mutations
     const naiveSeqAA = naive.sequence_alignment_aa;
-    const alignment = createAlignment(naiveSeqAA, data);
+    const naiveDna = naive.sequence_alignment || null;
+    const alignment = createAlignment(naiveSeqAA, data, naiveDna);
     treeData["tips_alignment"] = alignment;
     treeData["download_unique_family_seqs"] = uniqueSeqs(treeData.nodes);
     return treeData;
@@ -412,7 +425,8 @@ const computeLineageData = (tree, seq, includeAllNodes = false) => {
     treeData["download_lineage_seqs"] = lineage;
     // Use the tree's own sequence alignment for computing mutations
     const naiveSeqAA = naive.sequence_alignment_aa;
-    const alignment = createAlignment(naiveSeqAA, lineage);
+    const naiveDna = naive.sequence_alignment || null;
+    const alignment = createAlignment(naiveSeqAA, lineage, naiveDna);
     treeData["lineage_alignment"] = alignment;
     // Count sequences in the alignment to set the height of the lineage viz accordingly
     // This should be based on actual sequences in the lineage, not unique AA sequences

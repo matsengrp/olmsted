@@ -1,6 +1,7 @@
 import { createSelector, lruMemoize, createSelectorCreator } from "reselect";
 import * as _ from "lodash";
 import * as fun from "../components/framework/fun";
+import { resolveFieldMetadata } from "../utils/fileProcessor";
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator({
   memoize: lruMemoize,
@@ -275,5 +276,8 @@ export const getHeavyLightClones = (selectedFamily, pairedClone) => {
  */
 export const getSelectedDatasetFields = createSelector([getSelectedFamily, getDatasets], (family, datasets) => {
   if (!family || !datasets) return null;
-  return datasets.find((d) => d.dataset_id === family.dataset_id) || null;
+  const dataset = datasets.find((d) => d.dataset_id === family.dataset_id);
+  if (!dataset) return null;
+  // Resolve field_metadata with builtins merged (works for both uploaded and server data)
+  return { ...dataset, field_metadata: resolveFieldMetadata(dataset.field_metadata) };
 });

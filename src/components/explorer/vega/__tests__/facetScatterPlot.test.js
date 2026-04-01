@@ -1,12 +1,15 @@
 import * as vega from "vega";
 import facetClonalFamiliesVizSpec from "../facetScatterPlot";
+import { resolveFieldMetadata } from "../../../../utils/fileProcessor";
 import { scatterplotSourceData, scatterplotDatasetsData } from "./vegaMockData";
 
 describe("facetClonalFamiliesVizSpec", () => {
   let spec;
 
   beforeAll(() => {
-    spec = facetClonalFamiliesVizSpec();
+    // Use resolved default metadata (same as what the app provides)
+    const resolved = resolveFieldMetadata(null);
+    spec = facetClonalFamiliesVizSpec({ fieldMetadata: resolved.clone });
   });
 
   it("returns a valid Vega v5 spec", () => {
@@ -214,6 +217,58 @@ describe("facetClonalFamiliesVizSpec", () => {
       view.data("locus", [{ locus: "IGH" }]);
       await expect(view.runAsync()).resolves.toBeDefined();
       view.finalize();
+    });
+  });
+
+  describe("field_metadata support", () => {
+    it("uses resolved default options when no CLI metadata provided", () => {
+      const resolved = resolveFieldMetadata(null);
+      const defaultSpec = facetClonalFamiliesVizSpec({ fieldMetadata: resolved.clone });
+      const signals = defaultSpec.signals;
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toContain("mean_mut_freq");
+      expect(yField.bind.options).toContain("unique_seqs_count");
+    });
+
+    it("builds options from fieldMetadata when provided", () => {
+      const metadata = {
+        phylogenetic_diversity: { type: "continuous", display: "dropdown", label: "Phylogenetic Diversity" },
+        shm_variance: { type: "continuous", display: "dropdown", label: "SHM Variance" },
+        unique_seqs_count: { type: "continuous", display: "dropdown", label: "Unique Seq Count" },
+        v_call: { type: "categorical", display: "dropdown", label: "V Gene" },
+        tissue_type: { type: "categorical", display: "dropdown", label: "Tissue Type" }
+      };
+      const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
+      const signals = customSpec.signals;
+
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toContain("phylogenetic_diversity");
+      expect(yField.bind.options).toContain("shm_variance");
+      expect(yField.bind.options).toContain("unique_seqs_count");
+      // Should NOT contain defaults that aren't in metadata
+      expect(yField.bind.options).not.toContain("mean_mut_freq");
+
+      const colorBy = signals.find((s) => s.name === "colorBy");
+      expect(colorBy.bind.options).toContain("v_call");
+      expect(colorBy.bind.options).toContain("tissue_type");
+      // Should NOT contain defaults that aren't in metadata
+      expect(colorBy.bind.options).not.toContain("j_call");
+    });
+
+    it("produces a valid Vega spec with custom fieldMetadata", () => {
+      const metadata = {
+        pd: { type: "continuous", display: "dropdown", label: "PD" },
+        group: { type: "categorical", display: "dropdown", label: "Group" }
+      };
+      const customSpec = facetClonalFamiliesVizSpec({ fieldMetadata: metadata });
+      expect(() => vega.parse(customSpec)).not.toThrow();
+    });
+
+    it("returns empty options when fieldMetadata is empty object", () => {
+      const emptySpec = facetClonalFamiliesVizSpec({ fieldMetadata: {} });
+      const signals = emptySpec.signals;
+      const yField = signals.find((s) => s.name === "yField");
+      expect(yField.bind.options).toEqual([]);
     });
   });
 });

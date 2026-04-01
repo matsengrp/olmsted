@@ -2,12 +2,14 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiRefreshCw, FiDatabase, FiStar } from "react-icons/fi";
-import { GreenCheckmark , LoadingStatus } from "../util/loading";
+import { GreenCheckmark, LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -106,6 +108,7 @@ export default class DatasetLoadingTable extends React.Component {
     this.state = {
       updateHovered: false,
       manageHovered: false,
+      fieldWarningDismissed: false,
       sortStarredFirst,
       showOnlyStarred,
       hideServerData,
@@ -165,6 +168,8 @@ export default class DatasetLoadingTable extends React.Component {
   }
 
   async handleBatchUpdate() {
+    // Reset field warning when datasets change
+    this.setState({ fieldWarningDismissed: false });
     const { selectedDatasets, allDatasets, dispatch } = this.props;
 
     // Get currently loaded dataset IDs
@@ -204,6 +209,139 @@ export default class DatasetLoadingTable extends React.Component {
 
     // Clear selections after processing
     dispatch(explorerActions.clearDatasetSelections());
+  }
+
+  /**
+   * Render a summary of available fields across loaded datasets with metadata.
+   * @param {Object[]} allDatasetsToUse - The datasets currently displayed in the table
+   * @returns {React.ReactNode|null}
+   */
+  renderFieldSummary(allDatasetsToUse) {
+    const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
+    if (loadedDatasets.length === 0) return null;
+
+    // Resolve metadata for each loaded dataset (includes builtins/defaults)
+    const resolvedDatasets = loadedDatasets.map((ds) => ({
+      name: ds.name || ds.dataset_id,
+      metadata: resolveFieldMetadata(ds.field_metadata || null)
+    }));
+
+    // Collect all fields across all loaded datasets
+    const allFields = {}; // key → { level, label, datasets: Set }
+    const allLevels = ["clone", "node", "branch", "mutation"];
+    for (const ds of resolvedDatasets) {
+      for (const level of allLevels) {
+        const fields = ds.metadata[level];
+        if (!fields) continue;
+        for (const [field, meta] of Object.entries(fields)) {
+          const key = `${level}.${field}`;
+          if (!allFields[key]) {
+            allFields[key] = {
+              level,
+              field,
+              label: meta.label || field,
+              type: meta.type,
+              display: meta.display || DEFAULT_DISPLAY,
+              datasets: new Set()
+            };
+          }
+          allFields[key].datasets.add(ds.name);
+        }
+      }
+    }
+
+    const totalDatasets = resolvedDatasets.length;
+    const fieldList = Object.values(allFields);
+    const sharedFields = fieldList.filter((f) => f.datasets.size === totalDatasets);
+    const partialFields = fieldList.filter((f) => f.datasets.size < totalDatasets);
+
+    // Group shared fields by level, show all levels
+    const sharedByLevel = {};
+    for (const level of allLevels) {
+      sharedByLevel[level] = sharedFields.filter((f) => f.level === level);
+    }
+
+    return (
+      <div
+        style={{
+          marginTop: 10,
+          padding: "10px 14px",
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #dee2e6",
+          borderRadius: 4,
+          fontSize: 12
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <span style={{ fontWeight: "bold", fontSize: 13 }}>
+            Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
+          </span>
+          <span style={{ color: "#888", fontSize: 11 }}>🔵 dropdown ⚪ tooltip ⊘ skip</span>
+        </div>
+        {allLevels.map((level) => {
+          const fields = sharedByLevel[level];
+          return (
+            <div key={level} style={{ marginBottom: 4 }}>
+              <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
+              <span style={{ color: fields.length > 0 ? "#333" : "#999" }}>
+                {fields.length > 0
+                  ? fields
+                      .map((f) => {
+                        const icon = f.display === "skip" ? "⊘" : f.display === "tooltip" ? "⚪" : "🔵";
+                        return `${icon}\u00A0${f.label}`;
+                      })
+                      .join(",  ")
+                  : "(none)"}
+              </span>
+            </div>
+          );
+        })}
+        {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "6px 10px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: 4,
+              color: "#856404",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start"
+            }}
+          >
+            <div>
+              <strong>Fields not shared across all datasets:</strong>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: 18 }}>
+                {partialFields.map((f) => (
+                  <li key={`${f.level}.${f.field}`}>
+                    {f.label} ({f.level}) — only in: {[...f.datasets].join(", ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button
+              type="button"
+              onClick={() => this.setState({ fieldWarningDismissed: true })}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 2px",
+                fontSize: 16,
+                color: "#856404",
+                lineHeight: 1,
+                flexShrink: 0
+              }}
+              title="Dismiss"
+              aria-label="Dismiss"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   render() {
@@ -499,6 +637,7 @@ export default class DatasetLoadingTable extends React.Component {
         >
           Number of clonal families loaded: {loadedClonalFamilies}
         </div>
+        {loadedClonalFamilies > 0 && this.renderFieldSummary(allDatasetsToUse)}
         {loadedClonalFamilies === 0 && (
           <div
             style={{

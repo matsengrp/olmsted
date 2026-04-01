@@ -6,6 +6,7 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 import VegaViewContext from "../config/VegaViewContext";
+import { resolveFieldMetadata } from "../../utils/fileProcessor";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Clonal Families Viz
@@ -41,7 +42,16 @@ class ClonalFamiliesViz extends React.Component {
       vegaView: null,
       hideControls: false
     };
-    this.spec = facetClonalFamiliesVizSpec();
+    // Build spec with field_metadata from loaded datasets (if available).
+    // NOTE: .find() returns the first loaded dataset's metadata; when multiple
+    // datasets are loaded their metadata is not merged.
+    const loadedDataset = props.datasets?.find((d) => d.loading === "DONE");
+    const resolvedMeta = loadedDataset?.field_metadata
+      ? resolveFieldMetadata(loadedDataset.field_metadata)
+      : resolveFieldMetadata(null);
+    const fieldMetadata = resolvedMeta.clone || null;
+    this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
+    this.lastMetadataKey = JSON.stringify(fieldMetadata);
     this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
@@ -102,6 +112,19 @@ class ClonalFamiliesViz extends React.Component {
     } = this.props;
     const { hideControls } = this.state;
 
+    // Rebuild spec if field_metadata changed (e.g., different dataset loaded)
+    // Use JSON comparison since resolveFieldMetadata creates new objects each call
+    const loadedDataset = datasets?.find((d) => d.loading === "DONE");
+    const resolvedMeta = loadedDataset?.field_metadata
+      ? resolveFieldMetadata(loadedDataset.field_metadata)
+      : resolveFieldMetadata(null);
+    const fieldMetadata = resolvedMeta.clone || null;
+    const metadataKey = JSON.stringify(fieldMetadata);
+    if (metadataKey !== this.lastMetadataKey) {
+      this.lastMetadataKey = metadataKey;
+      this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
+    }
+
     if (availableClonalFamilies) {
       return (
         <div
@@ -118,6 +141,7 @@ class ClonalFamiliesViz extends React.Component {
           {/* Here we have our Vega component specification, where we plug in signal handlers, etc. */}
           {availableClonalFamilies.length > 0 && (
             <VegaChart
+              key={`scatterplot-${fieldMetadata ? "meta" : "default"}`}
               onNewView={(view) => {
                 this.setState({ vegaView: view });
                 // Register view with context for config management

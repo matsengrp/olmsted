@@ -95,24 +95,22 @@ describe("computeTreeData", () => {
     expect(mutAtPos3.mut_to).toBe("I");
   });
 
-  it("mutation records have null surprise fields when nodes lack surprise_mutations", () => {
+  it("mutation records have no site data when nodes lack mutations array", () => {
     const result = computeTreeData(mockTree);
     const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
     const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
-    expect(mutAtPos3.surprise_mutsel).toBeNull();
-    expect(mutAtPos3.surprise_neutral).toBeNull();
-    expect(mutAtPos3.selection_contribution).toBeNull();
-    expect(mutAtPos3.region).toBeNull();
+    expect(mutAtPos3.surprise_mutsel).toBeUndefined();
+    expect(mutAtPos3.region).toBeUndefined();
   });
 
-  it("mutation records include surprise fields when nodes have surprise_mutations", () => {
-    const treeWithSurprise = {
+  it("mutation records include per-site fields when nodes have mutations array", () => {
+    const treeWithMutations = {
       ...mockTree,
       nodes: mockTree.nodes.map((node) => {
         if (node.sequence_id === "leaf-1") {
           return {
             ...node,
-            surprise_mutations: [
+            mutations: [
               {
                 site: 3,
                 parent_aa: "L",
@@ -128,7 +126,7 @@ describe("computeTreeData", () => {
         return node;
       })
     };
-    const result = computeTreeData(treeWithSurprise);
+    const result = computeTreeData(treeWithMutations);
     const leaf1Mutations = result.tips_alignment.filter((m) => m.seq_id === "leaf-1" && m.type === "leaf");
     const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
     expect(mutAtPos3.surprise_mutsel).toBe(7.2);
