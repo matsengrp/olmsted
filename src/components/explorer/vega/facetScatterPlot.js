@@ -1,4 +1,5 @@
 import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
+import { buildVegaTooltipExpr } from "../../../utils/fieldMetadata";
 
 // Note: Vega expressions use == for comparison within expression strings
 // These are not JavaScript expressions but Vega's domain-specific language
@@ -220,32 +221,12 @@ const buildFieldOptions = (fieldMetadata) => {
 
 /**
  * Build a Vega tooltip signal expression from tooltip field entries.
- * Each entry can have: field, label, format (for numbers), expr (custom expression).
+ * Delegates to shared buildVegaTooltipExpr with single-quote style.
  *
  * @param {Object[]} tooltipFields - Array of { field, label, format?, expr? }
  * @returns {string} Vega expression string for the tooltip signal
  */
-const buildTooltipSignal = (tooltipFields) => {
-  const parts = tooltipFields.map((t) => {
-    const label = t.label.replace(/'/g, "\\'");
-    if (t.expr) {
-      return `'${label}': ${t.expr}`;
-    }
-    if (t.format) {
-      return `'${label}': format(datum['${t.field}'], '${t.format}')`;
-    }
-    // Access nested fields (e.g., "sample.locus") via bracket notation
-    let accessor;
-    if (t.field.includes(".")) {
-      const [parent, child] = t.field.split(".");
-      accessor = `datum['${parent}'] ? datum['${parent}']['${child}'] : ''`;
-    } else {
-      accessor = `datum['${t.field}']`;
-    }
-    return `'${label}': ${accessor}`;
-  });
-  return "{" + parts.join(", ") + "}";
-};
+const buildTooltipSignal = (tooltipFields) => buildVegaTooltipExpr(tooltipFields, { quoteStyle: "single" });
 
 // Helper function to create control signals (dropdowns)
 const createControlSignals = (fieldMetadata) => {

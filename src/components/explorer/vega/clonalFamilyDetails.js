@@ -4,21 +4,17 @@
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
+import { buildVegaTooltipExpr } from "../../../utils/fieldMetadata";
 
-/**
- * Build tree dropdown options from field_metadata, falling back to
- * filtered defaults when metadata is absent.
- *
- * @param {Object|null} nodeMetadata - field_metadata.node from dataset
- * @param {Object|null} branchMetadata - field_metadata.branch from dataset
- * @param {Set|null} missingSet - Set of missing field names (e.g., "node.lbi")
- * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
- */
 /**
  * Build tree dropdown options from node and branch metadata.
  * Node and branch continuous fields are combined since branch metrics
  * are stored on the child node (1:1 relationship).
  * "<none>" is always the first option. "parent" is always available for branch color.
+ *
+ * @param {Object|null} nodeMetadata - field_metadata.node from dataset
+ * @param {Object|null} branchMetadata - field_metadata.branch from dataset
+ * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
  */
 const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
   const seen = new Set();
@@ -43,20 +39,16 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
 };
 
 /**
- * Build a Vega tooltip signal for tree node hover.
- * Includes fields from both node and branch metadata (branch metrics are
- * stored on the child node, so they're accessible on the same datum).
+ * Build node tooltip by iterating resolved node + branch metadata.
+ * Builtins are already in the metadata (merged by resolveFieldMetadata).
+ * Order follows metadata key order (builtins first, then CLI fields).
  *
  * @param {Object|null} nodeMetadata - field_metadata.node from dataset
  * @param {Object|null} branchMetadata - field_metadata.branch from dataset
+ * @param {Object[]} extraFields - Additional fields to append (e.g., timepoint)
  * @returns {string} Vega expression for the tooltip signal
  */
-/**
- * Build node tooltip by iterating resolved node + branch metadata.
- * Builtins are already in the metadata (injected by resolveFieldMetadata).
- * Order follows metadata key order (builtins first, then CLI fields).
- */
-const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, _hasFieldMetadata = false, extraFields = []) => {
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = []) => {
   const fields = [];
   const seen = new Set();
 
@@ -72,16 +64,7 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, _hasFieldMetadata 
     }
   }
 
-  // Append any extra fields (e.g., timepoint data)
-  const allFields = fields.concat(extraFields);
-
-  const parts = allFields.map((f) => {
-    if (f.format) {
-      return `"${f.label}": datum["${f.field}"] != null ? format(datum["${f.field}"], "${f.format}") : "N/A"`;
-    }
-    return `"${f.label}": datum["${f.field}"] != null ? datum["${f.field}"] : "N/A"`;
-  });
-  return "{" + parts.join(", ") + "}";
+  return buildVegaTooltipExpr(fields.concat(extraFields), { nullFallback: "N/A" });
 };
 
 /**
@@ -93,13 +76,13 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
   // Only include timepoint fields when no metadata exists (old data likely has timepoints)
   // When metadata is present, timepoint fields should be declared there if available
   if (hasFieldMetadata) {
-    return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata);
+    return buildNodeTooltipSignal(nodeMetadata, branchMetadata);
   }
   const timepointFields = [
     { field: "timepoint_multiplicity_key", label: "Timepoint" },
     { field: "timepoint_multiplicity_value", label: "Timepoint Multiplicity" }
   ];
-  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMetadata, timepointFields);
+  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, timepointFields);
 };
 
 // Built-in mutation fields — always in tooltip regardless of metadata
@@ -188,7 +171,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 
   // Build dropdown options from field_metadata or filtered defaults
   const nodeMetadata = fieldMetadata?.node || null;
-  const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null, missingSet);
+  const treeFields = buildTreeFieldOptions(nodeMetadata, fieldMetadata?.branch || null);
 
   // Check if a node-level field is available (used for branch length mode).
   const hasNodeField = (field) => {
@@ -200,7 +183,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Build dynamic node tooltip signals (includes branch metrics on child nodes)
   const branchMetadata = fieldMetadata?.branch || null;
   const hasFieldMeta = !!fieldMetadata;
-  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata, hasFieldMeta);
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
   const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
 
   // Build mutation coloring options from field_metadata.mutation
