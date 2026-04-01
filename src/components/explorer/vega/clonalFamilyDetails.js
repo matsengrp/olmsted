@@ -2934,6 +2934,21 @@ const seqAlignSpec = (family, options = {}) => {
 
   // Build dynamic mutation tooltip (same as main tree spec)
   const { metricTooltip: lineageMutationTooltip } = buildMutationTooltipSignals(mutationMetadata);
+
+  // Compute color scale domain and label from first continuous mutation field
+  let lineageColorDomain = [0, 15];
+  let lineageColorLabel = "Mutation metric";
+  if (mutationMetadata) {
+    for (const [field, meta] of Object.entries(mutationMetadata)) {
+      if (meta.type === "continuous" && (meta.display || DEFAULT_DISPLAY) !== "skip") {
+        const raw = meta.range || [0, 15];
+        lineageColorDomain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
+        lineageColorLabel = meta.label || field;
+        break;
+      }
+    }
+  }
+
   const padding = 20;
   const mutation_mark_height = 16; // Increased for better spacing and padding
   const min_height = 100; // Minimum height to ensure visibility
@@ -3207,10 +3222,9 @@ const seqAlignSpec = (family, options = {}) => {
         range: AMINO_ACID_RANGE
       },
       {
-        // Lineage spec: hardcoded surprise scale (dynamic scales are in the main tree spec)
         name: "surprise_color",
         type: "linear",
-        domain: [0, 15],
+        domain: lineageColorDomain,
         range: { scheme: "oranges" },
         clamp: true
       }
@@ -3288,7 +3302,7 @@ const seqAlignSpec = (family, options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "color_by_mutation_metric ? 'Mutation metric' : ''" },
+        title: { signal: `color_by_mutation_metric ? '${lineageColorLabel}' : ''` },
         type: "gradient",
         gradientLength: { signal: "color_by_mutation_metric ? 100 : 0" },
         encode: {
