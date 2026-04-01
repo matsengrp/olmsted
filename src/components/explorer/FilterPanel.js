@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
-import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { getResolvedFieldMetadata } from "../../selectors/clonalFamilies";
 import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 
 /**
@@ -71,7 +71,7 @@ const buildFilterFields = (cloneMetadata) => {
     fields.push(buildFilterEntry(field, meta.label || field));
   }
 
-  return fields.length > 0 ? fields : [];
+  return fields;
 };
 
 /**
@@ -323,13 +323,7 @@ const mapStateToProps = (state) => ({
   })(),
   datasets: state.datasets.availableDatasets || [],
   filters: state.clonalFamilies.filters || {},
-  // NOTE: .find() returns the first loaded dataset's metadata; when multiple
-  // datasets are loaded their metadata is not merged.
-  fieldMetadata: (() => {
-    const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
-    const resolved = resolveFieldMetadata(loaded?.field_metadata || null);
-    return resolved.clone || null;
-  })()
+  fieldMetadata: getResolvedFieldMetadata(state)?.clone || null
 });
 
 const mapDispatchToProps = (dispatch) => ({

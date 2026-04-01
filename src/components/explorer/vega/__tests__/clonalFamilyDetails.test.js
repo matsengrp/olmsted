@@ -1,6 +1,6 @@
 import * as vega from "vega";
 import { concatTreeWithAlignmentSpec, seqAlignSpec } from "../clonalFamilyDetails";
-import { resolveFieldMetadata } from "../../../../utils/fileProcessor";
+import { resolveFieldMetadata } from "../../../../utils/fieldMetadata";
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../../constants/aminoAcidColors";
 import {

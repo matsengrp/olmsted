@@ -6,7 +6,6 @@ import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import facetClonalFamiliesVizSpec from "./vega/facetScatterPlot";
 import * as explorerActions from "../../actions/explorer";
 import VegaViewContext from "../config/VegaViewContext";
-import { resolveFieldMetadata } from "../../utils/fileProcessor";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
 // Clonal Families Viz
@@ -21,7 +20,8 @@ import { VegaExportToolbar } from "../util/VegaExportButton";
     availableClonalFamilies: clonalFamiliesSelectors.getAvailableClonalFamilies(state),
     selectedFamily: clonalFamiliesSelectors.getSelectedFamily(state),
     locus: state.clonalFamilies.locus,
-    datasets: state.datasets.availableDatasets
+    datasets: state.datasets.availableDatasets,
+    resolvedFieldMetadata: clonalFamiliesSelectors.getResolvedFieldMetadata(state)
   }),
   // This is a shorthand way of specifying mapDispatchToProps
   {
@@ -43,15 +43,9 @@ class ClonalFamiliesViz extends React.Component {
       hideControls: false
     };
     // Build spec with field_metadata from loaded datasets (if available).
-    // NOTE: .find() returns the first loaded dataset's metadata; when multiple
-    // datasets are loaded their metadata is not merged.
-    const loadedDataset = props.datasets?.find((d) => d.loading === "DONE");
-    const resolvedMeta = loadedDataset?.field_metadata
-      ? resolveFieldMetadata(loadedDataset.field_metadata)
-      : resolveFieldMetadata(null);
-    const fieldMetadata = resolvedMeta.clone || null;
+    const fieldMetadata = props.resolvedFieldMetadata?.clone || null;
     this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
-    this.lastMetadataKey = JSON.stringify(fieldMetadata);
+    this.lastFieldMetadata = fieldMetadata;
     this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
@@ -113,15 +107,10 @@ class ClonalFamiliesViz extends React.Component {
     const { hideControls } = this.state;
 
     // Rebuild spec if field_metadata changed (e.g., different dataset loaded)
-    // Use JSON comparison since resolveFieldMetadata creates new objects each call
-    const loadedDataset = datasets?.find((d) => d.loading === "DONE");
-    const resolvedMeta = loadedDataset?.field_metadata
-      ? resolveFieldMetadata(loadedDataset.field_metadata)
-      : resolveFieldMetadata(null);
-    const fieldMetadata = resolvedMeta.clone || null;
-    const metadataKey = JSON.stringify(fieldMetadata);
-    if (metadataKey !== this.lastMetadataKey) {
-      this.lastMetadataKey = metadataKey;
+    const { resolvedFieldMetadata } = this.props;
+    const fieldMetadata = resolvedFieldMetadata?.clone || null;
+    if (fieldMetadata !== this.lastFieldMetadata) {
+      this.lastFieldMetadata = fieldMetadata;
       this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
     }
 

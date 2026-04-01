@@ -33,7 +33,7 @@ function formatLabel(key) {
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => (word === word.toUpperCase() ? word : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()))
     .join(" ");
 }
 
@@ -123,7 +123,11 @@ const valueCellStyle = {
 function ExpandableValue({ value }) {
   const [expanded, setExpanded] = useState(false);
   const formatted = formatValue(value);
-  const itemCount = Array.isArray(value) ? `${value.length} items` : "object";
+  const itemCount = Array.isArray(value)
+    ? `${value.length} items`
+    : typeof value === "object" && value !== null
+      ? `${Object.keys(value).length} keys`
+      : "object";
 
   return (
     <div>
@@ -197,8 +201,12 @@ const TRUNCATE_STRING_LENGTH = 200;
  * Check if a value should be shown with an expand button
  */
 function isTruncatable(value) {
-  if (Array.isArray(value) && value.length > TRUNCATE_ARRAY_LENGTH) return true;
+  if (Array.isArray(value)) {
+    if (value.length > TRUNCATE_ARRAY_LENGTH) return true;
+    if (value.some((item) => typeof item === "object" && item !== null)) return true;
+  }
   if (typeof value === "string" && value.length > TRUNCATE_STRING_LENGTH) return true;
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) return true;
   return false;
 }
 

@@ -529,8 +529,7 @@ class ClonalFamiliesTable extends React.Component {
       { header: "Subject", accessor: "subject_id" },
       { header: "Sample", accessor: "sample_id" },
       { header: "Timepoint", accessor: "sample.timepoint_id" },
-      { header: "Dataset", accessor: "dataset_id" },
-      { header: "Ident", accessor: "ident" }
+      { header: "Dataset", accessor: "dataset_id" }
     ];
 
     // Count how many visible families are starred
@@ -673,8 +672,7 @@ class ClonalFamiliesTable extends React.Component {
       Subject: 100,
       Sample: 100,
       Timepoint: 100,
-      Dataset: 120,
-      Ident: 120
+      Dataset: 120
     };
 
     return (
@@ -703,8 +701,7 @@ class ClonalFamiliesTable extends React.Component {
           ["Timepoint", "sample.timepoint_id"],
           // ["Path", 'path'],
           // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-          ["Dataset", DatasetName, { sortKey: "dataset_id" }],
-          ["Ident", "ident"]
+          ["Dataset", DatasetName, { sortKey: "dataset_id" }]
         ]}
         selectedFamily={this.selectedFamily}
         pagination={pagination}
