@@ -28,11 +28,12 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata, missingSet) => {
     const seen = new Set();
     const continuousFields = [];
 
-    // Collect continuous fields from both node and branch metadata
+    // Collect continuous dropdown fields from both node and branch metadata
     for (const metadata of [nodeMetadata, branchMetadata]) {
       if (!metadata) continue;
       for (const [field, meta] of Object.entries(metadata)) {
-        if (meta.type === "continuous" && !seen.has(field)) {
+        const display = meta.display || "dropdown";
+        if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
           continuousFields.push(field);
           seen.add(field);
         }
@@ -93,20 +94,20 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, hasFieldMetadata =
       return { field: builtin.field, label: override?.label || builtin.label, format: override?.format };
     });
 
-    // Add node-level fields not already included
+    // Add node-level fields not already included (skip display: "skip")
     if (nodeMetadata) {
       for (const [field, meta] of Object.entries(nodeMetadata)) {
-        if (!seen.has(field)) {
+        if (!seen.has(field) && (meta.display || "dropdown") !== "skip") {
           fields.push({ field, label: meta.label || field, format: meta.format });
           seen.add(field);
         }
       }
     }
 
-    // Add branch-level fields not already included
+    // Add branch-level fields not already included (skip display: "skip")
     if (branchMetadata) {
       for (const [field, meta] of Object.entries(branchMetadata)) {
-        if (!seen.has(field)) {
+        if (!seen.has(field) && (meta.display || "dropdown") !== "skip") {
           fields.push({ field, label: meta.label || field, format: meta.format });
           seen.add(field);
         }
@@ -197,6 +198,8 @@ const buildMutationTooltipSignals = (mutationMetadata) => {
   if (mutationMetadata) {
     for (const [field, meta] of Object.entries(mutationMetadata)) {
       if (seen.has(field)) continue;
+      const display = meta.display || "dropdown";
+      if (display === "skip") continue;
       seen.add(field);
       const label = meta.label || field;
       if (meta.type === "continuous") {
@@ -245,25 +248,28 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
 
   // Build mutation coloring options from field_metadata.mutation
-  // Types: "aa" → amino acid color scale, "continuous" → sequential heatmap, "tooltip" → tooltip only
+  // Build mutation coloring options from field_metadata.mutation
+  // display: "dropdown" (default) → color option based on type
+  // display: "tooltip" → tooltip only, not in color dropdown
+  // display: "skip" → excluded entirely
   const mutationMetadata = fieldMetadata?.mutation || null;
   const mutationColorOptions = [];
-  const mutationColorScales = {}; // field → { domain, scheme } for continuous heatmap fields
+  const mutationColorScales = {}; // field → { domain } for continuous heatmap fields
 
   if (mutationMetadata) {
     for (const [field, meta] of Object.entries(mutationMetadata)) {
-      if (meta.type === "aa") {
-        // AA fields use the standard amino acid color scale
+      const display = meta.display || "dropdown";
+      if (display === "skip") continue;
+      if (display === "tooltip") continue; // tooltip-only mutations not in color dropdown
+
+      if (meta.type === "aa" || meta.type === "dna") {
         mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "aa" });
       } else if (meta.type === "continuous") {
-        // Continuous fields use sequential heatmap coloring
-        // Extend domain to start at 0 (or min if negative) for full color range
         const raw = meta.range || [0, 15];
         const domain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
         mutationColorScales[field] = { domain, label: meta.label || field };
         mutationColorOptions.push({ value: field, label: meta.label || field, scaleType: "continuous" });
       }
-      // "categorical" and "tooltip" types are not colorable (yet)
     }
   }
 

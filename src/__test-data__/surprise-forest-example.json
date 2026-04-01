@@ -136,7 +136,7 @@
           "sequence_alignment_aa": "ILKDIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 2,
               "parent_aa": "I",
@@ -154,7 +154,7 @@
           "sequence_alignment_aa": "ILINIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 3,
               "parent_aa": "D",
@@ -172,7 +172,7 @@
           "sequence_alignment_aa": "ILIDEDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 4,
               "parent_aa": "I",
@@ -190,7 +190,7 @@
           "sequence_alignment_aa": "IDIDIDSRID",
           "type": "leaf",
           "parent": "internal2",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 7,
               "parent_aa": "D",
@@ -208,7 +208,7 @@
           "sequence_alignment_aa": "IDIDIDSDWD",
           "type": "leaf",
           "parent": "internal2",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 8,
               "parent_aa": "I",
@@ -260,7 +260,7 @@
           "sequence_alignment_aa": "ILKDIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 2,
               "parent_aa": "I",
@@ -278,7 +278,7 @@
           "sequence_alignment_aa": "ILINIDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 3,
               "parent_aa": "D",
@@ -296,7 +296,7 @@
           "sequence_alignment_aa": "ILIDEDIDID",
           "type": "leaf",
           "parent": "internal1",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 4,
               "parent_aa": "I",
@@ -314,7 +314,7 @@
           "sequence_alignment_aa": "IDIDIDSRID",
           "type": "leaf",
           "parent": "internal2",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 7,
               "parent_aa": "D",
@@ -332,7 +332,7 @@
           "sequence_alignment_aa": "IDIDIDSDWD",
           "type": "leaf",
           "parent": "internal2",
-          "surprise_mutations": [
+          "mutations": [
             {
               "site": 8,
               "parent_aa": "I",

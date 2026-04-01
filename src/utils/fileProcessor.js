@@ -18,8 +18,8 @@ import {
  */
 export function resolveFieldMetadata(rawMetadata) {
   if (rawMetadata) {
-    // Merge builtins into existing metadata
-    const clone = { ...(rawMetadata.clone || {}) };
+    // Accept "family" as alias for "clone" level
+    const clone = { ...(rawMetadata.clone || rawMetadata.family || {}) };
 
     // Ensure built-in categoricals are present
     for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
@@ -31,7 +31,7 @@ export function resolveFieldMetadata(rawMetadata) {
     // Ensure built-in tooltip fields are present
     for (const builtin of BUILTIN_CLONE_TOOLTIP) {
       if (!(builtin.field in clone)) {
-        clone[builtin.field] = { type: "tooltip", label: builtin.label };
+        clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
       }
     }
 
@@ -60,7 +60,13 @@ export function resolveFieldMetadata(rawMetadata) {
   }
   for (const entry of DEFAULT_CLONE_TOOLTIP) {
     if (!(entry.field in clone)) {
-      clone[entry.field] = { type: "tooltip", label: entry.label, format: entry.format, expr: entry.expr };
+      clone[entry.field] = {
+        type: "categorical",
+        display: "tooltip",
+        label: entry.label,
+        format: entry.format,
+        expr: entry.expr
+      };
     }
   }
   // Ensure built-in categoricals
@@ -71,7 +77,7 @@ export function resolveFieldMetadata(rawMetadata) {
   }
   for (const builtin of BUILTIN_CLONE_TOOLTIP) {
     if (!(builtin.field in clone)) {
-      clone[builtin.field] = { type: "tooltip", label: builtin.label };
+      clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
     }
   }
 

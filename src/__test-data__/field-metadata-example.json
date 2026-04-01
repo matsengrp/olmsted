@@ -68,8 +68,9 @@
             "label": "Widget Type"
           },
           "clone_id": {
-            "type": "tooltip",
-            "label": "Clone ID"
+            "type": "categorical",
+            "label": "Clone ID",
+            "display": "tooltip"
           }
         },
         "node": {
@@ -136,8 +137,9 @@
             "range": [-2, 5]
           },
           "region": {
-            "type": "tooltip",
-            "label": "Region"
+            "type": "categorical",
+            "label": "Region",
+            "display": "tooltip"
           }
         }
       }

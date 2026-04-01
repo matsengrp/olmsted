@@ -197,19 +197,28 @@ const buildFieldOptions = (fieldMetadata) => {
   const categorical = [];
   const tooltip = [];
 
-  // field_metadata is already resolved with builtins merged (by resolveFieldMetadata)
+  // field_metadata is resolved with builtins merged (by resolveFieldMetadata)
+  // display: "dropdown" (default) → dropdown + tooltip based on type
+  // display: "tooltip" → tooltip only
+  // display: "skip" → excluded entirely
   for (const [field, meta] of Object.entries(fieldMetadata)) {
+    const display = meta.display || "dropdown";
+    if (display === "skip") continue;
+
     const entry = { field, label: meta.label || field };
     if (meta.format) entry.format = meta.format;
     if (meta.expr) entry.expr = meta.expr;
 
-    if (meta.type === "continuous") {
+    if (display === "tooltip") {
+      tooltip.push(entry);
+    } else if (meta.type === "continuous") {
       continuous.push(field);
       tooltip.push(entry);
     } else if (meta.type === "categorical") {
       categorical.push(field);
       tooltip.push(entry);
-    } else if (meta.type === "tooltip") {
+    } else {
+      // Other types (json, list, dna, etc.) → tooltip only
       tooltip.push(entry);
     }
   }

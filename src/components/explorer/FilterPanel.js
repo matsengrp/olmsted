@@ -81,7 +81,8 @@ const buildFilterFields = (cloneMetadata) => {
   const fields = [];
 
   for (const [field, meta] of Object.entries(cloneMetadata)) {
-    if (meta.type !== "categorical") continue;
+    const display = meta.display || "dropdown";
+    if (meta.type !== "categorical" || display !== "dropdown") continue;
     fields.push(buildFilterEntry(field, meta.label || field));
   }
 

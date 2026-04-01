@@ -81,7 +81,7 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
         });
       } else if (aa !== undefined && aa !== naive_aa) {
         // Mutation: sequence deviates from naive
-        const surpriseData = node.surprise_mutations?.find((m) => m.site === i);
+        const siteData = node.mutations?.find((m) => m.site === i);
         // Extract codon triplets from DNA sequences (AA position i → DNA positions i*3 to i*3+2)
         const codonStart = i * 3;
         const nodeDna = node.sequence_alignment;
@@ -94,16 +94,13 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
           position: i,
           mut_from: naive_aa,
           mut_to: aa,
-          // Aliases for field_metadata compatibility (CLI uses parent_aa/child_aa)
           parent_aa: naive_aa,
           child_aa: aa,
-          // Codon triplets from DNA alignment
           from_codon: fromCodon,
           to_codon: toCodon,
-          surprise_mutsel: surpriseData?.surprise_mutsel ?? null,
-          surprise_neutral: surpriseData?.surprise_neutral ?? null,
-          selection_contribution: surpriseData?.selection_contribution ?? null,
-          region: surpriseData?.region ?? null
+          // Spread all per-site mutation data from the node's mutations array
+          // (CLI produces fields like surprise_mutsel, selection_contribution, region, etc.)
+          ...(siteData || {})
         });
       }
     }

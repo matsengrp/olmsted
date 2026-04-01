@@ -15,8 +15,8 @@
  * Labels are overrideable by metadata.
  */
 export const BUILTIN_CLONE_TOOLTIP = [
-  { field: "clone_id", label: "Clone ID" },
-  { field: "dataset_name", label: "Dataset", expr: "datum.dataset_name || ''" }
+  { field: "clone_id", label: "Clone ID", display: "tooltip" },
+  { field: "dataset_name", label: "Dataset", display: "tooltip", expr: "datum.dataset_name || ''" }
 ];
 
 export const BUILTIN_CLONE_CATEGORICAL = [{ field: "dataset_name", label: "Dataset" }];

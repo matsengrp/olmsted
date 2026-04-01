@@ -172,11 +172,16 @@ describe("Dynamic field_metadata integration", () => {
       }
     });
 
-    it("field_metadata has all three types", () => {
+    it("field_metadata has continuous/categorical types and tooltip display", () => {
       const types = new Set(Object.values(cloneMetadata).map((m) => m.type));
       expect(types).toContain("continuous");
       expect(types).toContain("categorical");
-      expect(types).toContain("tooltip");
+      const displays = new Set(
+        Object.values(cloneMetadata)
+          .map((m) => m.display)
+          .filter(Boolean)
+      );
+      expect(displays).toContain("tooltip");
     });
   });
 
