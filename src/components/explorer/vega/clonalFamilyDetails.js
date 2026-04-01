@@ -286,10 +286,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // The first continuous field (if any) is used for the color_by_mutation_metric backward compat signal
   const firstContinuousMutField = mutationColorOptions.find((o) => o.scaleType === "continuous")?.value || null;
 
-  // Build a domain lookup for continuous mutation fields (used by scale signal)
+  // Build domain and label lookups for continuous mutation fields (used by scale/legend signals)
   const mutationDomainMap = {};
+  const mutationLabelMap = {};
   for (const [field, scale] of Object.entries(mutationColorScales)) {
     mutationDomainMap[field] = scale.domain;
+    mutationLabelMap[field] = scale.label;
   }
 
   // Build dynamic mutation tooltip — always shows all fields regardless of color mode
@@ -1394,6 +1396,17 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "mutation_color_domain",
         update:
           Object.keys(mutationDomainMap).length > 0 ? `mutation_domain_map[mutation_color_by] || [0, 15]` : "[0, 15]"
+      },
+      {
+        name: "mutation_label_map",
+        value: mutationLabelMap
+      },
+      {
+        name: "mutation_color_label",
+        update:
+          Object.keys(mutationLabelMap).length > 0
+            ? `mutation_label_map[mutation_color_by] || mutation_color_by`
+            : "mutation_color_by"
       },
       // Show/hide all in-plot controls (buttons and zoom/pan info)
       {
@@ -2907,7 +2920,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         orient: "right",
         direction: "vertical",
         fill: "surprise_color",
-        title: { signal: "show_alignment && color_by_mutation_metric ? mutation_color_by : ''" },
+        title: { signal: "show_alignment && color_by_mutation_metric ? mutation_color_label : ''" },
         type: "gradient",
         gradientLength: { signal: "show_alignment && color_by_mutation_metric ? 100 : 0" },
         encode: {
