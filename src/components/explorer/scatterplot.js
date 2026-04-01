@@ -51,7 +51,7 @@ class ClonalFamiliesViz extends React.Component {
       : resolveFieldMetadata(null);
     const fieldMetadata = resolvedMeta.clone || null;
     this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
-    this.lastFieldMetadata = fieldMetadata;
+    this.lastMetadataKey = JSON.stringify(fieldMetadata);
     this.lastClearTrigger = 0;
     this.containerRef = React.createRef();
     this.isFocused = false;
@@ -113,12 +113,15 @@ class ClonalFamiliesViz extends React.Component {
     const { hideControls } = this.state;
 
     // Rebuild spec if field_metadata changed (e.g., different dataset loaded)
+    // Use JSON comparison since resolveFieldMetadata creates new objects each call
     const loadedDataset = datasets?.find((d) => d.loading === "DONE");
     const resolvedMeta = loadedDataset?.field_metadata
       ? resolveFieldMetadata(loadedDataset.field_metadata)
       : resolveFieldMetadata(null);
     const fieldMetadata = resolvedMeta.clone || null;
-    if (fieldMetadata !== this.lastFieldMetadata) {
+    const metadataKey = JSON.stringify(fieldMetadata);
+    if (metadataKey !== this.lastMetadataKey) {
+      this.lastMetadataKey = metadataKey;
       this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
       this.lastFieldMetadata = fieldMetadata;
     }
