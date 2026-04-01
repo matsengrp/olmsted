@@ -276,7 +276,7 @@ export default class DatasetLoadingTable extends React.Component {
           <span style={{ fontWeight: "bold", fontSize: 13 }}>
             Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
           </span>
-          <span style={{ color: "#888", fontSize: 11 }}>🔵 dropdown  ⚪ tooltip  ⊘ skip</span>
+          <span style={{ color: "#888", fontSize: 11 }}>🔵 dropdown ⚪ tooltip ⊘ skip</span>
         </div>
         {allLevels.map((level) => {
           const fields = sharedByLevel[level];

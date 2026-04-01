@@ -9,6 +9,43 @@ import {
 } from "../constants/fieldDefaults";
 
 /**
+ * Inject built-in clone fields (categoricals and tooltip) into a clone metadata object.
+ * When a CATEGORICAL builtin is added and a matching TOOLTIP builtin has an expr,
+ * the expr is included so tooltip rendering works correctly.
+ *
+ * @param {Object} clone - Mutable clone metadata object to inject into
+ */
+function injectCloneBuiltins(clone) {
+  // Build a lookup from TOOLTIP builtins for expr fallback
+  const tooltipByField = {};
+  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
+    tooltipByField[builtin.field] = builtin;
+  }
+
+  // Ensure built-in categoricals are present
+  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
+    if (!(builtin.field in clone)) {
+      const entry = { type: "categorical", display: "dropdown", label: builtin.label };
+      // Include expr from tooltip builtin if available (needed for tooltip rendering)
+      if (tooltipByField[builtin.field]?.expr) {
+        entry.expr = tooltipByField[builtin.field].expr;
+      }
+      clone[builtin.field] = entry;
+    }
+  }
+
+  // Ensure built-in tooltip fields are present
+  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
+    if (!(builtin.field in clone)) {
+      clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
+      if (builtin.expr) {
+        clone[builtin.field].expr = builtin.expr;
+      }
+    }
+  }
+}
+
+/**
  * Resolve field_metadata for a dataset. When field_metadata is provided by the CLI,
  * merge in built-in fields (dataset_name, child_aa). When absent, build a default
  * metadata object from constants so all downstream code reads a uniform structure.
@@ -21,19 +58,7 @@ export function resolveFieldMetadata(rawMetadata) {
     // Accept "family" as alias for "clone" level
     const clone = { ...(rawMetadata.clone || rawMetadata.family || {}) };
 
-    // Ensure built-in categoricals are present
-    for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
-      if (!(builtin.field in clone)) {
-        clone[builtin.field] = { type: "categorical", display: "dropdown", label: builtin.label };
-      }
-    }
-
-    // Ensure built-in tooltip fields are present
-    for (const builtin of BUILTIN_CLONE_TOOLTIP) {
-      if (!(builtin.field in clone)) {
-        clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
-      }
-    }
+    injectCloneBuiltins(clone);
 
     // Ensure mutation has at least the built-in AA option
     const mutation = { ...(rawMetadata.mutation || {}) };
@@ -69,17 +94,7 @@ export function resolveFieldMetadata(rawMetadata) {
       };
     }
   }
-  // Ensure built-in categoricals
-  for (const builtin of BUILTIN_CLONE_CATEGORICAL) {
-    if (!(builtin.field in clone)) {
-      clone[builtin.field] = { type: "categorical", label: builtin.label };
-    }
-  }
-  for (const builtin of BUILTIN_CLONE_TOOLTIP) {
-    if (!(builtin.field in clone)) {
-      clone[builtin.field] = { type: "categorical", display: "tooltip", label: builtin.label };
-    }
-  }
+  injectCloneBuiltins(clone);
 
   return {
     clone,

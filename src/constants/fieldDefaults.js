@@ -52,8 +52,8 @@ export const DEFAULT_CLONE_TOOLTIP = [
   { field: "j_call", label: "J Gene" }
 ];
 
-// Tree — fallback leaf size options (just none when no metadata)
-export const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>"];
+// Tree — fallback leaf size options (none + multiplicity for pre-metadata datasets)
+export const DEFAULT_LEAF_SIZE_OPTIONS = ["<none>", "multiplicity"];
 
 /**
  * Default tooltip for tree node hover (structural fields only).

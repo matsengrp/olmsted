@@ -249,7 +249,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
 
   // Build mutation coloring options from field_metadata.mutation
-  // Build mutation coloring options from field_metadata.mutation
   // display: "dropdown" (default) → color option based on type
   // display: "tooltip" → tooltip only, not in color dropdown
   // display: "skip" → excluded entirely
@@ -2943,7 +2942,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 };
 
 const seqAlignSpec = (family, options = {}) => {
-  const { showMutationBorders = false, colorByMutationMetric = false, mutationMetadata = null } = options;
+  const {
+    showMutationBorders = false,
+    colorByMutationMetric = false,
+    mutationColorField = "surprise_mutsel",
+    mutationMetadata = null
+  } = options;
 
   // Build dynamic mutation tooltip (same as main tree spec)
   const { metricTooltip: lineageMutationTooltip } = buildMutationTooltipSignals(mutationMetadata);
@@ -3053,6 +3057,11 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "color_by_mutation_metric",
         value: colorByMutationMetric
+      },
+      // The mutation field to color by (e.g., "surprise_mutsel") - synced from tree view
+      {
+        name: "mutation_color_field",
+        value: mutationColorField
       }
     ],
     marks: [
@@ -3139,15 +3148,15 @@ const seqAlignSpec = (family, options = {}) => {
                 value: null
               },
               {
-                test: "color_by_mutation_metric && datum.surprise_mutsel !== null",
+                test: "color_by_mutation_metric && datum[mutation_color_field] !== null",
                 scale: "surprise_color",
-                field: "surprise_mutsel"
+                field: { signal: "mutation_color_field" }
               },
               {
-                test: "color_by_mutation_metric && datum.surprise_mutsel === null",
+                test: "color_by_mutation_metric && datum[mutation_color_field] === null",
                 value: null
               },
-              { scale: "aa_color", field: "mut_to" }
+              { scale: "aa_color", field: { signal: "mutation_color_field" } }
             ],
             stroke: { signal: "show_mutation_borders ? 'black' : null" },
             strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },

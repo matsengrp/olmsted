@@ -123,7 +123,6 @@ class ClonalFamiliesViz extends React.Component {
     if (metadataKey !== this.lastMetadataKey) {
       this.lastMetadataKey = metadataKey;
       this.spec = facetClonalFamiliesVizSpec({ fieldMetadata });
-      this.lastFieldMetadata = fieldMetadata;
     }
 
     if (availableClonalFamilies) {
