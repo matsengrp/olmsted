@@ -1,7 +1,7 @@
 import { createSelector, lruMemoize, createSelectorCreator } from "reselect";
 import * as _ from "lodash";
 import * as fun from "../components/framework/fun";
-import { resolveFieldMetadata } from "../utils/fileProcessor";
+import { resolveFieldMetadata } from "../utils/fieldMetadata";
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator({
   memoize: lruMemoize,
@@ -281,3 +281,17 @@ export const getSelectedDatasetFields = createSelector([getSelectedFamily, getDa
   // Resolve field_metadata with builtins merged (works for both uploaded and server data)
   return { ...dataset, field_metadata: resolveFieldMetadata(dataset.field_metadata) };
 });
+
+/**
+ * Get resolved field_metadata from the first loaded dataset.
+ * Memoized to avoid creating new objects on every render cycle.
+ * NOTE: Uses first loaded dataset only; multi-dataset metadata is not merged.
+ */
+const getFirstLoadedFieldMetadata = (state) => {
+  const loaded = (state.datasets.availableDatasets || []).find((d) => d.loading === "DONE");
+  return loaded?.field_metadata || null;
+};
+
+export const getResolvedFieldMetadata = createDeepEqualSelector([getFirstLoadedFieldMetadata], (rawMetadata) =>
+  resolveFieldMetadata(rawMetadata)
+);

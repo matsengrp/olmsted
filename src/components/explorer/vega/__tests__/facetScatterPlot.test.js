@@ -1,6 +1,6 @@
 import * as vega from "vega";
 import facetClonalFamiliesVizSpec from "../facetScatterPlot";
-import { resolveFieldMetadata } from "../../../../utils/fileProcessor";
+import { resolveFieldMetadata } from "../../../../utils/fieldMetadata";
 import { scatterplotSourceData, scatterplotDatasetsData } from "./vegaMockData";
 
 describe("facetClonalFamiliesVizSpec", () => {

@@ -8,7 +8,7 @@ import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
-import { resolveFieldMetadata } from "../../utils/fileProcessor";
+import { resolveFieldMetadata } from "../../utils/fieldMetadata";
 import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
@@ -178,8 +178,6 @@ export default class DatasetLoadingTable extends React.Component {
     // Determine what needs to be loaded and unloaded
     const toLoad = selectedDatasets.filter((id) => !currentlyLoaded.has(id));
     const toUnload = Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id));
-
-    console.log(`Batch update: Loading ${toLoad.length}, Unloading ${toUnload.length}`);
 
     // First, unload datasets that are no longer selected
     toUnload.forEach((dataset_id) => {

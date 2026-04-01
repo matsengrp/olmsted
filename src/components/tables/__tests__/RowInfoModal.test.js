@@ -88,6 +88,18 @@ describe("RowInfoModal", () => {
     expect(screen.getByText(/Expand \(15 items\)/)).toBeInTheDocument();
   });
 
+  it("collapses plain objects by default with expand button", () => {
+    const nested = { alpha: 1, beta: 2, gamma: 3 };
+    render(<RowInfoModal datum={{ name: "Z", config: nested }} isOpen onClose={jest.fn()} />);
+    expect(screen.getByText(/Expand \(3 keys\)/)).toBeInTheDocument();
+  });
+
+  it("collapses short arrays of objects", () => {
+    const modifications = [{ label: "Default values applied", items: ["node.lbi"] }];
+    render(<RowInfoModal datum={{ name: "W", data_modifications: modifications }} isOpen onClose={jest.fn()} />);
+    expect(screen.getByText(/Expand \(1 items\)/)).toBeInTheDocument();
+  });
+
   // ── Flattening sample ──
 
   it("flattens sample sub-object with sample. prefix", () => {

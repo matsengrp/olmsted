@@ -1,3 +1,14 @@
+## version 2.6.0 - 2026/04/01
+Changed:
+* All visualization controls (dropdowns, tooltips, filters) driven dynamically by field_metadata from olmsted-cli
+* Centralized metadata resolution with DEFAULT and BUILTIN field definitions per level (clone, node, branch, mutation)
+* Mutation coloring system: AA color scale, continuous heatmap with dynamic domain, color scheme dropdown
+* Mutation settings cascade from tree view to lineage view via VegaViewContext
+* Available Fields summary with display mode indicators after dataset loading
+* Collapsible JSON structures in Info modals
+* Shared Vega tooltip expression builder for consistent tooltip rendering
+* 577 tests across 28 suites
+
 ## version 2.5.0 - 2026/03/28
 Changed:
 * Clone/tree completeness validation with specific error messages replacing fragile checks
