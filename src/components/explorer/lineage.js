@@ -92,7 +92,7 @@ class Lineage extends React.Component {
       treeColorByMetric: false
     };
     this.vegaViewRef = null;
-    this.treeViewListenerAttached = false;
+    this.attachedTreeView = null;
     this.treeViewListeners = [];
   }
 
@@ -104,25 +104,26 @@ class Lineage extends React.Component {
    * Remove any signal listeners attached to the tree view.
    */
   removeTreeViewListeners() {
-    const treeView = this.context?.treeView;
-    if (treeView && this.treeViewListeners.length > 0) {
+    if (this.attachedTreeView && this.treeViewListeners.length > 0) {
       for (const { signal, handler } of this.treeViewListeners) {
         try {
-          treeView.removeSignalListener(signal, handler);
+          this.attachedTreeView.removeSignalListener(signal, handler);
         } catch (_e) {
           // View may already be disposed
         }
       }
     }
     this.treeViewListeners = [];
-    this.treeViewListenerAttached = false;
+    this.attachedTreeView = null;
   }
 
   componentDidUpdate(prevProps) {
-    // Attach listener to tree view for mutation setting changes
+    // Attach signal listeners to the tree view for mutation setting changes.
+    // Re-attach when the view instance changes (e.g., new family or subtree focus).
     const treeView = this.context?.treeView;
-    if (treeView && !this.treeViewListenerAttached) {
-      this.treeViewListenerAttached = true;
+    if (treeView && treeView !== this.attachedTreeView) {
+      this.removeTreeViewListeners();
+      this.attachedTreeView = treeView;
       try {
         const mutationColorByHandler = (_name, value) => {
           this.setState({ treeMutationColorBy: value });
@@ -136,7 +137,7 @@ class Lineage extends React.Component {
           { signal: "mutation_color_by", handler: mutationColorByHandler },
           { signal: "color_by_mutation_metric", handler: colorByMetricHandler }
         ];
-        // Read initial values
+        // Read initial values from the new view
         this.setState({
           treeMutationColorBy: treeView.signal("mutation_color_by"),
           treeColorByMetric: !!treeView.signal("color_by_mutation_metric")
@@ -144,9 +145,7 @@ class Lineage extends React.Component {
       } catch (_e) {
         // View may not be ready
       }
-    }
-    // Reset listener references if tree view changes
-    if (!treeView) {
+    } else if (!treeView && this.attachedTreeView) {
       this.removeTreeViewListeners();
     }
     const { selectedSeq, selectedFamily, treeChain, lastClickedChain, lineageChain, updateLineageChain } = this.props;
@@ -405,7 +404,7 @@ class Lineage extends React.Component {
                 )}
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
-                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.treeMutationColorBy || "aa"}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.treeMutationColorBy || "aa"}-${this.state.treeColorByMetric}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
                     onNewView={(view) => {
                       this.vegaViewRef = view;
                       if (!this.state.vegaViewReady) {

@@ -2897,17 +2897,15 @@ const seqAlignSpec = (family, options = {}) => {
   // Build dynamic mutation tooltip (same as main tree spec)
   const { metricTooltip: lineageMutationTooltip } = buildMutationTooltipSignals(mutationMetadata);
 
-  // Compute color scale domain and label from first continuous mutation field
+  // Look up color scale domain and label for the selected mutation field
   let lineageColorDomain = [0, 15];
   let lineageColorLabel = "Mutation metric";
-  if (mutationMetadata) {
-    for (const [field, meta] of Object.entries(mutationMetadata)) {
-      if (meta.type === "continuous" && (meta.display || DEFAULT_DISPLAY) !== "skip") {
-        const raw = meta.range || [0, 15];
-        lineageColorDomain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
-        lineageColorLabel = meta.label || field;
-        break;
-      }
+  if (mutationMetadata && mutationColorField) {
+    const selectedMeta = mutationMetadata[mutationColorField];
+    if (selectedMeta && selectedMeta.type === "continuous") {
+      const raw = selectedMeta.range || [0, 15];
+      lineageColorDomain = [Math.min(0, raw[0]), Math.ceil(raw[1])];
+      lineageColorLabel = selectedMeta.label || mutationColorField;
     }
   }
 
