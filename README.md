@@ -318,7 +318,7 @@ For contributors and maintainers, we provide detailed documentation:
 ### Technology Stack
 
 - **React 19** with Redux for state management
-- **Vega 5** for declarative visualizations
+- **Vega 6** for declarative visualizations
 - **Dexie (IndexedDB)** for client-side data persistence
 - **Express** server with webpack dev middleware
 
