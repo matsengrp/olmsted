@@ -12,7 +12,6 @@ import { LoadingStatus } from "../util/loading";
 import { ResizableTable } from "../util/resizableTable";
 import DownloadCSV from "../util/downloadCsv";
 import {
-  CitationCell,
   SizeCell,
   UploadTimeCell,
   BuildTimeCell,
@@ -250,9 +249,6 @@ class DatasetManagementTableComponent extends React.Component {
       ? _.orderBy(filteredDatasets, [(d) => (starredDatasets.includes(d.dataset_id) ? 1 : 0)], ["desc"])
       : filteredDatasets;
 
-    // Check if we need citation column
-    const showCitation = _.some(availableDatasets, (d) => d.paper !== undefined);
-
     // Build mappings for the table
     // Action columns: Star, Load, Info at beginning; Delete at end
     const mappings = [
@@ -260,7 +256,6 @@ class DatasetManagementTableComponent extends React.Component {
       ["Load", LoadStatusCell, { sortKey: "loading" }],
       ["Info", DatasetInfoCell, { sortable: false }],
       ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
-      ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
       [
         "Source",
         (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
@@ -274,15 +269,11 @@ class DatasetManagementTableComponent extends React.Component {
       ["Missing Fields", MissingFieldsCell, { sortable: false }]
     ];
 
-    if (showCitation) {
-      mappings.push(["Citation", CitationCell, { sortable: false }]);
-    }
-
     // Delete column at the end
     mappings.push(["Delete", DatasetDeleteCell, { sortable: false }]);
 
     // CSV columns for export
-    const csvColumns = getDatasetCsvColumns(showCitation);
+    const csvColumns = getDatasetCsvColumns();
 
     // Bulk star operations
     const visibleIds = sortedDatasets.map((d) => d.dataset_id);

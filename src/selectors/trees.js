@@ -74,8 +74,8 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
           parent: node.parent,
           seq_id: seq_id,
           position: i,
-          mut_from: naive_aa,
-          mut_to: naive_aa, // naive sequence shows its own AA
+          parent_aa: naive_aa,
+          child_aa: naive_aa,
           from_codon: naiveCodon,
           to_codon: naiveCodon
         });
@@ -92,14 +92,11 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
           parent: node.parent,
           seq_id: seq_id,
           position: i,
-          mut_from: naive_aa,
-          mut_to: aa,
           parent_aa: naive_aa,
           child_aa: aa,
           from_codon: fromCodon,
           to_codon: toCodon,
           // Spread all per-site mutation data from the node's mutations array
-          // (CLI produces fields like surprise_mutsel, selection_contribution, region, etc.)
           ...(siteData || {})
         });
       }
@@ -114,8 +111,8 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
         parent: node.parent,
         seq_id: seq_id,
         position: null, // null position = placeholder, won't render a mark
-        mut_from: null,
-        mut_to: null
+        parent_aa: null,
+        child_aa: null
       });
     }
 
