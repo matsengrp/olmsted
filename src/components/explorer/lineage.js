@@ -421,7 +421,7 @@ class Lineage extends React.Component {
                     spec={seqAlignSpec(lineageData, {
                       showMutationBorders,
                       colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric,
-                      mutationColorField: this.getTreeMutationSettings().mutationColorBy || "surprise_mutsel",
+                      mutationColorField: this.getTreeMutationSettings().mutationColorBy,
                       mutationMetadata: this.props.dataFields?.field_metadata?.mutation || null
                     })}
                   />

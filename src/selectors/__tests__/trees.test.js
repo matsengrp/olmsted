@@ -77,11 +77,16 @@ describe("computeTreeData", () => {
     expect(naive.lbr).toBeUndefined();
   });
 
-  it("alignment includes naive entries for every position", () => {
+  it("alignment includes naive entries for every position with parent_aa and child_aa", () => {
     const result = computeTreeData(mockTree);
     const naiveEntries = result.tips_alignment.filter((m) => m.type === "naive");
     // naive seq is "MKVL" = 4 chars, so 4 naive entries
     expect(naiveEntries).toHaveLength(4);
+    // parent_aa and child_aa must be present so Vega fill encoding can color them
+    naiveEntries.forEach((entry) => {
+      expect(entry.parent_aa).toBeDefined();
+      expect(entry.child_aa).toBe(entry.parent_aa);
+    });
   });
 
   it("alignment includes mutations for leaf nodes", () => {
@@ -91,8 +96,8 @@ describe("computeTreeData", () => {
     expect(leaf1Mutations.length).toBeGreaterThanOrEqual(1);
     const mutAtPos3 = leaf1Mutations.find((m) => m.position === 3);
     expect(mutAtPos3).toBeDefined();
-    expect(mutAtPos3.mut_from).toBe("L");
-    expect(mutAtPos3.mut_to).toBe("I");
+    expect(mutAtPos3.parent_aa).toBe("L");
+    expect(mutAtPos3.child_aa).toBe("I");
   });
 
   it("mutation records have no site data when nodes lack mutations array", () => {

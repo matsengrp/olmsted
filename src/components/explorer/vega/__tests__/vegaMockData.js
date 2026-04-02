@@ -95,12 +95,12 @@ export const treeNodesData = [
 
 // Alignment mutations data (one row per position per sequence)
 export const treeAlignmentData = [
-  { seq_id: "naive", position: 10, mut_to: "A", type: "naive" },
-  { seq_id: "naive", position: 20, mut_to: "G", type: "naive" },
-  { seq_id: "leaf-1", position: 10, mut_to: "T", type: "leaf" },
-  { seq_id: "leaf-1", position: 20, mut_to: "G", type: "leaf" },
-  { seq_id: "leaf-2", position: 10, mut_to: "A", type: "leaf" },
-  { seq_id: "leaf-2", position: 20, mut_to: "C", type: "leaf" }
+  { seq_id: "naive", position: 10, child_aa: "A", type: "naive" },
+  { seq_id: "naive", position: 20, child_aa: "G", type: "naive" },
+  { seq_id: "leaf-1", position: 10, child_aa: "T", type: "leaf" },
+  { seq_id: "leaf-1", position: 20, child_aa: "G", type: "leaf" },
+  { seq_id: "leaf-2", position: 10, child_aa: "A", type: "leaf" },
+  { seq_id: "leaf-2", position: 20, child_aa: "C", type: "leaf" }
 ];
 
 export const naiveGeneRegionData = [

@@ -85,6 +85,9 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
   return buildNodeTooltipSignal(nodeMetadata, branchMetadata, timepointFields);
 };
 
+// Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
+const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
+
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
 // Structural mutation tooltip fields — always shown, with Vega rendering expressions
@@ -92,11 +95,15 @@ const MUTATION_TOOLTIP_TEMPLATE = [
   { field: "position", label: "Position", format: "" },
   { field: "seq_id", label: "Sequence ID" },
   {
-    field: "mut_from",
+    field: "parent_aa",
     label: "From",
-    expr: "datum.from_codon ? datum.mut_from + ' (' + datum.from_codon + ')' : datum.mut_from"
+    expr: "datum.from_codon ? datum.parent_aa + ' (' + datum.from_codon + ')' : datum.parent_aa"
   },
-  { field: "mut_to", label: "To", expr: "datum.to_codon ? datum.mut_to + ' (' + datum.to_codon + ')' : datum.mut_to" }
+  {
+    field: "child_aa",
+    label: "To",
+    expr: "datum.to_codon ? datum.child_aa + ' (' + datum.to_codon + ')' : datum.child_aa"
+  }
 ];
 
 // Pre-built basic mutation tooltip (used by naive row and lineage tooltips)
@@ -480,7 +487,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'datum.mut_to == "-" || datum.mut_to == "X"'
+            expr: GAP_OR_UNKNOWN_FILTER
           },
           {
             type: "filter",
@@ -513,7 +520,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'datum.mut_to == "-" || datum.mut_to == "X"'
+            expr: GAP_OR_UNKNOWN_FILTER
           },
           {
             type: "filter",
@@ -2336,7 +2343,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                         test: 'datum["position"] === null || isNaN(datum["position"])',
                         value: null
                       },
-                      { scale: "aa_color", field: "mut_to" }
+                      { scale: "aa_color", field: "child_aa" }
                     ],
                     stroke: { value: "black" },
                     strokeWidth: { value: 0.5 },
@@ -2357,7 +2364,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 from: { data: "naive_mutations_x_and_gaps" },
                 encode: {
                   enter: {
-                    text: { field: "mut_to" },
+                    text: { field: "child_aa" },
                     fill: { value: "#000" }
                     // fontSize must be increased for gap character '-' to make it visible
                   },
@@ -2366,9 +2373,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     // Style the '-' and 'X' differently to make them equally visible
-                    fontWeight: { signal: "datum.mut_to == \"-\" ? 'bold' : 'normal'" },
-                    font: { signal: "datum.mut_to == \"-\" ? 'sans-serif' : 'monospace'" },
-                    fontSize: { signal: 'datum.mut_to == "-" ? 20 : 15' },
+                    fontWeight: { signal: "datum.child_aa == \"-\" ? 'bold' : 'normal'" },
+                    font: { signal: "datum.child_aa == \"-\" ? 'sans-serif' : 'monospace'" },
+                    fontSize: { signal: 'datum.child_aa == "-" ? 20 : 15' },
                     opacity: { value: 0.9 },
                     y: { signal: "3*naive_group_height/4" },
                     x: { scale: "aa_position", field: "position" },
@@ -2593,7 +2600,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 from: { data: "x_and_gaps" },
                 encode: {
                   enter: {
-                    text: { field: "mut_to" },
+                    text: { field: "child_aa" },
                     fill: { value: "#ffffff" }
                   },
                   update: {
@@ -2883,7 +2890,7 @@ const seqAlignSpec = (family, options = {}) => {
   const {
     showMutationBorders = false,
     colorByMutationMetric = false,
-    mutationColorField = "surprise_mutsel",
+    mutationColorField = "child_aa",
     mutationMetadata = null
   } = options;
 
@@ -2954,7 +2961,7 @@ const seqAlignSpec = (family, options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'datum.mut_to == "-" || datum.mut_to == "X"'
+            expr: GAP_OR_UNKNOWN_FILTER
           }
         ]
       }
@@ -2996,7 +3003,7 @@ const seqAlignSpec = (family, options = {}) => {
         name: "color_by_mutation_metric",
         value: colorByMutationMetric
       },
-      // The mutation field to color by (e.g., "surprise_mutsel") - synced from tree view
+      // The mutation field to color by - synced from tree view
       {
         name: "mutation_color_field",
         value: mutationColorField
@@ -3135,7 +3142,7 @@ const seqAlignSpec = (family, options = {}) => {
         from: { data: "x_and_gaps" },
         encode: {
           enter: {
-            text: { field: "mut_to" },
+            text: { field: "child_aa" },
             fill: { value: "#ffffff" }
           },
           update: {
