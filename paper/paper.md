@@ -120,7 +120,7 @@ The visualization interface consists of four linked sections:
 
 3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment. Colors indicate amino acid mutations relative to the naive sequence. The tree supports zooming and panning.
 
-![Example tree and alignment clonal family visualization.](./images/2-06-tree-alignment-clonal-families.png){height="3in"}
+![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
 4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
 
@@ -128,7 +128,7 @@ The visualization interface consists of four linked sections:
 
 # Implementation
 
-Olmsted is built with React and Redux, with visualizations implemented in Vega and Vega-Lite.
+Olmsted is built with React and Redux, with visualizations implemented in Vega.
 The codebase originated as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain].
 The application can be deployed as a static single-page application or run locally via Docker.
 
