@@ -13,7 +13,6 @@ import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
-  CitationCell,
   SizeCell,
   UploadTimeCell,
   BuildTimeCell,
@@ -369,9 +368,6 @@ export default class DatasetLoadingTable extends React.Component {
       selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length +
       Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
-    // Check if we need citation column
-    const showCitation = _.some(allDatasetsToUse, (d) => d.paper !== undefined);
-
     // Build mappings for the table - same as DatasetManagementTable but with selection checkboxes
     // Action columns grouped at the beginning: Star, Select, Status, Info (no Delete in loading table)
     const mappings = [
@@ -380,7 +376,6 @@ export default class DatasetLoadingTable extends React.Component {
       ["Status", LoadStatusDisplay, { sortable: false }],
       ["Info", DatasetInfoCell, { sortable: false }],
       ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
-      ["ID", "dataset_id", { style: { fontSize: "11px", color: "#666", fontFamily: "monospace" } }],
       [
         "Source",
         (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
@@ -394,12 +389,8 @@ export default class DatasetLoadingTable extends React.Component {
       ["Missing Fields", MissingFieldsCell, { sortable: false }]
     ];
 
-    if (showCitation) {
-      mappings.push(["Citation", CitationCell, { sortable: false }]);
-    }
-
     // CSV columns for export
-    const csvColumns = getDatasetCsvColumns(showCitation);
+    const csvColumns = getDatasetCsvColumns();
 
     // Bulk star operations
     const visibleIds = allDatasetsToUse.map((d) => d.dataset_id);
