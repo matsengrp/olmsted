@@ -11,7 +11,7 @@ jobs:
       - name: Set git branch variable
         run: echo "BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
       - name: Set image tag variable
-        run: if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "" ];then echo "TAG=$(git describe --tags)" >> $GITHUB_ENV;else echo "TAG=$BRANCH" >> $GITHUB_ENV;fi
+        run: if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "" ];then echo "TAG=$(git describe --tags)" >> $GITHUB_ENV;else echo "TAG=${BRANCH//\//-}" >> $GITHUB_ENV;fi
       - name: Checkout submodules
         shell: bash
         run: |
