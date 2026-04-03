@@ -102,27 +102,38 @@ It supports two input formats:
 
 Example usage:
 ```bash
-olmsted process -i data.json -o output.json -n "My Dataset"
+# Generate a config from your data, then edit it
+olmsted build-config -i data.json -o config.yaml
+
+# Process with the config
+olmsted process -c config.yaml -n "My Dataset" -o data-olmsted.json
 ```
-Once this data preparation is done once it creates a file that can be shared with collaborators who can use the web interface only.
+The `build-config` command introspects input data and generates a YAML configuration listing all discoverable fields with inferred types and labels, which the user can edit before processing.
+These fields will dynamically populate plotting options and hover tooltip information.
+Once data preparation is done, the resulting file can be shared with collaborators who can use the web interface only.
+Plot configurations can be also be exported from the webapp for recreation.
 
 ## Interactive Visualization
 
 The visualization interface consists of four linked sections:
 
-1. **Clonal Families Scatterplot**: Each clonal family appears as a point, with configurable axes, colors, and faceting. Users can brush-select regions or click individual points.
+1. **Clonal Families Scatterplot**: Each clonal family appears as a point, with configurable axes, colors, and faceting.
+The filter tool can be used to narrow the selection of families in the dataset to be plotted.
+Users can brush-select regions or click individual points.
 
 ![Example scatterplot.](./images/2-02-scatterplot.png){height="3in"}
 
-2. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
+1. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
+Can be sorted by any column field and families can be starred for easy reference.
 
 ![Example selected clonal families table.](./images/2-03-selected-clonal-families.png){height="3in"}
 
-3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment. Colors indicate amino acid mutations relative to the naive sequence. The tree supports zooming and panning.
+1. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment. Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
+The tree and alignment supports zooming and panning, as well as focusing down to a subtree based on selected subroot node.
 
 ![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
-4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
+1. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
 
 ![Example ancestral sequence visualization.](./images/2-07-ancestral-sequences.png){height="3in"}
 
