@@ -218,6 +218,9 @@ export default class DatasetLoadingTable extends React.Component {
     if (loadedDatasets.length === 0) return null;
 
     // Resolve metadata for each loaded dataset (includes builtins/defaults)
+    const datasetsWithoutMetadata = loadedDatasets
+      .filter((ds) => !ds.field_metadata)
+      .map((ds) => ds.name || ds.dataset_id);
     const resolvedDatasets = loadedDatasets.map((ds) => ({
       name: ds.name || ds.dataset_id,
       metadata: resolveFieldMetadata(ds.field_metadata || null)
@@ -269,6 +272,22 @@ export default class DatasetLoadingTable extends React.Component {
           fontSize: 12
         }}
       >
+        {datasetsWithoutMetadata.length > 0 && (
+          <div
+            style={{
+              marginBottom: 8,
+              padding: "6px 10px",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffc107",
+              borderRadius: 4,
+              color: "#856404",
+              fontSize: 11
+            }}
+          >
+            <strong>⚠ No field metadata provided:</strong> {datasetsWithoutMetadata.join(", ")}. Falling back to default
+            fields.
+          </div>
+        )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <span style={{ fontWeight: "bold", fontSize: 13 }}>
             Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
