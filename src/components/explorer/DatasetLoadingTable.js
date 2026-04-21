@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
-import { FiRefreshCw, FiDatabase, FiStar } from "react-icons/fi";
+import { FiRefreshCw, FiDatabase, FiStar, FiX } from "react-icons/fi";
 import { GreenCheckmark, LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
@@ -37,6 +37,51 @@ function LoadStatusDisplay({ datum }) {
     <div style={{ width: "100%", textAlign: "center" }}>
       <LoadingStatus loadingStatus={datum.loading} />
     </div>
+  );
+}
+
+// Segmented control for toggling Available Fields between union and intersection of loaded datasets.
+function FieldViewModeToggle({ mode, onChange }) {
+  const baseBtn = {
+    border: "1px solid #ced4da",
+    padding: "2px 8px",
+    fontSize: 11,
+    cursor: "pointer",
+    lineHeight: 1.4
+  };
+  const activeBtn = { backgroundColor: "#007bff", color: "#fff", borderColor: "#007bff" };
+  const inactiveBtn = { backgroundColor: "#fff", color: "#495057" };
+  return (
+    <span
+      style={{ display: "inline-flex" }}
+      title="Union shows every field present in any dataset; Intersection shows only fields shared by all datasets."
+    >
+      <button
+        type="button"
+        onClick={() => onChange("intersection")}
+        style={{
+          ...baseBtn,
+          ...(mode === "intersection" ? activeBtn : inactiveBtn),
+          borderTopLeftRadius: 3,
+          borderBottomLeftRadius: 3
+        }}
+      >
+        Show Only Shared Data Fields
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("union")}
+        style={{
+          ...baseBtn,
+          ...(mode === "union" ? activeBtn : inactiveBtn),
+          borderTopRightRadius: 3,
+          borderBottomRightRadius: 3,
+          marginLeft: -1
+        }}
+      >
+        Show All Data Fields
+      </button>
+    </span>
   );
 }
 
@@ -104,6 +149,13 @@ export default class DatasetLoadingTable extends React.Component {
     } catch (_e) {
       // ignore
     }
+    let fieldViewMode = "intersection";
+    try {
+      const savedMode = sessionStorage.getItem("olmsted_datasets_field_view_mode");
+      if (savedMode === "union" || savedMode === "intersection") fieldViewMode = savedMode;
+    } catch (_e) {
+      // ignore
+    }
     this.state = {
       updateHovered: false,
       manageHovered: false,
@@ -111,9 +163,11 @@ export default class DatasetLoadingTable extends React.Component {
       sortStarredFirst,
       showOnlyStarred,
       hideServerData,
+      fieldViewMode,
       starAllHovered: false,
       unstarAllHovered: false,
-      clearStarsHovered: false
+      clearStarsHovered: false,
+      clearSelectionsHovered: false
     };
   }
 
@@ -151,6 +205,15 @@ export default class DatasetLoadingTable extends React.Component {
       }
       return { hideServerData: newValue };
     });
+  };
+
+  setFieldViewMode = (mode) => {
+    try {
+      sessionStorage.setItem("olmsted_datasets_field_view_mode", mode);
+    } catch (_e) {
+      /* ignore */
+    }
+    this.setState({ fieldViewMode: mode });
   };
 
   componentDidMount() {
@@ -204,8 +267,9 @@ export default class DatasetLoadingTable extends React.Component {
       }
     });
 
-    // Clear selections after processing
-    dispatch(explorerActions.clearDatasetSelections());
+    // Intentionally do NOT clear selections here: after a successful update,
+    // selections should reflect what is loaded so the button settles into the
+    // "Visualization Up-to-Date" state until the user toggles something.
   }
 
   /**
@@ -213,6 +277,50 @@ export default class DatasetLoadingTable extends React.Component {
    * @param {Object[]} allDatasetsToUse - The datasets currently displayed in the table
    * @returns {React.ReactNode|null}
    */
+  /**
+   * Render a small panel listing the currently active (loaded) datasets.
+   * Shown directly above the Available Data Fields panel.
+   * @param {Object[]} allDatasetsToUse - The datasets currently displayed in the table
+   * @returns {React.ReactNode|null}
+   */
+  renderLoadedDatasetsList(allDatasetsToUse) {
+    const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
+    if (loadedDatasets.length === 0) return null;
+    return (
+      <div
+        style={{
+          marginTop: 10,
+          padding: "10px 14px",
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #dee2e6",
+          borderRadius: 4,
+          fontSize: 12
+        }}
+      >
+        <div style={{ fontWeight: "bold", fontSize: 13, marginBottom: 6 }}>
+          Active Datasets ({loadedDatasets.length})
+        </div>
+        <ul style={{ margin: 0, paddingLeft: 18 }}>
+          {loadedDatasets.map((ds) => {
+            const name = ds.name || ds.dataset_id;
+            const count = typeof ds.clone_count === "number" ? ds.clone_count : null;
+            return (
+              <li key={ds.dataset_id}>
+                <span style={{ fontWeight: 500 }}>{name}</span>
+                {count !== null && (
+                  <span style={{ color: "#666" }}>
+                    {" "}
+                    — {count} clonal {count === 1 ? "family" : "families"}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
+
   renderFieldSummary(allDatasetsToUse) {
     const loadedDatasets = allDatasetsToUse.filter((d) => d.loading === "DONE");
     if (loadedDatasets.length === 0) return null;
@@ -255,10 +363,13 @@ export default class DatasetLoadingTable extends React.Component {
     const sharedFields = fieldList.filter((f) => f.datasets.size === totalDatasets);
     const partialFields = fieldList.filter((f) => f.datasets.size < totalDatasets);
 
-    // Group shared fields by level, show all levels
-    const sharedByLevel = {};
+    // Intersection: only fields shared across all datasets.
+    // Union: all fields, with partials marked inline.
+    const isUnion = this.state.fieldViewMode === "union" && totalDatasets > 1;
+    const displayedFields = isUnion ? fieldList : sharedFields;
+    const fieldsByLevel = {};
     for (const level of allLevels) {
-      sharedByLevel[level] = sharedFields.filter((f) => f.level === level);
+      fieldsByLevel[level] = displayedFields.filter((f) => f.level === level);
     }
 
     return (
@@ -289,30 +400,45 @@ export default class DatasetLoadingTable extends React.Component {
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <span style={{ fontWeight: "bold", fontSize: 13 }}>
-            Available Fields ({totalDatasets} dataset{totalDatasets > 1 ? "s" : ""})
+          <span style={{ fontWeight: "bold", fontSize: 13 }}>Available Data Fields</span>
+          <span style={{ color: "#888", fontSize: 11 }}>
+            🟢 dropdown 🟡 tooltip 🔴 skip
+            {totalDatasets > 1 && isUnion ? " † partial (hover for datasets)" : ""}
           </span>
-          <span style={{ color: "#888", fontSize: 11 }}>🔵 dropdown ⚪ tooltip ⊘ skip</span>
         </div>
+        {totalDatasets > 1 && (
+          <div style={{ marginBottom: 6 }}>
+            <FieldViewModeToggle mode={this.state.fieldViewMode} onChange={this.setFieldViewMode} />
+          </div>
+        )}
         {allLevels.map((level) => {
-          const fields = sharedByLevel[level];
+          const fields = fieldsByLevel[level];
           return (
             <div key={level} style={{ marginBottom: 4 }}>
               <span style={{ fontWeight: 500, color: "#555" }}>{level}:</span>{" "}
               <span style={{ color: fields.length > 0 ? "#333" : "#999" }}>
                 {fields.length > 0
-                  ? fields
-                      .map((f) => {
-                        const icon = f.display === "skip" ? "⊘" : f.display === "tooltip" ? "⚪" : "🔵";
-                        return `${icon}\u00A0${f.label}`;
-                      })
-                      .join(",  ")
+                  ? fields.map((f, i) => {
+                      const icon = f.display === "skip" ? "🔴" : f.display === "tooltip" ? "🟡" : "🟢";
+                      const isPartial = f.datasets.size < totalDatasets;
+                      return (
+                        <React.Fragment key={`${f.level}.${f.field}`}>
+                          {i > 0 ? ",  " : ""}
+                          <span
+                            title={isPartial ? `Only in: ${[...f.datasets].join(", ")}` : undefined}
+                            style={isPartial ? { color: "#856404" } : undefined}
+                          >
+                            {`${icon} ${f.label}${isPartial ? " †" : ""}`}
+                          </span>
+                        </React.Fragment>
+                      );
+                    })
                   : "(none)"}
               </span>
             </div>
           );
         })}
-        {partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
+        {!isUnion && partialFields.length > 0 && totalDatasets > 1 && !this.state.fieldWarningDismissed && (
           <div
             style={{
               marginTop: 8,
@@ -592,7 +718,38 @@ export default class DatasetLoadingTable extends React.Component {
             }}
           >
             <FiRefreshCw size={16} />
-            Update Visualization {pendingChanges > 0 ? `(${pendingChanges} changes pending)` : ""}
+            {pendingChanges > 0
+              ? `Update Visualization (${pendingChanges} changes pending)`
+              : "Visualization Up-to-Date"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => dispatch(explorerActions.clearDatasetSelections())}
+            disabled={selectedDatasets.length === 0}
+            onMouseEnter={() => this.setState({ clearSelectionsHovered: true })}
+            onMouseLeave={() => this.setState({ clearSelectionsHovered: false })}
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              backgroundColor:
+                selectedDatasets.length === 0 ? "#6c757d" : this.state.clearSelectionsHovered ? "#5a6268" : "#6c757d",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: selectedDatasets.length === 0 ? "not-allowed" : "pointer",
+              marginRight: "10px",
+              transition: "background-color 0.15s ease",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              opacity: selectedDatasets.length === 0 ? 0.65 : 1
+            }}
+            title={selectedDatasets.length === 0 ? "No datasets selected" : "Clear all dataset selections"}
+          >
+            <FiX size={16} />
+            Clear Selections
           </button>
 
           <button
@@ -645,6 +802,7 @@ export default class DatasetLoadingTable extends React.Component {
         >
           Number of clonal families loaded: {loadedClonalFamilies}
         </div>
+        {loadedClonalFamilies > 0 && this.renderLoadedDatasetsList(allDatasetsToUse)}
         {loadedClonalFamilies > 0 && this.renderFieldSummary(allDatasetsToUse)}
         {loadedClonalFamilies === 0 && (
           <div

@@ -178,6 +178,15 @@ export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };
 
+// Subtree focus actions (shared with lineage view)
+export const updateSubtreeRoot = (subtreeRoot) => {
+  return { type: types.UPDATE_SUBTREE_ROOT, subtreeRoot };
+};
+
+export const updateTreatSubtreeAsRoot = (treatAsRoot) => {
+  return { type: types.UPDATE_TREAT_SUBTREE_AS_ROOT, treatAsRoot };
+};
+
 // Current section (for nav bar display)
 export const updateCurrentSection = (section) => {
   return { type: types.UPDATE_CURRENT_SECTION, section };

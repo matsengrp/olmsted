@@ -44,39 +44,45 @@ const mapStateToProps = (state) => {
   return { selectedFamily, nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll };
 };
 
+const notificationBoxStyle = (isEmpty) => ({
+  marginTop: "10px",
+  marginBottom: "10px",
+  padding: "12px",
+  backgroundColor: isEmpty ? "#f8d7da" : "#d4edda",
+  border: isEmpty ? "1px solid #dc3545" : "1px solid #28a745",
+  borderRadius: "4px",
+  color: isEmpty ? "#721c24" : "#155724",
+  fontSize: "14px",
+  textAlign: "center",
+  fontWeight: "bold"
+});
+
+/**
+ * Live count of clonal families that passed the active filters. Red when the
+ * filters exclude everything, green otherwise. Pass `onlyWhenFiltered` to hide
+ * when no filters are active (i.e. nothing has been filtered out).
+ */
+const FilterPassedBar = connect((state) => ({
+  nClonalFamiliesTotal: clonalFamiliesSelectors.getAvailableClonalFamilies(state).length,
+  nClonalFamiliesAll: clonalFamiliesSelectors.getAllClonalFamilies(state).length
+}))(({ nClonalFamiliesTotal, nClonalFamiliesAll, onlyWhenFiltered }) => {
+  const nFiltered = nClonalFamiliesAll - nClonalFamiliesTotal;
+  if (onlyWhenFiltered && nFiltered === 0) return null;
+  return (
+    <div style={notificationBoxStyle(nClonalFamiliesTotal === 0)}>
+      Number of clonal families passed filter: {nClonalFamiliesTotal} out of {nClonalFamiliesAll}
+    </div>
+  );
+});
+
 @connect(mapStateToProps)
 class SelectedFamiliesSummary extends React.Component {
   render() {
-    const { nClonalFamiliesBrushed, nClonalFamiliesTotal, nClonalFamiliesAll } = this.props;
-    const nFiltered = nClonalFamiliesAll - nClonalFamiliesTotal;
-    const showFilterInfo = nFiltered > 0;
-    const infoBoxStyle = {
-      marginTop: "10px",
-      marginBottom: "10px",
-      padding: "12px",
-      backgroundColor: "#d4edda",
-      border: "1px solid #28a745",
-      borderRadius: "4px",
-      color: "#155724",
-      fontSize: "14px",
-      textAlign: "center",
-      fontWeight: "bold"
-    };
+    const { nClonalFamiliesBrushed, nClonalFamiliesTotal } = this.props;
     return (
       <div>
-        {showFilterInfo && (
-          <div style={infoBoxStyle}>
-            Number of clonal families passed filter: {nClonalFamiliesTotal} out of {nClonalFamiliesAll}
-          </div>
-        )}
-        <div
-          style={{
-            ...infoBoxStyle,
-            backgroundColor: nClonalFamiliesBrushed === 0 ? "#f8d7da" : "#d4edda",
-            border: nClonalFamiliesBrushed === 0 ? "1px solid #dc3545" : "1px solid #28a745",
-            color: nClonalFamiliesBrushed === 0 ? "#721c24" : "#155724"
-          }}
-        >
+        <FilterPassedBar onlyWhenFiltered />
+        <div style={notificationBoxStyle(nClonalFamiliesBrushed === 0)}>
           Number of clonal families currently selected: {nClonalFamiliesBrushed} out of {nClonalFamiliesTotal}
         </div>
       </div>
@@ -189,6 +195,30 @@ function DatasetsSection({ sectionRef, availableDatasets, dispatch }) {
                   unstar all currently visible datasets. Use &quot;Clear Stars&quot; to remove all stars
                 </li>
               </ul>
+              <strong>Available Data Fields:</strong> Once datasets are loaded, a panel below the table summarizes the
+              family-level, node, branch, and mutation fields provided by those datasets. Each field is marked with its
+              display mode:
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li>
+                  <strong>🟢 dropdown:</strong> Available in scatterplot and tree encoding selectors
+                </li>
+                <li>
+                  <strong>🟡 tooltip:</strong> Shown on hover/in detail views but not directly selectable
+                </li>
+                <li>
+                  <strong>🔴 skip:</strong> Hidden from the UI
+                </li>
+                <li>
+                  <strong>Show Only Shared / Show All Data Fields:</strong> When two or more datasets are loaded, toggle
+                  between showing only fields common to every loaded dataset and showing every field from any loaded
+                  dataset. In &quot;Show All&quot; mode, fields that are not present in every dataset are marked with a
+                  † and hovering reveals which datasets contain them
+                </li>
+                <li>
+                  <strong>Missing field metadata:</strong> Datasets without explicit field metadata will display a
+                  warning and fall back to default fields
+                </li>
+              </ul>
               <strong>Export:</strong> Click &quot;Download Table as CSV&quot; to export the current table view (with
               applied filters and sorting) to a CSV file.
               <br />
@@ -205,28 +235,83 @@ function DatasetsSection({ sectionRef, availableDatasets, dispatch }) {
 }
 
 /**
- * Clonal Families section — scatterplot with filters and help text.
+ * Filters section — collapsible filter panel with help text.
+ */
+function FiltersSection({ sectionRef }) {
+  return (
+    <div ref={sectionRef} style={sectionStyle}>
+      <CollapsibleSection titleText="Filters" defaultOpen={false}>
+        <CollapseHelpTitle
+          titleText="Filters"
+          helpText={
+            <div>
+              The Filters section restricts which clonal families are displayed across the Clonal Family Scatterplot and
+              Clonal Family Selection Table. Filter by any family-level categorical metric or metadata field available
+              in the loaded datasets.
+              <br />
+              <br />
+              <strong>Adding filters:</strong>
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li>
+                  <strong>Expand a field:</strong> Click a field name to reveal the list of values observed across
+                  loaded datasets
+                </li>
+                <li>
+                  <strong>Select values:</strong> Check one or more boxes to keep only clonal families matching those
+                  values. Multiple selections within a field are combined with OR; different fields are combined with
+                  AND
+                </li>
+                <li>
+                  <strong>Multiple datasets:</strong> Values from all loaded datasets appear together, so you can filter
+                  comparatively across samples or subjects
+                </li>
+              </ul>
+              <strong>Removing filters:</strong>
+              <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
+                <li>
+                  <strong>Uncheck a value:</strong> Re-open the field and uncheck a value to drop it from the filter
+                </li>
+                <li>
+                  <strong>Remove a field:</strong> Click the × on an active filter chip at the top of the panel to clear
+                  that field&apos;s selections entirely
+                </li>
+                <li>
+                  <strong>Clear all:</strong> Click &quot;Clear all&quot; next to the chips to reset every active filter
+                  at once
+                </li>
+              </ul>
+            </div>
+          }
+        />
+        <FilterPassedBar />
+        <FilterPanel />
+      </CollapsibleSection>
+    </div>
+  );
+}
+
+/**
+ * Clonal Family Scatterplot section — scatterplot with help text.
  */
 function ClonalFamiliesSection({ sectionRef }) {
   return (
     <div ref={sectionRef} style={sectionStyle}>
-      <CollapsibleSection titleText="Clonal Families">
+      <CollapsibleSection titleText="Clonal Family Scatterplot">
         <CollapseHelpTitle
-          titleText="Clonal Families"
+          titleText="Clonal Family Scatterplot"
           helpText={
             <div>
-              The Clonal Families section represents each clonal family as a point in a scatterplot. Each point
+              The Clonal Family Scatterplot represents each clonal family as a point in a scatterplot. Each point
               corresponds to a single clonal family, with axes, size, color, and shape customizable to display different
               family-level metrics and metadata. For paired heavy/light chain data, each chain is represented as a
               separate data point. Interact with the plot by clicking individual points or dragging to brush-select
-              multiple clones, which filters the clonal families displayed in the Selected Clonal Families table below.
+              multiple clones, which filters the clonal families displayed in the Clonal Family Selection Table below.
               See the <a href="https://github.com/matsengrp/olmsted#readme">README</a> to learn more about AIRR, PCP, or
               Olmsted data schemas and field descriptions.
               <br />
               <br />
-              <strong>Filters:</strong> Use the &quot;Filters&quot; panel below to restrict which clonal families are
-              displayed. Filter by locus (IGH, IGK, IGL), subject, sample, V gene, J gene, or dataset. Multiple values
-              can be selected for each filter field. Active filters are shown as chips that can be individually removed.
+              <strong>Filters:</strong> Use the &quot;Filters&quot; section above to restrict which clonal families are
+              displayed.
               <br />
               <br />
               <strong>Control Modes:</strong> The scatterplot has two interaction modes accessible via buttons in the
@@ -309,9 +394,6 @@ function ClonalFamiliesSection({ sectionRef }) {
             </div>
           }
         />
-        <CollapsibleSection titleText="Filters" defaultOpen={false}>
-          <FilterPanel />
-        </CollapsibleSection>
         <SelectedFamiliesSummary />
         <ClonalFamiliesViz />
       </CollapsibleSection>
@@ -320,17 +402,17 @@ function ClonalFamiliesSection({ sectionRef }) {
 }
 
 /**
- * Selected Clonal Families section — table with help text.
+ * Clonal Family Selection Table section — table with help text.
  */
 function SelectedFamiliesSection({ sectionRef }) {
   return (
     <div ref={sectionRef} style={{ paddingBottom: 40, ...sectionStyle }}>
-      <CollapsibleSection titleText="Selected Clonal Families">
+      <CollapsibleSection titleText="Clonal Family Selection Table">
         <CollapseHelpTitle
-          titleText="Selected Clonal Families"
+          titleText="Clonal Family Selection Table"
           helpText={
             <div>
-              The Selected Clonal Families table displays the full collection or selected subset of clonal families
+              The Clonal Family Selection Table displays the full collection or selected subset of clonal families
               (based on scatterplot selection). Each row represents one clonal family and includes:
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                 <li>
@@ -385,7 +467,7 @@ function SelectedFamiliesSection({ sectionRef }) {
               <br />
               <br />
               When you select a clonal family from the table, its phylogenetic tree and alignment are displayed below in
-              the Clonal Family Details section. For paired heavy/light chain data, trees for both chains will be
+              the Clonal Family Phylogeny section. For paired heavy/light chain data, trees for both chains will be
               available.
             </div>
           }
@@ -418,6 +500,7 @@ class App extends React.Component {
     // Refs for section visibility tracking
     this.sectionRefs = {
       datasets: React.createRef(),
+      filters: React.createRef(),
       clonalFamilies: React.createRef(),
       selectedClonalFamilies: React.createRef(),
       clonalFamilyDetails: React.createRef(),
@@ -425,9 +508,10 @@ class App extends React.Component {
     };
     this.sectionNames = {
       datasets: "Datasets",
-      clonalFamilies: "Clonal Families",
-      selectedClonalFamilies: "Selected Clonal Families",
-      clonalFamilyDetails: "Clonal Family Details",
+      filters: "Filters",
+      clonalFamilies: "Clonal Family Scatterplot",
+      selectedClonalFamilies: "Clonal Family Selection Table",
+      clonalFamilyDetails: "Clonal Family Phylogeny",
       ancestralSequences: "Ancestral Sequences"
     };
   }
@@ -635,13 +719,14 @@ class App extends React.Component {
                 availableDatasets={availableDatasets}
                 dispatch={dispatch}
               />
+              {loadedClonalFamilies > 0 && <FiltersSection sectionRef={this.sectionRefs.filters} />}
               {loadedClonalFamilies > 0 && <ClonalFamiliesSection sectionRef={this.sectionRefs.clonalFamilies} />}
               {loadedClonalFamilies > 0 && (
                 <SelectedFamiliesSection sectionRef={this.sectionRefs.selectedClonalFamilies} />
               )}
               {selectedFamily && loadedClonalFamilies > 0 && (
                 <div ref={this.sectionRefs.clonalFamilyDetails} style={sectionStyle}>
-                  <CollapsibleSection titleText="Clonal Family Details">
+                  <CollapsibleSection titleText="Clonal Family Phylogeny">
                     <TreeViz availableHeight={availableHeight} />
                   </CollapsibleSection>
                 </div>

@@ -296,14 +296,16 @@ const ensureSingleRoot = (nodes) => {
     timepoint_multiplicities: []
   };
 
-  // Re-parent all original roots (including empty placeholders) to synthetic root
-  // Then filter out empty placeholders since they add no value
+  // Re-parent all original roots (including empty placeholders) to synthetic root.
+  // Demote them to "node" so downstream code that treats type === "root" as the
+  // single naive row does not generate a duplicate naive alignment row per root.
+  // Also filter out empty placeholders since they add no value.
   const emptyIds = new Set(emptyRoots.map((n) => n.sequence_id));
   const modifiedNodes = nodes
     .filter((n) => !emptyIds.has(n.sequence_id))
     .map((n) => {
       if (!n.parent) {
-        return { ...n, parent: SYNTHETIC_ROOT_ID };
+        return { ...n, parent: SYNTHETIC_ROOT_ID, type: "node" };
       }
       return n;
     });
@@ -443,4 +445,47 @@ export const getLineageData = createSelector([getSelectedTree, getSelectedSeq], 
 // Export the function for direct use with options
 export const computeLineageDataWithOptions = (tree, seq, includeAllNodes) => {
   return computeLineageData(tree, seq, includeAllNodes);
+};
+
+// Expose the alignment builder so consumers (e.g. subtree focus mode) can
+// recompute tips_alignment / lineage_alignment against a non-naive reference.
+export { createAlignment, followLineage };
+
+/**
+ * Recompute a lineage using a specific node as the reference (naive) sequence.
+ * Used by subtree focus "treat as root" mode so the lineage alignment shows
+ * mutations relative to the subtree root rather than the original naive.
+ *
+ * @param {Object} tree - The tree (with .nodes)
+ * @param {Object} seq - The selected leaf sequence
+ * @param {string} referenceSeqId - sequence_id of the node to use as naive
+ * @param {boolean} includeAllNodes - include all intermediate nodes
+ * @returns {Object} tree data with lineage_alignment/download_lineage_seqs overridden
+ */
+export const computeLineageDataRelativeTo = (tree, seq, referenceSeqId, includeAllNodes = false) => {
+  if (!tree) return {};
+  const treeData = _.clone(tree);
+  if (treeData.nodes) {
+    const normalized = normalizeTreeNodes(treeData.nodes);
+    treeData.nodes = normalized.nodes;
+  }
+  if (!treeData.nodes || treeData.nodes.length === 0 || _.isEmpty(seq)) return treeData;
+  const data = treeData.nodes.slice(0);
+  const reference = _.find(data, { sequence_id: referenceSeqId });
+  if (!reference || !reference.sequence_alignment_aa) {
+    // Reference missing — fall back to the natural lineage computation.
+    return computeLineageData(tree, seq, includeAllNodes);
+  }
+  const lineage = followLineage(data, seq, reference, includeAllNodes);
+  // Mark the reference node as naive-equivalent for createAlignment so it
+  // generates a naive row from its own sequence.
+  const lineageAsRoot = lineage.map((n) => (n.sequence_id === referenceSeqId ? { ...n, type: "root" } : n));
+  treeData.download_lineage_seqs = lineage;
+  treeData.lineage_alignment = createAlignment(
+    reference.sequence_alignment_aa,
+    lineageAsRoot,
+    reference.sequence_alignment || null
+  );
+  treeData.lineage_seq_counter = lineage.length;
+  return treeData;
 };
