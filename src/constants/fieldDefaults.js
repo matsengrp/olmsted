@@ -17,6 +17,13 @@
  */
 export const DEFAULT_DISPLAY = "skip";
 
+/** Icon rendered next to a field label based on its display mode. */
+export const DISPLAY_MODE_ICONS = {
+  dropdown: "🟢",
+  tooltip: "🟡",
+  skip: "🔴"
+};
+
 // ============================================================
 // Clone / Family level
 // ============================================================

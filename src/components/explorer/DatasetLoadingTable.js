@@ -9,7 +9,7 @@ import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import { resolveFieldMetadata } from "../../utils/fieldMetadata";
-import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
+import { DEFAULT_DISPLAY, DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -22,6 +22,57 @@ import {
   MissingFieldsCell
 } from "../tables/DatasetTableCells";
 import { DatasetInfoCell } from "../tables/RowInfoModal";
+
+// --- Shared constants and helpers ---
+
+const FIELD_VIEW_MODES = { UNION: "union", INTERSECTION: "intersection" };
+
+const SESSION_KEYS = {
+  sortStarredFirst: "olmsted_datasets_sort_starred_first",
+  showOnlyStarred: "olmsted_datasets_show_only_starred",
+  hideServerData: "olmsted_datasets_hide_server",
+  fieldViewMode: "olmsted_datasets_field_view_mode"
+};
+
+// JSON-encoded session read with a fallback when the key is missing or unparseable.
+const readSessionJson = (key, fallback) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw);
+  } catch (_e) {
+    return fallback;
+  }
+};
+
+// Enum-valued session read that restricts to a list of allowed values.
+const readSessionEnum = (key, allowed, fallback) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return allowed.includes(raw) ? raw : fallback;
+  } catch (_e) {
+    return fallback;
+  }
+};
+
+// Silent session write; ignores quota/privacy errors.
+const writeSession = (key, value) => {
+  try {
+    sessionStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+  } catch (_e) {
+    /* ignore */
+  }
+};
+
+// Hoisted style objects for FieldViewModeToggle so they aren't recreated per render.
+const TOGGLE_BASE_BTN = {
+  border: "1px solid #ced4da",
+  padding: "2px 8px",
+  fontSize: 11,
+  cursor: "pointer",
+  lineHeight: 1.4
+};
+const TOGGLE_ACTIVE_BTN = { backgroundColor: "#007bff", color: "#fff", borderColor: "#007bff" };
+const TOGGLE_INACTIVE_BTN = { backgroundColor: "#fff", color: "#495057" };
 
 // Component for non-selectable load status display
 function LoadStatusDisplay({ datum }) {
@@ -42,15 +93,6 @@ function LoadStatusDisplay({ datum }) {
 
 // Segmented control for toggling Available Fields between union and intersection of loaded datasets.
 function FieldViewModeToggle({ mode, onChange }) {
-  const baseBtn = {
-    border: "1px solid #ced4da",
-    padding: "2px 8px",
-    fontSize: 11,
-    cursor: "pointer",
-    lineHeight: 1.4
-  };
-  const activeBtn = { backgroundColor: "#007bff", color: "#fff", borderColor: "#007bff" };
-  const inactiveBtn = { backgroundColor: "#fff", color: "#495057" };
   return (
     <span
       style={{ display: "inline-flex" }}
@@ -58,10 +100,10 @@ function FieldViewModeToggle({ mode, onChange }) {
     >
       <button
         type="button"
-        onClick={() => onChange("intersection")}
+        onClick={() => onChange(FIELD_VIEW_MODES.INTERSECTION)}
         style={{
-          ...baseBtn,
-          ...(mode === "intersection" ? activeBtn : inactiveBtn),
+          ...TOGGLE_BASE_BTN,
+          ...(mode === FIELD_VIEW_MODES.INTERSECTION ? TOGGLE_ACTIVE_BTN : TOGGLE_INACTIVE_BTN),
           borderTopLeftRadius: 3,
           borderBottomLeftRadius: 3
         }}
@@ -70,10 +112,10 @@ function FieldViewModeToggle({ mode, onChange }) {
       </button>
       <button
         type="button"
-        onClick={() => onChange("union")}
+        onClick={() => onChange(FIELD_VIEW_MODES.UNION)}
         style={{
-          ...baseBtn,
-          ...(mode === "union" ? activeBtn : inactiveBtn),
+          ...TOGGLE_BASE_BTN,
+          ...(mode === FIELD_VIEW_MODES.UNION ? TOGGLE_ACTIVE_BTN : TOGGLE_INACTIVE_BTN),
           borderTopRightRadius: 3,
           borderBottomRightRadius: 3,
           marginLeft: -1
@@ -132,30 +174,14 @@ export default class DatasetLoadingTable extends React.Component {
     super(props);
     this.handleBatchUpdate = this.handleBatchUpdate.bind(this);
     // Load preferences from sessionStorage
-    let sortStarredFirst = true;
-    let showOnlyStarred = false;
-    try {
-      const savedSort = sessionStorage.getItem("olmsted_datasets_sort_starred_first");
-      if (savedSort !== null) sortStarredFirst = JSON.parse(savedSort);
-      const savedFilter = sessionStorage.getItem("olmsted_datasets_show_only_starred");
-      if (savedFilter !== null) showOnlyStarred = JSON.parse(savedFilter);
-    } catch (_e) {
-      // ignore
-    }
-    let hideServerData = false;
-    try {
-      const savedHide = sessionStorage.getItem("olmsted_datasets_hide_server");
-      if (savedHide !== null) hideServerData = JSON.parse(savedHide);
-    } catch (_e) {
-      // ignore
-    }
-    let fieldViewMode = "intersection";
-    try {
-      const savedMode = sessionStorage.getItem("olmsted_datasets_field_view_mode");
-      if (savedMode === "union" || savedMode === "intersection") fieldViewMode = savedMode;
-    } catch (_e) {
-      // ignore
-    }
+    const sortStarredFirst = readSessionJson(SESSION_KEYS.sortStarredFirst, true);
+    const showOnlyStarred = readSessionJson(SESSION_KEYS.showOnlyStarred, false);
+    const hideServerData = readSessionJson(SESSION_KEYS.hideServerData, false);
+    const fieldViewMode = readSessionEnum(
+      SESSION_KEYS.fieldViewMode,
+      [FIELD_VIEW_MODES.UNION, FIELD_VIEW_MODES.INTERSECTION],
+      FIELD_VIEW_MODES.INTERSECTION
+    );
     this.state = {
       updateHovered: false,
       manageHovered: false,
@@ -174,11 +200,7 @@ export default class DatasetLoadingTable extends React.Component {
   toggleSortStarredFirst = () => {
     this.setState((prevState) => {
       const newValue = !prevState.sortStarredFirst;
-      try {
-        sessionStorage.setItem("olmsted_datasets_sort_starred_first", JSON.stringify(newValue));
-      } catch (_e) {
-        /* ignore */
-      }
+      writeSession(SESSION_KEYS.sortStarredFirst, newValue);
       return { sortStarredFirst: newValue };
     });
   };
@@ -186,11 +208,7 @@ export default class DatasetLoadingTable extends React.Component {
   toggleShowOnlyStarred = () => {
     this.setState((prevState) => {
       const newValue = !prevState.showOnlyStarred;
-      try {
-        sessionStorage.setItem("olmsted_datasets_show_only_starred", JSON.stringify(newValue));
-      } catch (_e) {
-        /* ignore */
-      }
+      writeSession(SESSION_KEYS.showOnlyStarred, newValue);
       return { showOnlyStarred: newValue };
     });
   };
@@ -198,21 +216,13 @@ export default class DatasetLoadingTable extends React.Component {
   toggleHideServerData = () => {
     this.setState((prevState) => {
       const newValue = !prevState.hideServerData;
-      try {
-        sessionStorage.setItem("olmsted_datasets_hide_server", JSON.stringify(newValue));
-      } catch (_e) {
-        /* ignore */
-      }
+      writeSession(SESSION_KEYS.hideServerData, newValue);
       return { hideServerData: newValue };
     });
   };
 
   setFieldViewMode = (mode) => {
-    try {
-      sessionStorage.setItem("olmsted_datasets_field_view_mode", mode);
-    } catch (_e) {
-      /* ignore */
-    }
+    writeSession(SESSION_KEYS.fieldViewMode, mode);
     this.setState({ fieldViewMode: mode });
   };
 
@@ -365,7 +375,7 @@ export default class DatasetLoadingTable extends React.Component {
 
     // Intersection: only fields shared across all datasets.
     // Union: all fields, with partials marked inline.
-    const isUnion = this.state.fieldViewMode === "union" && totalDatasets > 1;
+    const isUnion = this.state.fieldViewMode === FIELD_VIEW_MODES.UNION && totalDatasets > 1;
     const displayedFields = isUnion ? fieldList : sharedFields;
     const fieldsByLevel = {};
     for (const level of allLevels) {
@@ -402,7 +412,7 @@ export default class DatasetLoadingTable extends React.Component {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <span style={{ fontWeight: "bold", fontSize: 13 }}>Available Data Fields</span>
           <span style={{ color: "#888", fontSize: 11 }}>
-            🟢 dropdown 🟡 tooltip 🔴 skip
+            {DISPLAY_MODE_ICONS.dropdown} dropdown {DISPLAY_MODE_ICONS.tooltip} tooltip {DISPLAY_MODE_ICONS.skip} skip
             {totalDatasets > 1 && isUnion ? " † partial (hover for datasets)" : ""}
           </span>
         </div>
@@ -419,7 +429,7 @@ export default class DatasetLoadingTable extends React.Component {
               <span style={{ color: fields.length > 0 ? "#333" : "#999" }}>
                 {fields.length > 0
                   ? fields.map((f, i) => {
-                      const icon = f.display === "skip" ? "🔴" : f.display === "tooltip" ? "🟡" : "🟢";
+                      const icon = DISPLAY_MODE_ICONS[f.display] || DISPLAY_MODE_ICONS.dropdown;
                       const isPartial = f.datasets.size < totalDatasets;
                       return (
                         <React.Fragment key={`${f.level}.${f.field}`}>
@@ -733,8 +743,7 @@ export default class DatasetLoadingTable extends React.Component {
               padding: "8px 16px",
               fontSize: "14px",
               fontWeight: "bold",
-              backgroundColor:
-                selectedDatasets.length === 0 ? "#6c757d" : this.state.clearSelectionsHovered ? "#5a6268" : "#6c757d",
+              backgroundColor: this.state.clearSelectionsHovered && selectedDatasets.length > 0 ? "#e8700e" : "#fd7e14",
               color: "white",
               border: "none",
               borderRadius: "4px",

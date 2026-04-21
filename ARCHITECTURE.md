@@ -354,18 +354,20 @@ Root (src/Root.js)
             +-- CollapsibleSection: "Datasets"
             |   +-- DatasetLoadingTable  # Dataset selection for loading
             |
-            +-- CollapsibleSection: "Clonal Families"
+            +-- CollapsibleSection: "Filters" [conditional]
             |   +-- FilterPanel      # High-level filters (locus, subject, etc.)
+            |
+            +-- CollapsibleSection: "Clonal Family Scatterplot"
             |   +-- SelectedFamiliesSummary  # Count display
             |   +-- ClonalFamiliesViz  # Vega scatterplot wrapper
             |       +-- facetScatterPlot  # Vega spec
             |
-            +-- CollapsibleSection: "Selected Clonal Families"
+            +-- CollapsibleSection: "Clonal Family Selection Table"
             |   +-- ClonalFamiliesTable  # Paginated table
             |       +-- ResizableTable   # Column resize support
             |       +-- RowInfoModal     # Metadata viewer
             |
-            +-- CollapsibleSection: "Clonal Family Details" [conditional]
+            +-- CollapsibleSection: "Clonal Family Tree & Alignment" [conditional]
             |   +-- TreeViz          # Tree visualization wrapper
             |       +-- clonalFamilyDetails  # Vega tree + alignment spec
             |

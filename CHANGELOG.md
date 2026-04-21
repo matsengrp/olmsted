@@ -1,10 +1,24 @@
+## version 2.7.0 - 2026/04/20
+Changed:
+* Filters promoted to a top-level section with its own help panel and live "passed filter" banner (turns red when filters exclude everything)
+* Section headers renamed: Clonal Families → Clonal Family Scatterplot, Selected Clonal Families → Clonal Family Selection Table, Clonal Family Details → Clonal Family Tree & Alignment
+* Active Datasets panel listing loaded datasets above Available Data Fields
+* Warning banner when a loaded dataset has no field_metadata (falls back to defaults)
+* Union/Intersection toggle ("Show Only Shared Data Fields" / "Show All Data Fields") for the field listing when 2+ datasets are loaded
+* Field display-mode legend updated to colored dots (🟢 dropdown, 🟡 tooltip, 🔴 skip)
+* Update Visualization button reads "Visualization Up-to-Date" when no changes are pending; selections persist after update
+* New Clear Selections button next to Update Visualization
+* Clonal Family Tree & Alignment header split: family name, Chain, and Ancestral Reconstruction Method are now labeled fields below the title; Chain is always visible (pinned when unpaired); blank reconstruction methods render as `<unspecified>`
+* New "Treat subtree as root" focus mode: regenerates the tree alignment using the subtree root's sequence as naive; cascades into Ancestral Sequences via a new computeLineageDataRelativeTo selector
+* Bugfix: synthetic-root forest assembly demotes original roots to `type: "node"`, preventing duplicate stacked naive alignment rows
+
 ## version 2.6.0 - 2026/04/01
 Changed:
 * All visualization controls (dropdowns, tooltips, filters) driven dynamically by field_metadata from olmsted-cli
 * Centralized metadata resolution with DEFAULT and BUILTIN field definitions per level (clone, node, branch, mutation)
 * Mutation coloring system: AA color scale, continuous heatmap with dynamic domain, color scheme dropdown
 * Mutation settings cascade from tree view to lineage view via VegaViewContext
-* Available Fields summary with display mode indicators after dataset loading
+* Available Data Fields summary with display mode indicators after dataset loading
 * Collapsible JSON structures in Info modals
 * Shared Vega tooltip expression builder for consistent tooltip rendering
 * 577 tests across 28 suites

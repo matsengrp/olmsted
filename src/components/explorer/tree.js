@@ -23,6 +23,27 @@ import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
+// Placeholder shown when an ancestral reconstruction method / tree type is blank.
+const UNSPECIFIED_TREE_LABEL = "<unspecified>";
+
+// Build the `key` for a Vega chart so it remounts cleanly when subtree focus
+// or the treat-as-root mode toggles.
+const vegaChartKey = (prefix, subtreeRoot, treatAsRoot) =>
+  `${prefix}-${subtreeRoot || "full"}-${treatAsRoot ? "asroot" : "rel"}`;
+
+// For unpaired families the Chain field is a disabled single-option select.
+// Renders a dropdown locked to the family's actual chain (heavy or light).
+function PinnedChainSelect({ clone }) {
+  const pinnedChain = clonalFamiliesSelectors.getCloneChain(clone);
+  const pinnedValue = pinnedChain === "light" ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
+  const pinnedLabel = pinnedChain === "light" ? "Light chain only" : "Heavy chain only";
+  return (
+    <select id="chain-select" value={pinnedValue} disabled aria-label="Chain selection">
+      <option value={pinnedValue}>{pinnedLabel}</option>
+    </select>
+  );
+}
+
 /**
  * Normalize nodes to an array (they may be an object keyed by sequence_id or an array).
  */
@@ -57,14 +78,9 @@ const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtr
 
   if (treatAsRoot) {
     const rootNode = filteredNodes.find((n) => n.sequence_id === subtreeRoot);
-    if (rootNode && rootNode.sequence_alignment_aa) {
-      // Regenerate alignment rows using the subtree root as the naive reference.
-      const renderable = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf");
-      const regenerated = treesSelector.createAlignment(
-        rootNode.sequence_alignment_aa,
-        renderable,
-        rootNode.sequence_alignment || null
-      );
+    const renderable = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf");
+    const regenerated = treesSelector.buildSubtreeAlignment(rootNode, renderable);
+    if (regenerated) {
       return { nodes: filteredNodes, alignment: regenerated, leavesCount: filteredCount };
     }
   }
@@ -98,7 +114,7 @@ class TreeHeader extends React.Component {
     return (
       <div>
         <CollapseHelpTitle
-          titleText="Clonal Family Phylogeny"
+          titleText="Clonal Family Tree & Alignment"
           helpText={
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below. Alongside the tree is an
@@ -267,16 +283,7 @@ class TreeHeader extends React.Component {
               <option value={CHAIN_TYPES.BOTH_STACKED}>Both chains (stacked)</option>
             </select>
           ) : (
-            (() => {
-              const pinnedChain = clonalFamiliesSelectors.getCloneChain(selectedFamily);
-              const pinnedValue = pinnedChain === "light" ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
-              const pinnedLabel = pinnedChain === "light" ? "Light chain only" : "Heavy chain only";
-              return (
-                <select id="chain-select" value={pinnedValue} disabled aria-label="Chain selection">
-                  <option value={pinnedValue}>{pinnedLabel}</option>
-                </select>
-              );
-            })()
+            <PinnedChainSelect clone={selectedFamily} />
           )}
         </div>
         <div style={{ marginTop: "8px" }}>
@@ -292,14 +299,14 @@ class TreeHeader extends React.Component {
                 const typeStr = typeof tree_option.type === "string" ? tree_option.type.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
-                    {typeStr || "<unspecified>"}
+                    {typeStr || UNSPECIFIED_TREE_LABEL}
                   </option>
                 );
               })}
             </select>
           ) : (
             <select id="tree-select" value={tree.ident || ""} disabled aria-label="Ancestral reconstruction method">
-              <option value={tree.ident || ""}>{"<unspecified>"}</option>
+              <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
             </select>
           )}
         </div>
@@ -1251,7 +1258,7 @@ class TreeViz extends React.Component {
               <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
               {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
-                key={`heavy-${subtreeRoot || "full"}-${this.props.treatSubtreeAsRoot ? "asroot" : "rel"}`}
+                key={vegaChartKey("heavy", subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
                   view.addSignalListener("pts_tuple", (name, node) => {
@@ -1268,7 +1275,7 @@ class TreeViz extends React.Component {
               />
               {lightTree ? (
                 <VegaChart
-                  key={`light-${subtreeRoot || "full"}-${this.props.treatSubtreeAsRoot ? "asroot" : "rel"}`}
+                  key={vegaChartKey("light", subtreeRoot, this.props.treatSubtreeAsRoot)}
                   onNewView={(view) => {
                     this.setupLightChainSignalSync(view, 0.4);
                     view.addSignalListener("pts_tuple", (name, node) => {
@@ -1371,7 +1378,7 @@ class TreeViz extends React.Component {
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
                   {this.renderSubtreeNav(tree)}
                   <VegaChart
-                    key={`tree-${subtreeRoot || "full"}-${this.props.treatSubtreeAsRoot ? "asroot" : "rel"}`}
+                    key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                     onError={this.handleVegaError}
                     data={this.treeDataFromProps()}
@@ -1384,7 +1391,7 @@ class TreeViz extends React.Component {
             <div>
               {this.renderSubtreeNav(tree)}
               <VegaChart
-                key={`tree-${subtreeRoot || "full"}-${this.props.treatSubtreeAsRoot ? "asroot" : "rel"}`}
+                key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                 onError={this.handleVegaError}
                 data={this.tempVegaData}

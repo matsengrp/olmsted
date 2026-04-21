@@ -189,9 +189,10 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     case types.UPDATE_LINEAGE_CHAIN: {
       return { ...state, lineageChain: action.chain };
     }
+    // Note: UPDATE_SUBTREE_ROOT intentionally does not touch treatSubtreeAsRoot
+    // so users can pre-select the preference before focusing a subtree and have
+    // it persist across focus/unfocus.
     case types.UPDATE_SUBTREE_ROOT: {
-      // Preserve treatSubtreeAsRoot across focus/unfocus so users can
-      // pre-select the preference before focusing a subtree.
       return { ...state, subtreeRoot: action.subtreeRoot };
     }
     case types.UPDATE_TREAT_SUBTREE_AS_ROOT: {

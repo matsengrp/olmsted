@@ -16,6 +16,7 @@ import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
 import ConfigModal from "../config/ConfigModal";
 import FilterPanel from "./FilterPanel";
 import { VegaViewProvider } from "../config/VegaViewContext";
+import { DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
 
 // STYLES
 const PADDING_FRACTION = 0.03;
@@ -200,13 +201,15 @@ function DatasetsSection({ sectionRef, availableDatasets, dispatch }) {
               display mode:
               <ul style={{ marginTop: "5px", paddingLeft: "20px", marginBottom: "10px" }}>
                 <li>
-                  <strong>🟢 dropdown:</strong> Available in scatterplot and tree encoding selectors
+                  <strong>{DISPLAY_MODE_ICONS.dropdown} dropdown:</strong> Available in scatterplot and tree encoding
+                  selectors
                 </li>
                 <li>
-                  <strong>🟡 tooltip:</strong> Shown on hover/in detail views but not directly selectable
+                  <strong>{DISPLAY_MODE_ICONS.tooltip} tooltip:</strong> Shown on hover/in detail views but not directly
+                  selectable
                 </li>
                 <li>
-                  <strong>🔴 skip:</strong> Hidden from the UI
+                  <strong>{DISPLAY_MODE_ICONS.skip} skip:</strong> Hidden from the UI
                 </li>
                 <li>
                   <strong>Show Only Shared / Show All Data Fields:</strong> When two or more datasets are loaded, toggle
@@ -467,8 +470,8 @@ function SelectedFamiliesSection({ sectionRef }) {
               <br />
               <br />
               When you select a clonal family from the table, its phylogenetic tree and alignment are displayed below in
-              the Clonal Family Phylogeny section. For paired heavy/light chain data, trees for both chains will be
-              available.
+              the Clonal Family Tree & Alignment section. For paired heavy/light chain data, trees for both chains will
+              be available.
             </div>
           }
         />
@@ -511,7 +514,7 @@ class App extends React.Component {
       filters: "Filters",
       clonalFamilies: "Clonal Family Scatterplot",
       selectedClonalFamilies: "Clonal Family Selection Table",
-      clonalFamilyDetails: "Clonal Family Phylogeny",
+      clonalFamilyDetails: "Clonal Family Tree & Alignment",
       ancestralSequences: "Ancestral Sequences"
     };
   }
@@ -726,7 +729,7 @@ class App extends React.Component {
               )}
               {selectedFamily && loadedClonalFamilies > 0 && (
                 <div ref={this.sectionRefs.clonalFamilyDetails} style={sectionStyle}>
-                  <CollapsibleSection titleText="Clonal Family Phylogeny">
+                  <CollapsibleSection titleText="Clonal Family Tree & Alignment">
                     <TreeViz availableHeight={availableHeight} />
                   </CollapsibleSection>
                 </div>

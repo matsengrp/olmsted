@@ -79,7 +79,7 @@ class NavBar extends React.Component {
       filters: "Filters",
       clonalFamilies: "Clonal Family Scatterplot",
       selectedClonalFamilies: "Clonal Family Selection Table",
-      clonalFamilyDetails: "Clonal Family Phylogeny",
+      clonalFamilyDetails: "Clonal Family Tree & Alignment",
       ancestralSequences: "Ancestral Sequences"
     };
 

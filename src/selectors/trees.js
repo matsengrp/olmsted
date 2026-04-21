@@ -447,9 +447,19 @@ export const computeLineageDataWithOptions = (tree, seq, includeAllNodes) => {
   return computeLineageData(tree, seq, includeAllNodes);
 };
 
-// Expose the alignment builder so consumers (e.g. subtree focus mode) can
-// recompute tips_alignment / lineage_alignment against a non-naive reference.
-export { createAlignment, followLineage };
+/**
+ * Regenerate an alignment using a given node's sequence as the naive reference.
+ * Used by the subtree focus "treat as root" mode so the Phylogeny view can
+ * show mutations relative to the subtree root rather than the original naive.
+ *
+ * @param {Object} rootNode - node whose sequence_alignment_aa becomes the reference
+ * @param {Object[]} renderableNodes - nodes to include in the alignment (root + leaves)
+ * @returns {Object[]|null} alignment rows, or null if the root lacks an AA sequence
+ */
+export const buildSubtreeAlignment = (rootNode, renderableNodes) => {
+  if (!rootNode || !rootNode.sequence_alignment_aa) return null;
+  return createAlignment(rootNode.sequence_alignment_aa, renderableNodes, rootNode.sequence_alignment || null);
+};
 
 /**
  * Recompute a lineage using a specific node as the reference (naive) sequence.

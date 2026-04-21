@@ -282,8 +282,8 @@ class Lineage extends React.Component {
                 <div>
                   The Ancestral Sequences section displays an alignment showing the mutational path from the naive
                   sequence to the selected sequence. Each row represents a node along the lineage, with mutations
-                  highlighted using the same color scheme as the Clonal Family Phylogeny alignment view. CDR regions
-                  (CDR1, CDR2, CDR3) are marked with colored background bars.
+                  highlighted using the same color scheme as the Clonal Family Tree & Alignment view. CDR regions (CDR1,
+                  CDR2, CDR3) are marked with colored background bars.
                   <br />
                   <br />
                   <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -301,8 +301,8 @@ class Lineage extends React.Component {
                     </li>
                   </ul>
                   <strong>Surprise Score Coloring:</strong> When the dataset includes per-mutation surprise scores, the
-                  &quot;Color by surprise score&quot; toggle (enabled in the Clonal Family Phylogeny view above) also
-                  applies here. Scored mutations are colored using an orange heat scale; unscored mutations become
+                  &quot;Color by surprise score&quot; toggle (enabled in the Clonal Family Tree & Alignment view above)
+                  also applies here. Scored mutations are colored using an orange heat scale; unscored mutations become
                   invisible. A surprise score legend appears on the right when active.
                   <br />
                   <br />
