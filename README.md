@@ -158,9 +158,9 @@ Olmsted uses a client-side database to manage your datasets within the browser. 
 
 Once you're in the visualization interface, you can change your dataset selection on demand. Simply select the desired datasets in the dataset table on the visualization page, then click the "Update Visualization" button to refresh the view with your new selection. "Manage Datasets" will return you to the splash page.
 
-### Clonal Families Section (AKA "scatterplot")
+### Clonal Family Scatterplot
 
-The *Clonal Families* section represents each clonal family as a point in a scatterplot:
+The *Clonal Family Scatterplot* section represents each clonal family as a point in a scatterplot:
 
 ![scatterplot](docs/clonal-families-section.png)
 
@@ -173,9 +173,9 @@ For comparison of subsets, you may *facet* the plot into separated panels accord
 
 ![facet](docs/facet.png)
 
-Interact with the plot by clicking and dragging across a subset of points or clicking individual points to filter the resulting clonal families in the *Selected clonal families* table below.
+Interact with the plot by clicking and dragging across a subset of points or clicking individual points to filter the resulting clonal families in the *Clonal Family Selection Table* below.
 
-### Selected Clonal Families Section (AKA "table")
+### Clonal Family Selection Table
 Below the scatterplot, the full collection or selected subset of clonal families appears in a table including a visualization of the recombination event resulting in the naive antibody sequence and a subset of clonal family metadata:
 
 ![table](docs/selected-clonal-families-section.png)
@@ -183,10 +183,10 @@ Below the scatterplot, the full collection or selected subset of clonal families
 Each row in the table represents one clonal family.
 The table automatically selects the top clonal family according to the sorting column.
 Click on the checkbox in the "Select" column in the table to select a clonal family for further visualization.
-Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family (as specified in the input JSON) is visualized below the table in the Clonal family details section.
+Upon selecting a clonal family from the table, the phylogenetic tree(s) corresponding to that clonal family (as specified in the input JSON) is visualized below the table in the Clonal Family Tree & Alignment section.
 
-### Clonal Family Details Section (AKA "tree" and "alignment")
-For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal family details* section:
+### Clonal Family Tree & Alignment
+For a selected clonal family, its phylogenetic tree is visualized below the table in the *Clonal Family Tree & Alignment* section:
 
 ![tree align view](docs/clonal-family-details-section.png)
 
@@ -219,7 +219,7 @@ The *Ancestral Sequences* section displays an alignment of the selected sequence
 
 ![lineage view](docs/ancestral-sequences-section.png)
 
-Mutations from the naive sequence are shown as in the *Clonal Family Details* section.
+Mutations from the naive sequence are shown as in the *Clonal Family Tree & Alignment* section.
 
 ## Local Deployment
 

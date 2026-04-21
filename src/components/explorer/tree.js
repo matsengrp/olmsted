@@ -23,6 +23,27 @@ import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
+// Placeholder shown when an ancestral reconstruction method / tree type is blank.
+const UNSPECIFIED_TREE_LABEL = "<unspecified>";
+
+// Build the `key` for a Vega chart so it remounts cleanly when subtree focus
+// or the treat-as-root mode toggles.
+const vegaChartKey = (prefix, subtreeRoot, treatAsRoot) =>
+  `${prefix}-${subtreeRoot || "full"}-${treatAsRoot ? "asroot" : "rel"}`;
+
+// For unpaired families the Chain field is a disabled single-option select.
+// Renders a dropdown locked to the family's actual chain (heavy or light).
+function PinnedChainSelect({ clone }) {
+  const pinnedChain = clonalFamiliesSelectors.getCloneChain(clone);
+  const pinnedValue = pinnedChain === "light" ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
+  const pinnedLabel = pinnedChain === "light" ? "Light chain only" : "Heavy chain only";
+  return (
+    <select id="chain-select" value={pinnedValue} disabled aria-label="Chain selection">
+      <option value={pinnedValue}>{pinnedLabel}</option>
+    </select>
+  );
+}
+
 /**
  * Normalize nodes to an array (they may be an object keyed by sequence_id or an array).
  */
@@ -35,22 +56,37 @@ const normalizeNodes = (nodes) => {
  * Filter tree data to a subtree rooted at the given node.
  * The subtree root is re-parented to null and given type "root".
  *
+ * When treatAsRoot is true, the alignment is regenerated with the subtree
+ * root's sequence as the new reference (naive), so mutations in the viz
+ * are shown relative to the subtree root instead of the original naive.
+ *
  * @param {Object[]} nodes - Full tree nodes array
  * @param {Object[]} alignment - Full alignment records
  * @param {number} leavesCount - Original leaves count
  * @param {string} subtreeRoot - sequence_id of the subtree root
  * @param {Function} getSubtreeNodeIds - Function to collect descendant IDs
+ * @param {boolean} treatAsRoot - recompute alignment relative to subtree root
  * @returns {{ nodes: Object[], alignment: Object[], leavesCount: number }}
  */
-const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtreeNodeIds) => {
+const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtreeNodeIds, treatAsRoot = false) => {
   if (!subtreeRoot || !nodes) return { nodes, alignment, leavesCount };
   const subtreeIds = getSubtreeNodeIds(nodes, subtreeRoot);
   const filteredNodes = nodes
     .filter((n) => subtreeIds.has(n.sequence_id))
     .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
+  const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
+
+  if (treatAsRoot) {
+    const rootNode = filteredNodes.find((n) => n.sequence_id === subtreeRoot);
+    const renderable = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf");
+    const regenerated = treesSelector.buildSubtreeAlignment(rootNode, renderable);
+    if (regenerated) {
+      return { nodes: filteredNodes, alignment: regenerated, leavesCount: filteredCount };
+    }
+  }
+
   // Keep naive (type: "naive") alignment rows — they define the x-axis and gene regions
   const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id) || m.type === "naive");
-  const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
   return { nodes: filteredNodes, alignment: filteredAlignment, leavesCount: filteredCount };
 };
 
@@ -78,7 +114,7 @@ class TreeHeader extends React.Component {
     return (
       <div>
         <CollapseHelpTitle
-          titleText={`Clonal Family Details for: "${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}"`}
+          titleText="Clonal Family Tree & Alignment"
           helpText={
             <div>
               For a selected clonal family, its phylogenetic tree is visualized below. Alongside the tree is an
@@ -228,23 +264,14 @@ class TreeHeader extends React.Component {
         />
 
         <div>
-          <span style={{ marginRight: 8 }}>Ancestral reconstruction method:</span>
-          <select
-            id="tree-select"
-            value={tree.ident}
-            onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
-            aria-label="Ancestral reconstruction method"
-          >
-            {selectedFamily.trees.map((tree_option) => (
-              <option key={tree_option.ident} value={tree_option.ident}>
-                {tree_option.type || tree_option.tree_id}
-              </option>
-            ))}
-          </select>
+          <span style={{ marginRight: 8 }}>Clonal Family:</span>
+          <span style={{ fontWeight: "bold" }}>
+            {`${selectedFamily.sample_id || selectedFamily.subject_id || "sample"} ${selectedFamily.clone_id}`}
+          </span>
         </div>
-        {selectedFamily.is_paired && (
-          <div style={{ marginTop: "8px" }}>
-            <span style={{ marginRight: 8 }}>Chain:</span>
+        <div style={{ marginTop: "8px" }}>
+          <span style={{ marginRight: 8 }}>Chain:</span>
+          {selectedFamily.is_paired ? (
             <select
               id="chain-select"
               value={selectedChain}
@@ -255,8 +282,34 @@ class TreeHeader extends React.Component {
               <option value={CHAIN_TYPES.LIGHT}>Light chain only</option>
               <option value={CHAIN_TYPES.BOTH_STACKED}>Both chains (stacked)</option>
             </select>
-          </div>
-        )}
+          ) : (
+            <PinnedChainSelect clone={selectedFamily} />
+          )}
+        </div>
+        <div style={{ marginTop: "8px" }}>
+          <span style={{ marginRight: 8 }}>Ancestral Reconstruction Method:</span>
+          {selectedFamily.trees && selectedFamily.trees.length > 0 ? (
+            <select
+              id="tree-select"
+              value={tree.ident}
+              onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
+              aria-label="Ancestral reconstruction method"
+            >
+              {selectedFamily.trees.map((tree_option) => {
+                const typeStr = typeof tree_option.type === "string" ? tree_option.type.trim() : "";
+                return (
+                  <option key={tree_option.ident} value={tree_option.ident}>
+                    {typeStr || UNSPECIFIED_TREE_LABEL}
+                  </option>
+                );
+              })}
+            </select>
+          ) : (
+            <select id="tree-select" value={tree.ident || ""} disabled aria-label="Ancestral reconstruction method">
+              <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
+            </select>
+          )}
+        </div>
       </div>
     );
   }
@@ -287,7 +340,7 @@ const computeCloneVizData = (clone, tree, label = "5p") => {
   return { naiveData, cdrBounds, treeData };
 };
 
-const mapStateToProps = (state) => {
+const baseMapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
   const selectedChain = state.clonalFamilies.selectedChain || "heavy";
@@ -415,6 +468,13 @@ const mapStateToProps = (state) => {
   return { selectedFamily, selectedTree, selectedChain, dataFields };
 };
 
+// Merge shared subtree state from Redux into the rest of the mapped props.
+const mapStateToProps = (state) => ({
+  ...baseMapStateToProps(state),
+  subtreeRoot: state.clonalFamilies.subtreeRoot,
+  treatSubtreeAsRoot: state.clonalFamilies.treatSubtreeAsRoot
+});
+
 // now for the actual component definition
 
 @connect(mapStateToProps, (dispatch) => ({
@@ -429,6 +489,12 @@ const mapStateToProps = (state) => {
   },
   dispatchSelectedChain: (chain) => {
     dispatch(explorerActions.updateSelectedChain(chain));
+  },
+  dispatchSubtreeRoot: (subtreeRoot) => {
+    dispatch(explorerActions.updateSubtreeRoot(subtreeRoot));
+  },
+  dispatchTreatSubtreeAsRoot: (treatAsRoot) => {
+    dispatch(explorerActions.updateTreatSubtreeAsRoot(treatAsRoot));
   }
 }))
 class TreeViz extends React.Component {
@@ -443,8 +509,6 @@ class TreeViz extends React.Component {
       hideControls: false,
       // Vega rendering error message (shown to user)
       vegaError: null,
-      // Subtree focus: sequence_id of the root of the focused subtree (null = full tree)
-      subtreeRoot: null,
       // Whether the user has dismissed the warnings banner for this family
       warningsDismissed: false
     };
@@ -654,10 +718,11 @@ class TreeViz extends React.Component {
    * Focus the tree view on the subtree rooted at the currently selected node.
    */
   focusSubtree() {
-    const { selectedSeq } = this.props;
+    const { selectedSeq, dispatchSubtreeRoot } = this.props;
     if (selectedSeq) {
       this.saveSignals();
-      this.setState({ subtreeRoot: selectedSeq, vegaError: null });
+      this.setState({ vegaError: null });
+      dispatchSubtreeRoot(selectedSeq);
     }
   }
 
@@ -665,8 +730,10 @@ class TreeViz extends React.Component {
    * Reset to showing the full tree.
    */
   resetSubtree() {
+    const { dispatchSubtreeRoot } = this.props;
     this.saveSignals();
-    this.setState({ subtreeRoot: null, vegaError: null });
+    this.setState({ vegaError: null });
+    dispatchSubtreeRoot(null);
   }
 
   /**
@@ -684,7 +751,7 @@ class TreeViz extends React.Component {
    * Get the current effective root — subtreeRoot if focused, otherwise the tree root.
    */
   getEffectiveRootId(nodes) {
-    if (this.state.subtreeRoot) return this.state.subtreeRoot;
+    if (this.props.subtreeRoot) return this.props.subtreeRoot;
     const arr = normalizeNodes(nodes);
     if (arr.length === 0) return null;
     const root = arr.find((n) => !n.parent || n.type === "root");
@@ -695,8 +762,8 @@ class TreeViz extends React.Component {
    * Render the subtree navigation bar (focus/reset buttons + children dropdown).
    */
   renderSubtreeNav(tree) {
-    const { selectedSeq, dispatchSelectedSeq } = this.props;
-    const { subtreeRoot } = this.state;
+    const { selectedSeq, dispatchSelectedSeq, subtreeRoot, treatSubtreeAsRoot, dispatchTreatSubtreeAsRoot } =
+      this.props;
     const nodes = tree ? tree.nodes : null;
     const effectiveRoot = this.getEffectiveRootId(nodes);
     const children = this.getDirectChildren(nodes, effectiveRoot);
@@ -779,6 +846,17 @@ class TreeViz extends React.Component {
               ))}
             </select>
           )}
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer", fontSize: 12 }}
+            title="When a subtree is focused, use its root as the alignment reference; mutations are shown relative to it, and this cascades into the Ancestral Sequences view."
+          >
+            <input
+              type="checkbox"
+              checked={!!treatSubtreeAsRoot}
+              onChange={(e) => dispatchTreatSubtreeAsRoot(e.target.checked)}
+            />
+            Treat subtree as root
+          </label>
         </div>
       </div>
     );
@@ -951,9 +1029,11 @@ class TreeViz extends React.Component {
     const { selectedFamily, selectedChain, dispatchSelectedChain, tree, selectedSeq, dispatchSelectedSeq } = this.props;
     // When family changes, check if we need to reset chain selection
     if (selectedFamily && selectedFamily !== prevProps.selectedFamily) {
-      // Clear any previous Vega error and subtree focus when switching families
-      if (this.state.vegaError || this.state.subtreeRoot) {
-        this.setState({ vegaError: null, subtreeRoot: null, warningsDismissed: false });
+      // Clear any previous Vega error when switching families.
+      // Subtree focus is reset via the TOGGLE_FAMILY reducer case, so we don't
+      // dispatch it here — but we still clear local view state.
+      if (this.state.vegaError || this.props.subtreeRoot) {
+        this.setState({ vegaError: null, warningsDismissed: false });
       }
       const isBothMode = isBothChainsMode(selectedChain);
       const isLightMode = selectedChain === CHAIN_TYPES.LIGHT;
@@ -999,13 +1079,14 @@ class TreeViz extends React.Component {
     // Only compute remaining data after validation passes
     const cdrBounds = chain === CHAIN_TYPES.HEAVY ? heavyCdrBounds : lightCdrBounds;
 
-    const { subtreeRoot } = this.state;
+    const { subtreeRoot, treatSubtreeAsRoot } = this.props;
     const filtered = applySubtreeFilter(
       tree.nodes,
       tree.tips_alignment,
       tree.leaves_count_incl_naive,
       subtreeRoot,
-      this.getSubtreeNodeIds
+      this.getSubtreeNodeIds,
+      treatSubtreeAsRoot
     );
 
     return {
@@ -1048,15 +1129,15 @@ class TreeViz extends React.Component {
   }
 
   treeDataFromProps() {
-    const { tree, naiveData, cdrBounds, selectedFamily } = this.props;
-    const { subtreeRoot } = this.state;
+    const { tree, naiveData, cdrBounds, selectedFamily, subtreeRoot, treatSubtreeAsRoot } = this.props;
 
     const filtered = applySubtreeFilter(
       tree.nodes,
       tree.tips_alignment,
       tree.leaves_count_incl_naive,
       subtreeRoot,
-      this.getSubtreeNodeIds
+      this.getSubtreeNodeIds,
+      treatSubtreeAsRoot
     );
 
     return {
@@ -1116,7 +1197,8 @@ class TreeViz extends React.Component {
     // Use heavyTree for downloads in both mode, otherwise use tree
     const downloadTree = isBothMode ? heavyTree : tree;
 
-    const { hideControls, vegaError, subtreeRoot } = this.state;
+    const { hideControls, vegaError } = this.state;
+    const { subtreeRoot } = this.props;
 
     return (
       <div ref={this.containerRef}>
@@ -1176,7 +1258,7 @@ class TreeViz extends React.Component {
               <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
               {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
-                key={`heavy-${subtreeRoot || "full"}`}
+                key={vegaChartKey("heavy", subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
                   view.addSignalListener("pts_tuple", (name, node) => {
@@ -1193,7 +1275,7 @@ class TreeViz extends React.Component {
               />
               {lightTree ? (
                 <VegaChart
-                  key={`light-${subtreeRoot || "full"}`}
+                  key={vegaChartKey("light", subtreeRoot, this.props.treatSubtreeAsRoot)}
                   onNewView={(view) => {
                     this.setupLightChainSignalSync(view, 0.4);
                     view.addSignalListener("pts_tuple", (name, node) => {
@@ -1296,7 +1378,7 @@ class TreeViz extends React.Component {
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
                   {this.renderSubtreeNav(tree)}
                   <VegaChart
-                    key={`tree-${subtreeRoot || "full"}`}
+                    key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                     onError={this.handleVegaError}
                     data={this.treeDataFromProps()}
@@ -1309,7 +1391,7 @@ class TreeViz extends React.Component {
             <div>
               {this.renderSubtreeNav(tree)}
               <VegaChart
-                key={`tree-${subtreeRoot || "full"}`}
+                key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                 onError={this.handleVegaError}
                 data={this.tempVegaData}

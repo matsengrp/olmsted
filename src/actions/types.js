@@ -92,6 +92,10 @@ export const UPDATE_LINEAGE_SHOW_ENTIRE = "UPDATE_LINEAGE_SHOW_ENTIRE";
 export const UPDATE_LINEAGE_SHOW_BORDERS = "UPDATE_LINEAGE_SHOW_BORDERS";
 export const UPDATE_LINEAGE_CHAIN = "UPDATE_LINEAGE_CHAIN";
 
+// Subtree focus state (shared between Phylogeny and Ancestral Sequences views)
+export const UPDATE_SUBTREE_ROOT = "UPDATE_SUBTREE_ROOT";
+export const UPDATE_TREAT_SUBTREE_AS_ROOT = "UPDATE_TREAT_SUBTREE_AS_ROOT";
+
 // Visualization config actions
 export const CONFIGS_LOADED = "CONFIGS_LOADED";
 export const CONFIG_SAVED = "CONFIG_SAVED";

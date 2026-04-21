@@ -27,6 +27,11 @@ const initialState = {
   lineageShowEntire: false,
   lineageShowBorders: false,
   lineageChain: "heavy",
+  // Subtree focus (shared by Phylogeny and Ancestral Sequences views).
+  // subtreeRoot is the sequence_id of the focused subtree's root node, or null.
+  // treatSubtreeAsRoot makes the subtree root the alignment reference (naive).
+  subtreeRoot: null,
+  treatSubtreeAsRoot: false,
   // Current visible section (for nav bar display)
   currentSection: "",
   // Starred families (pinned for easy reference)
@@ -146,7 +151,10 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     case types.TOGGLE_FAMILY: {
       const updates = {
         selectedFamily: action.family_ident,
-        selectedSeq: {}
+        selectedSeq: {},
+        // Subtree focus is per-family; clear it on family change.
+        subtreeRoot: null,
+        treatSubtreeAsRoot: false
       };
       // action.updateBrushSelection specifies whether we would like to
       // include just this family in our brush selection
@@ -180,6 +188,15 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_LINEAGE_CHAIN: {
       return { ...state, lineageChain: action.chain };
+    }
+    // Note: UPDATE_SUBTREE_ROOT intentionally does not touch treatSubtreeAsRoot
+    // so users can pre-select the preference before focusing a subtree and have
+    // it persist across focus/unfocus.
+    case types.UPDATE_SUBTREE_ROOT: {
+      return { ...state, subtreeRoot: action.subtreeRoot };
+    }
+    case types.UPDATE_TREAT_SUBTREE_AS_ROOT: {
+      return { ...state, treatSubtreeAsRoot: action.treatAsRoot };
     }
     case types.UPDATE_CURRENT_SECTION: {
       return { ...state, currentSection: action.section };

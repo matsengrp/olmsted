@@ -76,9 +76,10 @@ class NavBar extends React.Component {
     // Find current section by matching the display name
     const sectionNames = {
       datasets: "Datasets",
-      clonalFamilies: "Clonal Families",
-      selectedClonalFamilies: "Selected Clonal Families",
-      clonalFamilyDetails: "Clonal Family Details",
+      filters: "Filters",
+      clonalFamilies: "Clonal Family Scatterplot",
+      selectedClonalFamilies: "Clonal Family Selection Table",
+      clonalFamilyDetails: "Clonal Family Tree & Alignment",
       ancestralSequences: "Ancestral Sequences"
     };
 

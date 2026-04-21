@@ -69,6 +69,9 @@ const mapStateToProps = (state) => {
     lineageShowEntire: state.clonalFamilies.lineageShowEntire,
     lineageShowBorders: state.clonalFamilies.lineageShowBorders,
     lineageChain: state.clonalFamilies.lineageChain,
+    // Subtree focus (shared with the Phylogeny view)
+    subtreeRoot: state.clonalFamilies.subtreeRoot,
+    treatSubtreeAsRoot: state.clonalFamilies.treatSubtreeAsRoot,
     dataFields: getSelectedDatasetFields(state)
   };
 };
@@ -218,7 +221,9 @@ class Lineage extends React.Component {
       lightTree,
       lineageShowEntire,
       lineageShowBorders,
-      lineageChain
+      lineageChain,
+      subtreeRoot,
+      treatSubtreeAsRoot
     } = this.props;
     const showEntireLineage = lineageShowEntire;
     const showMutationBorders = lineageShowBorders;
@@ -239,9 +244,13 @@ class Lineage extends React.Component {
         }
       }
 
-      // Compute lineage data with the option to show all nodes
-      // No chain parameter needed - the tree already has the correct chain's data
-      const lineageData = treesSelector.computeLineageDataWithOptions(treeToUse, seqToUse, showEntireLineage);
+      // Compute lineage data. If the Phylogeny view has a focused subtree AND
+      // treat-as-root is on, compute relative to the subtree root so mutations
+      // and the lineage path mirror the Phylogeny view's reference.
+      const lineageData =
+        subtreeRoot && treatSubtreeAsRoot
+          ? treesSelector.computeLineageDataRelativeTo(treeToUse, seqToUse, subtreeRoot, showEntireLineage)
+          : treesSelector.computeLineageDataWithOptions(treeToUse, seqToUse, showEntireLineage);
 
       // Check if lineageData is valid (has required properties)
       const hasLineageData = lineageData && lineageData.lineage_alignment && lineageData.download_lineage_seqs;
@@ -273,8 +282,8 @@ class Lineage extends React.Component {
                 <div>
                   The Ancestral Sequences section displays an alignment showing the mutational path from the naive
                   sequence to the selected sequence. Each row represents a node along the lineage, with mutations
-                  highlighted using the same color scheme as the Clonal Family Details alignment view. CDR regions
-                  (CDR1, CDR2, CDR3) are marked with colored background bars.
+                  highlighted using the same color scheme as the Clonal Family Tree & Alignment view. CDR regions (CDR1,
+                  CDR2, CDR3) are marked with colored background bars.
                   <br />
                   <br />
                   <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -292,8 +301,8 @@ class Lineage extends React.Component {
                     </li>
                   </ul>
                   <strong>Surprise Score Coloring:</strong> When the dataset includes per-mutation surprise scores, the
-                  &quot;Color by surprise score&quot; toggle (enabled in the Clonal Family Details view above) also
-                  applies here. Scored mutations are colored using an orange heat scale; unscored mutations become
+                  &quot;Color by surprise score&quot; toggle (enabled in the Clonal Family Tree & Alignment view above)
+                  also applies here. Scored mutations are colored using an orange heat scale; unscored mutations become
                   invisible. A surprise score legend appears on the right when active.
                   <br />
                   <br />
