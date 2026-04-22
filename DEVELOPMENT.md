@@ -98,8 +98,13 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 | ----------------------- | -------------------------------------------------------------------------------------------------- |
 | `npm start`             | Start development server with hot reloading                                                        |
 | `npm run start:local`   | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
-| `npm run build`         | Build production bundle                                                                            |
+| `npm run build`         | Full production build — runs `build:client` + `build:server`                                       |
+| `npm run build:client`  | Build the production web bundle to `_deploy/dist/`                                                 |
+| `npm run build:server`  | Build the production Express server bundle to `server.dist.js`                                     |
+| `npm run build:electron`| Build the Electron renderer bundle to `dist/`                                                      |
 | `npm run build:start`   | Build and start production server                                                                  |
+| `npm run run:electron`  | Build the Electron bundle and launch the packaged app locally                                      |
+| `npm run dist:electron` | Package a distributable Electron AppImage into `_releases/`                                        |
 | `npm run lint`          | Run ESLint on src/                                                                                 |
 | `npm run format`        | Format code with Prettier                                                                          |
 | `npm run format:check`  | Check formatting without modifying files                                                           |
@@ -108,10 +113,19 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 | `npm run test:coverage` | Run tests with coverage report                                                                     |
 | `npm run clean`         | Remove build artifacts                                                                             |
 
-### Build Commands
+### Build Pipeline
+
+Olmsted has two distribution channels that share the same React source but use different webpack configs. Both go through Babel for JSX/ESNext transpilation.
+
+| Config                        | Used by                     | Output                          | Purpose                            |
+| ----------------------------- | --------------------------- | ------------------------------- | ---------------------------------- |
+| `webpack.config.dev.js`       | `npm start`                 | `_devel/` (in-memory via HMR)   | Hot-reloading dev server           |
+| `webpack.config.prod.js`      | `npm run build:client`      | `_deploy/dist/bundle.js`        | Production web bundle (S3/Docker)  |
+| `webpack.config.server.js`    | `npm run build:server`      | `server.dist.js`                | Bundled Express server             |
+| `webpack.config.electron.js`  | `npm run build:electron`    | `dist/bundle.js`                | Renderer for the Electron app      |
 
 ```bash
-# Full production build
+# Full production build (web)
 npm run build
 
 # Build and immediately serve
@@ -123,13 +137,17 @@ npm run build:start:perf
 
 ### Electron (Desktop App)
 
+The Electron build wraps the same React app in a Chromium window: `index.js` is an Electron main process that spawns an Express server on `localhost:5000`, serves the bundle + `index.html` out of the packaged asar, and loads that URL in a `BrowserWindow`. `electron-builder` packages the runtime, bundle, and `index.js` into an `.AppImage` under `_releases/`.
+
 ```bash
-# Run Electron in development
+# Build the renderer + launch the packaged app locally
 npm run run:electron
 
-# Build Electron distributable
+# Build a distributable AppImage into _releases/
 npm run dist:electron
 ```
+
+**Status**: tested and working as of PR #273. The webpack-based web distribution is the primary build; Electron is likely to be sunset in a follow-up PR in favor of webpack. This commit is the last known good state so a future maintainer can fork from it if they want to revive the desktop build.
 
 ---
 
@@ -310,8 +328,10 @@ olmsted/
 │   └── server/               # Express server code
 ├── bin/                      # Shell scripts and utilities
 ├── data/                     # Local data directory (gitignored)
-├── _deploy/                  # Production build output
-└── releases/                 # Electron build output
+├── _deploy/                  # Production web bundle output (build)
+├── _devel/                   # Dev-mode webpack output (start)
+├── dist/                     # Electron renderer bundle (build:electron)
+└── _releases/                # Electron-builder packaged distributables (dist:electron)
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed documentation of the data flow and component hierarchy.
@@ -474,7 +494,7 @@ console.log("Debug message"); // Remove before committing
 npm run build
 ```
 
-Output is in `_deploy/dist/`. The `bin/postbuild.sh` script creates a `deploy/` directory for static hosting.
+Output is in `_deploy/dist/`. The `bin/postbuild.sh` script copies the static assets (HTML, CSS, images) alongside the bundle in `_deploy/` so the whole directory can be served as-is.
 
 ### Docker Build
 
