@@ -11,7 +11,11 @@ module.exports = {
     filename: "bundle.js",
     publicPath: "/dist/"
   },
-  target: "electron-renderer",
+  // The bundle is served over HTTP into an Electron BrowserWindow with
+  // nodeIntegration disabled (the safe default), so treat it as a plain
+  // web build — "electron-renderer" would leave require() calls in the
+  // output that the window can't resolve.
+  target: "web",
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
