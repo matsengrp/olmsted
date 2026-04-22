@@ -1,3 +1,12 @@
+## version 2.7.1 - 2026/04/21
+Changed:
+* Dependency bumps: @xmldom/xmldom 0.8.11 → 0.8.12, follow-redirects 1.15.11 → 1.16.0, lodash 4.17.23 → 4.18.1, lodash-es 4.17.23 → 4.18.1, electron 41.0.4 → 41.1.0 (closes several dependabot security advisories)
+* Pruned stale Python deps from requirements.txt; only boto3 and pyyaml remain (drops ete3, jsonschema, attrs, lxml, numpy, scipy, botocore, ntpl — shrinks the Docker image and moots the lxml major-bump advisory)
+* Repaired the long-broken `dist:electron` build pipeline: modernized `webpack.config.electron.js` (TerserPlugin in place of the removed UglifyJsPlugin; `target: "web"`), added the `version` field electron-builder requires, moved `express` to production dependencies, and fixed runtime regressions (Express 5 route syntax, `sendFile` asar path handling, Redux-based "Manage Datasets" navigation). `npm run dist:electron` now produces a working AppImage.
+* Prefixed build-output folders with underscore to match the repo's `**/_*/` gitignore convention: `devel/` → `_devel/`, `releases/` → `_releases/`. `dist/` left as-is pending the eventual Electron removal.
+* Reorganized `.gitignore` into tool-suite sub-headers; fixed silently-broken inline comments (gitignore doesn't honor them).
+* Refreshed `DEVELOPMENT.md` build documentation: corrected stale path references, expanded the npm scripts table, added a Build Pipeline table mapping each webpack config to its script/output/purpose, and a short Electron status note.
+
 ## version 2.7.0 - 2026/04/20
 Changed:
 * Filters promoted to a top-level section with its own help panel and live "passed filter" banner (turns red when filters exclude everything)

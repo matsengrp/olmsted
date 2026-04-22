@@ -8,7 +8,7 @@ module.exports = {
   devtool: "cheap-module-source-map",
   entry: ["webpack-hot-middleware/client", "./src/index"],
   output: {
-    path: path.join(__dirname, "devel"),
+    path: path.join(__dirname, "_devel"),
     filename: "bundle.js",
     publicPath: "/dist/"
   },

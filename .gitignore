@@ -1,36 +1,79 @@
-### App specific ###
-/dist/
-/data/
-/devel/
-/deploy/
+# =====================================================================
+# Build outputs — produced by npm scripts, never committed
+# =====================================================================
+
+# webpack (see webpack.config.*.js):
+#   _deploy/   production web bundle + static assets (`npm run build`)
+#   _devel/    dev-mode bundle (webpack-dev-middleware, `npm start`)
+#   dist/      Electron renderer bundle (`npm run build:electron`)
+#   server.dist.js  server bundle (webpack.config.server.js)
 /_deploy/
-/releases/
+/_devel/
+/dist/
 server.dist.js
-/static/
-s3/
-/scratch/
+
+# electron-builder (see package.json `build.directories.output`):
+#   _releases/  packaged Electron distributables (`npm run dist:electron`)
+/_releases/
+
+# =====================================================================
+# Runtime data — populated by bin/create-data-dir.sh or the running app
+# =====================================================================
+
+# /data/       local dataset directory (also mounted in the Docker image)
+# server.log   runtime log from the Express server
+/data/
 server.log
 
-### OSX ###
-.DS_Store
-
-### npm ###
-node_modules/
-npm-debug.log
-proddata
-
-### python ###
-**/__pycache__/
-
-### development ###
-# Ignore single-underscore prefixed dirs/files (scratch work: _deploy, _backup, etc.)
+# =====================================================================
+# Scratch / underscore-prefixed working dirs
+# =====================================================================
+# Convention: single-underscore prefix marks throwaway build/scratch
+# dirs and files (e.g. _deploy, _releases, _notes.md).
 **/_*/
 **/_*.*
-# Allow double-underscore dirs (JS conventions: __tests__, __mocks__, __test-data__)
+# Double-underscore is a JS testing convention — keep those tracked.
 !**/__*/
+
+# /scratch/  unprefixed scratch dir (legacy convention)
+/scratch/
+
+# =====================================================================
+# Legacy / defensive — kept in case older tooling still writes here
+# =====================================================================
+# /deploy/  pre-modernization deploy dir (superseded by _deploy/)
+# /static/  historical static-asset dir
+# /s3/      local S3 mirror from bin/aws_download.py
+# proddata  legacy prod-data file
+/deploy/
+/static/
+/s3/
+proddata
+
+# =====================================================================
+# npm / Node tooling
+# =====================================================================
+node_modules/
+npm-debug.log
+
+# =====================================================================
+# Test / coverage output
+# =====================================================================
+coverage/
+
+# =====================================================================
+# Python
+# =====================================================================
 **/__pycache__/
 
-coverage/
+# =====================================================================
+# OS / editor / agent
+# =====================================================================
+.DS_Store
 .claude/
+
+# =====================================================================
+# Paper / docs artifacts (LaTeX-generated)
+# =====================================================================
 paper/other_papers/
 paper/paper.pdf

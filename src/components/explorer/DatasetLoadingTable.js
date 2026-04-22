@@ -8,6 +8,7 @@ import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
+import { changePage } from "../../actions/navigation";
 import { resolveFieldMetadata } from "../../utils/fieldMetadata";
 import { DEFAULT_DISPLAY, DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
 import * as types from "../../actions/types";
@@ -763,9 +764,7 @@ export default class DatasetLoadingTable extends React.Component {
 
           <button
             type="button"
-            onClick={() => {
-              window.location.href = "/";
-            }}
+            onClick={() => dispatch(changePage({ path: "/" }))}
             onMouseEnter={() => this.setState({ manageHovered: true })}
             onMouseLeave={() => this.setState({ manageHovered: false })}
             style={{
