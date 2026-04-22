@@ -1,10 +1,8 @@
 ### App specific ###
 /dist/
 /data/
-/devel/
 /deploy/
 /_deploy/
-/releases/
 server.dist.js
 /static/
 s3/
