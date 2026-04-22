@@ -104,7 +104,7 @@ BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
 | `npm run build:electron`| Build the Electron renderer bundle to `dist/`                                                      |
 | `npm run build:start`   | Build and start production server                                                                  |
 | `npm run run:electron`  | Build the Electron bundle and launch the packaged app locally                                      |
-| `npm run dist:electron` | Package a distributable Electron AppImage into `_releases/`                                        |
+| `npm run dist:electron` | Package a platform-specific Electron distributable (AppImage on Linux, `.dmg` on macOS) into `_releases/` |
 | `npm run lint`          | Run ESLint on src/                                                                                 |
 | `npm run format`        | Format code with Prettier                                                                          |
 | `npm run format:check`  | Check formatting without modifying files                                                           |
@@ -137,13 +137,13 @@ npm run build:start:perf
 
 ### Electron (Desktop App)
 
-The Electron build wraps the same React app in a Chromium window: `index.js` is an Electron main process that spawns an Express server on `localhost:5000`, serves the bundle + `index.html` out of the packaged asar, and loads that URL in a `BrowserWindow`. `electron-builder` packages the runtime, bundle, and `index.js` into an `.AppImage` under `_releases/`.
+The Electron build wraps the same React app in a Chromium window: `index.js` is an Electron main process that spawns an Express server on `localhost:5000`, serves the bundle + `index.html` out of the packaged asar, and loads that URL in a `BrowserWindow`. `electron-builder` packages the runtime, bundle, and `index.js` into a platform-specific distributable (`.AppImage` on Linux, `.dmg` on macOS) under `_releases/`.
 
 ```bash
 # Build the renderer + launch the packaged app locally
 npm run run:electron
 
-# Build a distributable AppImage into _releases/
+# Build a platform-specific distributable into _releases/
 npm run dist:electron
 ```
 
