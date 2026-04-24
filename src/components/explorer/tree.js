@@ -26,6 +26,9 @@ import { VegaExportToolbar } from "../util/VegaExportButton";
 // Placeholder shown in the disabled tree dropdown when a family has no trees.
 const UNSPECIFIED_TREE_LABEL = "<unspecified>";
 
+// Shared min-width for the Chain and Tree dropdowns so longer labels aren't clipped.
+const HEADER_SELECT_STYLE = { minWidth: 360 };
+
 // Build the `key` for a Vega chart so it remounts cleanly when subtree focus
 // or the treat-as-root mode toggles.
 const vegaChartKey = (prefix, subtreeRoot, treatAsRoot) =>
@@ -38,7 +41,7 @@ function PinnedChainSelect({ clone }) {
   const pinnedValue = pinnedChain === "light" ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
   const pinnedLabel = pinnedChain === "light" ? "Light chain only" : "Heavy chain only";
   return (
-    <select id="chain-select" value={pinnedValue} disabled aria-label="Chain selection">
+    <select id="chain-select" value={pinnedValue} disabled style={HEADER_SELECT_STYLE} aria-label="Chain selection">
       <option value={pinnedValue}>{pinnedLabel}</option>
     </select>
   );
@@ -276,6 +279,7 @@ class TreeHeader extends React.Component {
             <select
               id="chain-select"
               value={selectedChain}
+              style={HEADER_SELECT_STYLE}
               onChange={(event) => dispatchSelectedChain(event.target.value)}
               aria-label="Chain selection"
             >
@@ -293,7 +297,7 @@ class TreeHeader extends React.Component {
             <select
               id="tree-select"
               value={tree.ident}
-              style={{ minWidth: 300 }}
+              style={HEADER_SELECT_STYLE}
               onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
               aria-label="Tree selection"
             >
@@ -314,7 +318,7 @@ class TreeHeader extends React.Component {
               id="tree-select"
               value={tree.ident || ""}
               disabled
-              style={{ minWidth: 300 }}
+              style={HEADER_SELECT_STYLE}
               aria-label="Tree selection"
             >
               <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
