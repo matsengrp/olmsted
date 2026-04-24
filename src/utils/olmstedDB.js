@@ -72,7 +72,8 @@ class OlmstedDB extends Dexie {
                 ? clone.trees.map((t) => ({
                     ident: t.ident || t.tree_id,
                     tree_id: t.tree_id,
-                    name: t.name,
+                    // Coalesce legacy tree.type onto name on ingest.
+                    name: t.name || t.type,
                     downsampling_strategy: t.downsampling_strategy
                   }))
                 : clone.trees_meta || []
@@ -98,7 +99,8 @@ class OlmstedDB extends Dexie {
           // Add any other tree properties that might be needed
           downsampling_strategy: tree.downsampling_strategy,
           tree_type: tree.tree_type,
-          name: tree.name
+          // Coalesce legacy tree.type onto name on ingest.
+          name: tree.name || tree.type
         }));
 
         if (allTreeData.length > 0) {

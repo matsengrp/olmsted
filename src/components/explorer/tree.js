@@ -299,7 +299,9 @@ class TreeHeader extends React.Component {
             >
               {selectedFamily.trees.map((tree_option, idx) => {
                 const label = tree_option.tree_id || tree_option.ident || `Tree ${idx + 1}`;
-                const name = typeof tree_option.name === "string" ? tree_option.name.trim() : "";
+                // Fall back to tree.type for trees persisted in IndexedDB before the rename.
+                const rawName = tree_option.name || tree_option.type;
+                const name = typeof rawName === "string" ? rawName.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
                     {name ? `${label} || ${name}` : label}
