@@ -23,7 +23,7 @@ import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
-// Placeholder shown when an ancestral reconstruction method / tree type is blank.
+// Placeholder shown in the disabled tree dropdown when a family has no trees.
 const UNSPECIFIED_TREE_LABEL = "<unspecified>";
 
 // Build the `key` for a Vega chart so it remounts cleanly when subtree focus
@@ -126,9 +126,9 @@ class TreeHeader extends React.Component {
               to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
               <br />
               <br />
-              <strong>Ancestral Reconstruction Method:</strong> Select among alternate phylogenies using the Ancestral
-              reconstruction method dropdown menu. These methods are specified in the input data according to the
-              phylogenetic inference tool used.
+              <strong>Tree Selection:</strong> When a clonal family has more than one tree, use the Tree dropdown to
+              switch among them. Trees may differ by reconstruction method, downsampling strategy, seed, or pipeline
+              version; if the input provides a reconstruction method, it is shown in parentheses after the tree label.
               <br />
               <br />
               <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -287,25 +287,28 @@ class TreeHeader extends React.Component {
           )}
         </div>
         <div style={{ marginTop: "8px" }}>
-          <span style={{ marginRight: 8 }}>Ancestral Reconstruction Method:</span>
+          <span style={{ marginRight: 8 }}>Tree:</span>
           {selectedFamily.trees && selectedFamily.trees.length > 0 ? (
             <select
               id="tree-select"
               value={tree.ident}
               onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
-              aria-label="Ancestral reconstruction method"
+              aria-label="Tree selection"
             >
-              {selectedFamily.trees.map((tree_option) => {
-                const typeStr = typeof tree_option.type === "string" ? tree_option.type.trim() : "";
+              {selectedFamily.trees.map((tree_option, idx) => {
+                const label = tree_option.tree_id || tree_option.ident || `Tree ${idx + 1}`;
+                // Fall back to tree.type for trees persisted in IndexedDB before the rename.
+                const rawMethod = tree_option.reconstruction_method || tree_option.type;
+                const method = typeof rawMethod === "string" ? rawMethod.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
-                    {typeStr || UNSPECIFIED_TREE_LABEL}
+                    {method ? `${label} (${method})` : label}
                   </option>
                 );
               })}
             </select>
           ) : (
-            <select id="tree-select" value={tree.ident || ""} disabled aria-label="Ancestral reconstruction method">
+            <select id="tree-select" value={tree.ident || ""} disabled aria-label="Tree selection">
               <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
             </select>
           )}

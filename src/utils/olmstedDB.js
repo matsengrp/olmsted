@@ -98,7 +98,8 @@ class OlmstedDB extends Dexie {
           // Add any other tree properties that might be needed
           downsampling_strategy: tree.downsampling_strategy,
           tree_type: tree.tree_type,
-          type: tree.type // Reconstruction method type (e.g., "pcp.reconstruction", "cft.reconstruction")
+          // olmsted-cli renamed tree.type → tree.reconstruction_method; coalesce on ingest.
+          reconstruction_method: tree.reconstruction_method || tree.type
         }));
 
         if (allTreeData.length > 0) {
