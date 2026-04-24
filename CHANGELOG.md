@@ -1,7 +1,7 @@
 ## version 2.7.2 - 2026/04/22
 Changed:
 * Relabeled the tree dropdown from "Ancestral Reconstruction Method" to "Tree".
-* `tree.type` → `tree.reconstruction_method`
+* `tree.type` → `tree.name`
 
 ## version 2.7.1 - 2026/04/21
 Changed:

@@ -128,7 +128,8 @@ class TreeHeader extends React.Component {
               <br />
               <strong>Tree Selection:</strong> When a clonal family has more than one tree, use the Tree dropdown to
               switch among them. Trees may differ by reconstruction method, downsampling strategy, seed, or pipeline
-              version; if the input provides a reconstruction method, it is shown in parentheses after the tree label.
+              version. Each option shows the tree&apos;s identifier and, if the input provides one, its name, separated
+              by <code>||</code>.
               <br />
               <br />
               <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -287,28 +288,33 @@ class TreeHeader extends React.Component {
           )}
         </div>
         <div style={{ marginTop: "8px" }}>
-          <span style={{ marginRight: 8 }}>Tree:</span>
+          <span style={{ marginRight: 8 }}>{`Tree (${selectedFamily.trees ? selectedFamily.trees.length : 0}):`}</span>
           {selectedFamily.trees && selectedFamily.trees.length > 0 ? (
             <select
               id="tree-select"
               value={tree.ident}
+              style={{ minWidth: 300 }}
               onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
               aria-label="Tree selection"
             >
               {selectedFamily.trees.map((tree_option, idx) => {
                 const label = tree_option.tree_id || tree_option.ident || `Tree ${idx + 1}`;
-                // Fall back to tree.type for trees persisted in IndexedDB before the rename.
-                const rawMethod = tree_option.reconstruction_method || tree_option.type;
-                const method = typeof rawMethod === "string" ? rawMethod.trim() : "";
+                const name = typeof tree_option.name === "string" ? tree_option.name.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
-                    {method ? `${label} (${method})` : label}
+                    {name ? `${label} || ${name}` : label}
                   </option>
                 );
               })}
             </select>
           ) : (
-            <select id="tree-select" value={tree.ident || ""} disabled aria-label="Tree selection">
+            <select
+              id="tree-select"
+              value={tree.ident || ""}
+              disabled
+              style={{ minWidth: 300 }}
+              aria-label="Tree selection"
+            >
               <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
             </select>
           )}
