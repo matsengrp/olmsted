@@ -131,8 +131,7 @@ class TreeHeader extends React.Component {
               <br />
               <strong>Tree Selection:</strong> When a clonal family has more than one tree, use the Tree dropdown to
               switch among them. Trees may differ by reconstruction method, downsampling strategy, seed, or pipeline
-              version. Each option shows the tree&apos;s identifier and, if the input provides one, its name, separated
-              by <code>||</code>.
+              version.
               <br />
               <br />
               <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -308,7 +307,7 @@ class TreeHeader extends React.Component {
                 const name = typeof rawName === "string" ? rawName.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
-                    {name ? `${label} || ${name}` : label}
+                    {name ? `${label} | ${name}` : label}
                   </option>
                 );
               })}
