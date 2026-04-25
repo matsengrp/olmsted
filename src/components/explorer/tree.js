@@ -114,6 +114,7 @@ class TreeHeader extends React.Component {
     const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } =
       this.props;
     if (!tree) return null;
+    const treeCount = selectedFamily.trees?.length || 0;
     return (
       <div>
         <CollapseHelpTitle
@@ -291,8 +292,8 @@ class TreeHeader extends React.Component {
           )}
         </div>
         <div style={{ marginTop: "8px" }}>
-          <span style={{ marginRight: 8 }}>{`Tree (${selectedFamily.trees ? selectedFamily.trees.length : 0}):`}</span>
-          {selectedFamily.trees && selectedFamily.trees.length > 0 ? (
+          <span style={{ marginRight: 8 }}>{`Tree (${treeCount}):`}</span>
+          {treeCount > 0 ? (
             <select
               id="tree-select"
               value={tree.ident}
