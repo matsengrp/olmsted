@@ -8,6 +8,7 @@ import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
 import { ResizableTable } from "../util/resizableTable";
 import { InfoButtonCell } from "../tables/RowInfoModal";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 
 // Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
 class ResizableVirtualTable extends ResizableTable {
@@ -51,10 +52,11 @@ class ResizableVirtualTable extends ResizableTable {
         onMouseEnter={() => this.setState({ hoveredRowId: datum.ident })}
         onMouseLeave={() => this.setState({ hoveredRowId: null })}
       >
-        {_.map(mappings, ([name, AttrOrComponent], colIndex) => {
+        {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
           const isAttr = typeof AttrOrComponent === "string";
           const key = datum.ident + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
+          const emptyLabel = options.unspecified ? UNSPECIFIED_LABEL : "—";
 
           const style = {
             padding: 8,
@@ -94,8 +96,7 @@ class ResizableVirtualTable extends ResizableTable {
                 >
                   {(() => {
                     const value = _.get(datum, AttrOrComponent);
-                    // Show "—" for null, undefined, or empty string
-                    if (value === null || value === undefined || value === "") return "—";
+                    if (value === null || value === undefined || value === "") return emptyLabel;
                     // Convert booleans to Yes/No for display (React doesn't render raw booleans)
                     if (typeof value === "boolean") return value ? "Yes" : "No";
                     return value;
@@ -689,16 +690,16 @@ class ClonalFamiliesTable extends React.Component {
           ["V gene", "v_call"],
           ["D gene", "d_call"],
           ["J gene", "j_call"],
-          ["Locus", "sample.locus"],
+          ["Locus", "sample.locus", { unspecified: true }],
           ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
           ["Paired", "is_paired"],
           ["Pair ID", "pair_id"],
           ["Junction length", "junction_length"],
           ["Mut freq", "mean_mut_freq"],
           ["Seed run", "has_seed"],
-          ["Subject", "subject_id"],
-          ["Sample", "sample_id"],
-          ["Timepoint", "sample.timepoint_id"],
+          ["Subject", "subject_id", { unspecified: true }],
+          ["Sample", "sample_id", { unspecified: true }],
+          ["Timepoint", "sample.timepoint_id", { unspecified: true }],
           // ["Path", 'path'],
           // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
           ["Dataset", DatasetName, { sortKey: "dataset_id" }]

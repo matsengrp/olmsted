@@ -20,11 +20,9 @@ import {
   getSelectedDatasetFields
 } from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
-
-// Placeholder shown in the disabled tree dropdown when a family has no trees.
-const UNSPECIFIED_TREE_LABEL = "<unspecified>";
 
 // Shared min-width for the Chain and Tree dropdowns so longer labels aren't clipped.
 const HEADER_SELECT_STYLE = { minWidth: 360 };
@@ -321,7 +319,7 @@ class TreeHeader extends React.Component {
               style={HEADER_SELECT_STYLE}
               aria-label="Tree selection"
             >
-              <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
+              <option value={tree.ident || ""}>{UNSPECIFIED_LABEL}</option>
             </select>
           )}
         </div>

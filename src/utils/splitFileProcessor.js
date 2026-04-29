@@ -4,6 +4,7 @@
  */
 
 import { FileProcessingError, ValidationError, ErrorLogger, validateRequired } from "./errors";
+import { DEFAULT_LOCUS } from "../constants/loci";
 
 class SplitFileProcessor {
   /**
@@ -302,14 +303,15 @@ class SplitFileProcessor {
     const samples = [];
 
     for (const clone of clones) {
-      const sampleId = clone.sample_id || clone.subject_id || "unknown";
+      // Leave sample_id / timepoint_id genuinely unset when the clone has
+      // no real value; the rendering layer surfaces `<unspecified>`.
+      const sampleId = clone.sample_id || clone.subject_id;
       if (!sampleIds.has(sampleId)) {
         sampleIds.add(sampleId);
         samples.push({
           sample_id: sampleId,
-          timepoint_id: clone.timepoint_id || "unknown",
-          locus: clone.locus || "IGH", // Default to IGH
-          // Add other sample metadata if available in clones
+          timepoint_id: clone.timepoint_id,
+          locus: clone.locus || DEFAULT_LOCUS,
           subject_id: clone.subject_id
         });
       }
