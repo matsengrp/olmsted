@@ -4,6 +4,7 @@
 import { GENE_REGION_DOMAIN, GENE_REGION_RANGE } from "../../../constants/geneRegionColors";
 import { AMINO_ACID_DOMAIN, AMINO_ACID_RANGE } from "../../../constants/aminoAcidColors";
 import { DEFAULT_DISPLAY } from "../../../constants/fieldDefaults";
+import { NODE_TYPES } from "../../../constants/nodeTypes";
 import { buildVegaTooltipExpr } from "../../../utils/fieldMetadata";
 
 /**
@@ -291,7 +292,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         source: "source_0",
         name: "max_label_length",
         transform: [
-          { expr: "datum.type == 'leaf'", type: "filter" },
+          { expr: `datum.type == '${NODE_TYPES.LEAF}'`, type: "filter" },
           { expr: "length(datum.sequence_id)", type: "formula", as: "label_length" },
           {
             type: "aggregate",
@@ -361,7 +362,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "nodes",
         transform: [
           {
-            expr: "datum.type == 'node' || datum.type =='root' || datum.type == 'internal'",
+            expr: `datum.type == '${NODE_TYPES.NODE}' || datum.type == '${NODE_TYPES.ROOT}'`,
             type: "filter"
           },
           {
@@ -381,7 +382,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "leaves",
         transform: [
           // Get just leaf nodes
-          { expr: "datum.type == 'leaf'", type: "filter" },
+          { expr: `datum.type == '${NODE_TYPES.LEAF}'`, type: "filter" },
           // Scale affinity for values with little variance
           {
             type: "formula",
@@ -476,7 +477,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           { type: "extent", field: "position", signal: "position_extent" },
           {
             type: "filter",
-            expr: "datum.type !== 'naive'"
+            expr: `datum.type !== '${NODE_TYPES.NAIVE}'`
           }
         ]
       },
@@ -491,7 +492,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           },
           {
             type: "filter",
-            expr: "datum.type !== 'naive'"
+            expr: `datum.type !== '${NODE_TYPES.NAIVE}'`
           }
         ]
       },
@@ -510,7 +511,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           },
           {
             type: "filter",
-            expr: "datum.type == 'naive'"
+            expr: `datum.type == '${NODE_TYPES.NAIVE}'`
           }
         ]
       },
@@ -524,7 +525,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           },
           {
             type: "filter",
-            expr: "datum.type == 'naive'"
+            expr: `datum.type == '${NODE_TYPES.NAIVE}'`
           }
         ]
       }
@@ -873,18 +874,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           {
             // Tree side: pie charts, leaf centers, leaf labels (exclude naive/root)
             events: "@pie:mouseover, @leaf_center:mouseover, @leaf_label:mouseover",
-            update: "datum.type !== 'naive' && datum.type !== 'root' ? datum.y_tree : null"
+            update: `datum.type !== '${NODE_TYPES.NAIVE}' && datum.type !== '${NODE_TYPES.ROOT}' ? datum.y_tree : null`
           },
           {
             // Alignment side: clickable row areas (these have y_tree directly from leaves data)
             events: "@alignment_row_click:mouseover",
-            update: "datum.type !== 'naive' && datum.type !== 'root' ? datum.y_tree : null"
+            update: `datum.type !== '${NODE_TYPES.NAIVE}' && datum.type !== '${NODE_TYPES.ROOT}' ? datum.y_tree : null`
           },
           {
             // Alignment side: mutations marks and gridlines (these have y, need to invert)
             // Exclude naive type
             events: "@marks:mouseover, @y_grid:mouseover, @gap_and_x_marks:mouseover",
-            update: "datum.type !== 'naive' ? invert('yscale', datum.y) : null"
+            update: `datum.type !== '${NODE_TYPES.NAIVE}' ? invert('yscale', datum.y) : null`
           },
           {
             events:
@@ -901,8 +902,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         on: [
           {
             events: { signal: "pts_tuple" },
-            update:
-              "pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== 'naive' && pts_tuple.type !== 'root' ? pts_tuple.y_tree : null"
+            update: `pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== '${NODE_TYPES.NAIVE}' && pts_tuple.type !== '${NODE_TYPES.ROOT}' ? pts_tuple.y_tree : null`
           }
         ]
       },
