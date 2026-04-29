@@ -1,4 +1,5 @@
 import { ValidationError } from "./errors";
+import { NODE_TYPES } from "../constants/nodeTypes";
 
 /**
  * Sentinel value indicating a field is required. If a field marked REQUIRED
@@ -178,7 +179,9 @@ export function extractGermlineFromTree(clone, trees) {
   const nodes = Array.isArray(cloneTree.nodes) ? cloneTree.nodes : Object.values(cloneTree.nodes);
 
   // Find root node with a non-empty sequence
-  const rootNode = nodes.find((n) => n.type === "root" && n.sequence_alignment && n.sequence_alignment.length > 0);
+  const rootNode = nodes.find(
+    (n) => n.type === NODE_TYPES.ROOT && n.sequence_alignment && n.sequence_alignment.length > 0
+  );
 
   if (rootNode) {
     clone.germline_alignment = rootNode.sequence_alignment;
@@ -278,7 +281,7 @@ export function validateTreeCompleteness(tree) {
     if (nodesArr.length === 0) {
       reasons.push("Tree has no nodes");
     } else {
-      const root = nodesArr.find((n) => !n.parent || n.type === "root");
+      const root = nodesArr.find((n) => !n.parent || n.type === NODE_TYPES.ROOT);
       if (!root) {
         reasons.push("Tree has no root node");
       } else if (!root.sequence_alignment && !root.sequence_alignment_aa) {

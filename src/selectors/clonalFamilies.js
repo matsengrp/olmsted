@@ -2,6 +2,8 @@ import { createSelector, lruMemoize, createSelectorCreator } from "reselect";
 import * as _ from "lodash";
 import * as fun from "../components/framework/fun";
 import { resolveFieldMetadata } from "../utils/fieldMetadata";
+import { CHAIN_TYPES } from "../constants/chainTypes";
+import { LOCI } from "../constants/loci";
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator({
   memoize: lruMemoize,
@@ -221,11 +223,10 @@ export const getSelectedFamily = createSelector(
  */
 export const getCloneChain = (clone) => {
   if (!clone || !clone.sample || !clone.sample.locus) {
-    return "heavy"; // default to heavy if unknown
+    return CHAIN_TYPES.HEAVY; // default to heavy if unknown
   }
-  const locus = clone.sample.locus.toLowerCase();
   // IGH = heavy chain, IGK/IGL = light chain (kappa/lambda)
-  return locus === "igh" ? "heavy" : "light";
+  return clone.sample.locus.toUpperCase() === LOCI.IGH ? CHAIN_TYPES.HEAVY : CHAIN_TYPES.LIGHT;
 };
 
 /**
@@ -262,7 +263,7 @@ export const getHeavyLightClones = (selectedFamily, pairedClone) => {
   }
 
   const selectedFamilyChain = getCloneChain(selectedFamily);
-  const selectedIsHeavy = selectedFamilyChain === "heavy";
+  const selectedIsHeavy = selectedFamilyChain === CHAIN_TYPES.HEAVY;
 
   return {
     heavyClone: selectedIsHeavy ? selectedFamily : pairedClone,

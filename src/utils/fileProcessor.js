@@ -77,7 +77,7 @@ class FileProcessor {
       original_dataset_id: dataset.dataset_id,
       clone_count: datasetClones.length || dataset.clone_count || 0,
       subjects_count: dataset.subjects_count || 1,
-      schema_version: data.metadata?.schema_version || "2.0.0",
+      schema_version: data.metadata?.schema_version || null,
       temporary: true,
       isClientSide: true,
       upload_time: new Date().toISOString(),

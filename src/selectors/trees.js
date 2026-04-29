@@ -1,6 +1,7 @@
 import { createSelector } from "reselect";
 import * as _ from "lodash";
 import * as clonalFamiliesSelectors from "./clonalFamilies";
+import { NODE_TYPES } from "../constants/nodeTypes";
 
 // selector for selected tree
 const getSelectedTreeIdent = (state) => state.trees.selectedTreeIdent;
@@ -55,7 +56,7 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
     const mutations = [];
     const seq = node.sequence_alignment_aa;
     const seq_id = node.sequence_id;
-    const is_naive = node.type === "root";
+    const is_naive = node.type === NODE_TYPES.ROOT;
 
     // Iterate over ALL positions in the naive sequence (0 to naive_length)
     // This ensures the alignment table includes all positions, even if some nodes are shorter
@@ -70,7 +71,7 @@ const createAlignment = (naive_seq, tree, naiveDna = null) => {
         const codonStart = i * 3;
         const naiveCodon = naiveDna ? naiveDna.substring(codonStart, codonStart + 3) : null;
         mutations.push({
-          type: "naive",
+          type: NODE_TYPES.NAIVE,
           parent: node.parent,
           seq_id: seq_id,
           position: i,
@@ -177,10 +178,10 @@ const uniqueSeqs = (nodes) => {
   const seq_records = nodes.slice();
   // remove from a copy so that we dont loop through the whole thing several times filtering
   const naive = _.remove(seq_records, (o) => {
-    return o.type === "root";
+    return o.type === NODE_TYPES.ROOT;
   })[0];
   const leaves = _.remove(seq_records, (o) => {
-    return o.type === "leaf";
+    return o.type === NODE_TYPES.LEAF;
   });
   // seq_records should now just have internal nodes, reassign for readability
   const internal_nodes = seq_records;
@@ -200,7 +201,7 @@ const uniqueSeqs = (nodes) => {
 };
 
 const findNaive = (data) => {
-  return _.find(data, { type: "root" });
+  return _.find(data, { type: NODE_TYPES.ROOT });
 };
 
 // Create an alignment for naive + all of the leaves of the tree
@@ -282,7 +283,7 @@ const ensureSingleRoot = (nodes) => {
 
   const syntheticRoot = {
     sequence_id: SYNTHETIC_ROOT_ID,
-    type: "root",
+    type: NODE_TYPES.ROOT,
     parent: null,
     sequence_alignment: buildConsensus(dnaSeqs),
     sequence_alignment_aa: buildConsensus(aaSeqs),
@@ -305,7 +306,7 @@ const ensureSingleRoot = (nodes) => {
     .filter((n) => !emptyIds.has(n.sequence_id))
     .map((n) => {
       if (!n.parent) {
-        return { ...n, parent: SYNTHETIC_ROOT_ID, type: "node" };
+        return { ...n, parent: SYNTHETIC_ROOT_ID, type: NODE_TYPES.NODE };
       }
       return n;
     });
@@ -387,7 +388,7 @@ export const computeTreeData = (tree) => {
       return treeData;
     }
 
-    data = _.filter(data, (o) => o.type === "root" || o.type === "leaf");
+    data = _.filter(data, (o) => o.type === NODE_TYPES.ROOT || o.type === NODE_TYPES.LEAF);
     treeData["leaves_count_incl_naive"] = data.length;
     // Use the tree's own sequence alignment for computing mutations
     const naiveSeqAA = naive.sequence_alignment_aa;
@@ -489,7 +490,7 @@ export const computeLineageDataRelativeTo = (tree, seq, referenceSeqId, includeA
   const lineage = followLineage(data, seq, reference, includeAllNodes);
   // Mark the reference node as naive-equivalent for createAlignment so it
   // generates a naive row from its own sequence.
-  const lineageAsRoot = lineage.map((n) => (n.sequence_id === referenceSeqId ? { ...n, type: "root" } : n));
+  const lineageAsRoot = lineage.map((n) => (n.sequence_id === referenceSeqId ? { ...n, type: NODE_TYPES.ROOT } : n));
   treeData.download_lineage_seqs = lineage;
   treeData.lineage_alignment = createAlignment(
     reference.sequence_alignment_aa,

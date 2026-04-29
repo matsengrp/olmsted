@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import * as types from "../actions/types";
+import { CHAIN_TYPES } from "../constants/chainTypes";
 
 const initialState = {
   brushSelecting: false,
@@ -19,14 +20,14 @@ const initialState = {
   // I am leaving it in store to allow for https://github.com/matsengrp/olmsted/issues/91
   facetByField: "none",
   locus: "All",
-  // Chain selection for paired heavy/light data: 'heavy', 'light', or 'both'
-  selectedChain: "heavy",
+  // Chain selection for paired heavy/light data
+  selectedChain: CHAIN_TYPES.HEAVY,
   // Track which chain was last clicked in stacked mode (for lineage inference)
-  lastClickedChain: "heavy",
+  lastClickedChain: CHAIN_TYPES.HEAVY,
   // Lineage (ancestral sequence) visualization settings
   lineageShowEntire: false,
   lineageShowBorders: false,
-  lineageChain: "heavy",
+  lineageChain: CHAIN_TYPES.HEAVY,
   // Subtree focus (shared by Phylogeny and Ancestral Sequences views).
   // subtreeRoot is the sequence_id of the focused subtree's root node, or null.
   // treatSubtreeAsRoot makes the subtree root the alignment reference (naive).
