@@ -1,26 +1,24 @@
+import { gunzipSync, strFromU8 } from "fflate";
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
 import { NODE_TYPES, LEGACY_INTERNAL_NODE_TYPE } from "../constants/nodeTypes";
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
- * Processes pre-processed consolidated format files for client-side storage
+ * Processes pre-processed consolidated format files for client-side storage.
+ * Accepts .json and .json.gz inputs; .gz payloads are decompressed in-browser
+ * via fflate before JSON parsing.
  */
 
 class FileProcessor {
   /**
-   * Process an olmsted-cli consolidated format JSON file
+   * Process an olmsted-cli consolidated format JSON file (.json or .json.gz)
    * @param {File} file - The uploaded JSON file (must be olmsted-cli consolidated format)
    * @returns {Promise<Object>} Processed data structure
    */
   static async processFile(file) {
     try {
-      const content = await this.readFile(file);
+      const content = file.name.endsWith(".gz") ? await this.readGzFileAsText(file) : await this.readFile(file);
       let data;
-
-      // Handle gzipped files
-      if (file.name.endsWith(".gz")) {
-        throw new Error("Gzipped files not yet supported in client-side processing");
-      }
 
       try {
         data = JSON.parse(content);
@@ -39,6 +37,22 @@ class FileProcessor {
     } catch (error) {
       throw new Error(`Failed to process file: ${error.message}`);
     }
+  }
+
+  /**
+   * Read a gzipped file and return its decompressed text contents.
+   * @param {File} file
+   * @returns {Promise<string>}
+   */
+  static async readGzFileAsText(file) {
+    const buffer = await this.readFileAsArrayBuffer(file);
+    let decompressed;
+    try {
+      decompressed = gunzipSync(new Uint8Array(buffer));
+    } catch (err) {
+      throw new Error(`Failed to decompress gzipped file: ${err.message}`);
+    }
+    return strFromU8(decompressed);
   }
 
   /**
@@ -209,6 +223,20 @@ class FileProcessor {
       reader.onload = (e) => resolve(e.target.result);
       reader.onerror = () => reject(new Error("File reading failed"));
       reader.readAsText(file);
+    });
+  }
+
+  /**
+   * Read file content as an ArrayBuffer (used for gzipped inputs).
+   * @param {File} file - File to read
+   * @returns {Promise<ArrayBuffer>}
+   */
+  static readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error("File reading failed"));
+      reader.readAsArrayBuffer(file);
     });
   }
 
