@@ -1,3 +1,9 @@
+## version 2.7.2 - 2026/04/22
+Changed:
+* Relabeled the tree dropdown from "Ancestral Reconstruction Method" to "Tree".
+* `tree.type` → `tree.name`
+* Blank fields now display as "<unspecified>"
+
 ## version 2.7.1 - 2026/04/21
 Changed:
 * Dependency bumps: @xmldom/xmldom 0.8.11 → 0.8.12, follow-redirects 1.15.11 → 1.16.0, lodash 4.17.23 → 4.18.1, lodash-es 4.17.23 → 4.18.1, electron 41.0.4 → 41.1.0 (closes several dependabot security advisories)

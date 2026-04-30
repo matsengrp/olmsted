@@ -67,12 +67,13 @@ class OlmstedDB extends Dexie {
               dataset_id: clone.dataset_id || dataset_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
-              // Store tree metadata (lightweight, for dropdown display)
+              // Store tree metadata (lightweight, for dropdown display).
+              // tree.type is the legacy field name; coalesce onto tree.name on ingest.
               trees_meta: clone.trees
                 ? clone.trees.map((t) => ({
                     ident: t.ident || t.tree_id,
                     tree_id: t.tree_id,
-                    type: t.type,
+                    name: t.name || t.type,
                     downsampling_strategy: t.downsampling_strategy
                   }))
                 : clone.trees_meta || []
@@ -98,7 +99,7 @@ class OlmstedDB extends Dexie {
           // Add any other tree properties that might be needed
           downsampling_strategy: tree.downsampling_strategy,
           tree_type: tree.tree_type,
-          type: tree.type // Reconstruction method type (e.g., "pcp.reconstruction", "cft.reconstruction")
+          name: tree.name || tree.type
         }));
 
         if (allTreeData.length > 0) {

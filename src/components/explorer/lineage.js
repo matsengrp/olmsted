@@ -15,6 +15,7 @@ import DownloadFasta from "./downloadFasta";
 import { getNaiveVizData } from "./naive";
 import { CollapseHelpTitle } from "../util/collapseHelpTitle";
 import { CHAIN_TYPES, isBothChainsMode } from "../../constants/chainTypes";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 import * as explorerActions from "../../actions/explorer";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 import VegaViewContext from "../config/VegaViewContext";
@@ -62,9 +63,9 @@ const mapStateToProps = (state) => {
     lightClone,
     lightTree,
     // Tree/alignment chain selection - used to infer lineage chain when leaf is clicked
-    treeChain: state.clonalFamilies.selectedChain || "heavy",
+    treeChain: state.clonalFamilies.selectedChain || CHAIN_TYPES.HEAVY,
     // Track which chain was clicked in stacked mode
-    lastClickedChain: state.clonalFamilies.lastClickedChain || "heavy",
+    lastClickedChain: state.clonalFamilies.lastClickedChain || CHAIN_TYPES.HEAVY,
     // Lineage settings from Redux
     lineageShowEntire: state.clonalFamilies.lineageShowEntire,
     lineageShowBorders: state.clonalFamilies.lineageShowBorders,
@@ -230,7 +231,7 @@ class Lineage extends React.Component {
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Determine which tree and clone to use based on chain selection
-      const isLightMode = lineageChain === "light";
+      const isLightMode = lineageChain === CHAIN_TYPES.LIGHT;
       const treeToUse = isLightMode ? lightTree : heavyTree;
       const cloneToUse = isLightMode ? lightClone : heavyClone;
 
@@ -338,8 +339,8 @@ class Lineage extends React.Component {
                   onChange={this.handleLineageChainChange}
                   aria-label="Chain selection for lineage"
                 >
-                  <option value="heavy">Heavy chain</option>
-                  <option value="light">Light chain</option>
+                  <option value={CHAIN_TYPES.HEAVY}>Heavy chain</option>
+                  <option value={CHAIN_TYPES.LIGHT}>Light chain</option>
                 </select>
               </div>
             )}
@@ -385,16 +386,17 @@ class Lineage extends React.Component {
             {hasLineageData && hasCloneData && (
               <>
                 <h3>Amino acid sequence:</h3>
-                <p>{seqToUse.sequence_alignment_aa || "N/A"}</p>
+                <p>{seqToUse.sequence_alignment_aa || UNSPECIFIED_LABEL}</p>
                 <div style={{ marginTop: "10px", marginBottom: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  <Copy
-                    value={seqToUse.sequence_alignment || "NO NUCLEOTIDE SEQUENCE"}
-                    buttonLabel="Copy nucleotide sequence to clipboard"
-                  />
-                  <Copy
-                    value={seqToUse.sequence_alignment_aa || "NO AMINO ACID SEQUENCE"}
-                    buttonLabel="Copy amino acid sequence to clipboard"
-                  />
+                  {/* Skip the Copy button entirely when the sequence is absent — copying
+                      the placeholder string would be misleading and indistinguishable
+                      between the two buttons. */}
+                  {seqToUse.sequence_alignment && (
+                    <Copy value={seqToUse.sequence_alignment} buttonLabel="Copy nucleotide sequence to clipboard" />
+                  )}
+                  {seqToUse.sequence_alignment_aa && (
+                    <Copy value={seqToUse.sequence_alignment_aa} buttonLabel="Copy amino acid sequence to clipboard" />
+                  )}
                 </div>
                 <div style={{ marginBottom: "8px" }}>
                   <DownloadFasta

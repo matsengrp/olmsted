@@ -166,10 +166,11 @@ describe("SplitFileProcessor", () => {
       expect(result[1].sample_id).toBe("s2");
     });
 
-    it("defaults to 'unknown' when sample_id is missing", () => {
+    it("leaves sample_id and timepoint_id unset when the clone has no real value", () => {
       const clones = [{ clone_id: "c1" }];
       const result = SplitFileProcessor.inferSamplesFromClones(clones);
-      expect(result[0].sample_id).toBe("unknown");
+      expect(result[0].sample_id).toBeUndefined();
+      expect(result[0].timepoint_id).toBeUndefined();
     });
 
     it("defaults locus to IGH", () => {

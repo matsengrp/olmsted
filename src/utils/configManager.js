@@ -3,6 +3,8 @@
  * Handles extraction, application, and validation of visualization settings
  */
 
+import { CHAIN_TYPES } from "../constants/chainTypes";
+
 // Current config schema version
 export const CONFIG_VERSION = "1.2";
 
@@ -90,14 +92,14 @@ export const DEFAULT_TREE_SETTINGS = {
 // Default global settings
 export const DEFAULT_GLOBAL_SETTINGS = {
   filters: {},
-  selectedChain: "heavy"
+  selectedChain: CHAIN_TYPES.HEAVY
 };
 
 // Default lineage (ancestral sequence) settings
 export const DEFAULT_LINEAGE_SETTINGS = {
   showEntire: false,
   showBorders: false,
-  chain: "heavy"
+  chain: CHAIN_TYPES.HEAVY
 };
 
 /**

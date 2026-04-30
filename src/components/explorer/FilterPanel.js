@@ -3,8 +3,9 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
-import { getResolvedFieldMetadata } from "../../selectors/clonalFamilies";
+import { getResolvedFieldMetadata, getReferenceFieldValue } from "../../selectors/clonalFamilies";
 import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -55,7 +56,14 @@ const buildFilterEntry = (field, label) => {
   return {
     key: field,
     label,
-    accessor: (f) => (f[field] != null ? String(f[field]) : null)
+    accessor: (f) => {
+      // Reference fields (subject_id, sample_id, ...) may live at top level
+      // or under f.sample; resolve through the shared helper. Other top-level
+      // fields fall through cleanly since the helper short-circuits on the
+      // top-level value.
+      const value = getReferenceFieldValue(f, field);
+      return value != null ? String(value) : null;
+    }
   };
 };
 
@@ -75,11 +83,15 @@ const buildFilterFields = (cloneMetadata) => {
 };
 
 /**
- * Extract unique values for a field from clonal families
+ * Extract unique values for a field from clonal families.
+ * When at least one family has a missing value (null/undefined/empty), append
+ * UNSPECIFIED_LABEL as a final option so users can filter for the absent case.
  */
 const getUniqueValues = (families, field, datasets) => {
-  const values = families.map((f) => field.accessor(f, datasets)).filter((v) => v != null && v !== "");
-  return _.sortBy(_.uniq(values));
+  const raw = families.map((f) => field.accessor(f, datasets));
+  const present = _.sortBy(_.uniq(raw.filter((v) => v != null && v !== "")));
+  const hasMissing = raw.some((v) => v == null || v === "");
+  return hasMissing ? [...present, UNSPECIFIED_LABEL] : present;
 };
 
 /**

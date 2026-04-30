@@ -20,11 +20,13 @@ import {
   getSelectedDatasetFields
 } from "../../selectors/clonalFamilies";
 import { CHAIN_TYPES, isBothChainsMode, isStackedMode, isSideBySideMode } from "../../constants/chainTypes";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
+import { NODE_TYPES } from "../../constants/nodeTypes";
 import VegaViewContext from "../config/VegaViewContext";
 import { VegaExportToolbar } from "../util/VegaExportButton";
 
-// Placeholder shown when an ancestral reconstruction method / tree type is blank.
-const UNSPECIFIED_TREE_LABEL = "<unspecified>";
+// Shared min-width for the Chain and Tree dropdowns so longer labels aren't clipped.
+const HEADER_SELECT_STYLE = { minWidth: 360 };
 
 // Build the `key` for a Vega chart so it remounts cleanly when subtree focus
 // or the treat-as-root mode toggles.
@@ -34,12 +36,13 @@ const vegaChartKey = (prefix, subtreeRoot, treatAsRoot) =>
 // For unpaired families the Chain field is a disabled single-option select.
 // Renders a dropdown locked to the family's actual chain (heavy or light).
 function PinnedChainSelect({ clone }) {
+  // getCloneChain is guaranteed to return CHAIN_TYPES.{HEAVY,LIGHT}, so we
+  // can use it directly without a normalizing ternary.
   const pinnedChain = clonalFamiliesSelectors.getCloneChain(clone);
-  const pinnedValue = pinnedChain === "light" ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
-  const pinnedLabel = pinnedChain === "light" ? "Light chain only" : "Heavy chain only";
+  const pinnedLabel = pinnedChain === CHAIN_TYPES.LIGHT ? "Light chain only" : "Heavy chain only";
   return (
-    <select id="chain-select" value={pinnedValue} disabled aria-label="Chain selection">
-      <option value={pinnedValue}>{pinnedLabel}</option>
+    <select id="chain-select" value={pinnedChain} disabled style={HEADER_SELECT_STYLE} aria-label="Chain selection">
+      <option value={pinnedChain}>{pinnedLabel}</option>
     </select>
   );
 }
@@ -73,12 +76,12 @@ const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtr
   const subtreeIds = getSubtreeNodeIds(nodes, subtreeRoot);
   const filteredNodes = nodes
     .filter((n) => subtreeIds.has(n.sequence_id))
-    .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: "root" } : n));
-  const filteredCount = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf").length;
+    .map((n) => (n.sequence_id === subtreeRoot ? { ...n, parent: null, type: NODE_TYPES.ROOT } : n));
+  const filteredCount = filteredNodes.filter((n) => n.type === NODE_TYPES.ROOT || n.type === NODE_TYPES.LEAF).length;
 
   if (treatAsRoot) {
     const rootNode = filteredNodes.find((n) => n.sequence_id === subtreeRoot);
-    const renderable = filteredNodes.filter((n) => n.type === "root" || n.type === "leaf");
+    const renderable = filteredNodes.filter((n) => n.type === NODE_TYPES.ROOT || n.type === NODE_TYPES.LEAF);
     const regenerated = treesSelector.buildSubtreeAlignment(rootNode, renderable);
     if (regenerated) {
       return { nodes: filteredNodes, alignment: regenerated, leavesCount: filteredCount };
@@ -86,7 +89,7 @@ const applySubtreeFilter = (nodes, alignment, leavesCount, subtreeRoot, getSubtr
   }
 
   // Keep naive (type: "naive") alignment rows — they define the x-axis and gene regions
-  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id) || m.type === "naive");
+  const filteredAlignment = alignment.filter((m) => subtreeIds.has(m.seq_id) || m.type === NODE_TYPES.NAIVE);
   return { nodes: filteredNodes, alignment: filteredAlignment, leavesCount: filteredCount };
 };
 
@@ -111,6 +114,7 @@ class TreeHeader extends React.Component {
     const { selectedFamily, tree, dispatchSelectedTree, selectedSeq, selectedChain, dispatchSelectedChain } =
       this.props;
     if (!tree) return null;
+    const treeCount = selectedFamily.trees?.length || 0;
     return (
       <div>
         <CollapseHelpTitle
@@ -126,9 +130,9 @@ class TreeHeader extends React.Component {
               to learn more about AIRR, PCP, or Olmsted data schemas and field descriptions.
               <br />
               <br />
-              <strong>Ancestral Reconstruction Method:</strong> Select among alternate phylogenies using the Ancestral
-              reconstruction method dropdown menu. These methods are specified in the input data according to the
-              phylogenetic inference tool used.
+              <strong>Tree Selection:</strong> When a clonal family has more than one tree, use the Tree dropdown to
+              switch among them. Trees may differ by reconstruction method, downsampling strategy, seed, or pipeline
+              version.
               <br />
               <br />
               <strong>Paired Heavy/Light Chain Data:</strong> For paired data, a Chain dropdown menu appears below,
@@ -275,6 +279,7 @@ class TreeHeader extends React.Component {
             <select
               id="chain-select"
               value={selectedChain}
+              style={HEADER_SELECT_STYLE}
               onChange={(event) => dispatchSelectedChain(event.target.value)}
               aria-label="Chain selection"
             >
@@ -287,26 +292,36 @@ class TreeHeader extends React.Component {
           )}
         </div>
         <div style={{ marginTop: "8px" }}>
-          <span style={{ marginRight: 8 }}>Ancestral Reconstruction Method:</span>
-          {selectedFamily.trees && selectedFamily.trees.length > 0 ? (
+          <span style={{ marginRight: 8 }}>{`Tree (${treeCount}):`}</span>
+          {treeCount > 0 ? (
             <select
               id="tree-select"
               value={tree.ident}
+              style={HEADER_SELECT_STYLE}
               onChange={(event) => dispatchSelectedTree(event.target.value, selectedFamily, selectedSeq)}
-              aria-label="Ancestral reconstruction method"
+              aria-label="Tree selection"
             >
-              {selectedFamily.trees.map((tree_option) => {
-                const typeStr = typeof tree_option.type === "string" ? tree_option.type.trim() : "";
+              {selectedFamily.trees.map((tree_option, idx) => {
+                const label = tree_option.tree_id || tree_option.ident || `Tree ${idx + 1}`;
+                // Fall back to tree.type for trees persisted in IndexedDB before the rename.
+                const rawName = tree_option.name || tree_option.type;
+                const name = typeof rawName === "string" ? rawName.trim() : "";
                 return (
                   <option key={tree_option.ident} value={tree_option.ident}>
-                    {typeStr || UNSPECIFIED_TREE_LABEL}
+                    {name ? `${label} | ${name}` : label}
                   </option>
                 );
               })}
             </select>
           ) : (
-            <select id="tree-select" value={tree.ident || ""} disabled aria-label="Ancestral reconstruction method">
-              <option value={tree.ident || ""}>{UNSPECIFIED_TREE_LABEL}</option>
+            <select
+              id="tree-select"
+              value={tree.ident || ""}
+              disabled
+              style={HEADER_SELECT_STYLE}
+              aria-label="Tree selection"
+            >
+              <option value={tree.ident || ""}>{UNSPECIFIED_LABEL}</option>
             </select>
           )}
         </div>
@@ -343,7 +358,7 @@ const computeCloneVizData = (clone, tree, label = "5p") => {
 const baseMapStateToProps = (state) => {
   const selectedFamily = clonalFamiliesSelectors.getSelectedFamily(state);
   const selectedTree = treesSelector.getSelectedTree(state);
-  const selectedChain = state.clonalFamilies.selectedChain || "heavy";
+  const selectedChain = state.clonalFamilies.selectedChain || CHAIN_TYPES.HEAVY;
   const dataFields = getSelectedDatasetFields(state);
   // Use getAllClonalFamilies (not filtered by locus) so we can find paired clones
   // even when they're filtered out of the scatterplot
@@ -754,7 +769,7 @@ class TreeViz extends React.Component {
     if (this.props.subtreeRoot) return this.props.subtreeRoot;
     const arr = normalizeNodes(nodes);
     if (arr.length === 0) return null;
-    const root = arr.find((n) => !n.parent || n.type === "root");
+    const root = arr.find((n) => !n.parent || n.type === NODE_TYPES.ROOT);
     return root ? root.sequence_id : null;
   }
 
@@ -841,7 +856,7 @@ class TreeViz extends React.Component {
               <option value="">Children of {typeof effectiveRoot === "string" ? effectiveRoot : "root"}</option>
               {children.map((child) => (
                 <option key={child.sequence_id} value={child.sequence_id}>
-                  {child.sequence_id} ({child.type || "node"})
+                  {child.sequence_id} ({child.type || NODE_TYPES.NODE})
                 </option>
               ))}
             </select>
@@ -1046,7 +1061,7 @@ class TreeViz extends React.Component {
     // Auto-select the root node when a tree first loads and no node is selected
     if (tree && tree.nodes && !selectedSeq) {
       const nodesArr = normalizeNodes(tree.nodes);
-      const rootNode = nodesArr.find((n) => !n.parent || n.type === "root");
+      const rootNode = nodesArr.find((n) => !n.parent || n.type === NODE_TYPES.ROOT);
       if (rootNode && rootNode.sequence_id) {
         dispatchSelectedSeq(rootNode.sequence_id);
       }
@@ -1258,36 +1273,36 @@ class TreeViz extends React.Component {
               <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>Heavy Chain (above) / Light Chain (below)</h4>
               {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
-                key={vegaChartKey("heavy", subtreeRoot, this.props.treatSubtreeAsRoot)}
+                key={vegaChartKey(CHAIN_TYPES.HEAVY, subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
                   view.addSignalListener("pts_tuple", (name, node) => {
                     if (node && node.parent) {
                       dispatchSelectedSeq(node.sequence_id);
-                      dispatchLastClickedChain("heavy");
+                      dispatchLastClickedChain(CHAIN_TYPES.HEAVY);
                       this.syncSelectionToLightChain(node.y_tree);
                     }
                   });
                 }}
                 onError={this.handleVegaError}
-                data={this.getChainData("heavy")}
+                data={this.getChainData(CHAIN_TYPES.HEAVY)}
                 spec={this.specNoControls}
               />
               {lightTree ? (
                 <VegaChart
-                  key={vegaChartKey("light", subtreeRoot, this.props.treatSubtreeAsRoot)}
+                  key={vegaChartKey(CHAIN_TYPES.LIGHT, subtreeRoot, this.props.treatSubtreeAsRoot)}
                   onNewView={(view) => {
                     this.setupLightChainSignalSync(view, 0.4);
                     view.addSignalListener("pts_tuple", (name, node) => {
                       if (node && node.parent) {
                         dispatchSelectedSeq(node.sequence_id);
-                        dispatchLastClickedChain("light");
+                        dispatchLastClickedChain(CHAIN_TYPES.LIGHT);
                         this.syncSelectionToHeavyChain(node.y_tree);
                       }
                     });
                   }}
                   onError={this.handleVegaError}
-                  data={this.getChainData("light")}
+                  data={this.getChainData(CHAIN_TYPES.LIGHT)}
                   spec={this.spec}
                 />
               ) : (
@@ -1372,7 +1387,7 @@ class TreeViz extends React.Component {
               const chainType = selectedFamily.is_paired
                 ? selectedChain
                 : clonalFamiliesSelectors.getCloneChain(selectedFamily);
-              const chainLabel = chainType === "heavy" ? "Heavy Chain" : "Light Chain";
+              const chainLabel = chainType === CHAIN_TYPES.HEAVY ? "Heavy Chain" : "Light Chain";
               return (
                 <div>
                   <h4 style={{ marginBottom: "5px", marginTop: "10px" }}>{chainLabel}</h4>
