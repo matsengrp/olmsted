@@ -5,7 +5,8 @@ import {
   getClonalFamiliesPage,
   getCloneChain,
   getPairedClone,
-  getHeavyLightClones
+  getHeavyLightClones,
+  getReferenceFieldValue
 } from "../clonalFamilies";
 import {
   mockDataset,
@@ -35,6 +36,33 @@ describe("countLoadedClonalFamilies", () => {
   });
 });
 
+describe("getReferenceFieldValue", () => {
+  it("prefers a top-level value when present", () => {
+    const family = { subject_id: "top", sample: { subject_id: "nested" } };
+    expect(getReferenceFieldValue(family, "subject_id")).toBe("top");
+  });
+
+  it("falls back to family.sample[field] when top-level is absent", () => {
+    const family = { sample: { subject_id: "nested" } };
+    expect(getReferenceFieldValue(family, "subject_id")).toBe("nested");
+  });
+
+  it.each([null, undefined, ""])("treats top-level %p as absent and falls back", (empty) => {
+    const family = { subject_id: empty, sample: { subject_id: "nested" } };
+    expect(getReferenceFieldValue(family, "subject_id")).toBe("nested");
+  });
+
+  it("returns undefined when both locations are absent", () => {
+    expect(getReferenceFieldValue({ sample: {} }, "subject_id")).toBeUndefined();
+    expect(getReferenceFieldValue({}, "subject_id")).toBeUndefined();
+  });
+
+  it("returns undefined for null/undefined family", () => {
+    expect(getReferenceFieldValue(null, "subject_id")).toBeUndefined();
+    expect(getReferenceFieldValue(undefined, "subject_id")).toBeUndefined();
+  });
+});
+
 describe("getAvailableClonalFamilies", () => {
   const makeState = (families, datasets, filters = {}) => ({
     clonalFamilies: {
@@ -44,6 +72,14 @@ describe("getAvailableClonalFamilies", () => {
     },
     datasets: {
       availableDatasets: datasets
+    }
+  });
+
+  // Reselect memoizes by reference; without a reset, prior tests' inputs
+  // can leak into the current call's cache and produce stale results.
+  beforeEach(() => {
+    if (getAvailableClonalFamilies.resetRecomputations) {
+      getAvailableClonalFamilies.resetRecomputations();
     }
   });
 
@@ -62,10 +98,6 @@ describe("getAvailableClonalFamilies", () => {
 
   it("applies high-level filters", () => {
     const state = makeState([mockFamily1, mockFamily2], [mockDataset], { "sample.locus": ["IGH"] });
-    // Need to reset memoization
-    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
-      getAvailableClonalFamilies.resetRecomputations();
-    }
     const result = getAvailableClonalFamilies(state);
     // mockFamily1 has IGH, mockFamily2 has IGK
     expect(result).toHaveLength(1);
@@ -78,9 +110,6 @@ describe("getAvailableClonalFamilies", () => {
     const state = makeState([familyWithSubject, familyMissingSubject], [mockDataset], {
       subject_id: ["<unspecified>"]
     });
-    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
-      getAvailableClonalFamilies.resetRecomputations();
-    }
     const result = getAvailableClonalFamilies(state);
     expect(result).toHaveLength(1);
     expect(result[0].ident).toBe(familyMissingSubject.ident);
@@ -93,9 +122,6 @@ describe("getAvailableClonalFamilies", () => {
     const state = makeState([a, b, c], [mockDataset], {
       subject_id: ["real-subject", "<unspecified>"]
     });
-    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
-      getAvailableClonalFamilies.resetRecomputations();
-    }
     const result = getAvailableClonalFamilies(state);
     const idents = result.map((f) => f.ident).sort();
     expect(idents).toEqual([a.ident, b.ident].sort());

@@ -36,12 +36,13 @@ const vegaChartKey = (prefix, subtreeRoot, treatAsRoot) =>
 // For unpaired families the Chain field is a disabled single-option select.
 // Renders a dropdown locked to the family's actual chain (heavy or light).
 function PinnedChainSelect({ clone }) {
+  // getCloneChain is guaranteed to return CHAIN_TYPES.{HEAVY,LIGHT}, so we
+  // can use it directly without a normalizing ternary.
   const pinnedChain = clonalFamiliesSelectors.getCloneChain(clone);
-  const pinnedValue = pinnedChain === CHAIN_TYPES.LIGHT ? CHAIN_TYPES.LIGHT : CHAIN_TYPES.HEAVY;
   const pinnedLabel = pinnedChain === CHAIN_TYPES.LIGHT ? "Light chain only" : "Heavy chain only";
   return (
-    <select id="chain-select" value={pinnedValue} disabled style={HEADER_SELECT_STYLE} aria-label="Chain selection">
-      <option value={pinnedValue}>{pinnedLabel}</option>
+    <select id="chain-select" value={pinnedChain} disabled style={HEADER_SELECT_STYLE} aria-label="Chain selection">
+      <option value={pinnedChain}>{pinnedLabel}</option>
     </select>
   );
 }

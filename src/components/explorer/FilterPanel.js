@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
-import { getResolvedFieldMetadata } from "../../selectors/clonalFamilies";
+import { getResolvedFieldMetadata, getReferenceFieldValue } from "../../selectors/clonalFamilies";
 import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
 import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 
@@ -56,7 +56,14 @@ const buildFilterEntry = (field, label) => {
   return {
     key: field,
     label,
-    accessor: (f) => (f[field] != null ? String(f[field]) : null)
+    accessor: (f) => {
+      // Reference fields (subject_id, sample_id, ...) may live at top level
+      // or under f.sample; resolve through the shared helper. Other top-level
+      // fields fall through cleanly since the helper short-circuits on the
+      // top-level value.
+      const value = getReferenceFieldValue(f, field);
+      return value != null ? String(value) : null;
+    }
   };
 };
 

@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiStar } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
-import { getBrushedClonalFamilies, getCloneChain } from "../../selectors/clonalFamilies";
+import { getBrushedClonalFamilies, getCloneChain, getReferenceFieldValue } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
 import { ResizableTable } from "../util/resizableTable";
@@ -95,7 +95,7 @@ class ResizableVirtualTable extends ResizableTable {
                   }}
                 >
                   {(() => {
-                    const value = _.get(datum, AttrOrComponent);
+                    const value = options.valueAccessor ? options.valueAccessor(datum) : _.get(datum, AttrOrComponent);
                     if (value === null || value === undefined || value === "") return emptyLabel;
                     // Convert booleans to Yes/No for display (React doesn't render raw booleans)
                     if (typeof value === "boolean") return value ? "Yes" : "No";
@@ -697,9 +697,17 @@ class ClonalFamiliesTable extends React.Component {
           ["Junction length", "junction_length"],
           ["Mut freq", "mean_mut_freq"],
           ["Seed run", "has_seed"],
-          ["Subject", "subject_id", { unspecified: true }],
-          ["Sample", "sample_id", { unspecified: true }],
-          ["Timepoint", "sample.timepoint_id", { unspecified: true }],
+          [
+            "Subject",
+            "subject_id",
+            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "subject_id") }
+          ],
+          ["Sample", "sample_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "sample_id") }],
+          [
+            "Timepoint",
+            "sample.timepoint_id",
+            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "timepoint_id") }
+          ],
           // ["Path", 'path'],
           // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
           ["Dataset", DatasetName, { sortKey: "dataset_id" }]

@@ -388,14 +388,15 @@ class Lineage extends React.Component {
                 <h3>Amino acid sequence:</h3>
                 <p>{seqToUse.sequence_alignment_aa || UNSPECIFIED_LABEL}</p>
                 <div style={{ marginTop: "10px", marginBottom: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  <Copy
-                    value={seqToUse.sequence_alignment || UNSPECIFIED_LABEL}
-                    buttonLabel="Copy nucleotide sequence to clipboard"
-                  />
-                  <Copy
-                    value={seqToUse.sequence_alignment_aa || UNSPECIFIED_LABEL}
-                    buttonLabel="Copy amino acid sequence to clipboard"
-                  />
+                  {/* Skip the Copy button entirely when the sequence is absent — copying
+                      the placeholder string would be misleading and indistinguishable
+                      between the two buttons. */}
+                  {seqToUse.sequence_alignment && (
+                    <Copy value={seqToUse.sequence_alignment} buttonLabel="Copy nucleotide sequence to clipboard" />
+                  )}
+                  {seqToUse.sequence_alignment_aa && (
+                    <Copy value={seqToUse.sequence_alignment_aa} buttonLabel="Copy amino acid sequence to clipboard" />
+                  )}
                 </div>
                 <div style={{ marginBottom: "8px" }}>
                   <DownloadFasta

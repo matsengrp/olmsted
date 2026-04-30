@@ -21,6 +21,28 @@ const _getLocusFilter = (state) => state.clonalFamilies.locus;
 
 const getHighLevelFilters = (state) => state.clonalFamilies.filters;
 
+/**
+ * Resolve a reference-field value from a clonal family.
+ *
+ * Reference fields like subject_id / sample_id / timepoint_id may be carried
+ * either at the top level of the clone or nested under `clone.sample`,
+ * depending on the input format and how olmstedDB ingested it (only
+ * sample_id is hoisted on ingest; subject_id and timepoint_id are not).
+ * Returning the first non-empty value lets renderers and filters look up
+ * the field with one rule.
+ *
+ * @param {Object} family
+ * @param {string} fieldName - "subject_id", "sample_id", "timepoint_id", etc.
+ * @returns {*} the value, or undefined if absent at both locations
+ */
+export const getReferenceFieldValue = (family, fieldName) => {
+  if (!family) return undefined;
+  const top = family[fieldName];
+  if (top != null && top !== "") return top;
+  const nested = family.sample ? family.sample[fieldName] : undefined;
+  return nested != null && nested !== "" ? nested : undefined;
+};
+
 export const countLoadedClonalFamilies = (datasets) => {
   let clones = 0;
   if (datasets.length > 0) {
@@ -63,11 +85,12 @@ const applyHighLevelFilters = (families, filters, datasets) => {
         // Handle nested fields like "sample.subject_id"
         const fieldValues = _.at(family, fieldName);
         familyValue = fieldValues.length ? fieldValues[0] : undefined;
-      } else if (fieldName === "subject_id" || fieldName === "sample_id") {
-        // Check top-level first, then nested under sample
-        familyValue = family[fieldName] || (family.sample ? family.sample[fieldName] : undefined);
       } else {
-        familyValue = family[fieldName];
+        // Reference fields (subject_id, sample_id, timepoint_id, ...) may be
+        // top-level or nested under family.sample; the helper resolves either.
+        // For other plain top-level fields the helper still falls back through
+        // family.sample, which is harmless (returns undefined when absent).
+        familyValue = getReferenceFieldValue(family, fieldName);
       }
 
       // Check if family value is in selected values. UNSPECIFIED_LABEL in the
