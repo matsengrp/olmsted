@@ -65,20 +65,13 @@ class FileUpload extends React.Component {
       const fileName = file.name.toLowerCase();
       let fileType = null;
 
-      if (fileName.endsWith(".json")) {
+      if (fileName.endsWith(".json") || fileName.endsWith(".json.gz")) {
         fileType = "consolidated";
-      } else if (fileName.endsWith(".gz")) {
-        // Check the extension before .gz
-        if (fileName.includes(".json.gz")) {
-          fileType = "consolidated";
-          // Note: gzip support would need additional implementation
-          throw new Error("Gzipped files are not yet supported. Please upload uncompressed JSON files.");
-        }
       }
 
       if (!fileType) {
         throw new Error(
-          "Unsupported file type. Please upload olmsted-cli consolidated JSON files (.json). For split files, select all files together (datasets.json, clones.*.json, tree.*.json)."
+          "Unsupported file type. Please upload olmsted-cli consolidated JSON files (.json or .json.gz). For split files, select all files together (datasets.json, clones.*.json, tree.*.json)."
         );
       }
 
@@ -290,7 +283,7 @@ class FileUpload extends React.Component {
           <input
             ref={this.fileInputRef}
             type="file"
-            accept="application/json, .json"
+            accept="application/json, .json, .json.gz, .gz"
             multiple
             style={{ display: "none" }}
             onChange={this.handleFileInputChange.bind(this)}
@@ -402,7 +395,7 @@ class FileUpload extends React.Component {
                     </div>
                     <div style={{ fontSize: 16, color: "#05337f", marginBottom: 15 }}>or click to browse</div>
                     <div style={{ fontSize: 14, color: "#666" }}>
-                      <strong>Supported format:</strong> olmsted-cli consolidated JSON (.json)
+                      <strong>Supported formats:</strong> olmsted-cli consolidated JSON (.json or .json.gz)
                     </div>
                   </div>
                 )}

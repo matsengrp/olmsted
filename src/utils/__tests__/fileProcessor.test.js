@@ -1,4 +1,10 @@
+import { gzipSync, strToU8 } from "fflate";
 import FileProcessor from "../fileProcessor";
+
+const makeGzFile = (text, name = "test.json.gz") => {
+  const gz = gzipSync(strToU8(text));
+  return new File([gz], name, { type: "application/gzip" });
+};
 
 describe("FileProcessor", () => {
   describe("isConsolidatedFormat", () => {
@@ -123,6 +129,34 @@ describe("FileProcessor", () => {
 
     it("starts with upload-", () => {
       expect(FileProcessor.generateDatasetId()).toMatch(/^upload-/);
+    });
+  });
+
+  describe("processFile (gzipped)", () => {
+    const validJson = JSON.stringify({
+      metadata: { schema_version: "2.0.0" },
+      datasets: [{ dataset_id: "d1", clone_count: 0, subjects_count: 1 }],
+      clones: { d1: [] },
+      trees: []
+    });
+
+    it("decompresses a .json.gz upload and processes it", async () => {
+      const file = makeGzFile(validJson, "consolidated.json.gz");
+      const result = await FileProcessor.processFile(file);
+      expect(result.datasets).toHaveLength(1);
+      expect(result.datasetId).toMatch(/^upload-/);
+      expect(result.datasets[0].original_filename).toBe("consolidated.json.gz");
+    });
+
+    it("throws a decompression error on malformed gz bytes", async () => {
+      const garbage = new Uint8Array([0x1f, 0x8b, 0x00, 0xff, 0xff, 0xff, 0xff]); // bad gzip
+      const file = new File([garbage], "broken.json.gz", { type: "application/gzip" });
+      await expect(FileProcessor.processFile(file)).rejects.toThrow(/Failed to decompress gzipped file/);
+    });
+
+    it("throws an Invalid JSON error when the decompressed payload is not JSON", async () => {
+      const file = makeGzFile("not json at all", "weird.json.gz");
+      await expect(FileProcessor.processFile(file)).rejects.toThrow(/Invalid JSON format/);
     });
   });
 });
