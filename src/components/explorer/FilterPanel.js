@@ -5,6 +5,7 @@ import { FiFilter, FiX, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import * as explorerActions from "../../actions/explorer";
 import { getResolvedFieldMetadata } from "../../selectors/clonalFamilies";
 import { DEFAULT_DISPLAY } from "../../constants/fieldDefaults";
+import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
 
 /**
  * FilterPanel - A collapsible panel for high-level filtering of clonal families.
@@ -75,11 +76,15 @@ const buildFilterFields = (cloneMetadata) => {
 };
 
 /**
- * Extract unique values for a field from clonal families
+ * Extract unique values for a field from clonal families.
+ * When at least one family has a missing value (null/undefined/empty), append
+ * UNSPECIFIED_LABEL as a final option so users can filter for the absent case.
  */
 const getUniqueValues = (families, field, datasets) => {
-  const values = families.map((f) => field.accessor(f, datasets)).filter((v) => v != null && v !== "");
-  return _.sortBy(_.uniq(values));
+  const raw = families.map((f) => field.accessor(f, datasets));
+  const present = _.sortBy(_.uniq(raw.filter((v) => v != null && v !== "")));
+  const hasMissing = raw.some((v) => v == null || v === "");
+  return hasMissing ? [...present, UNSPECIFIED_LABEL] : present;
 };
 
 /**

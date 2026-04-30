@@ -4,6 +4,7 @@ import * as fun from "../components/framework/fun";
 import { resolveFieldMetadata } from "../utils/fieldMetadata";
 import { CHAIN_TYPES } from "../constants/chainTypes";
 import { LOCI } from "../constants/loci";
+import { UNSPECIFIED_LABEL } from "../constants/displayLabels";
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator({
   memoize: lruMemoize,
@@ -69,8 +70,11 @@ const applyHighLevelFilters = (families, filters, datasets) => {
         familyValue = family[fieldName];
       }
 
-      // Check if family value is in selected values
-      if (!selectedValues.includes(familyValue)) {
+      // Check if family value is in selected values. UNSPECIFIED_LABEL in the
+      // selected set matches families whose value is absent (null/undefined/"").
+      const isMissing = familyValue == null || familyValue === "";
+      const matchesUnspecified = isMissing && selectedValues.includes(UNSPECIFIED_LABEL);
+      if (!matchesUnspecified && !selectedValues.includes(familyValue)) {
         return false;
       }
     }

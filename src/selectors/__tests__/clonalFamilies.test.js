@@ -71,6 +71,35 @@ describe("getAvailableClonalFamilies", () => {
     expect(result).toHaveLength(1);
     expect(result[0].ident).toBe("family-1");
   });
+
+  it("matches families with absent values when <unspecified> is selected", () => {
+    const familyWithSubject = { ...mockFamily1, subject_id: "real-subject" };
+    const familyMissingSubject = { ...mockFamily2, subject_id: undefined, sample: { locus: "IGH" } };
+    const state = makeState([familyWithSubject, familyMissingSubject], [mockDataset], {
+      subject_id: ["<unspecified>"]
+    });
+    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
+      getAvailableClonalFamilies.resetRecomputations();
+    }
+    const result = getAvailableClonalFamilies(state);
+    expect(result).toHaveLength(1);
+    expect(result[0].ident).toBe(familyMissingSubject.ident);
+  });
+
+  it("combines real values and <unspecified> with OR logic", () => {
+    const a = { ...mockFamily1, subject_id: "real-subject" };
+    const b = { ...mockFamily2, subject_id: undefined, sample: { locus: "IGH" } };
+    const c = { ...mockFamily3, subject_id: "other-subject" };
+    const state = makeState([a, b, c], [mockDataset], {
+      subject_id: ["real-subject", "<unspecified>"]
+    });
+    if (getAvailableClonalFamilies.recomputations && getAvailableClonalFamilies.resetRecomputations) {
+      getAvailableClonalFamilies.resetRecomputations();
+    }
+    const result = getAvailableClonalFamilies(state);
+    const idents = result.map((f) => f.ident).sort();
+    expect(idents).toEqual([a.ident, b.ident].sort());
+  });
 });
 
 describe("getBrushedClonalFamilies", () => {
