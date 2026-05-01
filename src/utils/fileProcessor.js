@@ -16,9 +16,18 @@ class FileProcessor {
    */
   static async processFile(file) {
     try {
-      const content = file.name.endsWith(".gz") ? await this.readGzFileAsText(file) : await this.readFile(file);
-      let data;
+      let content;
+      let dataSize;
+      if (file.name.endsWith(".gz")) {
+        const { text, byteLength } = await this.readGzFile(file);
+        content = text;
+        dataSize = byteLength;
+      } else {
+        content = await this.readFile(file);
+        dataSize = file.size;
+      }
 
+      let data;
       try {
         data = JSON.parse(content);
       } catch {
@@ -32,18 +41,22 @@ class FileProcessor {
         );
       }
 
-      return this.processConsolidatedFormat(data, file.name);
+      // dataSize reflects the decompressed payload — what's actually loaded
+      // into memory and IndexedDB — not the on-disk compressed size.
+      return { ...this.processConsolidatedFormat(data, file.name), dataSize };
     } catch (error) {
       throw new Error(`Failed to process file: ${error.message}`);
     }
   }
 
   /**
-   * Read a gzipped file and return its decompressed text contents.
+   * Read a gzipped file and return both its decompressed text contents and
+   * the decompressed byte count (so callers can report the real payload size
+   * rather than the compressed on-disk size).
    * @param {File} file
-   * @returns {Promise<string>}
+   * @returns {Promise<{ text: string, byteLength: number }>}
    */
-  static async readGzFileAsText(file) {
+  static async readGzFile(file) {
     const buffer = await this.readFileAsArrayBuffer(file);
     let decompressed;
     try {
@@ -51,7 +64,7 @@ class FileProcessor {
     } catch (err) {
       throw new Error(`Failed to decompress gzipped file: ${err.message}`);
     }
-    return strFromU8(decompressed);
+    return { text: strFromU8(decompressed), byteLength: decompressed.length };
   }
 
   /**

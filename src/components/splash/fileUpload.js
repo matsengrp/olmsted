@@ -79,9 +79,11 @@ class FileUpload extends React.Component {
       this.updateLoadingStatus("Reading and parsing file data...", 25);
       const result = await FileProcessor.processFile(file);
 
-      // Add file size to the first dataset
+      // Add the decompressed payload size to the first dataset. For .json this
+      // matches file.size; for .json.gz it's the gunzipped byte count, which is
+      // the size that's actually loaded into memory and IndexedDB.
       if (result.datasets && result.datasets.length > 0) {
-        result.datasets[0].file_size = file.size;
+        result.datasets[0].file_size = result.dataSize ?? file.size;
       }
 
       // Store processed data in browser (IndexedDB)

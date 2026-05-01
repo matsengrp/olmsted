@@ -148,6 +148,21 @@ describe("FileProcessor", () => {
       expect(result.datasets[0].original_filename).toBe("consolidated.json.gz");
     });
 
+    it("reports the decompressed byte count, not the compressed file size", async () => {
+      const file = makeGzFile(validJson, "consolidated.json.gz");
+      const expectedBytes = strToU8(validJson).length;
+      const result = await FileProcessor.processFile(file);
+      // Compression should make the file strictly smaller for non-trivial JSON
+      expect(file.size).toBeLessThan(expectedBytes);
+      expect(result.dataSize).toBe(expectedBytes);
+    });
+
+    it("reports file.size as dataSize for plain .json uploads", async () => {
+      const file = new File([validJson], "consolidated.json", { type: "application/json" });
+      const result = await FileProcessor.processFile(file);
+      expect(result.dataSize).toBe(file.size);
+    });
+
     it("throws a decompression error on malformed gz bytes", async () => {
       const garbage = new Uint8Array([0x1f, 0x8b, 0x00, 0xff, 0xff, 0xff, 0xff]); // bad gzip
       const file = new File([garbage], "broken.json.gz", { type: "application/gzip" });
