@@ -16,11 +16,12 @@ const overlayStyle = {
 
 const dialogStyle = {
   backgroundColor: "#fff",
-  borderRadius: "8px",
-  width: "min(540px, 92%)",
+  borderRadius: 8,
+  width: "min(520px, 92%)",
   display: "flex",
   flexDirection: "column",
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.25)",
+  fontFamily: "inherit"
 };
 
 const headerStyle = {
@@ -28,16 +29,17 @@ const headerStyle = {
   alignItems: "center",
   gap: 10,
   padding: "16px 20px",
-  borderBottom: "1px solid #dee2e6",
-  backgroundColor: "#fff8e1",
-  borderRadius: "8px 8px 0 0",
-  fontWeight: 600
+  borderBottom: "1px solid #e5e5e5",
+  fontSize: 16,
+  fontWeight: 600,
+  color: "#1f2937"
 };
 
 const bodyStyle = {
-  padding: "20px",
+  padding: "18px 20px",
   fontSize: 14,
-  lineHeight: 1.5
+  lineHeight: 1.55,
+  color: "#374151"
 };
 
 const footerStyle = {
@@ -45,57 +47,80 @@ const footerStyle = {
   justifyContent: "flex-end",
   gap: 8,
   padding: "12px 20px",
-  borderTop: "1px solid #dee2e6"
-};
-
-const buttonStyle = {
-  padding: "8px 16px",
-  borderRadius: 4,
-  border: "1px solid #ccc",
-  cursor: "pointer",
-  fontSize: 14,
-  background: "#fff"
-};
-
-const primaryButtonStyle = {
-  ...buttonStyle,
-  background: "#05337f",
-  borderColor: "#05337f",
-  color: "#fff"
+  borderTop: "1px solid #e5e5e5",
+  background: "#fafafa",
+  borderRadius: "0 0 8px 8px"
 };
 
 const inputStyle = {
   width: "100%",
   padding: "8px 10px",
   fontSize: 14,
-  border: "1px solid #ccc",
+  border: "1px solid #cbd5e1",
   borderRadius: 4,
-  marginTop: 8,
-  boxSizing: "border-box"
+  marginTop: 6,
+  boxSizing: "border-box",
+  fontFamily: "inherit"
+};
+
+// Button color tokens. "primary" = the safe action; "warning" = the risky
+// path (proceed with a duplicate). "neutral" = generic secondary.
+const BUTTON_VARIANTS = {
+  primary: {
+    base: { background: "#05337f", borderColor: "#05337f", color: "#fff" },
+    hover: { background: "#042a6b", borderColor: "#042a6b", color: "#fff" }
+  },
+  warning: {
+    base: { background: "#fff", borderColor: "#b78103", color: "#b78103" },
+    hover: { background: "#fff8e1", borderColor: "#8a6203", color: "#8a6203" }
+  },
+  neutral: {
+    base: { background: "#fff", borderColor: "#cbd5e1", color: "#374151" },
+    hover: { background: "#f3f4f6", borderColor: "#9ca3af", color: "#1f2937" }
+  }
 };
 
 /**
- * Modal shown when an uploaded dataset's `original_dataset_id` matches one
+ * Button with a built-in hover state. Variant controls the color tokens.
+ */
+function ModalButton({ variant = "neutral", onClick, children }) {
+  const [hovered, setHovered] = useState(false);
+  const tokens = BUTTON_VARIANTS[variant] || BUTTON_VARIANTS.neutral;
+  const colors = hovered ? tokens.hover : tokens.base;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: "8px 16px",
+        borderRadius: 4,
+        border: "1px solid",
+        cursor: "pointer",
+        fontSize: 14,
+        fontWeight: 500,
+        transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
+        ...colors
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * Modal shown when an uploaded dataset's source identity matches one
  * already loaded in the local database. The user can either cancel the
- * upload or proceed (in which case the caller will rename the source ID
- * to a non-colliding suffix).
+ * upload or save it as a separate dataset (the caller renames the source
+ * id behind the scenes).
  *
  * @param {Object} props
- * @param {string} props.uploadName - name of the dataset being uploaded
  * @param {string} props.existingName - name of the already-loaded dataset
- * @param {string} props.originalDatasetId - the colliding source id
- * @param {string} props.proposedNewId - the auto-renamed id ("foo-1", etc.)
  * @param {() => void} props.onCancel
  * @param {() => void} props.onContinue
  */
-export function DuplicateIdWarningModal({
-  uploadName,
-  existingName,
-  originalDatasetId,
-  proposedNewId,
-  onCancel,
-  onContinue
-}) {
+export function DuplicateIdWarningModal({ existingName, onCancel, onContinue }) {
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-labelledby="dup-id-title">
       <div style={dialogStyle}>
@@ -104,28 +129,27 @@ export function DuplicateIdWarningModal({
         </div>
         <div style={bodyStyle}>
           <p style={{ marginTop: 0 }}>
-            A dataset with source id <code>{originalDatasetId}</code> is already loaded
+            This upload appears to match a dataset already loaded in your browser
             {existingName ? (
               <>
-                {" "}
-                as <strong>{existingName}</strong>
+                : <strong>{existingName}</strong>
               </>
-            ) : null}
-            .
+            ) : (
+              "."
+            )}
           </p>
-          <p>
-            If this is the same dataset re-uploaded, you probably want to cancel. Otherwise the upload of{" "}
-            <strong>{uploadName}</strong> will be saved with a renamed source id <code>{proposedNewId}</code> so it
-            doesn&apos;t conflict.
+          <p style={{ marginBottom: 0 }}>
+            If this is the same dataset you already uploaded, cancel. Otherwise it can be saved as a separate entry
+            alongside the existing one.
           </p>
         </div>
         <div style={footerStyle}>
-          <button type="button" style={buttonStyle} onClick={onCancel}>
+          <ModalButton variant="warning" onClick={onContinue}>
+            Save as separate dataset
+          </ModalButton>
+          <ModalButton variant="primary" onClick={onCancel}>
             Cancel upload
-          </button>
-          <button type="button" style={primaryButtonStyle} onClick={onContinue}>
-            Continue with renamed id
-          </button>
+          </ModalButton>
         </div>
       </div>
     </div>
@@ -147,6 +171,7 @@ export function DuplicateNameModal({ originalName, suggestedName, onAccept, onCa
   const [value, setValue] = useState(suggestedName);
   const trimmed = value.trim();
   const willKeepDuplicate = trimmed === originalName;
+  const finalLabel = trimmed.length > 0 ? trimmed : originalName;
 
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-labelledby="dup-name-title">
@@ -157,9 +182,9 @@ export function DuplicateNameModal({ originalName, suggestedName, onAccept, onCa
         <div style={bodyStyle}>
           <p style={{ marginTop: 0 }}>
             A dataset called <strong>{originalName}</strong> is already loaded. Edit the name below to disambiguate, or
-            keep the duplicate if you really want to.
+            keep the duplicate name if you really want to.
           </p>
-          <label htmlFor="dup-name-input" style={{ fontSize: 13, color: "#555" }}>
+          <label htmlFor="dup-name-input" style={{ fontSize: 13, color: "#6b7280" }}>
             Dataset name
           </label>
           <input
@@ -172,23 +197,19 @@ export function DuplicateNameModal({ originalName, suggestedName, onAccept, onCa
             autoFocus
           />
           {willKeepDuplicate && (
-            <p style={{ color: "#b78103", fontSize: 13, marginTop: 8 }}>
-              You&apos;ll have two datasets with the same name. They&apos;ll be distinguishable only by their source id
-              and upload time.
+            <p style={{ color: "#b78103", fontSize: 13, marginTop: 8, marginBottom: 0 }}>
+              You&apos;ll have two datasets with the same name. They&apos;ll only be distinguishable by their upload
+              time.
             </p>
           )}
         </div>
         <div style={footerStyle}>
-          <button type="button" style={buttonStyle} onClick={onCancel}>
+          <ModalButton variant="neutral" onClick={onCancel}>
             Cancel upload
-          </button>
-          <button
-            type="button"
-            style={primaryButtonStyle}
-            onClick={() => onAccept(trimmed.length > 0 ? trimmed : originalName)}
-          >
+          </ModalButton>
+          <ModalButton variant={willKeepDuplicate ? "warning" : "primary"} onClick={() => onAccept(finalLabel)}>
             {willKeepDuplicate ? "Keep duplicate name" : "Use this name"}
-          </button>
+          </ModalButton>
         </div>
       </div>
     </div>

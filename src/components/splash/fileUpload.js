@@ -97,15 +97,9 @@ class FileUpload extends React.Component {
     // Check 1: original_dataset_id collision.
     const idCollision = await olmstedDB.findDatasetByOriginalId(dataset.original_dataset_id);
     if (idCollision) {
-      const proposedNewId = await olmstedDB.makeUniqueOriginalDatasetId(dataset.original_dataset_id);
-      const continueAnyway = await this.presentIdConflictModal({
-        uploadName: dataset.name,
-        existingName: idCollision.name,
-        originalDatasetId: dataset.original_dataset_id,
-        proposedNewId
-      });
+      const continueAnyway = await this.presentIdConflictModal({ existingName: idCollision.name });
       if (!continueAnyway) return false;
-      dataset.original_dataset_id = proposedNewId;
+      dataset.original_dataset_id = await olmstedDB.makeUniqueOriginalDatasetId(dataset.original_dataset_id);
     }
 
     // Check 2: dataset name collision.
@@ -398,10 +392,7 @@ class FileUpload extends React.Component {
       <CenterContent>
         {pendingIdConflict && (
           <DuplicateIdWarningModal
-            uploadName={pendingIdConflict.uploadName}
             existingName={pendingIdConflict.existingName}
-            originalDatasetId={pendingIdConflict.originalDatasetId}
-            proposedNewId={pendingIdConflict.proposedNewId}
             onCancel={() => this.resolvePendingIdConflict(false)}
             onContinue={() => this.resolvePendingIdConflict(true)}
           />
