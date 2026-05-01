@@ -56,8 +56,8 @@ Olmsted enables researchers to scan across collections of clonal families using 
 
 # Statement of Need
 
-Researchers studying B cell responses increasingly rely on high-throughput sequencing to characterize antibody repertoires.
-Computational tools can reconstruct the evolutionary histories of these sequences, resulting in large collections of clonal families---groups of sequences descended from a common naive ancestor---and phylogenetic trees describing their diversification.
+Researchers studying B cell responses rely on high-throughput sequencing to characterize antibody repertoires.
+Computational tools can reconstruct the evolutionary histories of these sequences, producing large collections of clonal families (groups of sequences descended from a common naive ancestor) and phylogenetic trees describing their diversification.
 However, researchers often lack tools to explore these reconstructions in the detail necessary to choose sequences for functional, structural, or biochemical studies.
 
 Existing visualization tools address different analytical goals.
@@ -66,8 +66,9 @@ ViCloD [@Jeusset2023-ow] focuses on large-scale intraclonal diversity analysis a
 AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level; it also visualizes heavy chains only.
 ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for database-style querying.
 
-Olmsted combines repertoire-level overview with detailed lineage exploration: researchers can scan across all clonal families in a scatterplot, then drill down to examine phylogenetic trees with aligned amino acid sequences showing mutations from the naive ancestor.
-This multi-scale navigation, delivered through a zero-installation web application that keeps data client-side, supports practical decisions about which sequences to prioritize for downstream experimental studies.
+Olmsted combines repertoire-level overview with detailed lineage exploration.
+Researchers can scan across all clonal families in a scatterplot, then drill down to examine phylogenetic trees with aligned amino acid sequences showing mutations from the naive ancestor.
+This multi-scale navigation is delivered through a zero-installation web application that keeps data client-side, supporting practical decisions about which sequences to prioritize for downstream experimental studies.
 Specifically, Olmsted allows users to:
 
 - View all clonal families simultaneously in a configurable scatterplot
@@ -76,19 +77,18 @@ Specifically, Olmsted allows users to:
 - Trace the mutational history of individual sequences back to their germline origin
 - Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
 
-Olmsted requires no installation---users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly in the browser.
+Olmsted requires no installation: users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly into their local web browser.
 Data processing is handled by a companion command-line tool, [olmsted-cli](https://github.com/matsengrp/olmsted-cli), which converts common immunoinformatics formats into Olmsted's input format.
 
 # Features
 
 ## Client-Side Data Management
 
-Olmsted requires no installation, account creation, or data upload to external servers.
-Users simply visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser.
+Users visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser, with no installation, account creation, or data upload to external servers.
 All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
 Datasets persist across browser sessions, combining the convenience of a web application with the privacy of local software.
 
-![Landing page at www.olmstedviz.org](./images/1-01-landing-page.png){height="3in"}
+<!-- ![Landing page at www.olmstedviz.org](./images/1-01-landing-page.png){height="3in"}-->
 
 ![Dataset management interface.](./images/1-02-database-manager.png){height="3in"}
 
@@ -111,29 +111,32 @@ olmsted process -c config.yaml -n "My Dataset" -o data-olmsted.json
 The `build-config` command introspects input data and generates a YAML configuration listing all discoverable fields with inferred types and labels, which the user can edit before processing.
 These fields will dynamically populate plotting options and hover tooltip information.
 Once data preparation is done, the resulting file can be shared with collaborators who can use the web interface only.
-Plot configurations can be also be exported from the webapp for recreation.
+Plot configurations can also be exported from the webapp for recreation.
 
 ## Interactive Visualization
 
 The visualization interface consists of four linked sections:
 
 1. **Clonal Families Scatterplot**: Each clonal family appears as a point, with configurable axes, colors, and faceting.
-The filter tool can be used to narrow the selection of families in the dataset to be plotted.
+The filter tool narrows the selection of families displayed.
 Users can brush-select regions or click individual points.
 
 ![Example scatterplot.](./images/2-02-scatterplot.png){height="3in"}
 
-1. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
-Can be sorted by any column field and families can be starred for easy reference.
+2. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
+The table can be sorted by any column, and families can be starred for easy reference.
 
 ![Example selected clonal families table.](./images/2-03-selected-clonal-families.png){height="3in"}
 
-1. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment. Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
-The tree and alignment supports zooming and panning, as well as focusing down to a subtree based on selected subroot node.
+3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment.
+Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
+The tree and alignment support zooming and panning, as well as focusing to a subtree based on a selected subroot node.
 
 ![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
-1. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
+4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
+<!-- Dave, are you happy with the following? I think that we can/should talk about the surprise analysis. -->
+For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data.
 
 ![Example ancestral sequence visualization.](./images/2-07-ancestral-sequences.png){height="3in"}
 
