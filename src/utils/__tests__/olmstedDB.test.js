@@ -5,6 +5,7 @@
  */
 
 import Dexie from "dexie";
+import { firstAvailable } from "../olmstedDB";
 
 // We can't use the singleton; import the class and create fresh instances.
 // The module exports a singleton, so we re-create the class pattern here.
@@ -274,5 +275,33 @@ describe("cascade delete pattern", () => {
     expect(await db.datasets.count()).toBe(0);
     expect(await db.clones.count()).toBe(0);
     expect(await db.trees.count()).toBe(0);
+  });
+});
+
+// ── firstAvailable (pure helper) ──
+
+describe("firstAvailable", () => {
+  const dashSuffix = (base, n) => `${base}-${n}`;
+  const parenSuffix = (base, n) => `${base} (${n})`;
+
+  it("returns the bare base when it isn't taken", () => {
+    expect(firstAvailable("ds-7", [], dashSuffix)).toBe("ds-7");
+    expect(firstAvailable("My Dataset", ["Other"], parenSuffix)).toBe("My Dataset");
+  });
+
+  it("appends -1 on first collision and -2 if -1 is also taken", () => {
+    expect(firstAvailable("ds-7", ["ds-7"], dashSuffix)).toBe("ds-7-1");
+    expect(firstAvailable("ds-7", ["ds-7", "ds-7-1"], dashSuffix)).toBe("ds-7-2");
+    expect(firstAvailable("ds-7", ["ds-7", "ds-7-1", "ds-7-2"], dashSuffix)).toBe("ds-7-3");
+  });
+
+  it("uses the parenthesized format for names", () => {
+    expect(firstAvailable("My Data", ["My Data"], parenSuffix)).toBe("My Data (1)");
+    expect(firstAvailable("My Data", ["My Data", "My Data (1)"], parenSuffix)).toBe("My Data (2)");
+  });
+
+  it("does not jump over an existing intermediate (1)/(2) pair when base is free", () => {
+    // If base is unused, the function returns it even if `{base} (1)` is taken.
+    expect(firstAvailable("My Data", ["My Data (1)"], parenSuffix)).toBe("My Data");
   });
 });

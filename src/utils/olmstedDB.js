@@ -4,6 +4,24 @@
 
 import Dexie from "dexie";
 
+/**
+ * Return the lowest-numbered candidate that doesn't appear in `taken`,
+ * starting from the bare `base` and walking through `format(base, 1)`,
+ * `format(base, 2)`, .... Pure helper, no DB access.
+ *
+ * @param {string} base
+ * @param {Iterable<string>} taken
+ * @param {(base: string, n: number) => string} format
+ * @returns {string}
+ */
+export const firstAvailable = (base, taken, format) => {
+  const set = new Set(taken);
+  if (!set.has(base)) return base;
+  let n = 1;
+  while (set.has(format(base, n))) n += 1;
+  return format(base, n);
+};
+
 class OlmstedDB extends Dexie {
   constructor() {
     super("OlmstedClientStorage");
@@ -125,6 +143,68 @@ class OlmstedDB extends Dexie {
       console.error("OlmstedDB: Failed to get datasets:", error);
       return [];
     }
+  }
+
+  /**
+   * Find an already-loaded dataset whose original_dataset_id matches the
+   * given value. Storage `dataset_id`s are always unique (Date.now-based)
+   * and never collide; we check `original_dataset_id` to detect "the same
+   * source dataset is already loaded."
+   *
+   * @param {string} originalDatasetId
+   * @returns {Promise<Object|null>} the existing dataset or null
+   */
+  async findDatasetByOriginalId(originalDatasetId) {
+    if (!originalDatasetId) return null;
+    try {
+      const all = await this.datasets.toArray();
+      return all.find((d) => d.original_dataset_id === originalDatasetId) || null;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to look up dataset by original_dataset_id:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Find an already-loaded dataset whose user-facing `name` matches.
+   *
+   * @param {string} name
+   * @returns {Promise<Object|null>}
+   */
+  async findDatasetByName(name) {
+    if (!name) return null;
+    try {
+      return (await this.datasets.where("name").equals(name).first()) || null;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to look up dataset by name:", error);
+      return null;
+    }
+  }
+
+  /**
+   * See module-level firstAvailable for the pure implementation.
+   *
+   * @param {string} candidate
+   * @returns {Promise<string>}
+   */
+  async makeUniqueOriginalDatasetId(candidate) {
+    const all = await this.datasets.toArray();
+    const taken = all.map((d) => d.original_dataset_id).filter(Boolean);
+    return firstAvailable(candidate, taken, (base, n) => `${base}-${n}`);
+  }
+
+  /**
+   * See module-level firstAvailable for the pure implementation. The user
+   * can override the returned suggestion with anything (including a
+   * duplicate) — this just produces the default shown in the rename modal.
+   *
+   * @param {string} candidate
+   * @returns {Promise<string>}
+   */
+  async makeUniqueDatasetName(candidate) {
+    const all = await this.datasets.toArray();
+    const taken = all.map((d) => d.name).filter(Boolean);
+    return firstAvailable(candidate, taken, (base, n) => `${base} (${n})`);
   }
 
   /**

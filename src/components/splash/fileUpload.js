@@ -5,9 +5,11 @@ import { CenterContent } from "./centerContent";
 import FileProcessor from "../../utils/fileProcessor";
 import SplitFileProcessor from "../../utils/splitFileProcessor";
 import clientDataStore from "../../utils/clientDataStore";
+import olmstedDB from "../../utils/olmstedDB";
 import { getMissingFieldSummary } from "../../utils/fieldDefaults";
 import { getClientDatasets } from "../../actions/clientDataLoader";
 import { SimpleInProgress } from "../util/loading";
+import { DuplicateIdWarningModal, DuplicateNameModal } from "./duplicateUploadModals";
 
 class FileUpload extends React.Component {
   constructor(props) {
@@ -20,7 +22,12 @@ class FileUpload extends React.Component {
       loadingStage: "",
       loadingProgress: 0,
       dropzoneHovered: false,
-      removeHoveredId: null
+      removeHoveredId: null,
+      // Duplicate-upload guard state. When set, the corresponding modal is
+      // rendered and we hold a `resolve` function that the modal callbacks
+      // invoke to unblock the in-flight upload.
+      pendingIdConflict: null,
+      pendingNameConflict: null
     };
 
     this.processFile = this.processFile.bind(this);
@@ -52,6 +59,68 @@ class FileUpload extends React.Component {
       loadingStage: stage,
       loadingProgress: Math.min(100, Math.max(0, progress))
     });
+  }
+
+  /**
+   * Promise-returning helper that opens the duplicate-id modal and resolves
+   * with `true` if the user wants to continue with a renamed source id,
+   * `false` if they cancel.
+   */
+  presentIdConflictModal(payload) {
+    return new Promise((resolve) => {
+      this.setState({ pendingIdConflict: { ...payload, resolve } });
+    });
+  }
+
+  /**
+   * Promise-returning helper that opens the duplicate-name modal and
+   * resolves with the chosen final name (a string, possibly equal to
+   * `originalName` if the user keeps the duplicate) or `null` if they
+   * cancel the upload.
+   */
+  presentNameConflictModal(payload) {
+    return new Promise((resolve) => {
+      this.setState({ pendingNameConflict: { ...payload, resolve } });
+    });
+  }
+
+  /**
+   * Run both duplicate-upload guards against the processed dataset.
+   * Mutates `result.datasets[0]` (and clones[*].dataset_id refs) when the
+   * user opts to continue with renamed values. Returns true if the upload
+   * should proceed, false if the user cancelled.
+   */
+  async resolveDuplicateConflicts(result) {
+    const dataset = result.datasets && result.datasets[0];
+    if (!dataset) return true;
+
+    // Check 1: original_dataset_id collision.
+    const idCollision = await olmstedDB.findDatasetByOriginalId(dataset.original_dataset_id);
+    if (idCollision) {
+      const proposedNewId = await olmstedDB.makeUniqueOriginalDatasetId(dataset.original_dataset_id);
+      const continueAnyway = await this.presentIdConflictModal({
+        uploadName: dataset.name,
+        existingName: idCollision.name,
+        originalDatasetId: dataset.original_dataset_id,
+        proposedNewId
+      });
+      if (!continueAnyway) return false;
+      dataset.original_dataset_id = proposedNewId;
+    }
+
+    // Check 2: dataset name collision.
+    const nameCollision = await olmstedDB.findDatasetByName(dataset.name);
+    if (nameCollision) {
+      const suggestedName = await olmstedDB.makeUniqueDatasetName(dataset.name);
+      const finalName = await this.presentNameConflictModal({
+        originalName: dataset.name,
+        suggestedName
+      });
+      if (finalName === null) return false;
+      dataset.name = finalName;
+    }
+
+    return true;
   }
 
   async processFile(file) {
@@ -89,6 +158,15 @@ class FileUpload extends React.Component {
       // Add file size to the first dataset
       if (result.datasets && result.datasets.length > 0) {
         result.datasets[0].file_size = file.size;
+      }
+
+      // Guard against duplicate uploads (same source id and/or same display
+      // name as an already-loaded dataset). Modals may pause the upload here.
+      this.updateLoadingStatus("Checking for duplicate datasets...", 60);
+      const proceed = await this.resolveDuplicateConflicts(result);
+      if (!proceed) {
+        this.setState({ isProcessing: false, loadingStage: "", loadingProgress: 0 });
+        return;
       }
 
       // Store processed data in browser (IndexedDB)
@@ -200,6 +278,14 @@ class FileUpload extends React.Component {
             consolidatedResult.datasets[0].file_size = totalSize;
           }
 
+          // Guard against duplicate uploads (same source id and/or same name).
+          this.updateLoadingStatus("Checking for duplicate datasets...", 65);
+          const proceedSplit = await this.resolveDuplicateConflicts(consolidatedResult);
+          if (!proceedSplit) {
+            this.setState({ isProcessing: false, loadingStage: "", loadingProgress: 0 });
+            return;
+          }
+
           // Store processed data
           this.updateLoadingStatus("Storing data in browser database...", 75);
           await clientDataStore.storeProcessedData(consolidatedResult);
@@ -279,12 +365,55 @@ class FileUpload extends React.Component {
     console.log("Removed dataset from client storage:", datasetId);
   }
 
+  resolvePendingIdConflict = (continueAnyway) => {
+    const { pendingIdConflict } = this.state;
+    if (pendingIdConflict) {
+      pendingIdConflict.resolve(continueAnyway);
+    }
+    this.setState({ pendingIdConflict: null });
+  };
+
+  resolvePendingNameConflict = (finalName) => {
+    const { pendingNameConflict } = this.state;
+    if (pendingNameConflict) {
+      pendingNameConflict.resolve(finalName);
+    }
+    this.setState({ pendingNameConflict: null });
+  };
+
   render() {
-    const { uploadedFiles, isProcessing, error, _loadingStage, _loadingProgress, loadingProgress, loadingStage } =
-      this.state;
+    const {
+      uploadedFiles,
+      isProcessing,
+      error,
+      _loadingStage,
+      _loadingProgress,
+      loadingProgress,
+      loadingStage,
+      pendingIdConflict,
+      pendingNameConflict
+    } = this.state;
 
     return (
       <CenterContent>
+        {pendingIdConflict && (
+          <DuplicateIdWarningModal
+            uploadName={pendingIdConflict.uploadName}
+            existingName={pendingIdConflict.existingName}
+            originalDatasetId={pendingIdConflict.originalDatasetId}
+            proposedNewId={pendingIdConflict.proposedNewId}
+            onCancel={() => this.resolvePendingIdConflict(false)}
+            onContinue={() => this.resolvePendingIdConflict(true)}
+          />
+        )}
+        {pendingNameConflict && (
+          <DuplicateNameModal
+            originalName={pendingNameConflict.originalName}
+            suggestedName={pendingNameConflict.suggestedName}
+            onCancel={() => this.resolvePendingNameConflict(null)}
+            onAccept={(name) => this.resolvePendingNameConflict(name)}
+          />
+        )}
         <div style={{ marginTop: 40, marginBottom: 40 }}>
           {/* Hidden file input for programmatic access */}
           <input
