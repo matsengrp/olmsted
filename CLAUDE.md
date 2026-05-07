@@ -40,8 +40,10 @@ olmsted/
 
 ## Design Documents
 
+- **[DESIGN.md](./DESIGN.md)**: Load-bearing architectural decisions and guardrails (read this before proposing structural changes)
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Data flow, Redux store structure, component hierarchy, Vega integration
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)**: Setup guide, common tasks, debugging, build process
+- **[PRE-MERGE-CHECKLIST.md](./PRE-MERGE-CHECKLIST.md)**: Required quality gates before opening a PR
 
 ## Development Environment
 
@@ -95,17 +97,7 @@ npm start
 
 ### Pre-PR Quality Checklist
 
-Before any pull request:
-
-1. **Format Code**: Run `npm run format`
-2. **Lint Check**: Run `npm run lint` and address errors
-3. **Test Locally**: Verify changes work in browser
-4. **Documentation**: Update JSDoc for modified functions
-5. **Update Project Documentation**: Keep these files current:
-   - `CLAUDE.md` - Update if adding new patterns, lessons learned, or terminology
-   - `ARCHITECTURE.md` - Update if changing data flow, Redux store, or component hierarchy
-   - `DEVELOPMENT.md` - Update if changing setup, scripts, or common workflows
-   - `CHANGELOG.md` - Add entry for user-facing changes
+See **[PRE-MERGE-CHECKLIST.md](./PRE-MERGE-CHECKLIST.md)** for the full checklist (format, lint, tests, build, browser smoke test, code-standards review, Vega/IndexedDB/field-metadata gates, documentation sync, and PR description quality). If you find the checklist wrong or incomplete during a PR, update it as part of the PR.
 
 ## Terminology
 
@@ -182,4 +174,4 @@ The public website is **NOT served from Docker**:
 
 ---
 
-*Last updated: 2026-03-28*
+*Last updated: 2026-05-07*
