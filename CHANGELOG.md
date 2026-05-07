@@ -1,3 +1,7 @@
+## version 2.7.5 - 2026/05/22
+Changed:
+* Added `DESIGN.md` (load-bearing architectural decisions as guardrails) and `PRE-MERGE-CHECKLIST.md` (16-step quality gate for PRs). Slimmed the inline Pre-PR checklist in `CLAUDE.md` to a pointer at the new checklist.
+
 ## version 2.7.4 - 2026/05/22
 Changed:
 * Dependency bumps (supersedes dependabot PRs #275, #276, #284, #288, #289, #290, #295): uuid 13 → 14, webpack-dev-server 5.2.3 → 5.2.4, postcss 8.5.8 → 8.5.15, fast-uri 3.1.0 → 3.1.2, @xmldom/xmldom 0.8.12 → 0.8.13, ip-address 10.1.0 → 10.2.0, @babel/plugin-transform-modules-systemjs 7.29.0 → 7.29.4. All patch/minor except uuid (major, but uuid isn't imported anywhere in `src/` — the bump is effectively a lockfile-only change).

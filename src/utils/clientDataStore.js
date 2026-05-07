@@ -284,7 +284,7 @@ class ClientDataStore {
 
   /**
    * Add item to cache with size limit.
-   * Implements LRU (Least Recently Used) eviction when cache exceeds maxCacheSize.
+   * Implements FIFO (insertion-order) eviction when cache exceeds maxCacheSize.
    * @private
    * @param {Map<string, any>} cache - Cache map to add to
    * @param {string} key - Cache key
