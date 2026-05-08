@@ -16,38 +16,26 @@ class FileProcessor {
    * @returns {Promise<Object>} Processed data structure
    */
   static async processFile(file) {
+    // dataSize reflects the decompressed payload — what's actually loaded
+    // into memory and IndexedDB — not the on-disk compressed size.
+    const { content, dataSize } = file.name.toLowerCase().endsWith(".gz")
+      ? await this.readGzFile(file)
+      : { content: await this.readFile(file), dataSize: file.size };
+
+    let data;
     try {
-      let content;
-      let dataSize;
-      if (file.name.endsWith(".gz")) {
-        const { text, byteLength } = await this.readGzFile(file);
-        content = text;
-        dataSize = byteLength;
-      } else {
-        content = await this.readFile(file);
-        dataSize = file.size;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(content);
-      } catch {
-        throw new Error("Invalid JSON format");
-      }
-
-      // Validate this is consolidated format
-      if (!this.isConsolidatedFormat(data)) {
-        throw new Error(
-          "File is not in olmsted-cli consolidated format. Please process your data with olmsted-cli first."
-        );
-      }
-
-      // dataSize reflects the decompressed payload — what's actually loaded
-      // into memory and IndexedDB — not the on-disk compressed size.
-      return { ...this.processConsolidatedFormat(data, file.name), dataSize };
-    } catch (error) {
-      throw new Error(`Failed to process file: ${error.message}`);
+      data = JSON.parse(content);
+    } catch {
+      throw new Error("Invalid JSON format");
     }
+
+    if (!this.isConsolidatedFormat(data)) {
+      throw new Error(
+        "File is not in olmsted-cli consolidated format. Please process your data with olmsted-cli first."
+      );
+    }
+
+    return { ...this.processConsolidatedFormat(data, file.name), dataSize };
   }
 
   /**
@@ -55,7 +43,7 @@ class FileProcessor {
    * the decompressed byte count (so callers can report the real payload size
    * rather than the compressed on-disk size).
    * @param {File} file
-   * @returns {Promise<{ text: string, byteLength: number }>}
+   * @returns {Promise<{ content: string, dataSize: number }>}
    */
   static async readGzFile(file) {
     const buffer = await this.readFileAsArrayBuffer(file);
@@ -65,7 +53,7 @@ class FileProcessor {
     } catch (err) {
       throw new Error(`Failed to decompress gzipped file: ${err.message}`);
     }
-    return { text: strFromU8(decompressed), byteLength: decompressed.length };
+    return { content: strFromU8(decompressed), dataSize: decompressed.length };
   }
 
   /**
