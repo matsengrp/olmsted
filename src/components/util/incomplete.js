@@ -9,7 +9,8 @@ import React from "react";
  * @param {string[]} [props.reasons] - Specific reasons for incompleteness
  */
 function IncompleteDataWarning({ datum, data_type, reasons }) {
-  const id = datum.clone_id || datum.id || datum.ident || datum.tree_id;
+  // Prefer the source ident over the namespaced storage ident for display.
+  const id = datum.clone_id || datum.id || datum.original_ident || datum.ident || datum.tree_id;
   return (
     <div
       style={{

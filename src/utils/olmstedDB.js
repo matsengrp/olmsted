@@ -4,6 +4,58 @@
 
 import Dexie from "dexie";
 
+/**
+ * Maximum suffix attempts before firstAvailable gives up. Realistic uploads
+ * never approach this — a user accumulating 10000 same-named datasets is
+ * pathological. Bounded to make the failure mode loud rather than hung.
+ */
+const FIRST_AVAILABLE_MAX_ATTEMPTS = 10000;
+
+/**
+ * Return the lowest-numbered candidate that doesn't appear in `taken`,
+ * starting from the bare `base` and walking through `format(base, 1)`,
+ * `format(base, 2)`, .... Pure helper, no DB access.
+ *
+ * Throws if a free candidate isn't found within FIRST_AVAILABLE_MAX_ATTEMPTS
+ * to fail loud rather than hang.
+ *
+ * @param {string} base
+ * @param {Iterable<string>} taken
+ * @param {(base: string, n: number) => string} format
+ * @returns {string}
+ */
+export const firstAvailable = (base, taken, format) => {
+  const set = new Set(taken);
+  if (!set.has(base)) return base;
+  for (let n = 1; n <= FIRST_AVAILABLE_MAX_ATTEMPTS; n += 1) {
+    const candidate = format(base, n);
+    if (!set.has(candidate)) return candidate;
+  }
+  throw new Error(`firstAvailable: no free suffix found for "${base}" within ${FIRST_AVAILABLE_MAX_ATTEMPTS} attempts`);
+};
+
+/**
+ * Build a globally-unique ident by prefixing with the storage `dataset_id`.
+ *
+ * Source files (especially olmsted-cli output) emit deterministic clone and
+ * tree idents — re-importing the same source produces identical idents. The
+ * webapp uses `ident` as the per-row identity for selection, hover, starring,
+ * the byIdent lookup map, and the trees-table primary key. Without
+ * namespacing, two datasets with overlapping idents cross-talk in the UI and
+ * (worse) overwrite each other in the trees table on insert. Namespacing at
+ * the storage boundary keeps ident comparisons elsewhere unchanged.
+ *
+ * Constraint: source `ident` values must not contain the `::` separator.
+ * If they ever do, the round-trip back to `original_ident` becomes
+ * ambiguous. olmsted-cli outputs use UUIDs and dot-separated names that
+ * don't contain `::`, so this is currently safe.
+ *
+ * @param {string} datasetId - the (already-unique) storage dataset_id
+ * @param {string} ident - the source ident
+ * @returns {string}
+ */
+export const namespacedIdent = (datasetId, ident) => `${datasetId}::${ident}`;
+
 class OlmstedDB extends Dexie {
   constructor() {
     super("OlmstedClientStorage");
@@ -50,32 +102,70 @@ class OlmstedDB extends Dexie {
 
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
-        // Store dataset metadata using bulk operation
+        // Store dataset metadata using bulk operation. Dataset records carry
+        // an `ident` field from the source file (separate from `dataset_id`,
+        // which is the unique storage PK). Source idents can collide across
+        // re-imports and sibling datasets — and ResizableTable derives
+        // rowId from `datum.ident` before falling back to `datum.dataset_id`,
+        // so collisions show up as hover/select cross-talk in the dataset
+        // tables. Read the existing rows and rename to the next free
+        // `${ident}-{n}` on collision; preserve the original as
+        // `original_ident`.
+        //
+        // Note: this dedupe is *not* atomic across separate storeDataset
+        // calls — two parallel uploads could each see an empty `taken` set
+        // and pick the same renamed value. In practice fileUpload gates the
+        // UI behind `isProcessing`, so concurrent storeDataset is not
+        // currently reachable. Worth tightening if that ever changes.
         if (datasets.length > 0) {
-          await this.datasets.bulkPut(datasets);
+          const existing = await this.datasets.toArray();
+          const takenIdents = new Set(existing.map((d) => d.ident).filter(Boolean));
+          const datasetsToStore = datasets.map((d) => {
+            if (!d.ident) return d;
+            const sourceIdent = d.original_ident || d.ident;
+            const renamed = firstAvailable(d.ident, takenIdents, (base, n) => `${base}-${n}`);
+            takenIdents.add(renamed);
+            return { ...d, ident: renamed, original_ident: sourceIdent };
+          });
+          await this.datasets.bulkPut(datasetsToStore);
         }
 
-        // Store clone metadata and separate heavy data using bulk operation
+        // Store clone metadata and separate heavy data using bulk operation.
+        // The clones map is keyed by storage dataset_id (the same `datasetId`
+        // we read off processedData), so cloneGroupId === datasetId for
+        // single-dataset uploads — but we keep the variable distinct from
+        // the outer `datasetId` to avoid silent drift if the data shape
+        // ever changes.
         const allCloneMeta = [];
-        for (const [dataset_id, cloneList] of Object.entries(clones)) {
+        for (const [cloneGroupId, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
-            // Clone metadata — spread all fields to preserve custom data,
-            // then override fields that need normalization
+            // Source idents are deterministic from olmsted-cli, so re-imports
+            // and sibling datasets often share idents. Namespace by datasetId
+            // here so the byIdent lookup map, hover/star/select state, and the
+            // trees-table primary key can't collide across datasets.
+            const cloneOriginalIdent = clone.ident || clone.clone_id;
             const cloneMeta = {
               ...clone,
-              ident: clone.ident || clone.clone_id,
-              dataset_id: clone.dataset_id || dataset_id,
+              ident: namespacedIdent(datasetId, cloneOriginalIdent),
+              original_ident: cloneOriginalIdent,
+              dataset_id: clone.dataset_id || cloneGroupId,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
               // Store tree metadata (lightweight, for dropdown display).
               // tree.type is the legacy field name; coalesce onto tree.name on ingest.
+              // Tree idents get the same namespace prefix so the dropdown
+              // values match the (also-namespaced) trees-table primary keys.
               trees_meta: clone.trees
-                ? clone.trees.map((t) => ({
-                    ident: t.ident || t.tree_id,
-                    tree_id: t.tree_id,
-                    name: t.name || t.type,
-                    downsampling_strategy: t.downsampling_strategy
-                  }))
+                ? clone.trees.map((t) => {
+                    const treeOriginalIdent = t.ident || t.tree_id;
+                    return {
+                      ident: namespacedIdent(datasetId, treeOriginalIdent),
+                      original_ident: treeOriginalIdent,
+                      tree_id: t.tree_id,
+                      name: t.name || t.type,
+                      downsampling_strategy: t.downsampling_strategy
+                    };
+                  })
                 : clone.trees_meta || []
             };
             // Remove embedded trees array (stored separately)
@@ -88,10 +178,15 @@ class OlmstedDB extends Dexie {
           await this.clones.bulkPut(allCloneMeta);
         }
 
-        // Store complete tree data (like SessionStorage did) using bulk operation
+        // Store complete tree data (like SessionStorage did) using bulk operation.
+        // Tree idents get the same dataset_id prefix as clone idents — without
+        // it, two datasets whose source files share tree idents would collide
+        // on the trees-table primary key, with the second insert silently
+        // overwriting the first.
         const allTreeData = trees.map((tree) => ({
           tree_id: tree.tree_id,
-          ident: tree.ident,
+          ident: namespacedIdent(datasetId, tree.ident),
+          original_ident: tree.ident,
           clone_id: tree.clone_id,
           newick: tree.newick,
           root_node: tree.root_node,
@@ -125,6 +220,68 @@ class OlmstedDB extends Dexie {
       console.error("OlmstedDB: Failed to get datasets:", error);
       return [];
     }
+  }
+
+  /**
+   * Find an already-loaded dataset whose original_dataset_id matches the
+   * given value. Storage `dataset_id`s are always unique (Date.now-based)
+   * and never collide; we check `original_dataset_id` to detect "the same
+   * source dataset is already loaded."
+   *
+   * @param {string} originalDatasetId
+   * @returns {Promise<Object|null>} the existing dataset or null
+   */
+  async findDatasetByOriginalId(originalDatasetId) {
+    if (!originalDatasetId) return null;
+    try {
+      const all = await this.datasets.toArray();
+      return all.find((d) => d.original_dataset_id === originalDatasetId) || null;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to look up dataset by original_dataset_id:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Find an already-loaded dataset whose user-facing `name` matches.
+   *
+   * @param {string} name
+   * @returns {Promise<Object|null>}
+   */
+  async findDatasetByName(name) {
+    if (!name) return null;
+    try {
+      return (await this.datasets.where("name").equals(name).first()) || null;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to look up dataset by name:", error);
+      return null;
+    }
+  }
+
+  /**
+   * See module-level firstAvailable for the pure implementation.
+   *
+   * @param {string} candidate
+   * @returns {Promise<string>}
+   */
+  async makeUniqueOriginalDatasetId(candidate) {
+    const all = await this.datasets.toArray();
+    const taken = all.map((d) => d.original_dataset_id).filter(Boolean);
+    return firstAvailable(candidate, taken, (base, n) => `${base}-${n}`);
+  }
+
+  /**
+   * See module-level firstAvailable for the pure implementation. The user
+   * can override the returned suggestion with anything (including a
+   * duplicate) — this just produces the default shown in the rename modal.
+   *
+   * @param {string} candidate
+   * @returns {Promise<string>}
+   */
+  async makeUniqueDatasetName(candidate) {
+    const all = await this.datasets.toArray();
+    const taken = all.map((d) => d.name).filter(Boolean);
+    return firstAvailable(candidate, taken, (base, n) => `${base} (${n})`);
   }
 
   /**

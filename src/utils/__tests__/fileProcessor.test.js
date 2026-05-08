@@ -112,6 +112,31 @@ describe("FileProcessor", () => {
       const emptyData = { ...validData, datasets: [] };
       expect(() => FileProcessor.processConsolidatedFormat(emptyData, "test.json")).toThrow("missing datasets");
     });
+
+    it("coalesces legacy node type 'internal' onto canonical 'node'", () => {
+      // Some olmsted-cli outputs (e.g. pcp-byhand-olmsted-golden.json) tag
+      // intermediate nodes with "internal" instead of "node".
+      const dataWithInternal = {
+        ...validData,
+        trees: [
+          {
+            ident: "tree-1",
+            clone_id: "c1",
+            nodes: [
+              { sequence_id: "naive", type: "root" },
+              { sequence_id: "intermediate", type: "internal" },
+              { sequence_id: "leaf-1", type: "leaf" }
+            ]
+          }
+        ]
+      };
+      const result = FileProcessor.processConsolidatedFormat(dataWithInternal, "test.json");
+      const nodes = result.trees[0].nodes;
+      expect(nodes["intermediate"].type).toBe("node");
+      // Other types pass through unchanged.
+      expect(nodes["naive"].type).toBe("root");
+      expect(nodes["leaf-1"].type).toBe("leaf");
+    });
   });
 
   describe("generateDatasetId", () => {

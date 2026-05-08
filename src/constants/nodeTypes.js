@@ -7,9 +7,11 @@
  * (including original roots demoted when assembling a forest under a
  * synthetic root).
  *
- * Historical note: an older olmsted-cli emitted "internal" instead of
- * "node". One vestigial Vega filter accepted both, but nothing in the
- * current pipeline emits "internal" — the value has been removed.
+ * Compatibility note: some olmsted-cli outputs (e.g. the pcp-byhand
+ * golden data) tag intermediate nodes with the older value "internal".
+ * fileProcessor.processConsolidatedFormat coalesces "internal" → "node"
+ * on ingest so the rest of the codebase only has to deal with the
+ * canonical NODE_TYPES values.
  */
 
 export const NODE_TYPES = {
@@ -18,3 +20,10 @@ export const NODE_TYPES = {
   NAIVE: "naive",
   NODE: "node"
 };
+
+/**
+ * Legacy synonym some olmsted-cli outputs still emit for intermediate
+ * nodes. Coalesced to NODE_TYPES.NODE on ingest by
+ * fileProcessor.processConsolidatedFormat.
+ */
+export const LEGACY_INTERNAL_NODE_TYPE = "internal";

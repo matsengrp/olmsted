@@ -347,7 +347,8 @@ export function InfoButtonCell({ datum }) {
   const getTitle = () => {
     if (datum.name) return datum.name;
     if (datum.dataset_id) return `Dataset: ${datum.dataset_id}`;
-    if (datum.ident) return `Family: ${datum.ident}`;
+    // Prefer the source ident over the namespaced storage ident for display.
+    if (datum.original_ident || datum.ident) return `Family: ${datum.original_ident || datum.ident}`;
     if (datum.id) return `ID: ${datum.id}`;
     return "Row Details";
   };
