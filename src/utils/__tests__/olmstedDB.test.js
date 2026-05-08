@@ -5,7 +5,7 @@
  */
 
 import Dexie from "dexie";
-import { firstAvailable } from "../olmstedDB";
+import { firstAvailable, namespacedIdent } from "../olmstedDB";
 
 // We can't use the singleton; import the class and create fresh instances.
 // The module exports a singleton, so we re-create the class pattern here.
@@ -303,5 +303,24 @@ describe("firstAvailable", () => {
   it("does not jump over an existing intermediate (1)/(2) pair when base is free", () => {
     // If base is unused, the function returns it even if `{base} (1)` is taken.
     expect(firstAvailable("My Data", ["My Data (1)"], parenSuffix)).toBe("My Data");
+  });
+});
+
+// ── namespacedIdent (pure helper) ──
+
+describe("namespacedIdent", () => {
+  it("prefixes ident with the dataset id and a :: separator", () => {
+    expect(namespacedIdent("upload-1", "fam_5")).toBe("upload-1::fam_5");
+  });
+
+  it("produces distinct outputs for the same source ident in different datasets", () => {
+    expect(namespacedIdent("upload-1", "fam_5")).not.toBe(namespacedIdent("upload-2", "fam_5"));
+  });
+
+  it("does not lose information — the original ident is recoverable", () => {
+    const datasetId = "upload-abc";
+    const original = "fam_5";
+    const namespaced = namespacedIdent(datasetId, original);
+    expect(namespaced.slice(`${datasetId}::`.length)).toBe(original);
   });
 });

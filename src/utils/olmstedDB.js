@@ -22,6 +22,23 @@ export const firstAvailable = (base, taken, format) => {
   return format(base, n);
 };
 
+/**
+ * Build a globally-unique ident by prefixing with the storage `dataset_id`.
+ *
+ * Source files (especially olmsted-cli output) emit deterministic clone and
+ * tree idents — re-importing the same source produces identical idents. The
+ * webapp uses `ident` as the per-row identity for selection, hover, starring,
+ * the byIdent lookup map, and the trees-table primary key. Without
+ * namespacing, two datasets with overlapping idents cross-talk in the UI and
+ * (worse) overwrite each other in the trees table on insert. Namespacing at
+ * the storage boundary keeps ident comparisons elsewhere unchanged.
+ *
+ * @param {string} datasetId - the (already-unique) storage dataset_id
+ * @param {string} ident - the source ident
+ * @returns {string}
+ */
+export const namespacedIdent = (datasetId, ident) => `${datasetId}::${ident}`;
+
 class OlmstedDB extends Dexie {
   constructor() {
     super("OlmstedClientStorage");
@@ -77,23 +94,33 @@ class OlmstedDB extends Dexie {
         const allCloneMeta = [];
         for (const [dataset_id, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
-            // Clone metadata — spread all fields to preserve custom data,
-            // then override fields that need normalization
+            // Source idents are deterministic from olmsted-cli, so re-imports
+            // and sibling datasets often share idents. Namespace by dataset_id
+            // here so the byIdent lookup map, hover/star/select state, and the
+            // trees-table primary key can't collide across datasets.
+            const cloneOriginalIdent = clone.ident || clone.clone_id;
             const cloneMeta = {
               ...clone,
-              ident: clone.ident || clone.clone_id,
+              ident: namespacedIdent(datasetId, cloneOriginalIdent),
+              original_ident: cloneOriginalIdent,
               dataset_id: clone.dataset_id || dataset_id,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
               // Store tree metadata (lightweight, for dropdown display).
               // tree.type is the legacy field name; coalesce onto tree.name on ingest.
+              // Tree idents get the same namespace prefix so the dropdown
+              // values match the (also-namespaced) trees-table primary keys.
               trees_meta: clone.trees
-                ? clone.trees.map((t) => ({
-                    ident: t.ident || t.tree_id,
-                    tree_id: t.tree_id,
-                    name: t.name || t.type,
-                    downsampling_strategy: t.downsampling_strategy
-                  }))
+                ? clone.trees.map((t) => {
+                    const treeOriginalIdent = t.ident || t.tree_id;
+                    return {
+                      ident: namespacedIdent(datasetId, treeOriginalIdent),
+                      original_ident: treeOriginalIdent,
+                      tree_id: t.tree_id,
+                      name: t.name || t.type,
+                      downsampling_strategy: t.downsampling_strategy
+                    };
+                  })
                 : clone.trees_meta || []
             };
             // Remove embedded trees array (stored separately)
@@ -106,10 +133,15 @@ class OlmstedDB extends Dexie {
           await this.clones.bulkPut(allCloneMeta);
         }
 
-        // Store complete tree data (like SessionStorage did) using bulk operation
+        // Store complete tree data (like SessionStorage did) using bulk operation.
+        // Tree idents get the same dataset_id prefix as clone idents — without
+        // it, two datasets whose source files share tree idents would collide
+        // on the trees-table primary key, with the second insert silently
+        // overwriting the first.
         const allTreeData = trees.map((tree) => ({
           tree_id: tree.tree_id,
-          ident: tree.ident,
+          ident: namespacedIdent(datasetId, tree.ident),
+          original_ident: tree.ident,
           clone_id: tree.clone_id,
           newick: tree.newick,
           root_node: tree.root_node,
