@@ -20,3 +20,10 @@ export const NODE_TYPES = {
   NAIVE: "naive",
   NODE: "node"
 };
+
+/**
+ * Legacy synonym some olmsted-cli outputs still emit for intermediate
+ * nodes. Coalesced to NODE_TYPES.NODE on ingest by
+ * fileProcessor.processConsolidatedFormat.
+ */
+export const LEGACY_INTERNAL_NODE_TYPE = "internal";

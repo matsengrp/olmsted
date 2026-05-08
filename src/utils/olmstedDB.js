@@ -5,9 +5,19 @@
 import Dexie from "dexie";
 
 /**
+ * Maximum suffix attempts before firstAvailable gives up. Realistic uploads
+ * never approach this — a user accumulating 10000 same-named datasets is
+ * pathological. Bounded to make the failure mode loud rather than hung.
+ */
+const FIRST_AVAILABLE_MAX_ATTEMPTS = 10000;
+
+/**
  * Return the lowest-numbered candidate that doesn't appear in `taken`,
  * starting from the bare `base` and walking through `format(base, 1)`,
  * `format(base, 2)`, .... Pure helper, no DB access.
+ *
+ * Throws if a free candidate isn't found within FIRST_AVAILABLE_MAX_ATTEMPTS
+ * to fail loud rather than hang.
  *
  * @param {string} base
  * @param {Iterable<string>} taken
@@ -17,9 +27,11 @@ import Dexie from "dexie";
 export const firstAvailable = (base, taken, format) => {
   const set = new Set(taken);
   if (!set.has(base)) return base;
-  let n = 1;
-  while (set.has(format(base, n))) n += 1;
-  return format(base, n);
+  for (let n = 1; n <= FIRST_AVAILABLE_MAX_ATTEMPTS; n += 1) {
+    const candidate = format(base, n);
+    if (!set.has(candidate)) return candidate;
+  }
+  throw new Error(`firstAvailable: no free suffix found for "${base}" within ${FIRST_AVAILABLE_MAX_ATTEMPTS} attempts`);
 };
 
 /**
@@ -32,6 +44,11 @@ export const firstAvailable = (base, taken, format) => {
  * namespacing, two datasets with overlapping idents cross-talk in the UI and
  * (worse) overwrite each other in the trees table on insert. Namespacing at
  * the storage boundary keeps ident comparisons elsewhere unchanged.
+ *
+ * Constraint: source `ident` values must not contain the `::` separator.
+ * If they ever do, the round-trip back to `original_ident` becomes
+ * ambiguous. olmsted-cli outputs use UUIDs and dot-separated names that
+ * don't contain `::`, so this is currently safe.
  *
  * @param {string} datasetId - the (already-unique) storage dataset_id
  * @param {string} ident - the source ident
@@ -91,10 +108,15 @@ class OlmstedDB extends Dexie {
         // re-imports and sibling datasets — and ResizableTable derives
         // rowId from `datum.ident` before falling back to `datum.dataset_id`,
         // so collisions show up as hover/select cross-talk in the dataset
-        // tables. Auto-rename on collision to keep ident unique; preserve
-        // the original as `original_ident`. (The duplicate-upload modal
-        // already covers the user-facing "are you sure?" via
-        // original_dataset_id; this is a silent hygiene fix.)
+        // tables. Read the existing rows and rename to the next free
+        // `${ident}-{n}` on collision; preserve the original as
+        // `original_ident`.
+        //
+        // Note: this dedupe is *not* atomic across separate storeDataset
+        // calls — two parallel uploads could each see an empty `taken` set
+        // and pick the same renamed value. In practice fileUpload gates the
+        // UI behind `isProcessing`, so concurrent storeDataset is not
+        // currently reachable. Worth tightening if that ever changes.
         if (datasets.length > 0) {
           const existing = await this.datasets.toArray();
           const takenIdents = new Set(existing.map((d) => d.ident).filter(Boolean));
@@ -108,12 +130,17 @@ class OlmstedDB extends Dexie {
           await this.datasets.bulkPut(datasetsToStore);
         }
 
-        // Store clone metadata and separate heavy data using bulk operation
+        // Store clone metadata and separate heavy data using bulk operation.
+        // The clones map is keyed by storage dataset_id (the same `datasetId`
+        // we read off processedData), so cloneGroupId === datasetId for
+        // single-dataset uploads — but we keep the variable distinct from
+        // the outer `datasetId` to avoid silent drift if the data shape
+        // ever changes.
         const allCloneMeta = [];
-        for (const [dataset_id, cloneList] of Object.entries(clones)) {
+        for (const [cloneGroupId, cloneList] of Object.entries(clones)) {
           for (const clone of cloneList) {
             // Source idents are deterministic from olmsted-cli, so re-imports
-            // and sibling datasets often share idents. Namespace by dataset_id
+            // and sibling datasets often share idents. Namespace by datasetId
             // here so the byIdent lookup map, hover/star/select state, and the
             // trees-table primary key can't collide across datasets.
             const cloneOriginalIdent = clone.ident || clone.clone_id;
@@ -121,7 +148,7 @@ class OlmstedDB extends Dexie {
               ...clone,
               ident: namespacedIdent(datasetId, cloneOriginalIdent),
               original_ident: cloneOriginalIdent,
-              dataset_id: clone.dataset_id || dataset_id,
+              dataset_id: clone.dataset_id || cloneGroupId,
               sample_id: clone.sample_id || (clone.sample ? clone.sample.sample_id : null),
               name: clone.name || clone.clone_id,
               // Store tree metadata (lightweight, for dropdown display).

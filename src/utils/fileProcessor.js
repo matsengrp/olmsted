@@ -1,5 +1,5 @@
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
-import { NODE_TYPES } from "../constants/nodeTypes";
+import { NODE_TYPES, LEGACY_INTERNAL_NODE_TYPE } from "../constants/nodeTypes";
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
@@ -137,7 +137,7 @@ class FileProcessor {
       if (nodesList) {
         nodesList.forEach((node, nodeIndex) => {
           const nodeId = node.sequence_id || String(nodeIndex);
-          if (node.type === "internal") node.type = NODE_TYPES.NODE;
+          if (node.type === LEGACY_INTERNAL_NODE_TYPE) node.type = NODE_TYPES.NODE;
           applyNodeDefaults(node);
           processedNodes[nodeId] = node;
         });

@@ -61,6 +61,15 @@ class FileUpload extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    // If a modal is still pending when the component unmounts, resolve its
+    // promise as a cancel so the awaiting upload can settle without later
+    // calling setState on an unmounted component.
+    const { pendingIdConflict, pendingNameConflict } = this.state;
+    if (pendingIdConflict) pendingIdConflict.resolve(false);
+    if (pendingNameConflict) pendingNameConflict.resolve(null);
+  }
+
   /**
    * Promise-returning helper that opens the duplicate-id modal and resolves
    * with `true` if the user wants to continue with a renamed source id,

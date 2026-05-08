@@ -5,7 +5,7 @@
  */
 
 import Dexie from "dexie";
-import { firstAvailable, namespacedIdent } from "../olmstedDB";
+import olmstedDB, { firstAvailable, namespacedIdent } from "../olmstedDB";
 
 // We can't use the singleton; import the class and create fresh instances.
 // The module exports a singleton, so we re-create the class pattern here.
@@ -322,5 +322,73 @@ describe("namespacedIdent", () => {
     const original = "fam_5";
     const namespaced = namespacedIdent(datasetId, original);
     expect(namespaced.slice(`${datasetId}::`.length)).toBe(original);
+  });
+});
+
+// ── storeDataset namespacing (integration through the singleton) ──
+//
+// These tests exercise the actual storeDataset codepath, against the
+// singleton's DB (fake-indexeddb in tests). The data-corruption bug we
+// fixed was that two datasets sharing tree idents would clobber each
+// other on `bulkPut` to the trees table; the unit-helper tests above
+// don't catch that because they don't go through the storage layer.
+
+describe("storeDataset (namespacing integration)", () => {
+  beforeEach(async () => {
+    await olmstedDB.ready;
+    await olmstedDB.clearAll();
+  });
+
+  const buildDataset = (datasetId, sharedCloneIdent, sharedTreeIdent) => ({
+    datasetId,
+    datasets: [{ dataset_id: datasetId, ident: "ds-shared", name: `Dataset ${datasetId}` }],
+    clones: {
+      [datasetId]: [
+        {
+          clone_id: "fam-1",
+          ident: sharedCloneIdent,
+          dataset_id: datasetId,
+          trees: [{ ident: sharedTreeIdent, tree_id: "t-1" }]
+        }
+      ]
+    },
+    trees: [{ ident: sharedTreeIdent, tree_id: "t-1", clone_id: "fam-1", nodes: { naive: { type: "root" } } }]
+  });
+
+  it("preserves both datasets when their clone and tree idents collide", async () => {
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    await olmstedDB.storeDataset(buildDataset("upload-B", "shared-clone", "shared-tree"));
+
+    expect(await olmstedDB.datasets.count()).toBe(2);
+    expect(await olmstedDB.clones.count()).toBe(2);
+    expect(await olmstedDB.trees.count()).toBe(2);
+  });
+
+  it("rewrites clone and tree idents to namespaced form on store", async () => {
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    const clones = await olmstedDB.clones.toArray();
+    const trees = await olmstedDB.trees.toArray();
+    expect(clones[0].ident).toBe("upload-A::shared-clone");
+    expect(clones[0].original_ident).toBe("shared-clone");
+    expect(trees[0].ident).toBe("upload-A::shared-tree");
+    expect(trees[0].original_ident).toBe("shared-tree");
+  });
+
+  it("namespaces the trees_meta projection on each clone so the dropdown looks up the right tree", async () => {
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    const clones = await olmstedDB.clones.toArray();
+    expect(clones[0].trees_meta[0].ident).toBe("upload-A::shared-tree");
+    expect(clones[0].trees_meta[0].original_ident).toBe("shared-tree");
+  });
+
+  it("auto-renames colliding dataset.ident on insert", async () => {
+    await olmstedDB.storeDataset(buildDataset("upload-A", "c1", "t1"));
+    await olmstedDB.storeDataset(buildDataset("upload-B", "c2", "t2"));
+    const datasets = await olmstedDB.datasets.toArray();
+    const idents = datasets.map((d) => d.ident).sort();
+    expect(idents).toEqual(["ds-shared", "ds-shared-1"]);
+    // original_ident is preserved on the renamed entry
+    const renamed = datasets.find((d) => d.ident === "ds-shared-1");
+    expect(renamed.original_ident).toBe("ds-shared");
   });
 });
