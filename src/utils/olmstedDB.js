@@ -85,9 +85,27 @@ class OlmstedDB extends Dexie {
 
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
-        // Store dataset metadata using bulk operation
+        // Store dataset metadata using bulk operation. Dataset records carry
+        // an `ident` field from the source file (separate from `dataset_id`,
+        // which is the unique storage PK). Source idents can collide across
+        // re-imports and sibling datasets — and ResizableTable derives
+        // rowId from `datum.ident` before falling back to `datum.dataset_id`,
+        // so collisions show up as hover/select cross-talk in the dataset
+        // tables. Auto-rename on collision to keep ident unique; preserve
+        // the original as `original_ident`. (The duplicate-upload modal
+        // already covers the user-facing "are you sure?" via
+        // original_dataset_id; this is a silent hygiene fix.)
         if (datasets.length > 0) {
-          await this.datasets.bulkPut(datasets);
+          const existing = await this.datasets.toArray();
+          const takenIdents = new Set(existing.map((d) => d.ident).filter(Boolean));
+          const datasetsToStore = datasets.map((d) => {
+            if (!d.ident) return d;
+            const sourceIdent = d.original_ident || d.ident;
+            const renamed = firstAvailable(d.ident, takenIdents, (base, n) => `${base}-${n}`);
+            takenIdents.add(renamed);
+            return { ...d, ident: renamed, original_ident: sourceIdent };
+          });
+          await this.datasets.bulkPut(datasetsToStore);
         }
 
         // Store clone metadata and separate heavy data using bulk operation
