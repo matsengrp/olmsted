@@ -1,4 +1,5 @@
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
+import { NODE_TYPES } from "../constants/nodeTypes";
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
@@ -127,11 +128,16 @@ class FileProcessor {
         }
       }
 
-      // Convert nodes array to object indexed by sequence_id
+      // Convert nodes array to object indexed by sequence_id.
+      // Some olmsted-cli outputs (e.g. pcp-byhand-olmsted-golden) tag
+      // intermediate nodes with type "internal"; the rest of the codebase
+      // treats "node" as canonical. Coalesce here so downstream selectors
+      // and Vega filters don't have to accept both spellings.
       const processedNodes = {};
       if (nodesList) {
         nodesList.forEach((node, nodeIndex) => {
           const nodeId = node.sequence_id || String(nodeIndex);
+          if (node.type === "internal") node.type = NODE_TYPES.NODE;
           applyNodeDefaults(node);
           processedNodes[nodeId] = node;
         });
