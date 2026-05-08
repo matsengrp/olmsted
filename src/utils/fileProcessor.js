@@ -1,44 +1,59 @@
+import { gunzipSync, strFromU8 } from "fflate";
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
 import { NODE_TYPES, LEGACY_INTERNAL_NODE_TYPE } from "../constants/nodeTypes";
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
- * Processes pre-processed consolidated format files for client-side storage
+ * Processes pre-processed consolidated format files for client-side storage.
+ * Accepts .json and .json.gz inputs; .gz payloads are decompressed in-browser
+ * via fflate before JSON parsing.
  */
 
 class FileProcessor {
   /**
-   * Process an olmsted-cli consolidated format JSON file
+   * Process an olmsted-cli consolidated format JSON file (.json or .json.gz)
    * @param {File} file - The uploaded JSON file (must be olmsted-cli consolidated format)
    * @returns {Promise<Object>} Processed data structure
    */
   static async processFile(file) {
+    // dataSize reflects the decompressed payload — what's actually loaded
+    // into memory and IndexedDB — not the on-disk compressed size.
+    const { content, dataSize } = file.name.toLowerCase().endsWith(".gz")
+      ? await this.readGzFile(file)
+      : { content: await this.readFile(file), dataSize: file.size };
+
+    let data;
     try {
-      const content = await this.readFile(file);
-      let data;
-
-      // Handle gzipped files
-      if (file.name.endsWith(".gz")) {
-        throw new Error("Gzipped files not yet supported in client-side processing");
-      }
-
-      try {
-        data = JSON.parse(content);
-      } catch {
-        throw new Error("Invalid JSON format");
-      }
-
-      // Validate this is consolidated format
-      if (!this.isConsolidatedFormat(data)) {
-        throw new Error(
-          "File is not in olmsted-cli consolidated format. Please process your data with olmsted-cli first."
-        );
-      }
-
-      return this.processConsolidatedFormat(data, file.name);
-    } catch (error) {
-      throw new Error(`Failed to process file: ${error.message}`);
+      data = JSON.parse(content);
+    } catch {
+      throw new Error("Invalid JSON format");
     }
+
+    if (!this.isConsolidatedFormat(data)) {
+      throw new Error(
+        "File is not in olmsted-cli consolidated format. Please process your data with olmsted-cli first."
+      );
+    }
+
+    return { ...this.processConsolidatedFormat(data, file.name), dataSize };
+  }
+
+  /**
+   * Read a gzipped file and return both its decompressed text contents and
+   * the decompressed byte count (so callers can report the real payload size
+   * rather than the compressed on-disk size).
+   * @param {File} file
+   * @returns {Promise<{ content: string, dataSize: number }>}
+   */
+  static async readGzFile(file) {
+    const buffer = await this.readFileAsArrayBuffer(file);
+    let decompressed;
+    try {
+      decompressed = gunzipSync(new Uint8Array(buffer));
+    } catch (err) {
+      throw new Error(`Failed to decompress gzipped file: ${err.message}`);
+    }
+    return { content: strFromU8(decompressed), dataSize: decompressed.length };
   }
 
   /**
@@ -209,6 +224,20 @@ class FileProcessor {
       reader.onload = (e) => resolve(e.target.result);
       reader.onerror = () => reject(new Error("File reading failed"));
       reader.readAsText(file);
+    });
+  }
+
+  /**
+   * Read file content as an ArrayBuffer (used for gzipped inputs).
+   * @param {File} file - File to read
+   * @returns {Promise<ArrayBuffer>}
+   */
+  static readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error("File reading failed"));
+      reader.readAsArrayBuffer(file);
     });
   }
 
