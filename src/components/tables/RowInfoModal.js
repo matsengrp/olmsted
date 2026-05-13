@@ -4,6 +4,7 @@
  */
 import React, { useState, useCallback } from "react";
 import { FiInfo, FiX, FiTrash2, FiCopy, FiChevronDown, FiChevronRight, FiCheck } from "react-icons/fi";
+import { isUserUpload } from "../../constants/datasetSource";
 
 /**
  * Formats a value for display in the modal
@@ -442,7 +443,10 @@ DatasetInfoCell.isReactComponent = true;
 
 /**
  * DatasetDeleteCell component
- * Delete button cell for dataset tables - only shows for client-side datasets
+ * Delete button cell for dataset tables — only shows for user-uploaded
+ * datasets. Server-ingested consolidated datasets and legacy split-format
+ * datasets re-ingest on the next page load, so deleting them from the UI
+ * would be misleading.
  */
 export function DatasetDeleteCell({ datum, onDelete }) {
   const [hovered, setHovered] = useState(false);
@@ -451,10 +455,7 @@ export function DatasetDeleteCell({ datum, onDelete }) {
     return <span>—</span>;
   }
 
-  const isClientSide = datum.isClientSide || datum.temporary;
-
-  // Don't show delete button for server-side datasets
-  if (!isClientSide) {
+  if (!isUserUpload(datum)) {
     return <div style={{ width: "100%", textAlign: "center" }}>—</div>;
   }
 
@@ -510,8 +511,7 @@ export function DatasetActionsCell({ datum, onDelete }) {
     return <span>—</span>;
   }
 
-  const isClientSide = datum.isClientSide || datum.temporary;
-  const showDelete = isClientSide && onDelete;
+  const showDelete = isUserUpload(datum) && onDelete;
 
   const handleInfoClick = (e) => {
     e.stopPropagation();
