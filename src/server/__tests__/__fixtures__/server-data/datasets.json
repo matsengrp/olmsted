@@ -7,5 +7,15 @@
     "timepoints_count": 1,
     "schema_version": "2.0.0",
     "name": "Fixture dataset"
+  },
+  {
+    "ident": "fixture-consolidated-ident-001",
+    "dataset_id": "fixture-consolidated-001",
+    "clone_count": 1,
+    "subjects_count": 1,
+    "timepoints_count": 1,
+    "schema_version": "2.0.0",
+    "name": "Fixture consolidated dataset",
+    "consolidated_path": "consolidated.fixture-consolidated-001.json"
   }
 ]

@@ -53,6 +53,15 @@ describe("getFiles (local mode)", () => {
     await getFiles.getDatasetJson({ path: "clones.fixture-dataset-001.json" }, res);
     expect(res.sendFile).toHaveBeenCalledWith(path.join(FIXTURE_DIR, "clones.fixture-dataset-001.json"));
   });
+
+  it("getDatasetJson serves a consolidated olmsted-cli file as a plain path", async () => {
+    // The Charon API doesn't care about file format — it serves whatever
+    // file you point at. This is the wire-level prerequisite for the
+    // consolidated-server-dataset flow.
+    const res = makeRes();
+    await getFiles.getDatasetJson({ path: "consolidated.fixture-consolidated-001.json" }, res);
+    expect(res.sendFile).toHaveBeenCalledWith(path.join(FIXTURE_DIR, "consolidated.fixture-consolidated-001.json"));
+  });
 });
 
 describe("getFiles path validation", () => {

@@ -87,7 +87,10 @@ Equivalent long form:
 BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData _data/server-snapshot/
 ```
 
-The directory must contain files at these paths (root-level, no nesting):
+The directory must contain a manifest at `datasets.json`. Two formats
+are supported, and a single manifest can mix them:
+
+**Split format** (legacy, auspice-shaped). One file per logical chunk:
 
 | File                       | Purpose                                         |
 | -------------------------- | ----------------------------------------------- |
@@ -95,9 +98,29 @@ The directory must contain files at these paths (root-level, no nesting):
 | `clones.{dataset_id}.json` | Per-dataset clone list (one file per dataset)   |
 | `tree.{tree_ident}.json`   | Per-tree full payload (one file per tree ident) |
 
-This is **distinct from** the consolidated single-file upload format used
-by the browser uploader (`.json` / `.json.gz` containing a single
-`{ metadata, datasets, clones, trees }` object).
+**Consolidated format** (current). A manifest entry includes a
+`consolidated_path` field pointing at a single olmsted-cli output file
+(`.json` or `.json.gz`) under the data root:
+
+```jsonc
+[
+  {
+    "ident": "...",
+    "dataset_id": "my-dataset",
+    "name": "My dataset",
+    "consolidated_path": "consolidated/my-dataset.json.gz"
+  }
+]
+```
+
+On page load the client fetches that file and runs it through the same
+ingestion pipeline as in-browser uploads (`FileProcessor.processFile`),
+storing the result in IndexedDB. Subsequent loads short-circuit if the
+`dataset_id` is already present.
+
+The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
+is the same as what the browser uploader accepts; this is the path for
+serving olmsted-cli output directly from the static bucket.
 
 ### Snapshot of the production server datasets
 
@@ -105,7 +128,7 @@ To produce a local copy of the currently-deployed olmstedviz.org datasets
 (useful for offline dev and manual QA of the server-side flow):
 
 ```bash
-python3 _ignore/snapshot-server-data.py
+python3 bin/snapshot_server_data.py
 ```
 
 The script crawls `http://www.olmstedviz.org/data/` starting from the

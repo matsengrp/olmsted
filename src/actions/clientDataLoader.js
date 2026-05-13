@@ -5,6 +5,8 @@
 
 import * as types from "./types";
 import clientDataStore from "../utils/clientDataStore";
+import olmstedDB from "../utils/olmstedDB";
+import FileProcessor from "../utils/fileProcessor";
 import { charonAPIAddress } from "../util/globals";
 
 /**
@@ -94,12 +96,81 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
 };
 
 /**
+ * Fetch a consolidated server-side dataset file (olmsted-cli JSON or .json.gz),
+ * route it through the upload pipeline, and store in IndexedDB. Subsequent
+ * calls for the same `original_dataset_id` short-circuit.
+ *
+ * @param {Object} entry - Manifest entry with consolidated_path + dataset_id
+ * @returns {Promise<Object|null>} The stored dataset record, or null on failure
+ */
+export const ingestConsolidatedServerDataset = async (entry) => {
+  try {
+    const existing = await olmstedDB.findDatasetByOriginalId(entry.dataset_id);
+    if (existing) return existing;
+
+    const url = `${charonAPIAddress}/${entry.consolidated_path}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`Failed to fetch consolidated server dataset at ${url}: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const blob = await response.blob();
+    const filename = entry.consolidated_path.split("/").pop();
+    const file = new File([blob], filename, { type: blob.type });
+    const result = await FileProcessor.processFile(file);
+    await clientDataStore.storeProcessedData(result);
+    return result.datasets[0];
+  } catch (error) {
+    console.warn(`Failed to ingest consolidated server dataset ${entry.dataset_id}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Read /data/datasets.json and ingest any entries that point at a consolidated
+ * olmsted-cli file via `consolidated_path`. Returns the list of split-only
+ * manifest entries (those without consolidated_path), so the caller can
+ * continue with the legacy split-format flow for them.
+ *
+ * @returns {Promise<Array>} split-only entries, or [] on any failure
+ */
+export const ingestConsolidatedServerDatasets = async () => {
+  try {
+    const response = await fetch(`${charonAPIAddress}/datasets.json`);
+    if (!response.ok) return [];
+    const manifest = await response.json();
+    if (!Array.isArray(manifest)) return [];
+
+    const consolidated = manifest.filter((d) => d.consolidated_path);
+    const splitOnly = manifest.filter((d) => !d.consolidated_path);
+
+    for (const entry of consolidated) {
+      // Sequential to avoid hammering the same Express dev server with many
+      // parallel fetch+ingest cycles on first page load.
+      await ingestConsolidatedServerDataset(entry);
+    }
+
+    return splitOnly;
+  } catch (error) {
+    console.warn("Failed to load consolidated server datasets:", error);
+    return [];
+  }
+};
+
+/**
  * Get datasets list from client storage (replaces server getDatasets)
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} _s3bucket - Legacy parameter for server compatibility (ignored)
  */
 export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
   try {
+    // Ingest any consolidated-format server datasets first. After this, those
+    // entries are in IndexedDB and surface naturally through the client list.
+    // The returned list is the split-only manifest entries (auspice-shaped),
+    // which the existing loadServerDatasets path continues to handle.
+    await ingestConsolidatedServerDatasets();
+
     const clientDatasets = await clientDataStore.getAllDatasets();
 
     // Process client datasets
