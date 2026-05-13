@@ -77,14 +77,14 @@ build does for the static "server-side" datasets (currently legacy auspice
 output on olmstedviz.org).
 
 ```bash
-# Point start:local at a directory containing the server-side files:
-npm run start:local _data/server-snapshot/
+# Point start:local at any directory containing the server-side files:
+npm run start:local <path-to-data-dir>
 ```
 
 Equivalent long form:
 
 ```bash
-BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData _data/server-snapshot/
+BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData <path-to-data-dir>
 ```
 
 The directory must contain a manifest at `datasets.json`. Two formats
@@ -136,19 +136,37 @@ The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
 is the same as what the browser uploader accepts; this is the path for
 serving olmsted-cli output directly from the static bucket.
 
-### Snapshot of the production server datasets
+### Snapshotting production data
 
-To produce a local copy of the currently-deployed olmstedviz.org datasets
-(useful for offline dev and manual QA of the server-side flow):
+Two complementary mechanisms are available, both reading from the live
+S3 bucket via HTTP (no credentials needed for the public bucket):
+
+**Manifest-driven snapshot** — `bin/snapshot_server_data.py` reads
+`datasets.json` and follows its references (per-dataset clones files,
+per-tree files). Use it to produce a snapshot that's structured
+identically to what `npm run start:local` expects, so the result can
+be served back unchanged for offline dev and manual QA of the
+server-side flow:
 
 ```bash
-python3 bin/snapshot_server_data.py
+python3 bin/snapshot_server_data.py [-u <base-url>] [-o <output-dir>]
 ```
 
-The script crawls `http://www.olmstedviz.org/data/` starting from the
-manifest and writes everything to `_data/server-snapshot/`
-(~780 MB, gitignored). Once it finishes you can run
-`npm run start:local _data/server-snapshot/` against it.
+Defaults to the production olmstedviz.org base URL; override `-u` to
+snapshot a staging bucket. Pass `--help` for full options.
+
+**Full bucket dump** — `bin/aws_download.py` walks the bucket and
+fetches every object, ignoring the manifest. Use it as a complete
+safety-net before destructive operations:
+
+```bash
+python3 bin/aws_download.py -b <bucket> -o <output-dir> [--anonymous]
+```
+
+The manifest snapshot is the right tool if you intend to serve the
+data back via `start:local`; the bucket dump is the right tool if you
+want a verbatim before-state to compare against `_deploy/` and
+identify orphans.
 
 ### Deploying a server-side dataset
 
