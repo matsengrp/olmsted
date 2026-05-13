@@ -121,10 +121,11 @@ export const ingestConsolidatedServerDataset = async (entry) => {
     const result = await FileProcessor.processFile(file);
 
     // FileProcessor defaults to upload-style flags (isClientSide: true,
-    // temporary: true). Server-loaded datasets should be distinguishable
-    // in the UI Source column and persist across "delete uploads" actions.
+    // temporary: true). Server-loaded datasets stay isClientSide: true
+    // because they DO live in IndexedDB — routing in app.js uses that
+    // flag to choose the right loader — but `temporary` flips to false
+    // so the UI Source column can read "Server".
     if (result.datasets && result.datasets[0]) {
-      result.datasets[0].isClientSide = false;
       result.datasets[0].temporary = false;
     }
 

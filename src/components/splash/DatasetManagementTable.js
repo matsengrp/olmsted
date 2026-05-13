@@ -238,7 +238,9 @@ class DatasetManagementTableComponent extends React.Component {
     // Filter datasets
     let filteredDatasets = availableDatasets;
     if (hideServerData) {
-      filteredDatasets = filteredDatasets.filter((d) => d.isClientSide || d.temporary);
+      // Only user uploads (temporary: true) are kept; server-ingested and
+      // legacy auspice entries both count as server data.
+      filteredDatasets = filteredDatasets.filter((d) => d.temporary);
     }
     if (showOnlyStarred) {
       filteredDatasets = filteredDatasets.filter((d) => starredDatasets.includes(d.dataset_id));
@@ -258,8 +260,11 @@ class DatasetManagementTableComponent extends React.Component {
       ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
       [
         "Source",
-        (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
-        { style: { fontSize: "12px" }, sortKey: "isClientSide" }
+        // `temporary: true` flags a user-uploaded dataset (Local).
+        // Everything else — server-ingested consolidated and legacy
+        // auspice manifest entries — labels as Server.
+        (d) => (d.temporary ? "Local" : "Server"),
+        { style: { fontSize: "12px" }, sortKey: "temporary" }
       ],
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
