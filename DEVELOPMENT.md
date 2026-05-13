@@ -150,6 +150,39 @@ manifest and writes everything to `_data/server-snapshot/`
 (~780 MB, gitignored). Once it finishes you can run
 `npm run start:local _data/server-snapshot/` against it.
 
+### Deploying a server-side dataset
+
+To publish a new olmsted-cli output as a "server-side" dataset on the
+production S3 bucket, the manual flow is three steps:
+
+```bash
+# 1. Drop your consolidated olmsted-cli file into _deploy/data/.
+#    A subdirectory is fine — the manifest builder records the relative
+#    path. .json and .json.gz are both supported.
+mkdir -p _deploy/data/consolidated
+cp /path/to/my-dataset.json.gz _deploy/data/consolidated/
+
+# 2. Rebuild the manifest. Preserves any existing split-format entries;
+#    refreshes the consolidated entries based on what's on disk.
+node bin/build_datasets_manifest.js _deploy/data
+
+# 3. Upload to S3 and invalidate CloudFront. The bucket name is the
+#    same one the GitHub Actions workflow targets via vars.S3_BUCKET_NAME
+#    (typically www.olmstedviz.org).
+python3 bin/aws_deploy.py data \
+  -b <bucket> \
+  --invalidate-cloudfront
+```
+
+Datasets in `_deploy/data/` are **not** committed to the repo — test
+data files are too large. Run these steps locally with your AWS
+credentials, not from CI.
+
+The GitHub Actions "Deploy to AWS" workflow has a `data` scope option,
+but it runs against the repo's empty `_deploy/data/` after `npm run build`,
+so it is currently a no-op for data uploads. Wiring it up properly
+(e.g., pulling datasets from a separate source) is future work.
+
 ---
 
 ## Available Scripts
