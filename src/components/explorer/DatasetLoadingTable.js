@@ -11,6 +11,7 @@ import * as explorerActions from "../../actions/explorer";
 import { changePage } from "../../actions/navigation";
 import { resolveFieldMetadata } from "../../utils/fieldMetadata";
 import { DEFAULT_DISPLAY, DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
+import { isUserUpload, isDatasetInIndexedDB } from "../../constants/datasetSource";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -264,7 +265,7 @@ export default class DatasetLoadingTable extends React.Component {
         dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
 
         try {
-          if (dataset.isClientSide) {
+          if (isDatasetInIndexedDB(dataset)) {
             await getClientClonalFamilies(dispatch, dataset_id);
             // Success is handled by getClientClonalFamilies dispatch
           } else {
@@ -507,7 +508,7 @@ export default class DatasetLoadingTable extends React.Component {
     // Filter datasets
     let filteredDatasets = allDatasetsRaw;
     if (hideServerData) {
-      filteredDatasets = filteredDatasets.filter((d) => d.isClientSide || d.temporary);
+      filteredDatasets = filteredDatasets.filter(isUserUpload);
     }
     if (showOnlyStarred) {
       filteredDatasets = filteredDatasets.filter((d) => starredDatasets.includes(d.dataset_id));
@@ -532,11 +533,7 @@ export default class DatasetLoadingTable extends React.Component {
       ["Status", LoadStatusDisplay, { sortable: false }],
       ["Info", DatasetInfoCell, { sortable: false }],
       ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
-      [
-        "Source",
-        (d) => (d.isClientSide || d.temporary ? "Local" : "Server"),
-        { style: { fontSize: "12px" }, sortKey: "isClientSide" }
-      ],
+      ["Source", (d) => (isUserUpload(d) ? "Local" : "Server"), { style: { fontSize: "12px" }, sortKey: "source" }],
       ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
       ["Subjects", "subjects_count"],
       ["Families", "clone_count"],

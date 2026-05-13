@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "schema_version": "2.0.0",
+    "name": "Fixture consolidated dataset",
+    "source_format": "pcp"
+  },
+  "datasets": [
+    {
+      "ident": "fixture-consolidated-ident-001",
+      "dataset_id": "fixture-consolidated-001",
+      "clone_count": 1,
+      "subjects_count": 1,
+      "timepoints_count": 1,
+      "schema_version": "2.0.0",
+      "name": "Fixture consolidated dataset"
+    }
+  ],
+  "clones": {
+    "fixture-consolidated-001": [
+      {
+        "clone_id": "fixture-consolidated-clone-001",
+        "ident": "fixture-consolidated-clone-001",
+        "dataset_id": "fixture-consolidated-001",
+        "v_call": "IGHV1-2*02",
+        "sample": { "locus": "IGH", "subject_id": "subject-1" }
+      }
+    ]
+  },
+  "trees": [
+    {
+      "ident": "fixture-consolidated-tree-001",
+      "tree_id": "min_adcl-raxml_ng",
+      "clone_id": "fixture-consolidated-clone-001",
+      "newick": "(A:1,B:1)naive:0;",
+      "nodes": [
+        {
+          "sequence_id": "naive",
+          "type": "root",
+          "parent": null,
+          "sequence_alignment": "AAA",
+          "sequence_alignment_aa": "K"
+        },
+        {
+          "sequence_id": "A",
+          "type": "leaf",
+          "parent": "naive",
+          "sequence_alignment": "AAG",
+          "sequence_alignment_aa": "K"
+        },
+        {
+          "sequence_id": "B",
+          "type": "leaf",
+          "parent": "naive",
+          "sequence_alignment": "AAA",
+          "sequence_alignment_aa": "K"
+        }
+      ]
+    }
+  ]
+}

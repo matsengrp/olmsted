@@ -71,58 +71,169 @@ Starts the development server at `http://localhost:3999` with:
 
 ### With Local Data (Server Mode)
 
-For testing with local data files in split format:
+The dev server can serve dataset files from a local directory at `/data/*`
+instead of fetching them from a remote bucket. This is what the production
+build does for the static "server-side" datasets (currently legacy auspice
+output on olmstedviz.org).
 
 ```bash
-# Copy example data to data/ directory
-cp ../olmsted-cli/example_data/pcp/split_golden_data/* path/to/data/
-
-# Start development server with hot reloading
-./bin/olmsted-server-local.sh /path/to/data 3999 dev
-
-# OR: invoke npm scripts manually
-
-# Start with local data
-npm run start:local
-# Or specify a custom data directory:
-BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data
+# Point start:local at any directory containing the server-side files:
+npm run start:local <path-to-data-dir>
 ```
 
-**Note**: Local data mode requires **split format** (separate files for datasets, clones, trees), not the consolidated single-file format used for browser uploads.
+Equivalent long form:
+
+```bash
+BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData <path-to-data-dir>
+```
+
+The directory must contain a manifest at `datasets.json`. Two formats
+are supported, and a single manifest can mix them:
+
+**Split format** (legacy, auspice-shaped). One file per logical chunk:
+
+| File                       | Purpose                                         |
+| -------------------------- | ----------------------------------------------- |
+| `datasets.json`            | Manifest — array of dataset metadata objects    |
+| `clones.{dataset_id}.json` | Per-dataset clone list (one file per dataset)   |
+| `tree.{tree_ident}.json`   | Per-tree full payload (one file per tree ident) |
+
+**Consolidated format** (current). Drop any olmsted-cli `.json` or
+`.json.gz` file into the data dir (or a subdirectory). The dev server
+auto-rebuilds `datasets.json` on startup — scans the dir, parses each
+consolidated file, lifts the dataset metadata, and writes a manifest
+entry with `consolidated_path` pointing at the file:
+
+```jsonc
+[
+  {
+    "ident": "...",
+    "dataset_id": "my-dataset",
+    "name": "My dataset",
+    "consolidated_path": "consolidated/my-dataset.json.gz"
+  }
+]
+```
+
+On page load the client fetches that file and runs it through the same
+ingestion pipeline as in-browser uploads (`FileProcessor.processFile`),
+storing the result in IndexedDB. Subsequent loads short-circuit if the
+`dataset_id` is already present.
+
+Manual edits to `datasets.json` are NOT needed for consolidated files
+in dev — restart the server after dropping a file. Pre-existing
+split-format entries (entries without `consolidated_path`) are
+preserved across rebuilds.
+
+For production / deploy time, run the same scanner manually before
+uploading:
+
+```bash
+node bin/build_datasets_manifest.js _deploy/data
+```
+
+The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
+is the same as what the browser uploader accepts; this is the path for
+serving olmsted-cli output directly from the static bucket.
+
+### Snapshotting production data
+
+Two complementary mechanisms are available, both reading from the live
+S3 bucket via HTTP (no credentials needed for the public bucket):
+
+**Manifest-driven snapshot** — `bin/snapshot_server_data.py` reads
+`datasets.json` and follows its references (per-dataset clones files,
+per-tree files). Use it to produce a snapshot that's structured
+identically to what `npm run start:local` expects, so the result can
+be served back unchanged for offline dev and manual QA of the
+server-side flow:
+
+```bash
+python3 bin/snapshot_server_data.py [-u <base-url>] [-o <output-dir>]
+```
+
+Defaults to the production olmstedviz.org base URL; override `-u` to
+snapshot a staging bucket. Pass `--help` for full options.
+
+**Full bucket dump** — `bin/aws_download.py` walks the bucket and
+fetches every object, ignoring the manifest. Use it as a complete
+safety-net before destructive operations:
+
+```bash
+python3 bin/aws_download.py -b <bucket> -o <output-dir> [--anonymous]
+```
+
+The manifest snapshot is the right tool if you intend to serve the
+data back via `start:local`; the bucket dump is the right tool if you
+want a verbatim before-state to compare against `_deploy/` and
+identify orphans.
+
+### Deploying a server-side dataset
+
+To publish a new olmsted-cli output as a "server-side" dataset on the
+production S3 bucket, the manual flow is three steps:
+
+```bash
+# 1. Drop your consolidated olmsted-cli file into _deploy/data/.
+#    A subdirectory is fine — the manifest builder records the relative
+#    path. .json and .json.gz are both supported.
+mkdir -p _deploy/data/consolidated
+cp /path/to/my-dataset.json.gz _deploy/data/consolidated/
+
+# 2. Rebuild the manifest. Preserves any existing split-format entries;
+#    refreshes the consolidated entries based on what's on disk.
+node bin/build_datasets_manifest.js _deploy/data
+
+# 3. Upload to S3 and invalidate CloudFront. The bucket name is the
+#    same one the GitHub Actions workflow targets via vars.S3_BUCKET_NAME
+#    (typically www.olmstedviz.org).
+python3 bin/aws_deploy.py data \
+  -b <bucket> \
+  --invalidate-cloudfront
+```
+
+Datasets in `_deploy/data/` are **not** committed to the repo — test
+data files are too large. Run these steps locally with your AWS
+credentials, not from CI.
+
+The GitHub Actions "Deploy to AWS" workflow has a `data` scope option,
+but it runs against the repo's empty `_deploy/data/` after `npm run build`,
+so it is currently a no-op for data uploads. Wiring it up properly
+(e.g., pulling datasets from a separate source) is future work.
 
 ---
 
 ## Available Scripts
 
-| Command                 | Description                                                                                        |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| `npm start`             | Start development server with hot reloading                                                        |
-| `npm run start:local`   | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode)) |
-| `npm run build`         | Full production build — runs `build:client` + `build:server`                                       |
-| `npm run build:client`  | Build the production web bundle to `_deploy/dist/`                                                 |
-| `npm run build:server`  | Build the production Express server bundle to `server.dist.js`                                     |
-| `npm run build:electron`| Build the Electron renderer bundle to `dist/`                                                      |
-| `npm run build:start`   | Build and start production server                                                                  |
-| `npm run run:electron`  | Build the Electron bundle and launch the packaged app locally                                      |
-| `npm run dist:electron` | Package a platform-specific Electron distributable (AppImage on Linux, `.dmg` on macOS) into `_releases/` |
-| `npm run lint`          | Run ESLint on src/                                                                                 |
-| `npm run format`        | Format code with Prettier                                                                          |
-| `npm run format:check`  | Check formatting without modifying files                                                           |
-| `npm test`              | Run all Jest tests                                                                                 |
-| `npm run test:watch`    | Run tests in watch mode (re-runs on file changes)                                                  |
-| `npm run test:coverage` | Run tests with coverage report                                                                     |
-| `npm run clean`         | Remove build artifacts                                                                             |
+| Command                  | Description                                                                                               |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `npm start`              | Start development server with hot reloading                                                               |
+| `npm run start:local`    | Start with local data from `data/` directory (see [With Local Data](#with-local-data-server-mode))        |
+| `npm run build`          | Full production build — runs `build:client` + `build:server`                                              |
+| `npm run build:client`   | Build the production web bundle to `_deploy/dist/`                                                        |
+| `npm run build:server`   | Build the production Express server bundle to `server.dist.js`                                            |
+| `npm run build:electron` | Build the Electron renderer bundle to `dist/`                                                             |
+| `npm run build:start`    | Build and start production server                                                                         |
+| `npm run run:electron`   | Build the Electron bundle and launch the packaged app locally                                             |
+| `npm run dist:electron`  | Package a platform-specific Electron distributable (AppImage on Linux, `.dmg` on macOS) into `_releases/` |
+| `npm run lint`           | Run ESLint on src/                                                                                        |
+| `npm run format`         | Format code with Prettier                                                                                 |
+| `npm run format:check`   | Check formatting without modifying files                                                                  |
+| `npm test`               | Run all Jest tests                                                                                        |
+| `npm run test:watch`     | Run tests in watch mode (re-runs on file changes)                                                         |
+| `npm run test:coverage`  | Run tests with coverage report                                                                            |
+| `npm run clean`          | Remove build artifacts                                                                                    |
 
 ### Build Pipeline
 
 Olmsted has two distribution channels that share the same React source but use different webpack configs. Both go through Babel for JSX/ESNext transpilation.
 
-| Config                        | Used by                     | Output                          | Purpose                            |
-| ----------------------------- | --------------------------- | ------------------------------- | ---------------------------------- |
-| `webpack.config.dev.js`       | `npm start`                 | `_devel/` (in-memory via HMR)   | Hot-reloading dev server           |
-| `webpack.config.prod.js`      | `npm run build:client`      | `_deploy/dist/bundle.js`        | Production web bundle (S3/Docker)  |
-| `webpack.config.server.js`    | `npm run build:server`      | `server.dist.js`                | Bundled Express server             |
-| `webpack.config.electron.js`  | `npm run build:electron`    | `dist/bundle.js`                | Renderer for the Electron app      |
+| Config                       | Used by                  | Output                        | Purpose                           |
+| ---------------------------- | ------------------------ | ----------------------------- | --------------------------------- |
+| `webpack.config.dev.js`      | `npm start`              | `_devel/` (in-memory via HMR) | Hot-reloading dev server          |
+| `webpack.config.prod.js`     | `npm run build:client`   | `_deploy/dist/bundle.js`      | Production web bundle (S3/Docker) |
+| `webpack.config.server.js`   | `npm run build:server`   | `server.dist.js`              | Bundled Express server            |
+| `webpack.config.electron.js` | `npm run build:electron` | `dist/bundle.js`              | Renderer for the Electron app     |
 
 ```bash
 # Full production build (web)
@@ -279,13 +390,13 @@ Import shared mock data from `src/__test-data__/mockState.js` rather than duplic
 
 ### Configuration
 
-| File                    | Purpose                                                                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `jest.config.js`        | Jest config: jsdom env, babel-jest transform, CSS/image mocks, ESM package handling, `setupFilesAfterEnv` for `@testing-library/jest-dom` |
-| `jest.setup.js`         | `fake-indexeddb/auto` polyfill, `structuredClone` polyfill for Node 18, sessionStorage fallback, console noise suppression                |
-| `__mocks__/fileMock.js` | Stub for image/file imports                                                                                                               |
-| `.babelrc` `"test"` env | Avoids loading react-refresh plugin (crashes in Jest)                                                                                     |
-| `eslint.config.mjs` test override | Adds Jest globals for `__tests__/` files so ESLint recognizes `describe`, `it`, `expect`, etc.                                  |
+| File                              | Purpose                                                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `jest.config.js`                  | Jest config: jsdom env, babel-jest transform, CSS/image mocks, ESM package handling, `setupFilesAfterEnv` for `@testing-library/jest-dom` |
+| `jest.setup.js`                   | `fake-indexeddb/auto` polyfill, `structuredClone` polyfill for Node 18, sessionStorage fallback, console noise suppression                |
+| `__mocks__/fileMock.js`           | Stub for image/file imports                                                                                                               |
+| `.babelrc` `"test"` env           | Avoids loading react-refresh plugin (crashes in Jest)                                                                                     |
+| `eslint.config.mjs` test override | Adds Jest globals for `__tests__/` files so ESLint recognizes `describe`, `it`, `expect`, etc.                                            |
 
 **Key dependencies:**
 

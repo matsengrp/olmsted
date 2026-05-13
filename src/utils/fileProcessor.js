@@ -1,6 +1,7 @@
 import { gunzipSync, strFromU8 } from "fflate";
 import { detectFieldPresence, applyNodeDefaults, applyCloneDefaults, extractGermlineFromTree } from "./fieldDefaults";
 import { NODE_TYPES, LEGACY_INTERNAL_NODE_TYPE } from "../constants/nodeTypes";
+import { DATASET_SOURCE } from "../constants/datasetSource";
 
 /**
  * File processor for olmsted-cli consolidated format JSON files
@@ -94,6 +95,10 @@ class FileProcessor {
       clone_count: datasetClones.length || dataset.clone_count || 0,
       subjects_count: dataset.subjects_count || 1,
       schema_version: data.metadata?.schema_version || null,
+      // `source` is the load-bearing field for Source labeling and loader
+      // routing. The legacy booleans are preserved for code that hasn't
+      // been migrated yet and for already-persisted IndexedDB records.
+      source: DATASET_SOURCE.UPLOAD,
       temporary: true,
       isClientSide: true,
       upload_time: new Date().toISOString(),
