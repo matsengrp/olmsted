@@ -29,6 +29,13 @@ const MANIFEST_FILENAME = "datasets.json";
 /**
  * Files that are NOT consolidated datasets and should be skipped.
  * Returns true if the filename looks like a consolidated dataset file.
+ *
+ * The `clones.*` / `tree.*` prefix exclusion is an *optimization* — it
+ * lets us avoid parsing the per-clone/per-tree files in a legacy split
+ * snapshot. Correctness is enforced by `isConsolidatedShape` after the
+ * parse, so a renamed-to-look-split file would still be rejected, and
+ * a renamed-to-look-consolidated file with the right shape would still
+ * be accepted.
  */
 function isCandidateConsolidatedFile(name) {
   if (name === MANIFEST_FILENAME) return false;
@@ -58,37 +65,49 @@ function isConsolidatedShape(data) {
 /**
  * Walk `rootDir` and return manifest entries for each consolidated
  * dataset file found. Files that fail to parse or don't match the
- * consolidated shape are skipped with a warning.
+ * consolidated shape are skipped with a warning; the count of skipped
+ * files is returned alongside the entries so the caller can surface it
+ * in startup logs.
+ *
+ * Symlinks (file or directory) are deliberately not followed —
+ * `withFileTypes: true` causes Dirent.isDirectory() to return false for
+ * symlinks, so a cyclic or runaway symlink can't trap the scan.
  *
  * @param {string} rootDir - absolute path to the data dir
- * @returns {Array<Object>} manifest entries with consolidated_path set
+ * @returns {{ entries: Array<Object>, skipped: number }}
  */
 function scanForConsolidatedDatasets(rootDir) {
   const entries = [];
+  let skipped = 0;
 
   function walk(dir, relPath) {
-    for (const name of fs.readdirSync(dir)) {
+    for (const dirent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const name = dirent.name;
       const full = path.join(dir, name);
       const rel = relPath ? path.posix.join(relPath, name) : name;
-      const stat = fs.statSync(full);
-      if (stat.isDirectory()) {
+      if (dirent.isDirectory()) {
         walk(full, rel);
         continue;
       }
+      if (!dirent.isFile()) continue; // skip symlinks, devices, etc.
       if (!isCandidateConsolidatedFile(name)) continue;
       try {
         const data = readConsolidatedFile(full);
-        if (!isConsolidatedShape(data)) continue;
+        if (!isConsolidatedShape(data)) {
+          skipped += 1;
+          continue;
+        }
         const ds = data.datasets[0];
         entries.push({ ...ds, consolidated_path: rel });
       } catch (err) {
+        skipped += 1;
         console.warn(`build_datasets_manifest: skipping ${rel}: ${err.message}`);
       }
     }
   }
 
   walk(rootDir, "");
-  return entries;
+  return { entries, skipped };
 }
 
 /**
@@ -113,16 +132,17 @@ function loadExistingSplitEntries(manifestPath) {
  * for split-format entries.
  *
  * @param {string} dataDir
- * @returns {{ split: Array, consolidated: Array }} the two slices that
- *   ended up in the manifest
+ * @returns {{ split: Array, consolidated: Array, skipped: number }}
+ *   the two slices written to the manifest, plus a count of files that
+ *   looked consolidated but failed to parse or didn't match the shape
  */
 function buildManifest(dataDir) {
   const manifestPath = path.join(dataDir, MANIFEST_FILENAME);
   const splitEntries = loadExistingSplitEntries(manifestPath);
-  const consolidatedEntries = scanForConsolidatedDatasets(dataDir);
+  const { entries: consolidatedEntries, skipped } = scanForConsolidatedDatasets(dataDir);
   const merged = [...splitEntries, ...consolidatedEntries];
   fs.writeFileSync(manifestPath, JSON.stringify(merged, null, 2) + "\n");
-  return { split: splitEntries, consolidated: consolidatedEntries };
+  return { split: splitEntries, consolidated: consolidatedEntries, skipped };
 }
 
 module.exports = {
@@ -144,7 +164,8 @@ if (require.main === module) {
     process.exit(1);
   }
   const result = buildManifest(dataDir);
+  const skippedSuffix = result.skipped > 0 ? ` (${result.skipped} file(s) skipped — see warnings above)` : "";
   console.log(
-    `build_datasets_manifest: wrote ${result.split.length} split + ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}`
+    `build_datasets_manifest: wrote ${result.split.length} split + ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`
   );
 }

@@ -8,6 +8,77 @@ import clientDataStore from "../utils/clientDataStore";
 import olmstedDB from "../utils/olmstedDB";
 import FileProcessor from "../utils/fileProcessor";
 import { charonAPIAddress } from "../util/globals";
+import { DATASET_SOURCE } from "../constants/datasetSource";
+
+/**
+ * Predicate identifying a manifest entry that points at a single
+ * consolidated olmsted-cli file (`.json` / `.json.gz`) under the data
+ * root, rather than the legacy split-format (per-dataset clones files
+ * + per-tree files). The wire contract is a single `consolidated_path`
+ * field on the entry.
+ */
+const isConsolidatedEntry = (entry) => Boolean(entry && entry.consolidated_path);
+
+/**
+ * Fetch the `/data/datasets.json` manifest once. Returns the parsed
+ * array, or null on any failure (network, non-OK status, non-JSON
+ * body, non-array shape). The caller decides how to handle the
+ * absence of a manifest — the typical answer is "use whatever's in
+ * IndexedDB and skip server datasets."
+ */
+const fetchManifest = async () => {
+  try {
+    const response = await fetch(`${charonAPIAddress}/datasets.json`);
+    if (!response.ok) return null;
+    const manifest = await response.json();
+    return Array.isArray(manifest) ? manifest : null;
+  } catch (err) {
+    console.warn("Failed to fetch server manifest:", err);
+    return null;
+  }
+};
+
+/**
+ * Normalize a dataset record (from IndexedDB) for dispatch. Defaults
+ * to upload-style flags but respects any stored values via `??` so
+ * server-ingested entries keep their `temporary: false` marker. Also
+ * ensures `source` is set (derived from legacy flags for back-compat
+ * with records persisted before the source enum landed).
+ */
+const mapClientDatasetForDispatch = (dataset) => ({
+  ...dataset,
+  isClientSide: dataset.isClientSide ?? true,
+  temporary: dataset.temporary ?? true,
+  source: dataset.source ?? (dataset.temporary === false ? DATASET_SOURCE.SERVER_CONSOLIDATED : DATASET_SOURCE.UPLOAD)
+});
+
+/**
+ * Map a legacy split-format manifest entry into a dispatched dataset
+ * record. The data still lives on the server (lazy-loaded per request
+ * via the auspice-shaped Charon endpoints), not in IndexedDB.
+ */
+const mapServerSplitEntryForDispatch = (entry) => ({
+  ...entry,
+  isClientSide: false,
+  source: DATASET_SOURCE.SERVER_SPLIT
+});
+
+/**
+ * Read IndexedDB + the supplied split-format manifest entries, combine
+ * them into a single availableDatasets list, and dispatch.
+ */
+const dispatchCombinedDatasets = async (dispatch, splitEntries, options = {}) => {
+  const clientDatasets = await clientDataStore.getAllDatasets();
+  const availableDatasets = [
+    ...clientDatasets.map(mapClientDatasetForDispatch),
+    ...splitEntries.map(mapServerSplitEntryForDispatch)
+  ];
+  dispatch({
+    type: types.DATASETS_RECEIVED,
+    availableDatasets,
+    preserveLoadingStatus: options.preserveLoadingStatus ?? true
+  });
+};
 
 /**
  * Get tree data from client storage (replaces server getTree)
@@ -120,12 +191,12 @@ export const ingestConsolidatedServerDataset = async (entry) => {
     const file = new File([blob], filename, { type: blob.type });
     const result = await FileProcessor.processFile(file);
 
-    // FileProcessor defaults to upload-style flags (isClientSide: true,
-    // temporary: true). Server-loaded datasets stay isClientSide: true
-    // because they DO live in IndexedDB — routing in app.js uses that
-    // flag to choose the right loader — but `temporary` flips to false
-    // so the UI Source column can read "Server".
+    // FileProcessor sets source = UPLOAD; override to SERVER_CONSOLIDATED.
+    // `temporary` is flipped to false so the Source column reads "Server".
+    // `isClientSide` stays true so app.js routes loading via the IndexedDB
+    // loader, not the legacy auspice fetch flow.
     if (result.datasets && result.datasets[0]) {
+      result.datasets[0].source = DATASET_SOURCE.SERVER_CONSOLIDATED;
       result.datasets[0].temporary = false;
     }
 
@@ -138,180 +209,79 @@ export const ingestConsolidatedServerDataset = async (entry) => {
 };
 
 /**
- * Read /data/datasets.json and ingest any entries that point at a consolidated
- * olmsted-cli file via `consolidated_path`. Returns the list of split-only
- * manifest entries (those without consolidated_path), so the caller can
- * continue with the legacy split-format flow for them.
+ * Ingest the consolidated entries from a manifest sequentially, then
+ * re-dispatch once any were stored so newly-arrived datasets surface
+ * in the UI without a page reload. Background work — callers don't
+ * need to await this.
  *
- * @returns {Promise<Array>} split-only entries, or [] on any failure
+ * @param {Array<Object>} consolidatedEntries
+ * @param {Array<Object>} splitEntries - passed through to the re-dispatch
+ * @param {Function} dispatch
  */
-export const ingestConsolidatedServerDatasets = async () => {
-  try {
-    const response = await fetch(`${charonAPIAddress}/datasets.json`);
-    if (!response.ok) return [];
-    const manifest = await response.json();
-    if (!Array.isArray(manifest)) return [];
-
-    const consolidated = manifest.filter((d) => d.consolidated_path);
-    const splitOnly = manifest.filter((d) => !d.consolidated_path);
-
-    for (const entry of consolidated) {
-      // Sequential to avoid hammering the same Express dev server with many
-      // parallel fetch+ingest cycles on first page load.
-      await ingestConsolidatedServerDataset(entry);
-    }
-
-    return splitOnly;
-  } catch (error) {
-    console.warn("Failed to load consolidated server datasets:", error);
-    return [];
+const ingestAndDispatch = async (consolidatedEntries, splitEntries, dispatch) => {
+  let ingestedAny = false;
+  for (const entry of consolidatedEntries) {
+    // Sequential to avoid hammering the dev server with many parallel
+    // fetch+ingest cycles on first page load.
+    const stored = await ingestConsolidatedServerDataset(entry);
+    if (stored) ingestedAny = true;
+  }
+  if (ingestedAny) {
+    await dispatchCombinedDatasets(dispatch, splitEntries);
   }
 };
 
 /**
- * Get datasets list from client storage (replaces server getDatasets)
+ * Read /data/datasets.json and ingest any entries with consolidated_path.
+ * Kept as an exported helper for tests; the production code path goes
+ * through `getClientDatasets` instead, which is non-blocking.
+ *
+ * @returns {Promise<Array>} split-only entries, or [] on any failure
+ */
+export const ingestConsolidatedServerDatasets = async () => {
+  const manifest = await fetchManifest();
+  if (!manifest) return [];
+  const consolidatedEntries = manifest.filter(isConsolidatedEntry);
+  const splitEntries = manifest.filter((d) => !isConsolidatedEntry(d));
+  for (const entry of consolidatedEntries) {
+    await ingestConsolidatedServerDataset(entry);
+  }
+  return splitEntries;
+};
+
+/**
+ * Get datasets list from client storage (replaces server getDatasets).
+ * Single manifest fetch, dispatches an initial combined client +
+ * server-split list immediately, then ingests consolidated server
+ * datasets in the background and re-dispatches when each arrives.
+ *
  * @param {Function} dispatch - Redux dispatch function
  * @param {string} _s3bucket - Legacy parameter for server compatibility (ignored)
  */
 export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
   try {
-    // Ingest any consolidated-format server datasets first. After this, those
-    // entries are in IndexedDB and surface naturally through the client list.
-    // The returned list is the split-only manifest entries (auspice-shaped),
-    // which the existing loadServerDatasets path continues to handle.
-    await ingestConsolidatedServerDatasets();
+    const manifest = (await fetchManifest()) || [];
+    const splitEntries = manifest.filter((d) => !isConsolidatedEntry(d));
+    const consolidatedEntries = manifest.filter(isConsolidatedEntry);
 
-    const clientDatasets = await clientDataStore.getAllDatasets();
+    // Initial dispatch with whatever's already in IndexedDB + the
+    // split-format manifest entries. Don't wait on consolidated ingest.
+    await dispatchCombinedDatasets(dispatch, splitEntries);
 
-    // Default to upload-style flags, but respect any explicit values
-    // stored on the dataset record itself (server-ingested entries
-    // store isClientSide: false so the Source column reads "Server").
-    const availableDatasets = clientDatasets.map((dataset) => ({
-      isClientSide: true,
-      temporary: true,
-      ...dataset
-    }));
-
-    if (availableDatasets.length > 0) {
-      // If we have client datasets, dispatch them immediately
-      dispatch({
-        type: types.DATASETS_RECEIVED,
-        availableDatasets,
-        preserveLoadingStatus: true // Preserve existing loading status when updating datasets
-      });
+    // Background: fetch + ingest each consolidated dataset, then
+    // re-dispatch so the new IndexedDB rows surface in the UI.
+    if (consolidatedEntries.length > 0) {
+      ingestAndDispatch(consolidatedEntries, splitEntries, dispatch);
     }
-
-    // Always attempt to load server datasets in parallel
-    // This allows mixing client-side uploaded data with server-side data
-    // eslint-disable-next-line no-use-before-define
-    loadServerDatasets(dispatch);
   } catch (error) {
     console.error("Error loading client datasets:", error);
-    // Fallback to server-only loading
-    // eslint-disable-next-line no-use-before-define
-    loadServerDatasets(dispatch);
-  }
-};
-
-/**
- * Load server datasets (original functionality)
- * This allows mixing client-side and server-side data
- */
-const loadServerDatasets = async (dispatch) => {
-  // Helper function to get client datasets and format them. Defaults to
-  // upload-style flags, but respects stored values so server-ingested
-  // datasets keep their `isClientSide: false` marker.
-  const getClientOnlyDatasets = async () => {
-    const clientDatasets = await clientDataStore.getAllDatasets();
-    return clientDatasets.map((d) => ({
-      isClientSide: true,
-      temporary: true,
-      ...d
-    }));
-  };
-
-  try {
-    // Get client datasets first
-    const clientDatasets = await getClientOnlyDatasets();
-
-    // Use the original server loading logic as fallback
-    const request = new XMLHttpRequest();
-
-    request.onload = () => {
-      if (request.readyState === 4 && request.status === 200) {
-        // Check if response is JSON before trying to parse
-        const contentType = request.getResponseHeader("content-type");
-        const isJson = contentType && contentType.includes("application/json");
-
-        if (isJson || request.responseText.trim().startsWith("[") || request.responseText.trim().startsWith("{")) {
-          try {
-            // Drop consolidated entries — those have already been ingested
-            // into IndexedDB by ingestConsolidatedServerDatasets and surface
-            // through the client list above (with isClientSide: false).
-            // Including them here would duplicate the row and produce
-            // mismatched Source labels for the same dataset.
-            const serverDatasets = JSON.parse(request.responseText).filter((d) => !d.consolidated_path);
-
-            // Combine client and server datasets
-            const combinedDatasets = [...clientDatasets, ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))];
-
-            dispatch({
-              type: types.DATASETS_RECEIVED,
-              availableDatasets: combinedDatasets
-            });
-
-            console.log("Combined datasets loaded:", {
-              client: clientDatasets.length,
-              server: serverDatasets.length,
-              total: combinedDatasets.length
-            });
-          } catch (_error) {
-            // Silently fall back to client-only datasets
-            if (clientDatasets.length > 0) {
-              dispatch({
-                type: types.DATASETS_RECEIVED,
-                availableDatasets: clientDatasets,
-                preserveLoadingStatus: true
-              });
-            }
-          }
-        } else {
-          // Response is not JSON (likely HTML error page), use client-only datasets
-          dispatch({
-            type: types.DATASETS_RECEIVED,
-            availableDatasets: clientDatasets,
-            preserveLoadingStatus: true
-          });
-        }
-      } else {
-        // Server request failed, use client-only datasets
-        dispatch({
-          type: types.DATASETS_RECEIVED,
-          availableDatasets: clientDatasets,
-          preserveLoadingStatus: true
-        });
-      }
-    };
-
-    request.onerror = () => {
-      // Network error, use client-only datasets
-      dispatch({
-        type: types.DATASETS_RECEIVED,
-        availableDatasets: clientDatasets,
-        preserveLoadingStatus: true
-      });
-    };
-
-    // Load from server API (original endpoint)
-    request.open("get", `${charonAPIAddress}/datasets.json`, true);
-    request.send(null);
-  } catch (error) {
-    // If even client dataset loading fails, dispatch empty array
-    console.error("Failed to load client datasets:", error);
-    dispatch({
-      type: types.DATASETS_RECEIVED,
-      availableDatasets: []
-    });
+    // Last-resort fallback: dispatch whatever's in IndexedDB alone.
+    try {
+      await dispatchCombinedDatasets(dispatch, []);
+    } catch (innerError) {
+      console.error("Failed to load client datasets:", innerError);
+      dispatch({ type: types.DATASETS_RECEIVED, availableDatasets: [] });
+    }
   }
 };
 
@@ -349,6 +319,7 @@ export const clearClientData = (dispatch) => {
   clientDataStore.clearAllData();
   console.log("Cleared all client-side data");
 
-  // Reload datasets to show only server data
-  loadServerDatasets(dispatch);
+  // Reload datasets so the UI reflects the now-empty IndexedDB plus
+  // whatever's in the server manifest.
+  getClientDatasets(dispatch);
 };

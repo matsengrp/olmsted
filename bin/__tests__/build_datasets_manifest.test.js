@@ -91,15 +91,16 @@ describe("isConsolidatedShape", () => {
 describe("scanForConsolidatedDatasets", () => {
   it("finds a top-level consolidated .json file", () => {
     write("foo.json", makeConsolidatedPayload({ dataset_id: "ds-foo" }));
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries, skipped } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toHaveLength(1);
     expect(entries[0].dataset_id).toBe("ds-foo");
     expect(entries[0].consolidated_path).toBe("foo.json");
+    expect(skipped).toBe(0);
   });
 
   it("finds a .json.gz file and decompresses it", () => {
     writeGz("bar.json.gz", makeConsolidatedPayload({ dataset_id: "ds-bar" }));
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toHaveLength(1);
     expect(entries[0].dataset_id).toBe("ds-bar");
     expect(entries[0].consolidated_path).toBe("bar.json.gz");
@@ -107,32 +108,46 @@ describe("scanForConsolidatedDatasets", () => {
 
   it("descends into subdirectories", () => {
     write("consolidated/nested.json", makeConsolidatedPayload({ dataset_id: "ds-nested" }));
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toHaveLength(1);
     expect(entries[0].consolidated_path).toBe("consolidated/nested.json");
   });
 
-  it("skips datasets.json, clones.*.json, tree.*.json", () => {
+  it("skips datasets.json, clones.*.json, tree.*.json without counting them as skipped", () => {
     write("datasets.json", []);
     write("clones.ds-x.json", []);
     write("tree.abc-123.json", { nodes: [] });
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries, skipped } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toEqual([]);
+    // These are not "candidate" files; they're filtered before parsing.
+    expect(skipped).toBe(0);
   });
 
-  it("skips files that don't match the consolidated shape", () => {
+  it("counts files that don't match the consolidated shape as skipped", () => {
     write("not-consolidated.json", { just: "a random object" });
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries, skipped } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toEqual([]);
+    expect(skipped).toBe(1);
   });
 
-  it("skips files that fail to parse but doesn't throw", () => {
+  it("counts malformed-JSON files as skipped and warns instead of throwing", () => {
     write("malformed.json", "not valid json");
     const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
-    const entries = scanForConsolidatedDatasets(tmpDir);
+    const { entries, skipped } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toEqual([]);
+    expect(skipped).toBe(1);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("malformed.json"));
     consoleSpy.mockRestore();
+  });
+
+  it("does not follow symlinked directories (avoids cycles)", () => {
+    // Real consolidated file inside a real subdir
+    write("real/inside.json", makeConsolidatedPayload({ dataset_id: "ds-real" }));
+    // A symlink at the root that points back at the root — would loop forever
+    // if scan followed it.
+    fs.symlinkSync(tmpDir, path.join(tmpDir, "loop"));
+    const { entries } = scanForConsolidatedDatasets(tmpDir);
+    expect(entries.map((e) => e.dataset_id)).toEqual(["ds-real"]);
   });
 });
 

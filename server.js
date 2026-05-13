@@ -5,7 +5,6 @@ const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
 const charon = require("./src/server/charon");
 const { buildManifest } = require("./bin/build_datasets_manifest");
-const { execFile } = require("child_process");
 
 /* documentation in the static site! */
 
@@ -23,8 +22,9 @@ globals.setGlobals({ localData, localDataPath });
 if (localData && localDataPath) {
   try {
     const result = buildManifest(localDataPath);
+    const skippedSuffix = result.skipped > 0 ? `, ${result.skipped} skipped (see warnings above)` : "";
     console.log(
-      `Rebuilt ${localDataPath}/datasets.json (${result.split.length} split + ${result.consolidated.length} consolidated)`
+      `Rebuilt ${localDataPath}/datasets.json (${result.split.length} split + ${result.consolidated.length} consolidated${skippedSuffix})`
     );
   } catch (err) {
     console.warn(`Could not rebuild manifest in ${localDataPath}: ${err.message}`);

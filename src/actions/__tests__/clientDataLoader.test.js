@@ -68,7 +68,7 @@ describe("ingestConsolidatedServerDataset", () => {
     expect(all[0].original_dataset_id).toBe("fixture-consolidated-001");
   });
 
-  it("marks server-ingested datasets as non-temporary while keeping isClientSide", async () => {
+  it("marks server-ingested datasets as SERVER_CONSOLIDATED source", async () => {
     const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
     globalThis.fetch = jest.fn(async () => mockResponse(consolidatedText));
 
@@ -77,13 +77,15 @@ describe("ingestConsolidatedServerDataset", () => {
       consolidated_path: "consolidated.fixture-consolidated-001.json"
     });
 
-    // Server-ingested datasets live in IndexedDB (so isClientSide stays
-    // true — app.js routes loading by that flag), but temporary flips
-    // to false so the UI Source column reads "Server" rather than "Local".
+    // `source` is the load-bearing field for Source labeling and loader
+    // routing. The legacy booleans are kept in sync for backward compat
+    // with already-persisted IndexedDB records.
+    expect(stored.source).toBe("server-consolidated");
     expect(stored.isClientSide).toBe(true);
     expect(stored.temporary).toBe(false);
 
     const all = await olmstedDB.getAllDatasets();
+    expect(all[0].source).toBe("server-consolidated");
     expect(all[0].isClientSide).toBe(true);
     expect(all[0].temporary).toBe(false);
   });
