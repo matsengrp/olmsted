@@ -119,6 +119,15 @@ export const ingestConsolidatedServerDataset = async (entry) => {
     const filename = entry.consolidated_path.split("/").pop();
     const file = new File([blob], filename, { type: blob.type });
     const result = await FileProcessor.processFile(file);
+
+    // FileProcessor defaults to upload-style flags (isClientSide: true,
+    // temporary: true). Server-loaded datasets should be distinguishable
+    // in the UI Source column and persist across "delete uploads" actions.
+    if (result.datasets && result.datasets[0]) {
+      result.datasets[0].isClientSide = false;
+      result.datasets[0].temporary = false;
+    }
+
     await clientDataStore.storeProcessedData(result);
     return result.datasets[0];
   } catch (error) {
@@ -173,11 +182,13 @@ export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
 
     const clientDatasets = await clientDataStore.getAllDatasets();
 
-    // Process client datasets
+    // Default to upload-style flags, but respect any explicit values
+    // stored on the dataset record itself (server-ingested entries
+    // store isClientSide: false so the Source column reads "Server").
     const availableDatasets = clientDatasets.map((dataset) => ({
-      ...dataset,
-      isClientSide: true, // Mark as client-side for UI distinction
-      temporary: true
+      isClientSide: true,
+      temporary: true,
+      ...dataset
     }));
 
     if (availableDatasets.length > 0) {
@@ -206,13 +217,15 @@ export const getClientDatasets = async (dispatch, _s3bucket = "live") => {
  * This allows mixing client-side and server-side data
  */
 const loadServerDatasets = async (dispatch) => {
-  // Helper function to get client datasets and format them
+  // Helper function to get client datasets and format them. Defaults to
+  // upload-style flags, but respects stored values so server-ingested
+  // datasets keep their `isClientSide: false` marker.
   const getClientOnlyDatasets = async () => {
     const clientDatasets = await clientDataStore.getAllDatasets();
     return clientDatasets.map((d) => ({
-      ...d,
       isClientSide: true,
-      temporary: true
+      temporary: true,
+      ...d
     }));
   };
 
@@ -231,7 +244,12 @@ const loadServerDatasets = async (dispatch) => {
 
         if (isJson || request.responseText.trim().startsWith("[") || request.responseText.trim().startsWith("{")) {
           try {
-            const serverDatasets = JSON.parse(request.responseText);
+            // Drop consolidated entries — those have already been ingested
+            // into IndexedDB by ingestConsolidatedServerDatasets and surface
+            // through the client list above (with isClientSide: false).
+            // Including them here would duplicate the row and produce
+            // mismatched Source labels for the same dataset.
+            const serverDatasets = JSON.parse(request.responseText).filter((d) => !d.consolidated_path);
 
             // Combine client and server datasets
             const combinedDatasets = [...clientDatasets, ...serverDatasets.map((d) => ({ ...d, isClientSide: false }))];

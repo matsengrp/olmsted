@@ -68,6 +68,25 @@ describe("ingestConsolidatedServerDataset", () => {
     expect(all[0].original_dataset_id).toBe("fixture-consolidated-001");
   });
 
+  it("marks server-ingested datasets as server-sourced and non-temporary", async () => {
+    const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
+    globalThis.fetch = jest.fn(async () => mockResponse(consolidatedText));
+
+    const stored = await ingestConsolidatedServerDataset({
+      dataset_id: "fixture-consolidated-001",
+      consolidated_path: "consolidated.fixture-consolidated-001.json"
+    });
+
+    // FileProcessor defaults are upload-style; ingest overrides them so the
+    // UI Source column can distinguish server-loaded from uploaded datasets.
+    expect(stored.isClientSide).toBe(false);
+    expect(stored.temporary).toBe(false);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all[0].isClientSide).toBe(false);
+    expect(all[0].temporary).toBe(false);
+  });
+
   it("short-circuits if the dataset is already in IndexedDB", async () => {
     const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
     globalThis.fetch = jest.fn(async () => mockResponse(consolidatedText));
