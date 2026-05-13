@@ -1,0 +1,16 @@
+[
+  {
+    "clone_id": "fixture-clone-001",
+    "dataset_id": "fixture-dataset-001",
+    "ident": "fixture-clone-001",
+    "trees": [
+      {
+        "ident": "fixture-tree-001",
+        "tree_id": "min_adcl-raxml_ng",
+        "clone_id": "fixture-clone-001",
+        "type": "cft.reconstruction",
+        "downsampling_strategy": "min_adcl"
+      }
+    ]
+  }
+]
