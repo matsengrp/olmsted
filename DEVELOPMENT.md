@@ -98,9 +98,11 @@ are supported, and a single manifest can mix them:
 | `clones.{dataset_id}.json` | Per-dataset clone list (one file per dataset)   |
 | `tree.{tree_ident}.json`   | Per-tree full payload (one file per tree ident) |
 
-**Consolidated format** (current). A manifest entry includes a
-`consolidated_path` field pointing at a single olmsted-cli output file
-(`.json` or `.json.gz`) under the data root:
+**Consolidated format** (current). Drop any olmsted-cli `.json` or
+`.json.gz` file into the data dir (or a subdirectory). The dev server
+auto-rebuilds `datasets.json` on startup — scans the dir, parses each
+consolidated file, lifts the dataset metadata, and writes a manifest
+entry with `consolidated_path` pointing at the file:
 
 ```jsonc
 [
@@ -117,6 +119,18 @@ On page load the client fetches that file and runs it through the same
 ingestion pipeline as in-browser uploads (`FileProcessor.processFile`),
 storing the result in IndexedDB. Subsequent loads short-circuit if the
 `dataset_id` is already present.
+
+Manual edits to `datasets.json` are NOT needed for consolidated files
+in dev — restart the server after dropping a file. Pre-existing
+split-format entries (entries without `consolidated_path`) are
+preserved across rebuilds.
+
+For production / deploy time, run the same scanner manually before
+uploading:
+
+```bash
+node bin/build_datasets_manifest.js _deploy/data
+```
 
 The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
 is the same as what the browser uploader accepts; this is the path for
