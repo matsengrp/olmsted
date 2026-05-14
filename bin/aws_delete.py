@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-Delete files from an S3 bucket with optional prefix and search filtering.
+Delete files from an S3 bucket. Two source modes:
 
-Mirrors aws_download.py conventions:
-- -b/--bucket, -p/--prefix, -s/--search, -r/--regex, -c/--creds
-- Anonymous-access support for public buckets
-- --list-only to preview without deleting
+1. Bucket scan: list objects matching `-p PREFIX` and `-s SEARCH`
+   (substring; pass `-r` to use regex), then delete matches.
+2. From-file: read a newline-delimited list of exact keys from
+   `-f FILE` and delete those specific paths.
+
+Mirrors aws_download.py conventions for credentials and anonymous access.
 
 Safety:
 - --dry-run is the DEFAULT. Pass --confirm to actually delete.
-- Always prints the file count + total size and (when there are many
-  files) shows the first 10 and last 5 keys for sanity-checking before
-  deletion happens.
+- Always prints the file count and (when there are many files) shows
+  the first 10 and last 5 keys for sanity-checking before deletion.
 
 Examples:
   # Preview what would be deleted under prefix data/ (dry-run, default)
@@ -19,6 +20,9 @@ Examples:
 
   # Actually delete (after reviewing the dry-run output)
   %(prog)s -b www.olmstedviz.org -p data/ --confirm
+
+  # Delete a specific list of keys from a file (one path per line)
+  %(prog)s -b www.olmstedviz.org -f /tmp/orphans.txt --confirm
 """
 
 import argparse
@@ -88,6 +92,19 @@ def list_objects(client, bucket_name, prefix="", search_term=None, use_regex=Fal
     return matched, skipped
 
 
+def read_keys_from_file(path):
+    """Read newline-delimited S3 keys from a file. Strips whitespace,
+    skips blank lines and #-prefixed comment lines."""
+    keys = []
+    with open(path) as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            keys.append(stripped)
+    return keys
+
+
 def print_summary(matched, search_term, skipped):
     """Print a count + size summary, plus head/tail key samples."""
     total_size = sum(obj["Size"] for obj in matched)
@@ -114,8 +131,28 @@ def print_summary(matched, search_term, skipped):
     print()
 
 
+def print_keys_summary(keys, source_path):
+    """Print count + head/tail samples for a from-file key list.
+    Distinct from print_summary because we don't have per-object sizes."""
+    print(f"Loaded {len(keys)} keys from {source_path}\n")
+    if not keys:
+        return
+    head = 10
+    tail = 5
+    if len(keys) <= head + tail:
+        for key in keys:
+            print(f"  {key}")
+    else:
+        for key in keys[:head]:
+            print(f"  {key}")
+        print(f"  … {len(keys) - head - tail} more …")
+        for key in keys[-tail:]:
+            print(f"  {key}")
+    print()
+
+
 def delete_batch(client, bucket_name, keys):
-    """Delete up to 1000 keys in a single DeleteObjects call."""
+    """Delete up to 1000 keys in a single DeleteObjects call (the S3 batch limit)."""
     response = client.delete_objects(
         Bucket=bucket_name,
         Delete={"Objects": [{"Key": k} for k in keys], "Quiet": False},
@@ -123,21 +160,6 @@ def delete_batch(client, bucket_name, keys):
     deleted = len(response.get("Deleted", []))
     errors = response.get("Errors", [])
     return deleted, errors
-
-
-def delete_objects(client, bucket_name, matched):
-    """Delete matched objects in chunks of 1000 (the S3 batch limit)."""
-    BATCH = 1000
-    total_deleted = 0
-    all_errors = []
-    keys = [obj["Key"] for obj in matched]
-    for i in range(0, len(keys), BATCH):
-        batch = keys[i : i + BATCH]
-        deleted, errors = delete_batch(client, bucket_name, batch)
-        total_deleted += deleted
-        all_errors.extend(errors)
-        print(f"  [{min(i + BATCH, len(keys))}/{len(keys)}] {total_deleted} deleted, {len(all_errors)} errors")
-    return total_deleted, all_errors
 
 
 def main():
@@ -149,6 +171,15 @@ def main():
     parser.add_argument("-p", "--prefix", default="", help="Only consider keys with this prefix")
     parser.add_argument("-s", "--search", help="Filter keys by substring (case-insensitive)")
     parser.add_argument("-r", "--regex", action="store_true", help="Treat --search as a regex")
+    parser.add_argument(
+        "-f",
+        "--from-file",
+        help=(
+            "Read newline-delimited keys from FILE and delete those exact "
+            "paths. Mutually exclusive with --prefix/--search; blank lines "
+            "and #-prefixed comments are ignored."
+        ),
+    )
     parser.add_argument("-c", "--creds", help="Path to AWS credentials YAML file")
     parser.add_argument("--anonymous", action="store_true", help="Access public bucket without credentials")
     parser.add_argument("--list-only", action="store_true", help="Only list matching files; do not delete")
@@ -159,6 +190,9 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if args.from_file and (args.prefix or args.search):
+        parser.error("--from-file is mutually exclusive with --prefix and --search")
 
     if args.creds:
         print(f"Loading credentials from: {args.creds}")
@@ -171,15 +205,22 @@ def main():
         client = boto3.client("s3")
 
     print(f"\nBucket: {args.bucket}")
-    if args.prefix:
-        print(f"Prefix: '{args.prefix}'")
-    if args.search:
-        kind = "regex" if args.regex else "substring"
-        print(f"Filter ({kind}): '{args.search}'")
 
-    matched, skipped = list_objects(client, args.bucket, args.prefix, args.search, args.regex)
-    print()
-    print_summary(matched, args.search, skipped)
+    if args.from_file:
+        keys = read_keys_from_file(args.from_file)
+        print()
+        print_keys_summary(keys, args.from_file)
+    else:
+        if args.prefix:
+            print(f"Prefix: '{args.prefix}'")
+        if args.search:
+            kind = "regex" if args.regex else "substring"
+            print(f"Filter ({kind}): '{args.search}'")
+
+        matched, _skipped = list_objects(client, args.bucket, args.prefix, args.search, args.regex)
+        print()
+        print_summary(matched, args.search, _skipped)
+        keys = [obj["Key"] for obj in matched]
 
     if args.list_only:
         print("(--list-only — exiting without deleting)")
@@ -189,19 +230,28 @@ def main():
         print("DRY RUN — pass --confirm to actually delete these files.")
         return
 
-    if not matched:
+    if not keys:
         print("Nothing to delete.")
         return
 
-    print(f"=== Deleting {len(matched)} files from {args.bucket} ===")
-    deleted, errors = delete_objects(client, args.bucket, matched)
-    print(f"\nDeleted: {deleted}")
-    if errors:
-        print(f"\nErrors ({len(errors)}):")
-        for err in errors[:10]:
+    print(f"=== Deleting {len(keys)} files from {args.bucket} ===")
+    BATCH = 1000
+    total_deleted = 0
+    all_errors = []
+    for i in range(0, len(keys), BATCH):
+        batch = keys[i : i + BATCH]
+        deleted, errors = delete_batch(client, args.bucket, batch)
+        total_deleted += deleted
+        all_errors.extend(errors)
+        print(f"  [{min(i + BATCH, len(keys))}/{len(keys)}] {total_deleted} deleted, {len(all_errors)} errors")
+
+    print(f"\nDeleted: {total_deleted}")
+    if all_errors:
+        print(f"\nErrors ({len(all_errors)}):")
+        for err in all_errors[:10]:
             print(f"  {err.get('Key')}: {err.get('Message')}")
-        if len(errors) > 10:
-            print(f"  … and {len(errors) - 10} more")
+        if len(all_errors) > 10:
+            print(f"  … and {len(all_errors) - 10} more")
         sys.exit(1)
 
 
