@@ -1,6 +1,5 @@
 import * as _ from "lodash";
 import * as types from "./types";
-import * as loadData from "./loadData";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
 import { getPairedClone, getAllClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
@@ -19,25 +18,15 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
   return (dispatch, getState) => {
     dispatch({ type: types.TOGGLE_FAMILY, family_ident: ident, updateBrushSelection });
     const state = getState();
-    const { clonalFamilies, datasets } = state;
+    const { clonalFamilies } = state;
     const clonalFamily = clonalFamilies.byIdent[ident];
     const clonalFamilyTrees = clonalFamily ? clonalFamily.trees || [] : [];
 
-    // Check if this is a client-side dataset
-    const datasetId = clonalFamily?.dataset_id;
-    const dataset = datasets.availableDatasets?.find((d) => d.dataset_id === datasetId);
-    const isClientSide = dataset?.isClientSide || dataset?.temporary;
-
-    // Use appropriate loader based on dataset source
     if (clonalFamilyTrees.length > 0) {
       _.forEach(clonalFamilyTrees, (tree) => {
-        if (isClientSide) {
-          getClientTree(dispatch, tree.ident);
-        } else {
-          loadData.getTree(dispatch, tree.ident);
-        }
+        getClientTree(dispatch, tree.ident);
       });
-    } else if (isClientSide && clonalFamily) {
+    } else if (clonalFamily) {
       // Fallback: surprise-format files may not have trees_meta on clones.
       // Try loading a tree by clone_id (the shared key between clones and trees).
       getClientTree(dispatch, clonalFamily.clone_id);
@@ -53,11 +42,7 @@ export const selectFamily = (ident, updateBrushSelection = false) => {
       if (pairedClone) {
         const pairedTrees = pairedClone.trees || [];
         _.forEach(pairedTrees, (tree) => {
-          if (isClientSide) {
-            getClientTree(dispatch, tree.ident);
-          } else {
-            loadData.getTree(dispatch, tree.ident);
-          }
+          getClientTree(dispatch, tree.ident);
         });
       }
 

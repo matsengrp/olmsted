@@ -85,38 +85,6 @@ describe("changeURL middleware", () => {
   });
 });
 
-// ── CLEAN_START ──
-
-describe("CLEAN_START", () => {
-  it("uses replaceState with empty query", () => {
-    const { invoke } = setup();
-    invoke({ type: types.CLEAN_START, query: {} });
-    expect(window.history.replaceState).not.toHaveBeenCalled();
-    // Empty query on "/" → no URL change needed
-  });
-
-  it("uses replaceState when URL actually changes", () => {
-    // Navigate to a URL with query, then re-mock history
-    window.history.pushState = originalPushState;
-    setLocation("/", "?foo=bar");
-    window.history.pushState = jest.fn();
-
-    const { invoke } = setup();
-    invoke({ type: types.CLEAN_START, query: {} });
-    expect(window.history.replaceState).toHaveBeenCalled();
-  });
-
-  it("uses pushState when pushState flag is true", () => {
-    window.history.pushState = originalPushState;
-    setLocation("/", "?foo=bar");
-    window.history.pushState = jest.fn();
-
-    const { invoke } = setup();
-    invoke({ type: types.CLEAN_START, query: {}, pushState: true });
-    expect(window.history.pushState).toHaveBeenCalled();
-  });
-});
-
 // ── URL_QUERY_CHANGE_WITH_COMPUTED_STATE ──
 
 describe("URL_QUERY_CHANGE_WITH_COMPUTED_STATE", () => {
@@ -202,17 +170,17 @@ describe("PAGE_CHANGE", () => {
     expect(urlArg).toBe("/");
   });
 
-  it("sets pathname from datapath for app component", () => {
+  it("sets pathname from action.path for app component", () => {
     const { invoke } = setup();
     invoke({
       type: types.PAGE_CHANGE,
       displayComponent: "app",
-      datapath: "datasets_test_data",
+      path: "/app/test/data",
       pushState: true
     });
     expect(window.history.pushState).toHaveBeenCalled();
     const urlArg = window.history.pushState.mock.calls[0][2];
-    expect(urlArg).toContain("/datasets/test/data");
+    expect(urlArg).toContain("/app/test/data");
   });
 
   it("clears query when displayComponent changes and no query in action", () => {
@@ -220,7 +188,7 @@ describe("PAGE_CHANGE", () => {
     invoke({
       type: types.PAGE_CHANGE,
       displayComponent: "app",
-      datapath: "datasets_test",
+      path: "/app/test",
       pushState: true
     });
     // URL action dispatched
@@ -233,7 +201,7 @@ describe("PAGE_CHANGE", () => {
     invoke({
       type: types.PAGE_CHANGE,
       displayComponent: "app",
-      datapath: "test_path",
+      path: "/app/test/path",
       query: { selected: "clone_1" },
       pushState: true
     });
@@ -246,12 +214,12 @@ describe("PAGE_CHANGE", () => {
     invoke({
       type: types.PAGE_CHANGE,
       displayComponent: "app",
-      datapath: "my_data",
+      path: "/app/my/data",
       pushState: true
     });
     const urlCalls = next.mock.calls.filter((call) => call[0] && call[0].type === types.URL);
     expect(urlCalls.length).toBeGreaterThan(0);
-    expect(urlCalls[0][0].path).toBe("/my/data");
+    expect(urlCalls[0][0].path).toBe("/app/my/data");
   });
 
   it("sets pathname to displayComponent for non-app, non-splash", () => {

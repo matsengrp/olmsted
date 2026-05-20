@@ -187,7 +187,6 @@ Manages dataset metadata and application routing:
 
 ```javascript
 {
-  s3bucket: string,                  // Legacy: "live"
   availableDatasets: [               // Array of dataset objects
     {
       dataset_id: string,

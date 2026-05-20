@@ -43,14 +43,12 @@ describe("datasets reducer", () => {
   });
 
   describe("PAGE_CHANGE", () => {
-    it("updates displayComponent and datapath", () => {
+    it("updates displayComponent", () => {
       const state = datasets(initialState, {
         type: types.PAGE_CHANGE,
-        displayComponent: "app",
-        datapath: "/app/test"
+        displayComponent: "app"
       });
       expect(state.displayComponent).toBe("app");
-      expect(state.datapath).toBe("/app/test");
     });
   });
 
@@ -58,12 +56,9 @@ describe("datasets reducer", () => {
     it("sets available datasets", () => {
       const state = datasets(initialState, {
         type: types.DATASETS_RECEIVED,
-        availableDatasets: [mockDataset],
-        s3bucket: "live",
-        splash: "default"
+        availableDatasets: [mockDataset]
       });
       expect(state.availableDatasets).toHaveLength(1);
-      expect(state.s3bucket).toBe("live");
     });
 
     it("preserves loading status when flag is set", () => {
@@ -74,8 +69,7 @@ describe("datasets reducer", () => {
       const state = datasets(stateWithLoaded, {
         type: types.DATASETS_RECEIVED,
         availableDatasets: [{ ...mockDataset, loading: undefined }],
-        preserveLoadingStatus: true,
-        s3bucket: "live"
+        preserveLoadingStatus: true
       });
       expect(state.availableDatasets[0].loading).toBe("DONE");
     });

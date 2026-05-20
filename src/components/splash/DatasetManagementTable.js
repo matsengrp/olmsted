@@ -3,12 +3,11 @@ import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiStar } from "react-icons/fi";
 import { red } from "./displayError";
-import { getClonalFamilies } from "../../actions/loadData";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import * as explorerActions from "../../actions/explorer";
-import { isUserUpload, isDatasetInIndexedDB } from "../../constants/datasetSource";
+import { isUserUpload } from "../../constants/datasetSource";
 import { LoadingStatus } from "../util/loading";
 import { ResizableTable } from "../util/resizableTable";
 import DownloadCSV from "../util/downloadCsv";
@@ -62,11 +61,7 @@ class LoadStatusCell extends React.Component {
           loading: "LOADING"
         });
 
-        if (isDatasetInIndexedDB(dataset)) {
-          getClientClonalFamilies(dispatch, dataset.dataset_id);
-        } else {
-          getClonalFamilies(dispatch, dataset.dataset_id);
-        }
+        getClientClonalFamilies(dispatch, dataset.dataset_id);
         break;
       }
     }
@@ -146,12 +141,7 @@ function handleDatasetSelect(dataset, dispatch) {
         loading: "LOADING"
       });
 
-      // Try client-side data first, fallback to server
-      if (dataset.isClientSide) {
-        getClientClonalFamilies(dispatch, dataset.dataset_id);
-      } else {
-        getClonalFamilies(dispatch, dataset.dataset_id);
-      }
+      getClientClonalFamilies(dispatch, dataset.dataset_id);
       break;
     }
   }

@@ -12,7 +12,6 @@ const zlib = require("zlib");
 const {
   buildManifest,
   scanForConsolidatedDatasets,
-  loadExistingSplitEntries,
   isCandidateConsolidatedFile,
   isConsolidatedShape
 } = require("../build_datasets_manifest");
@@ -65,8 +64,6 @@ describe("isCandidateConsolidatedFile", () => {
     ["consolidated.json", true],
     ["something.json.gz", true],
     ["datasets.json", false],
-    ["clones.foo.json", false],
-    ["tree.abc.json", false],
     ["readme.md", false]
   ])("isCandidateConsolidatedFile(%p) === %p", (name, expected) => {
     expect(isCandidateConsolidatedFile(name)).toBe(expected);
@@ -113,13 +110,10 @@ describe("scanForConsolidatedDatasets", () => {
     expect(entries[0].consolidated_path).toBe("consolidated/nested.json");
   });
 
-  it("skips datasets.json, clones.*.json, tree.*.json without counting them as skipped", () => {
+  it("skips datasets.json without counting it as skipped", () => {
     write("datasets.json", []);
-    write("clones.ds-x.json", []);
-    write("tree.abc-123.json", { nodes: [] });
     const { entries, skipped } = scanForConsolidatedDatasets(tmpDir);
     expect(entries).toEqual([]);
-    // These are not "candidate" files; they're filtered before parsing.
     expect(skipped).toBe(0);
   });
 
@@ -151,36 +145,11 @@ describe("scanForConsolidatedDatasets", () => {
   });
 });
 
-describe("loadExistingSplitEntries", () => {
-  it("returns [] when manifest doesn't exist", () => {
-    expect(loadExistingSplitEntries(path.join(tmpDir, "datasets.json"))).toEqual([]);
-  });
-
-  it("returns split entries (no consolidated_path) and drops consolidated ones", () => {
-    write("datasets.json", [
-      { dataset_id: "split-1", name: "Split One" },
-      { dataset_id: "consolidated-1", consolidated_path: "consolidated-1.json" }
-    ]);
-    const split = loadExistingSplitEntries(path.join(tmpDir, "datasets.json"));
-    expect(split).toHaveLength(1);
-    expect(split[0].dataset_id).toBe("split-1");
-  });
-
-  it("returns [] and warns when the existing manifest is malformed", () => {
-    write("datasets.json", "not a valid manifest");
-    const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
-    expect(loadExistingSplitEntries(path.join(tmpDir, "datasets.json"))).toEqual([]);
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
-  });
-});
-
 describe("buildManifest (integration)", () => {
-  it("preserves legacy split entries and refreshes consolidated entries", () => {
-    // Existing manifest with a hand-curated split entry AND a stale
-    // consolidated entry pointing at a file that no longer exists.
+  it("overwrites the manifest from scratch on each run", () => {
+    // Stale manifest with entries that no longer correspond to files on disk.
     write("datasets.json", [
-      { dataset_id: "legacy-split", name: "Legacy split dataset" },
+      { dataset_id: "stale-1", name: "Stale legacy entry" },
       { dataset_id: "stale-consolidated", consolidated_path: "ghost.json" }
     ]);
     // The actual consolidated file on disk:
@@ -188,16 +157,13 @@ describe("buildManifest (integration)", () => {
 
     const result = buildManifest(tmpDir);
 
-    expect(result.split).toHaveLength(1);
-    expect(result.split[0].dataset_id).toBe("legacy-split");
     expect(result.consolidated).toHaveLength(1);
     expect(result.consolidated[0].dataset_id).toBe("real-consolidated");
 
-    // The on-disk manifest reflects the merge.
+    // The on-disk manifest is just the fresh scan — stale entries are gone.
     const onDisk = JSON.parse(fs.readFileSync(path.join(tmpDir, "datasets.json"), "utf-8"));
-    expect(onDisk).toHaveLength(2);
-    const idents = onDisk.map((e) => e.dataset_id).sort();
-    expect(idents).toEqual(["legacy-split", "real-consolidated"]);
+    expect(onDisk).toHaveLength(1);
+    expect(onDisk[0].dataset_id).toBe("real-consolidated");
   });
 
   it("writes a fresh manifest when none exists", () => {

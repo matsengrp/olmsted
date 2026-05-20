@@ -5,14 +5,10 @@
  * present in a data directory.
  *
  * Walks the directory recursively, parses each consolidated olmsted-cli
- * file (`.json` or `.json.gz`, anything that isn't `datasets.json`,
- * `clones.*.json`, or `tree.*.json`), lifts the dataset metadata from
- * `data.datasets[0]`, and writes a fresh `datasets.json` with a
- * `consolidated_path` field pointing at each file.
- *
- * Pre-existing manifest entries WITHOUT a `consolidated_path` (i.e.
- * legacy split-format entries) are preserved. Pre-existing
- * consolidated entries are replaced by the fresh scan.
+ * file (`.json` or `.json.gz`, anything that isn't `datasets.json`),
+ * lifts the dataset metadata from `data.datasets[0]`, and writes a
+ * fresh `datasets.json` with a `consolidated_path` field pointing at
+ * each file.
  *
  * Triggered automatically on `npm run start:local` (see server.js).
  * Can also be invoked directly:
@@ -27,20 +23,12 @@ const zlib = require("zlib");
 const MANIFEST_FILENAME = "datasets.json";
 
 /**
- * Files that are NOT consolidated datasets and should be skipped.
  * Returns true if the filename looks like a consolidated dataset file.
- *
- * The `clones.*` / `tree.*` prefix exclusion is an *optimization* — it
- * lets us avoid parsing the per-clone/per-tree files in a legacy split
- * snapshot. Correctness is enforced by `isConsolidatedShape` after the
- * parse, so a renamed-to-look-split file would still be rejected, and
- * a renamed-to-look-consolidated file with the right shape would still
- * be accepted.
+ * `isConsolidatedShape` enforces correctness after parsing, so this
+ * is just a cheap filter to avoid opening the manifest itself.
  */
 function isCandidateConsolidatedFile(name) {
   if (name === MANIFEST_FILENAME) return false;
-  if (name.startsWith("clones.")) return false;
-  if (name.startsWith("tree.")) return false;
   return name.endsWith(".json") || name.endsWith(".json.gz");
 }
 
@@ -111,44 +99,24 @@ function scanForConsolidatedDatasets(rootDir) {
 }
 
 /**
- * Read the existing manifest (if any) and return its split-format
- * entries (entries without a consolidated_path). Returns [] when the
- * manifest is missing or malformed.
- */
-function loadExistingSplitEntries(manifestPath) {
-  if (!fs.existsSync(manifestPath)) return [];
-  try {
-    const data = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-    if (!Array.isArray(data)) return [];
-    return data.filter((entry) => entry && !entry.consolidated_path);
-  } catch (err) {
-    console.warn(`build_datasets_manifest: existing manifest is invalid, starting fresh (${err.message})`);
-    return [];
-  }
-}
-
-/**
- * Rebuild `datasets.json` in `dataDir`. Idempotent and non-destructive
- * for split-format entries.
+ * Rebuild `datasets.json` in `dataDir` from scratch.
  *
  * @param {string} dataDir
- * @returns {{ split: Array, consolidated: Array, skipped: number }}
- *   the two slices written to the manifest, plus a count of files that
- *   looked consolidated but failed to parse or didn't match the shape
+ * @returns {{ consolidated: Array, skipped: number }}
+ *   the consolidated entries written to the manifest, plus a count of
+ *   files that looked consolidated but failed to parse or didn't match
+ *   the shape
  */
 function buildManifest(dataDir) {
   const manifestPath = path.join(dataDir, MANIFEST_FILENAME);
-  const splitEntries = loadExistingSplitEntries(manifestPath);
   const { entries: consolidatedEntries, skipped } = scanForConsolidatedDatasets(dataDir);
-  const merged = [...splitEntries, ...consolidatedEntries];
-  fs.writeFileSync(manifestPath, JSON.stringify(merged, null, 2) + "\n");
-  return { split: splitEntries, consolidated: consolidatedEntries, skipped };
+  fs.writeFileSync(manifestPath, JSON.stringify(consolidatedEntries, null, 2) + "\n");
+  return { consolidated: consolidatedEntries, skipped };
 }
 
 module.exports = {
   buildManifest,
   scanForConsolidatedDatasets,
-  loadExistingSplitEntries,
   isCandidateConsolidatedFile,
   isConsolidatedShape
 };
@@ -166,6 +134,6 @@ if (require.main === module) {
   const result = buildManifest(dataDir);
   const skippedSuffix = result.skipped > 0 ? ` (${result.skipped} file(s) skipped — see warnings above)` : "";
   console.log(
-    `build_datasets_manifest: wrote ${result.split.length} split + ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`
+    `build_datasets_manifest: wrote ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`
   );
 }

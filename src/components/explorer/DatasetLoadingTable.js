@@ -6,12 +6,11 @@ import { GreenCheckmark, LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
-import { getClonalFamilies } from "../../actions/loadData";
 import * as explorerActions from "../../actions/explorer";
 import { changePage } from "../../actions/navigation";
 import { resolveFieldMetadata } from "../../utils/fieldMetadata";
 import { DEFAULT_DISPLAY, DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
-import { isUserUpload, isDatasetInIndexedDB } from "../../constants/datasetSource";
+import { isUserUpload } from "../../constants/datasetSource";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
 import {
@@ -265,13 +264,8 @@ export default class DatasetLoadingTable extends React.Component {
         dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
 
         try {
-          if (isDatasetInIndexedDB(dataset)) {
-            await getClientClonalFamilies(dispatch, dataset_id);
-            // Success is handled by getClientClonalFamilies dispatch
-          } else {
-            await getClonalFamilies(dispatch, dataset_id);
-            // Success is handled by getClonalFamilies dispatch
-          }
+          await getClientClonalFamilies(dispatch, dataset_id);
+          // Success is handled by getClientClonalFamilies dispatch
         } catch (error) {
           console.error(`Failed to load dataset ${dataset_id}:`, error);
           dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "ERROR" });

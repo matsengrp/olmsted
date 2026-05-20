@@ -3,7 +3,6 @@ const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
-const charon = require("./src/server/charon");
 const { buildManifest } = require("./bin/build_datasets_manifest");
 
 /* documentation in the static site! */
@@ -18,13 +17,12 @@ globals.setGlobals({ localData, localDataPath });
 
 // Auto-rebuild the local data manifest so users don't have to hand-edit
 // datasets.json after dropping a new consolidated file into the data dir.
-// Preserves legacy split-format entries; replaces consolidated entries.
 if (localData && localDataPath) {
   try {
     const result = buildManifest(localDataPath);
     const skippedSuffix = result.skipped > 0 ? `, ${result.skipped} skipped (see warnings above)` : "";
     console.log(
-      `Rebuilt ${localDataPath}/datasets.json (${result.split.length} split + ${result.consolidated.length} consolidated${skippedSuffix})`
+      `Rebuilt ${localDataPath}/datasets.json (${result.consolidated.length} consolidated${skippedSuffix})`
     );
   } catch (err) {
     console.warn(`Could not rebuild manifest in ${localDataPath}: ${err.message}`);
@@ -88,9 +86,6 @@ app.get("/favicon.png", (req, res) => {
   res.sendFile(path.join(__dirname, "favicon.png"));
 });
 
-/* apply charon API routes for data fetching */
-charon.applyCharonToApp(app);
-
 app.get("{*path}", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -102,7 +97,7 @@ const server = app.listen(app.get("port"), () => {
   console.log(
     global.LOCAL_DATA
       ? "Data is being sourced from " + global.LOCAL_DATA_PATH
-      : "Dataset JSONs are being sourced from S3, narratives via the static github repo"
+      : "No local data dir configured; /data/* requests will 404 (the static S3 deploy is the production data path)"
   );
   console.log("-----------------------------------\n\n");
 });

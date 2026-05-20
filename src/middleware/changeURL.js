@@ -25,10 +25,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
   /* first switch: query change */
 
   switch (action.type) {
-    case types.CLEAN_START: // fallthrough
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE: // fallthrough
-      query = action.query;
-      break;
     case types.CHANGE_URL_QUERY_BUT_NOT_REDUX_STATE:
       query = action.query;
       break;
@@ -48,7 +45,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     case types.PAGE_CHANGE:
       /* desired behaviour depends on the displayComponent selected... */
       if (action.displayComponent === "app") {
-        pathname = action.datapath.replace(/_/g, "/");
+        pathname = action.path;
       } else if (action.displayComponent === "splash") {
         pathname = "/";
       } else if (pathname.startsWith(`/${action.displayComponent}`)) {
