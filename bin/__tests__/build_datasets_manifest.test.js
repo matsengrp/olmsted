@@ -12,6 +12,7 @@ const zlib = require("zlib");
 const {
   buildManifest,
   scanForConsolidatedDatasets,
+  detectCollisions,
   isCandidateConsolidatedFile,
   isConsolidatedShape
 } = require("../build_datasets_manifest");
@@ -142,6 +143,77 @@ describe("scanForConsolidatedDatasets", () => {
     fs.symlinkSync(tmpDir, path.join(tmpDir, "loop"));
     const { entries } = scanForConsolidatedDatasets(tmpDir);
     expect(entries.map((e) => e.dataset_id)).toEqual(["ds-real"]);
+  });
+});
+
+describe("detectCollisions", () => {
+  it("returns [] for unique dataset_ids", () => {
+    const entries = [
+      { dataset_id: "a", consolidated_path: "a.json" },
+      { dataset_id: "b", consolidated_path: "b.json" }
+    ];
+    expect(detectCollisions(entries)).toEqual([]);
+  });
+
+  it("returns one collision per duplicated id with all colliding paths", () => {
+    const entries = [
+      { dataset_id: "shared", consolidated_path: "first.json" },
+      { dataset_id: "unique", consolidated_path: "lone.json" },
+      { dataset_id: "shared", consolidated_path: "second.json" },
+      { dataset_id: "shared", consolidated_path: "third.json" }
+    ];
+    const result = detectCollisions(entries);
+    expect(result).toHaveLength(1);
+    expect(result[0].dataset_id).toBe("shared");
+    expect(result[0].paths).toEqual(["first.json", "second.json", "third.json"]);
+  });
+});
+
+describe("buildManifest collision handling", () => {
+  it("throws and does NOT write the manifest by default on collision", () => {
+    write("a.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+    write("b.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+
+    expect(() => buildManifest(tmpDir)).toThrow(/dataset_id collision/);
+    // Manifest is NOT written on failure — caller should re-run after fixing.
+    expect(fs.existsSync(path.join(tmpDir, "datasets.json"))).toBe(false);
+  });
+
+  it("attaches the collision list to the thrown error", () => {
+    write("a.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+    write("b.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+
+    let caught;
+    try {
+      buildManifest(tmpDir);
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeDefined();
+    expect(caught.collisions).toHaveLength(1);
+    expect(caught.collisions[0].dataset_id).toBe("ds-dup");
+    expect(caught.collisions[0].paths.sort()).toEqual(["a.json", "b.json"]);
+  });
+
+  it("writes the manifest and returns the collision list when allowDuplicates is true", () => {
+    write("a.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+    write("b.json", makeConsolidatedPayload({ dataset_id: "ds-dup" }));
+
+    const result = buildManifest(tmpDir, { allowDuplicates: true });
+    expect(result.consolidated).toHaveLength(2);
+    expect(result.collisions).toHaveLength(1);
+    expect(result.collisions[0].dataset_id).toBe("ds-dup");
+
+    const onDisk = JSON.parse(fs.readFileSync(path.join(tmpDir, "datasets.json"), "utf-8"));
+    expect(onDisk).toHaveLength(2);
+  });
+
+  it("returns collisions: [] when ids are unique", () => {
+    write("a.json", makeConsolidatedPayload({ dataset_id: "ds-a" }));
+    write("b.json", makeConsolidatedPayload({ dataset_id: "ds-b" }));
+
+    const result = buildManifest(tmpDir);
+    expect(result.collisions).toEqual([]);
   });
 });
 

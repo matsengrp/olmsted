@@ -10,10 +10,19 @@
  * fresh `datasets.json` with a `consolidated_path` field pointing at
  * each file.
  *
- * Triggered automatically on `npm run start:local` (see server.js).
- * Can also be invoked directly:
+ * Fails on duplicate `dataset_id` across files — the client's IndexedDB
+ * dedup logic would silently drop all but one of the colliding entries,
+ * so we surface it loudly at build time instead. Pass `--allow-duplicates`
+ * to downgrade to a warning and write the manifest anyway.
+ *
+ * Triggered automatically on `npm run start:local` (see server.js) with
+ * `allowDuplicates: true` so a stale dev directory doesn't crash the
+ * dev server — the collision is still logged.
+ *
+ * Direct invocation:
  *
  *   node bin/build_datasets_manifest.js _data/server-snapshot/
+ *   node bin/build_datasets_manifest.js _data/server-snapshot/ --allow-duplicates
  */
 
 const fs = require("fs");
@@ -41,12 +50,12 @@ function readConsolidatedFile(filepath) {
 function isConsolidatedShape(data) {
   return Boolean(
     data &&
-    typeof data === "object" &&
-    data.metadata &&
-    Array.isArray(data.datasets) &&
-    data.datasets.length > 0 &&
-    data.clones &&
-    Array.isArray(data.trees)
+      typeof data === "object" &&
+      data.metadata &&
+      Array.isArray(data.datasets) &&
+      data.datasets.length > 0 &&
+      data.clones &&
+      Array.isArray(data.trees)
   );
 }
 
@@ -99,39 +108,113 @@ function scanForConsolidatedDatasets(rootDir) {
 }
 
 /**
+ * Group entries by dataset_id and return groups where more than one
+ * entry shares an ID. Each collision is `{ dataset_id, paths }` so the
+ * caller can render a clear error message.
+ *
+ * @param {Array<Object>} entries
+ * @returns {Array<{dataset_id: string, paths: string[]}>}
+ */
+function detectCollisions(entries) {
+  const groups = new Map();
+  for (const entry of entries) {
+    const id = entry.dataset_id;
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(entry);
+  }
+  const collisions = [];
+  for (const [id, group] of groups) {
+    if (group.length > 1) {
+      collisions.push({ dataset_id: id, paths: group.map((e) => e.consolidated_path) });
+    }
+  }
+  return collisions;
+}
+
+/**
+ * Format collision groups as a multi-line string suitable for console
+ * output. Renders one bullet per dataset_id with its colliding file
+ * paths indented underneath.
+ */
+function formatCollisions(collisions) {
+  return collisions
+    .map((c) => `  ${c.dataset_id}\n${c.paths.map((p) => `    - ${p}`).join("\n")}`)
+    .join("\n");
+}
+
+/**
  * Rebuild `datasets.json` in `dataDir` from scratch.
  *
  * @param {string} dataDir
- * @returns {{ consolidated: Array, skipped: number }}
- *   the consolidated entries written to the manifest, plus a count of
- *   files that looked consolidated but failed to parse or didn't match
- *   the shape
+ * @param {Object} [options]
+ * @param {boolean} [options.allowDuplicates=false] - When false (the
+ *   default), throws on dataset_id collisions and does NOT write the
+ *   manifest. When true, writes the manifest and returns the collision
+ *   list so the caller can warn.
+ * @returns {{ consolidated: Array, skipped: number, collisions: Array }}
  */
-function buildManifest(dataDir) {
+function buildManifest(dataDir, { allowDuplicates = false } = {}) {
   const manifestPath = path.join(dataDir, MANIFEST_FILENAME);
   const { entries: consolidatedEntries, skipped } = scanForConsolidatedDatasets(dataDir);
+  const collisions = detectCollisions(consolidatedEntries);
+  if (collisions.length > 0 && !allowDuplicates) {
+    const err = new Error(
+      `dataset_id collision(s) in ${dataDir}:\n${formatCollisions(collisions)}\n\n` +
+        "Each dataset_id must be unique across consolidated files. Either re-process " +
+        "one of the colliding files through olmsted-cli to get a fresh namespaced ID " +
+        "(post-#283), or rewrite the dataset_id manually. Pass --allow-duplicates to " +
+        "write the manifest anyway (the client will silently drop all but one of each " +
+        "colliding pair)."
+    );
+    err.collisions = collisions;
+    throw err;
+  }
   fs.writeFileSync(manifestPath, JSON.stringify(consolidatedEntries, null, 2) + "\n");
-  return { consolidated: consolidatedEntries, skipped };
+  return { consolidated: consolidatedEntries, skipped, collisions };
 }
 
 module.exports = {
   buildManifest,
   scanForConsolidatedDatasets,
+  detectCollisions,
+  formatCollisions,
   isCandidateConsolidatedFile,
   isConsolidatedShape
 };
 
 if (require.main === module) {
-  const dataDir = process.argv[2];
+  const args = process.argv.slice(2);
+  const allowDuplicates = args.includes("--allow-duplicates");
+  const positional = args.filter((a) => !a.startsWith("--"));
+  const dataDir = positional[0];
+
   if (!dataDir) {
-    console.error("Usage: build_datasets_manifest.js <data-dir>");
+    console.error("Usage: build_datasets_manifest.js <data-dir> [--allow-duplicates]");
     process.exit(1);
   }
   if (!fs.existsSync(dataDir) || !fs.statSync(dataDir).isDirectory()) {
     console.error(`Not a directory: ${dataDir}`);
     process.exit(1);
   }
-  const result = buildManifest(dataDir);
+
+  let result;
+  try {
+    result = buildManifest(dataDir, { allowDuplicates });
+  } catch (err) {
+    if (err.collisions) {
+      console.error(`build_datasets_manifest: ERROR — ${err.message}`);
+      process.exit(2);
+    }
+    throw err;
+  }
+
+  if (result.collisions.length > 0) {
+    console.warn(
+      `build_datasets_manifest: WARNING — ${result.collisions.length} dataset_id collision(s) (writing anyway because --allow-duplicates):`
+    );
+    console.warn(formatCollisions(result.collisions));
+  }
+
   const skippedSuffix = result.skipped > 0 ? ` (${result.skipped} file(s) skipped — see warnings above)` : "";
   console.log(
     `build_datasets_manifest: wrote ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`

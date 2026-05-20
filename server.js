@@ -17,13 +17,20 @@ globals.setGlobals({ localData, localDataPath });
 
 // Auto-rebuild the local data manifest so users don't have to hand-edit
 // datasets.json after dropping a new consolidated file into the data dir.
+// allowDuplicates is true here so a stale dev directory doesn't crash the
+// dev server — collisions surface as a warning so they're still visible.
 if (localData && localDataPath) {
   try {
-    const result = buildManifest(localDataPath);
+    const result = buildManifest(localDataPath, { allowDuplicates: true });
     const skippedSuffix = result.skipped > 0 ? `, ${result.skipped} skipped (see warnings above)` : "";
     console.log(
       `Rebuilt ${localDataPath}/datasets.json (${result.consolidated.length} consolidated${skippedSuffix})`
     );
+    if (result.collisions.length > 0) {
+      console.warn(
+        `⚠  ${result.collisions.length} dataset_id collision(s) in ${localDataPath} — the client will silently drop all but one of each colliding pair. Run \`node bin/build_datasets_manifest.js ${localDataPath}\` for details.`
+      );
+    }
   } catch (err) {
     console.warn(`Could not rebuild manifest in ${localDataPath}: ${err.message}`);
   }
