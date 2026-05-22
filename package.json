@@ -10,8 +10,8 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "postinstall": "npm run create-data-dir && npm run setup-eslint-plugin",
-    "setup-eslint-plugin": "node scripts/setup-eslint-plugin.js",
+    "postinstall": "mkdir -p data && npm run setup-eslint-plugin",
+    "setup-eslint-plugin": "node bin/setup-eslint-plugin.js",
     "clean": "rimraf _deploy/dist",
     "server": "node server.dist.js",
     "build:client": "NODE_ENV=production BABEL_ENV=production webpack --config webpack.config.prod.js",
@@ -27,10 +27,9 @@
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,json,css,md}\"",
-    "run:electron": "npm run clean && npm run build:electron && npm run create-data-dir && ./node_modules/.bin/electron . ",
-    "dist:electron": "npm run clean && npm run build:electron && npm run create-data-dir && electron-builder",
+    "run:electron": "npm run clean && npm run build:electron && mkdir -p data && ./node_modules/.bin/electron . ",
+    "dist:electron": "npm run clean && npm run build:electron && mkdir -p data && electron-builder",
     "heroku-postbuild": "npm run build",
-    "create-data-dir": "./bin/create-data-dir.sh",
     "test": "BABEL_ENV=test jest",
     "test:watch": "BABEL_ENV=test jest --watch",
     "test:coverage": "BABEL_ENV=test jest --coverage"

@@ -222,8 +222,8 @@ if [ "$DATA_ONLY" = false ]; then
             echo "  ❌ Root endpoint (/) failed"
         fi
 
-        # Test datasets endpoint
-        if curl -s "http://localhost:$PORT/charon/getDataset" >/dev/null 2>&1; then
+        # Test datasets manifest endpoint
+        if curl -s "http://localhost:$PORT/data/datasets.json" >/dev/null 2>&1; then
             echo "  ✅ Datasets endpoint responds"
         else
             echo "  ⚠️  Datasets endpoint may not be ready"

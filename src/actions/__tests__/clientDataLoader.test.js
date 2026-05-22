@@ -14,7 +14,7 @@ import path from "path";
 // src/util/globals.js pulls in d3-scale (ESM-only) for unrelated color
 // constants; mock just the API constant we actually use here.
 jest.mock("../../util/globals", () => ({
-  charonAPIAddress: "/data"
+  dataBaseURL: "/data"
 }));
 
 const { ingestConsolidatedServerDataset, ingestConsolidatedServerDatasets } = require("../clientDataLoader");
@@ -145,7 +145,7 @@ describe("ingestConsolidatedServerDatasets (manifest-driven)", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("ingests only entries with consolidated_path and returns the rest", async () => {
+  it("ingests entries with consolidated_path; ignores entries without one", async () => {
     const manifestText = readFixture("datasets.json");
     const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
 
@@ -155,29 +155,26 @@ describe("ingestConsolidatedServerDatasets (manifest-driven)", () => {
       return mockResponse("", { ok: false, status: 404 });
     });
 
-    const splitOnly = await ingestConsolidatedServerDatasets();
+    await ingestConsolidatedServerDatasets();
 
-    // The fixture manifest has two entries; one has consolidated_path, one
-    // doesn't. The split-only entry is the one without.
-    expect(splitOnly).toHaveLength(1);
-    expect(splitOnly[0].dataset_id).toBe("fixture-dataset-001");
-    expect(splitOnly[0].consolidated_path).toBeUndefined();
-
-    // The consolidated entry was ingested into IndexedDB.
+    // Only the consolidated entry was ingested; the legacy split entry is
+    // dropped on the floor.
     const all = await olmstedDB.getAllDatasets();
     expect(all).toHaveLength(1);
     expect(all[0].original_dataset_id).toBe("fixture-consolidated-001");
   });
 
-  it("returns [] when the manifest fetch fails", async () => {
+  it("no-ops when the manifest fetch fails", async () => {
     globalThis.fetch = jest.fn(async () => mockResponse("", { ok: false, status: 500 }));
-    const result = await ingestConsolidatedServerDatasets();
-    expect(result).toEqual([]);
+    await ingestConsolidatedServerDatasets();
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
   });
 
-  it("returns [] when the manifest is not an array", async () => {
+  it("no-ops when the manifest is not an array", async () => {
     globalThis.fetch = jest.fn(async () => mockResponse(JSON.stringify({ not: "an array" })));
-    const result = await ingestConsolidatedServerDatasets();
-    expect(result).toEqual([]);
+    await ingestConsolidatedServerDatasets();
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
   });
 });

@@ -1,33 +1,19 @@
 import queryString from "query-string";
 import * as types from "./types";
-// This should be more clearly marked as part of the routing logic
-export const chooseDisplayComponentFromPathname = (pathname) => {
-  // if (pathname === "/" || pathname === "/all") return "splash";
-  if (pathname.startsWith("/app")) return "app";
-  return "splash"; // fallthrough
-};
 
-// Second parameter is legacy server compatibility - not used in client-side version
-export const getDatapath = (path, _) => {
-  return path;
+export const chooseDisplayComponentFromPathname = (pathname) => {
+  if (pathname.startsWith("/app")) return "app";
+  return "splash";
 };
 
 /* changes the state of the page and (perhaps) the dataset displayed.
-This function is used throughout the app for all navigation to another page, (including braowserBackForward - see function below)
-The exception is for navigation requests that specify only the query changes, or that have an identical pathname to that selected.
-Note that this function is not pure, in that it may change the URL
+This function is used throughout the app for all navigation to another page,
+including browserBackForward (see below).
 
 ARGUMENTS:
-(1) path - REQUIRED - the destination path - e.g. "zika" or "flu/..." (does not include query)
-(2) query - OPTIONAL (default: undefined) - see below
+(1) path - REQUIRED - the destination path (does not include query)
+(2) query - OPTIONAL (default: undefined)
 (3) push - OPTIONAL (default: true) - signals that pushState should be used (has no effect on the reducers)
-
-UNDERSTANDING QUERY (SLIGHTLY CONFUSING)
-This function changes the pathname (stored in the datasets reducer) and modifies the URL pathname and query
-accordingly in the middleware. But the URL query is not processed further.
-Because the datasets reducer has changed, the <App> (or whichever display component we're on) will update.
-In <App>, this causes a call to loadJSONs, which will, as part of it's dispatch, use the URL state of query.
-In this way, the URL query is "used".
 */
 export const changePage =
   ({ path, query = undefined, push = true }) =>
@@ -40,18 +26,13 @@ export const changePage =
     const d = {
       type: types.PAGE_CHANGE,
       displayComponent: chooseDisplayComponentFromPathname(path),
-      errorMessage: undefined,
-      datapath: undefined
+      path,
+      errorMessage: undefined
     };
 
-    // Set the new datapath if we are changing to the app page
-    if (d.displayComponent === "app") {
-      d.datapath = getDatapath(path, datasets.availableDatasets);
-    }
-
-    // If we were PREVIOUSLY on the app page and change to a different dataset or go
-    // back to splash, we want to reset the clonal families state
-    if (datasets.displayComponent === "app" && d.datapath !== datasets.datapath) {
+    // If we were PREVIOUSLY on the app page and we're leaving it, reset
+    // the clonal families state.
+    if (datasets.displayComponent === "app" && d.displayComponent !== "app") {
       dispatch({ type: types.RESET_CLONAL_FAMILIES_STATE });
     }
 
@@ -61,7 +42,6 @@ export const changePage =
     if (push) {
       d.pushState = true;
     }
-    /* check if this is "valid" - we can change it here before it is dispatched */
     dispatch(d);
   };
 
@@ -109,10 +89,6 @@ export const changePageQuery =
 
 export const browserBackForward = () => (dispatch, getState) => {
   const { datasets } = getState();
-  // console.log('DATASETS',queryString.parse(window.location.search));
-  /* if the pathname has changed, trigger the changePage action (will trigger new post to load, new dataset to load, etc) */
-  // console.log("broswer back/forward detected. From: ", datasets.urlPath, datasets.urlSearch, "to:", window.location.pathname, window.location.search)
-  // console.log('PATH', window.location.pathname);
   if (datasets.urlPath !== window.location.pathname) {
     dispatch(changePage({ path: window.location.pathname }));
   }

@@ -8,13 +8,10 @@ export const getSelectedDatasets = (datasets) => {
 /* eslint-disable default-param-last */
 const datasets = (
   state = {
-    s3bucket: "live", // Legacy field — still used by server dataset loading path
     availableDatasets: [],
     selectedDatasets: [], // Array of dataset IDs selected for batch loading
     pendingDatasetLoads: [], // Array of dataset IDs that need to be loaded from URL query string
     starredDatasets: [], // Array of dataset IDs that are starred/favorited
-    splash: undefined, // Legacy field — stored from server response but never read
-    datapath: undefined, // e.g. "laura-mb-v17" or "kate-qrs-v16"
     displayComponent: chooseDisplayComponentFromPathname(window.location.pathname),
     urlPath: window.location.pathname,
     urlQuery: window.location.search,
@@ -34,7 +31,6 @@ const datasets = (
       return {
         ...state,
         displayComponent: action.displayComponent,
-        datapath: action.datapath,
         errorMessage: action.errorMessage
       };
     }
@@ -52,24 +48,13 @@ const datasets = (
 
       return {
         ...state,
-        s3bucket: action.s3bucket,
-        splash: action.splash,
         availableDatasets,
-        user: action.user,
-        datapath: action.datapath
+        user: action.user
       };
-
-      // I guess its ok to keep this, but not sure that what its doing here will make any sense or be necessary once all reorg is said and done
-    }
-    case types.PROCEED_SANS_MANIFEST: {
-      return { ...state, datapath: action.datapath };
     }
     case types.REMOVE_DATASET: {
-      // Filter out the removed dataset from availableDatasets
       const filteredDatasets = state.availableDatasets.filter((dataset) => dataset.dataset_id !== action.dataset_id);
       return { ...state, availableDatasets: filteredDatasets };
-
-      // Not sure what this is...
     }
     case types.URL: {
       return {

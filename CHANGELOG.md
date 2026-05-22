@@ -1,3 +1,10 @@
+## version 2.7.3 - 2026/05/20
+Changed:
+* Removed the legacy auspice-shaped server dataset path (closes #293). Deleted `src/actions/loadData.js`, `src/util/parseParams.js`, `src/actions/recomputeReduxState.js`, the `/charon/*` Express route, `src/server/getFiles.js`, and the remote-mode S3 globals. Server-side datasets are now exclusively the consolidated olmsted-cli format ingested into IndexedDB on page load.
+* Stripped dead Redux state: `s3bucket`, `datapath`, and the `PROCEED_SANS_MANIFEST` / `CLEAN_START` / `DATA_INVALID` action types. `changePage` now sets the new URL pathname directly from `action.path` instead of routing it through the auspice underscore-to-slash rewrite.
+* `DATASET_SOURCE.SERVER_SPLIT` is gone; `sourceOf()` resolves to `UPLOAD` or `SERVER_CONSOLIDATED`. The `isDatasetInIndexedDB` branch in dataset loaders is unconditional now (all datasets live in IndexedDB).
+* `bin/build-datasets-manifest.js` rewrites `datasets.json` from scratch on each run (no more preserved split-format entries). Dropped `bin/aws_explore.py` and `bin/snapshot_server_data.py`, both of which only made sense in the legacy flow.
+
 ## version 2.7.2 - 2026/04/22
 Changed:
 * Relabeled the tree dropdown from "Ancestral Reconstruction Method" to "Tree".

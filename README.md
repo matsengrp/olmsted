@@ -258,14 +258,17 @@ npm run start
 
 ### With Local Data
 
-The server's `localData` mode requires data in **split format** (separate files for datasets, clones, and trees), as opposed to the consolidated single-file format used for browser uploads. The split format allows the server to serve individual files on demand via the charon API.
+The server's `localData` mode serves consolidated olmsted-cli JSON files
+(`.json` or `.json.gz`) from a data directory. On startup, the server
+builds a `datasets.json` manifest by scanning the directory for consolidated
+files; the client then fetches that manifest and ingests each file into
+IndexedDB.
 
-Split format structure:
 ```
 data/
-  datasets.json                          # List of available datasets
-  clones.{dataset_id}.json              # Clonal families for each dataset
-  tree.{tree_id}.json                   # Individual tree files
+  datasets.json                # Generated manifest (built on startup)
+  my-dataset.json.gz           # Consolidated olmsted-cli output
+  ...
 ```
 
 To run with example data from [olmsted-cli](https://github.com/matsengrp/olmsted-cli):
@@ -274,8 +277,8 @@ To run with example data from [olmsted-cli](https://github.com/matsengrp/olmsted
 # Clone olmsted-cli if you haven't already
 git clone https://github.com/matsengrp/olmsted-cli.git ../olmsted-cli
 
-# Copy pre-split example data to data/ (gitignored)
-cp ../olmsted-cli/example_data/pcp/split_golden_data/* data/
+# Drop a consolidated file into data/ (gitignored)
+cp ../olmsted-cli/example_data/pcp/*.json.gz data/
 
 # Start server with local data
 BABEL_ENV=dev ./node_modules/.bin/babel-node server.js dev localData data

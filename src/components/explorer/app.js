@@ -5,8 +5,6 @@ import DatasetLoadingTable from "./DatasetLoadingTable";
 import * as clonalFamiliesSelectors from "../../selectors/clonalFamilies";
 import * as explorerActions from "../../actions/explorer";
 import { getClientDatasets, getClientClonalFamilies } from "../../actions/clientDataLoader";
-import * as loadData from "../../actions/loadData";
-import { isDatasetInIndexedDB } from "../../constants/datasetSource";
 import * as types from "../../actions/types";
 import { TreeViz } from "./tree";
 import { ClonalFamiliesViz } from "./scatterplot";
@@ -652,15 +650,7 @@ class App extends React.Component {
         const dataset = availableDatasets.find((d) => d.dataset_id === dataset_id);
         if (dataset) {
           dispatch({ type: types.LOADING_DATASET, dataset_id, loading: "LOADING" });
-
-          // Datasets backed by IndexedDB (uploads and consolidated-server
-          // ingest) use the client loader. Legacy split-format manifest
-          // entries fall through to the auspice fetch flow.
-          if (isDatasetInIndexedDB(dataset)) {
-            getClientClonalFamilies(dispatch, dataset_id);
-          } else {
-            loadData.getClonalFamilies(dispatch, dataset_id);
-          }
+          getClientClonalFamilies(dispatch, dataset_id);
         } else {
           console.warn(`App: Dataset ${dataset_id} not found in available datasets`);
         }

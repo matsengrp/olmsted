@@ -7,10 +7,6 @@ import { browserBackForward } from "../../actions/navigation";
 import { getClientDatasets } from "../../actions/clientDataLoader";
 
 class Monitor extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     const script = document.createElement("script");
     script.src = "https://platform.twitter.com/widgets.js";
@@ -23,7 +19,6 @@ class Monitor extends React.Component {
     this.onURLChanged();
     /* don't need initial dimensions - they're in the redux store on load */
     window.addEventListener(
-      // future resizes
       "resize",
       /* lodash throttle invokes resize event at most twice per second
       to let redraws catch up. Could also use debounce for 'wait until resize stops' */
@@ -37,15 +32,6 @@ class Monitor extends React.Component {
     The popstate event will be triggered by doing a browser action such as a click on the back or forward button
     (or calling history.back() or history.forward() in JavaScript). */
     window.addEventListener("popstate", this.onURLChanged);
-    // this.onURLChanged();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { datapath } = this.props;
-    // Typical usage (don't forget to compare props):
-    if (prevProps.datapath && datapath !== prevProps.datapath) {
-      this.onURLChanged();
-    }
   }
 
   onURLChanged = () => {
@@ -59,13 +45,10 @@ class Monitor extends React.Component {
       /* here we decide whether we should change panel layout from full <-> grid
       when crossing the twoColumnBreakpoint */
       const { browserDimensions: _browserDimensions } = getState();
-      // const oldBrowserDimensions = browserDimensions.browserDimensions; // unused variable
       const newBrowserDimensions = {
         width: window.innerWidth,
         height: window.innerHeight,
-        docHeight:
-          window.document.body
-            .clientHeight /* background needs docHeight because sidebar creates absolutely positioned container and blocks height 100% */
+        docHeight: window.document.body.clientHeight
       };
       dispatch({ type: BROWSER_DIMENSIONS, data: newBrowserDimensions });
     });
@@ -77,14 +60,7 @@ class Monitor extends React.Component {
 }
 
 Monitor.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  datapath: PropTypes.string
+  dispatch: PropTypes.func.isRequired
 };
 
-Monitor.defaultProps = {
-  datapath: null
-};
-
-export default connect((state) => ({
-  datapath: state.datasets.datapath
-}))(Monitor);
+export default connect()(Monitor);
