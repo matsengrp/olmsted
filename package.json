@@ -80,7 +80,7 @@
     "redux-thunk": "^3.1.0",
     "reselect": "^5.1.1",
     "terser-webpack-plugin": "^5.4.0",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "vega": "^6.2.0",
     "vega-embed": "^7.1.0",
     "vega-lite": "^6.4.2",
@@ -125,7 +125,7 @@
     "rimraf": "^5.0.7",
     "style-loader": "^4.0.0",
     "webpack-cli": "^7.0.2",
-    "webpack-dev-server": "^5.2.3",
+    "webpack-dev-server": "^5.2.4",
     "webpack-hot-middleware": "^2.26.1",
     "webpack-shell-plugin": "^0.5.0"
   },
