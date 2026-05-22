@@ -15,6 +15,15 @@ describe("sourceOf", () => {
     expect(sourceOf({ temporary: false, isClientSide: true })).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);
   });
 
+  it("falls back to SERVER_CONSOLIDATED for records with ambiguous flags", () => {
+    // Defaults to the non-deletable classification so UI affordances (like
+    // the delete button) don't appear for records we can't positively
+    // identify as user uploads.
+    expect(sourceOf({})).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);
+    expect(sourceOf({ isClientSide: true })).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);
+    expect(sourceOf({ isClientSide: false })).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);
+  });
+
   it("returns SERVER_CONSOLIDATED for null/undefined inputs (defensive)", () => {
     expect(sourceOf(null)).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);
     expect(sourceOf(undefined)).toBe(DATASET_SOURCE.SERVER_CONSOLIDATED);

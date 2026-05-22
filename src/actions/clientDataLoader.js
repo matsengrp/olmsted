@@ -7,7 +7,7 @@ import * as types from "./types";
 import clientDataStore from "../utils/clientDataStore";
 import olmstedDB from "../utils/olmstedDB";
 import FileProcessor from "../utils/fileProcessor";
-import { charonAPIAddress } from "../util/globals";
+import { dataBaseURL } from "../util/globals";
 import { DATASET_SOURCE } from "../constants/datasetSource";
 
 /**
@@ -26,7 +26,7 @@ const isConsolidatedEntry = (entry) => Boolean(entry && entry.consolidated_path)
  */
 const fetchManifest = async () => {
   try {
-    const response = await fetch(`${charonAPIAddress}/datasets.json`);
+    const response = await fetch(`${dataBaseURL}/datasets.json`);
     if (!response.ok) return null;
     const manifest = await response.json();
     return Array.isArray(manifest) ? manifest : null;
@@ -162,7 +162,7 @@ export const ingestConsolidatedServerDataset = async (entry) => {
     const existing = await olmstedDB.findDatasetByOriginalId(entry.dataset_id);
     if (existing) return existing;
 
-    const url = `${charonAPIAddress}/${entry.consolidated_path}`;
+    const url = `${dataBaseURL}/${entry.consolidated_path}`;
     const response = await fetch(url);
     if (!response.ok) {
       console.warn(`Failed to fetch consolidated server dataset at ${url}: ${response.status} ${response.statusText}`);

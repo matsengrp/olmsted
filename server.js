@@ -28,7 +28,7 @@ if (localData && localDataPath) {
     );
     if (result.collisions.length > 0) {
       console.warn(
-        `⚠  ${result.collisions.length} dataset_id collision(s) in ${localDataPath} — the client will silently drop all but one of each colliding pair. Run \`node bin/build-datasets-manifest.js ${localDataPath}\` for details.`
+        `WARNING: ${result.collisions.length} dataset_id collision(s) in ${localDataPath} — the client will silently drop all but one of each colliding pair. Run \`node bin/build-datasets-manifest.js ${localDataPath}\` for details.`
       );
     }
   } catch (err) {

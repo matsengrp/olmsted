@@ -7,6 +7,7 @@ import { DatasetManagementTable } from "./DatasetManagementTable";
 import { CenterContent } from "./centerContent";
 import { displayError } from "./displayError";
 import { getSelectedDatasets } from "../../reducers/datasets";
+import { isUserUpload } from "../../constants/datasetSource";
 import FileUpload from "./fileUpload";
 import clientDataStore from "../../utils/clientDataStore";
 import { NAV_BAR_HEIGHT } from "../framework/nav-bar";
@@ -47,7 +48,7 @@ class Splash extends React.Component {
 
   handleDeleteSelected = async () => {
     const { availableDatasets, dispatch } = this.props;
-    const selected = availableDatasets.filter((d) => (d.isClientSide || d.temporary) && d.loading === "DONE");
+    const selected = availableDatasets.filter((d) => isUserUpload(d) && d.loading === "DONE");
     if (selected.length === 0) {
       window.alert("No loaded local data to delete. Select datasets by clicking their checkboxes first.");
       return;

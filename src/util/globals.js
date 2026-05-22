@@ -816,7 +816,7 @@ export const titleColors = [
 export const notificationDuration = 5000;
 
 /* server init stuff */
-export const charonAPIAddress = "/data";
+export const dataBaseURL = "/data";
 
 export const colorByMenuPreferredOrdering = [
   "clade_membership",

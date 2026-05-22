@@ -19,8 +19,9 @@ export const DATASET_SOURCE = {
 
 /**
  * Resolve a dataset's source. Prefers the explicit `source` field
- * when present; otherwise derives from the legacy `temporary` flag
- * so existing IndexedDB records continue to work.
+ * when present; otherwise UPLOAD requires `temporary === true`
+ * explicitly so records with ambiguous flags fall back to the
+ * non-deletable SERVER_CONSOLIDATED classification.
  *
  * @param {Object} dataset
  * @returns {string} one of DATASET_SOURCE.*
@@ -28,8 +29,8 @@ export const DATASET_SOURCE = {
 export const sourceOf = (dataset) => {
   if (!dataset) return DATASET_SOURCE.SERVER_CONSOLIDATED;
   if (dataset.source) return dataset.source;
-  if (dataset.temporary === false) return DATASET_SOURCE.SERVER_CONSOLIDATED;
-  return DATASET_SOURCE.UPLOAD;
+  if (dataset.temporary === true) return DATASET_SOURCE.UPLOAD;
+  return DATASET_SOURCE.SERVER_CONSOLIDATED;
 };
 
 /**

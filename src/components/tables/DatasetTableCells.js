@@ -3,6 +3,7 @@
  */
 import React, { useState } from "react";
 import { FiStar } from "react-icons/fi";
+import { isUserUpload } from "../../constants/datasetSource";
 
 /**
  * Component for the size column
@@ -115,7 +116,7 @@ export function getDatasetCsvColumns() {
   return [
     { header: "Status", accessor: "loading" },
     { header: "Name", accessor: (d) => d.name || d.dataset_id },
-    { header: "Source", accessor: (d) => (d.isClientSide || d.temporary ? "Local" : "Server") },
+    { header: "Source", accessor: (d) => (isUserUpload(d) ? "Local" : "Server") },
     { header: "Size (bytes)", accessor: "file_size" },
     { header: "Subjects", accessor: "subjects_count" },
     { header: "Families", accessor: "clone_count" },
