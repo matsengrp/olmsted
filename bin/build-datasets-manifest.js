@@ -21,8 +21,8 @@
  *
  * Direct invocation:
  *
- *   node bin/build_datasets_manifest.js _data/server-snapshot/
- *   node bin/build_datasets_manifest.js _data/server-snapshot/ --allow-duplicates
+ *   node bin/build-datasets-manifest.js _data/server-snapshot/
+ *   node bin/build-datasets-manifest.js _data/server-snapshot/ --allow-duplicates
  */
 
 const fs = require("fs");
@@ -98,7 +98,7 @@ function scanForConsolidatedDatasets(rootDir) {
         entries.push({ ...ds, consolidated_path: rel });
       } catch (err) {
         skipped += 1;
-        console.warn(`build_datasets_manifest: skipping ${rel}: ${err.message}`);
+        console.warn(`build-datasets-manifest: skipping ${rel}: ${err.message}`);
       }
     }
   }
@@ -189,7 +189,7 @@ if (require.main === module) {
   const dataDir = positional[0];
 
   if (!dataDir) {
-    console.error("Usage: build_datasets_manifest.js <data-dir> [--allow-duplicates]");
+    console.error("Usage: build-datasets-manifest.js <data-dir> [--allow-duplicates]");
     process.exit(1);
   }
   if (!fs.existsSync(dataDir) || !fs.statSync(dataDir).isDirectory()) {
@@ -202,7 +202,7 @@ if (require.main === module) {
     result = buildManifest(dataDir, { allowDuplicates });
   } catch (err) {
     if (err.collisions) {
-      console.error(`build_datasets_manifest: ERROR — ${err.message}`);
+      console.error(`build-datasets-manifest: ERROR — ${err.message}`);
       process.exit(2);
     }
     throw err;
@@ -210,13 +210,13 @@ if (require.main === module) {
 
   if (result.collisions.length > 0) {
     console.warn(
-      `build_datasets_manifest: WARNING — ${result.collisions.length} dataset_id collision(s) (writing anyway because --allow-duplicates):`
+      `build-datasets-manifest: WARNING — ${result.collisions.length} dataset_id collision(s) (writing anyway because --allow-duplicates):`
     );
     console.warn(formatCollisions(result.collisions));
   }
 
   const skippedSuffix = result.skipped > 0 ? ` (${result.skipped} file(s) skipped — see warnings above)` : "";
   console.log(
-    `build_datasets_manifest: wrote ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`
+    `build-datasets-manifest: wrote ${result.consolidated.length} consolidated entries to ${path.join(dataDir, MANIFEST_FILENAME)}${skippedSuffix}`
   );
 }

@@ -114,7 +114,7 @@ For production / deploy time, run the same scanner manually before
 uploading:
 
 ```bash
-node bin/build_datasets_manifest.js _deploy/data
+node bin/build-datasets-manifest.js _deploy/data
 ```
 
 The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
@@ -145,7 +145,7 @@ mkdir -p _deploy/data/consolidated
 cp /path/to/my-dataset.json.gz _deploy/data/consolidated/
 
 # 2. Rebuild the manifest from scratch.
-node bin/build_datasets_manifest.js _deploy/data
+node bin/build-datasets-manifest.js _deploy/data
 
 # 3. Upload to S3 and invalidate CloudFront. The bucket name is the
 #    same one the GitHub Actions workflow targets via vars.S3_BUCKET_NAME

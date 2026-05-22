@@ -1,5 +1,5 @@
 /**
- * Tests for bin/build_datasets_manifest.js
+ * Tests for bin/build-datasets-manifest.js
  *
  * Each test uses a fresh temp directory so we can write and re-read
  * the manifest without polluting checked-in fixtures.
@@ -15,7 +15,7 @@ const {
   detectCollisions,
   isCandidateConsolidatedFile,
   isConsolidatedShape
-} = require("../build_datasets_manifest");
+} = require("../build-datasets-manifest");
 
 const makeConsolidatedPayload = (overrides = {}) => ({
   metadata: { schema_version: "2.0.0", ...overrides.metadata },
