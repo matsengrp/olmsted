@@ -611,6 +611,15 @@ The application uses Dexie.js to manage IndexedDB storage with the following sch
 
 This lazy loading approach enables handling datasets with thousands of clonal families while maintaining responsive UI performance.
 
+#### Server-side dataset lifecycle
+
+Each persisted dataset record carries a `source` field (see `src/constants/datasetSource.js`):
+
+- **`SERVER_CONSOLIDATED`** — ingested from `/data/datasets.json` at page load. **Ephemeral**: reconciliation in `getClientDatasets` (`src/actions/clientDataLoader.js`) deletes any cached entry whose `original_dataset_id` is no longer in the manifest, and deletes any entry whose manifest `name` has changed so the ingest pass re-fetches it.
+- **`UPLOAD`** — user drag-and-drop. **Permanent**: never touched by reconciliation. Only `handleDatasetDelete` (the per-row Delete button) and `clearAll` can remove them.
+
+The reconciliation filter in `olmstedDB.getServerConsolidatedDatasets()` checks the raw `source` field, not `sourceOf()`'s legacy-flag fallback, so a pre-`source`-enum upload missing `temporary: true` won't be swept by accident.
+
 ---
 
 _Last updated: 2026-03-13_

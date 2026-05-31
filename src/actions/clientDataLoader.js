@@ -209,6 +209,44 @@ const ingestAndDispatch = async (consolidatedEntries, dispatch) => {
 };
 
 /**
+ * Reconcile IndexedDB SERVER_CONSOLIDATED entries against the live
+ * manifest. Two operations:
+ *
+ *   1. Sweep: any cached server-side dataset whose `original_dataset_id`
+ *      no longer appears in the manifest is deleted.
+ *   2. Refresh: any cached server-side dataset whose manifest entry's
+ *      `name` differs from the cached `name` is deleted, so the
+ *      subsequent ingest pass re-fetches it with the current metadata.
+ *
+ * Cached records without `original_dataset_id` (legacy / malformed) are
+ * skipped — better to leave them than risk deleting data we can't match.
+ *
+ * UPLOAD entries are never touched: they're filtered out at the source
+ * by `getServerConsolidatedDatasets`. Callers must skip this helper
+ * entirely when the manifest fetch failed (manifest === null) so a
+ * transient network error doesn't wipe the cache.
+ *
+ * @param {Array<{dataset_id: string, name?: string}>} manifestEntries
+ *   consolidated entries from the manifest (each must have `dataset_id`;
+ *   `name` is required for the rename trigger but build-datasets-manifest
+ *   always emits it from dataset metadata)
+ * @returns {Promise<void>}
+ */
+export const reconcileServerConsolidated = async (manifestEntries) => {
+  const entryByOriginalId = new Map(manifestEntries.map((e) => [e.dataset_id, e]));
+  const cached = await olmstedDB.getServerConsolidatedDatasets();
+  for (const ds of cached) {
+    if (!ds.original_dataset_id) continue;
+    const manifestEntry = entryByOriginalId.get(ds.original_dataset_id);
+    const removed = !manifestEntry;
+    const renamed = manifestEntry && manifestEntry.name && manifestEntry.name !== ds.name;
+    if (removed || renamed) {
+      await clientDataStore.removeDataset(ds.dataset_id);
+    }
+  }
+};
+
+/**
  * Read /data/datasets.json and ingest any entries with consolidated_path.
  * Kept as an exported helper for tests; the production code path goes
  * through `getClientDatasets` instead, which is non-blocking.
@@ -232,10 +270,22 @@ export const ingestConsolidatedServerDatasets = async () => {
  */
 export const getClientDatasets = async (dispatch) => {
   try {
-    const manifest = (await fetchManifest()) || [];
-    const consolidatedEntries = manifest.filter(isConsolidatedEntry);
+    const manifest = await fetchManifest();
+    const consolidatedEntries = (manifest || []).filter(isConsolidatedEntry);
 
-    // Initial dispatch with whatever's already in IndexedDB. Don't wait
+    // Reconcile cache with the manifest *before* the initial dispatch so
+    // the splash table reflects the live state on first paint. Skipped
+    // when the manifest fetch failed (manifest === null) — a transient
+    // network error must not wipe cached server-side datasets.
+    //
+    // The `await` here is load-bearing: the subsequent ingest pass
+    // short-circuits on `findDatasetByOriginalId`, so renamed-and-deleted
+    // entries must be committed to IndexedDB before ingest runs.
+    if (manifest !== null) {
+      await reconcileServerConsolidated(consolidatedEntries);
+    }
+
+    // Initial dispatch with whatever's now in IndexedDB. Don't wait
     // on consolidated ingest.
     await dispatchClientDatasets(dispatch);
 
