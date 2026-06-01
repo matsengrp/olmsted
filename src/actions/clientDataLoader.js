@@ -238,7 +238,7 @@ const ingestAndDispatch = async (consolidatedEntries, dispatch) => {
 
 /**
  * Reconcile IndexedDB SERVER_CONSOLIDATED entries against the live
- * manifest. Three operations:
+ * manifest. Four operations:
  *
  *   1. Dedup: when multiple cached rows share an `original_dataset_id`
  *      (race-induced from concurrent ingest calls), keep the oldest
@@ -248,9 +248,15 @@ const ingestAndDispatch = async (consolidatedEntries, dispatch) => {
  *      race.
  *   2. Sweep: any cached server-side dataset whose `original_dataset_id`
  *      no longer appears in the manifest is deleted.
- *   3. Refresh: any cached server-side dataset whose manifest entry's
- *      `name` differs from the cached `name` is deleted, so the
+ *   3. Refresh-on-rename: any cached server-side dataset whose manifest
+ *      entry's `name` differs from the cached `name` is deleted, so the
  *      subsequent ingest pass re-fetches it with the current metadata.
+ *   4. Heal-wiped-trees: any cached server-side dataset whose clones are
+ *      present but whose trees are absent is deleted. This recovers
+ *      users whose trees were collateral-damaged by the pre-fix
+ *      `removeDataset` cascade (deleted trees by clone_id rather than
+ *      namespaced ident; sibling datasets sharing clone_ids lost their
+ *      trees). The ingest pass re-fetches the file fresh.
  *
  * Cached records without `original_dataset_id` (legacy / malformed) are
  * skipped — better to leave them than risk deleting data we can't match.
@@ -294,7 +300,8 @@ export const reconcileServerConsolidated = async (manifestEntries) => {
     const manifestEntry = entryByOriginalId.get(ds.original_dataset_id);
     const removed = !manifestEntry;
     const renamed = manifestEntry && manifestEntry.name && manifestEntry.name !== ds.name;
-    if (removed || renamed) {
+    const treesWiped = manifestEntry && (await olmstedDB.hasOrphanedClones(ds.dataset_id));
+    if (removed || renamed || treesWiped) {
       await clientDataStore.removeDataset(ds.dataset_id);
     }
   }

@@ -338,6 +338,66 @@ describe("reconcileServerConsolidated", () => {
     expect(all[0].dataset_id).toBe("upload-100-aaa");
   });
 
+  it("heals datasets whose trees were wiped by the legacy removeDataset cascade", async () => {
+    // Recovery for users hit by the pre-fix cascade. The dataset row and
+    // its clones are intact, but the trees table has nothing under the
+    // namespaced prefix. Reconcile detects this and deletes the dataset
+    // so the ingest pass re-fetches it fresh.
+    await seed({
+      dataset_id: "upload-survivor",
+      original_dataset_id: "wiped-001",
+      name: "Wiped Trees Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    // Seed a clone so the orphan-check sees clones-without-trees.
+    await olmstedDB.clones.put({
+      dataset_id: "upload-survivor",
+      clone_id: "clone-1",
+      sample_id: "s1",
+      name: "Clone 1",
+      unique_seqs_count: 1,
+      mean_mut_freq: 0
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "wiped-001", name: "Wiped Trees Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
+  });
+
+  it("leaves intact datasets alone (clones + trees both present)", async () => {
+    // Negative case for the orphan-clones heal: a dataset with both
+    // clones and trees should not be deleted just because reconcile ran.
+    await seed({
+      dataset_id: "upload-healthy",
+      original_dataset_id: "healthy-001",
+      name: "Healthy Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await olmstedDB.clones.put({
+      dataset_id: "upload-healthy",
+      clone_id: "clone-1",
+      sample_id: "s1",
+      name: "Clone 1",
+      unique_seqs_count: 1,
+      mean_mut_freq: 0
+    });
+    await olmstedDB.trees.put({
+      ident: "upload-healthy::tree-1",
+      tree_id: "tree-1",
+      clone_id: "clone-1",
+      nodes: { naive: { type: "root" } }
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "healthy-001", name: "Healthy Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].dataset_id).toBe("upload-healthy");
+  });
+
   it("deduplicates and sweeps in the same pass", async () => {
     // Duplicates AND no-longer-in-manifest. Dedup runs first, then sweep
     // removes the survivor too.

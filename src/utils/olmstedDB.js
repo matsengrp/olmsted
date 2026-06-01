@@ -253,6 +253,32 @@ class OlmstedDB extends Dexie {
   }
 
   /**
+   * Detect a dataset whose clones survived but whose trees were wiped.
+   * This is the signature of users hit by the pre-fix `removeDataset`
+   * cascade (deleted trees by `clone_id` rather than namespaced ident,
+   * collateral-damaging sibling datasets that shared clone_ids). The
+   * reconcile pass uses this signal to delete the corrupted row so the
+   * subsequent ingest pass re-fetches the file fresh.
+   *
+   * Returns false for datasets with no clones (a fresh dataset that
+   * just hasn't loaded its clones yet is not corrupted).
+   *
+   * @param {string} datasetId
+   * @returns {Promise<boolean>}
+   */
+  async hasOrphanedClones(datasetId) {
+    try {
+      const cloneCount = await this.clones.where("dataset_id").equals(datasetId).count();
+      if (cloneCount === 0) return false;
+      const treeCount = await this.trees.where("ident").startsWith(`${datasetId}::`).count();
+      return treeCount === 0;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to check for orphaned clones:", error);
+      return false;
+    }
+  }
+
+  /**
    * Return IndexedDB datasets whose `source` is explicitly
    * SERVER_CONSOLIDATED. Used by manifest reconciliation as the set
    * eligible for removal/refresh.
