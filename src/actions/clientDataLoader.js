@@ -150,42 +150,70 @@ export const getClientClonalFamilies = async (dispatch, dataset_id) => {
 };
 
 /**
+ * In-flight ingest promises keyed by manifest `dataset_id` (which becomes
+ * the persisted `original_dataset_id`). Two concurrent callers ingesting
+ * the same entry share one fetch+store pass so we never race in front of
+ * `findDatasetByOriginalId` and write two rows for the same source dataset.
+ *
+ * This matters because `Monitor.componentDidMount` and
+ * `App.componentDidMount` both call `getClientDatasets` on initial mount
+ * — they fire close enough together that neither sees the other's writes
+ * before kicking off ingest.
+ */
+const inflightIngest = new Map();
+
+/**
  * Fetch a consolidated server-side dataset file (olmsted-cli JSON or .json.gz),
  * route it through the upload pipeline, and store in IndexedDB. Subsequent
- * calls for the same `original_dataset_id` short-circuit.
+ * calls for the same `original_dataset_id` short-circuit. Concurrent calls
+ * for the same id share one in-flight promise.
  *
  * @param {Object} entry - Manifest entry with consolidated_path + dataset_id
  * @returns {Promise<Object|null>} The stored dataset record, or null on failure
  */
 export const ingestConsolidatedServerDataset = async (entry) => {
-  try {
-    const existing = await olmstedDB.findDatasetByOriginalId(entry.dataset_id);
-    if (existing) return existing;
+  const existingInflight = inflightIngest.get(entry.dataset_id);
+  if (existingInflight) return existingInflight;
 
-    const url = `${dataBaseURL}/${entry.consolidated_path}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`Failed to fetch consolidated server dataset at ${url}: ${response.status} ${response.statusText}`);
+  const ingestPromise = (async () => {
+    try {
+      const existing = await olmstedDB.findDatasetByOriginalId(entry.dataset_id);
+      if (existing) return existing;
+
+      const url = `${dataBaseURL}/${entry.consolidated_path}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.warn(
+          `Failed to fetch consolidated server dataset at ${url}: ${response.status} ${response.statusText}`
+        );
+        return null;
+      }
+
+      const blob = await response.blob();
+      const filename = entry.consolidated_path.split("/").pop();
+      const file = new File([blob], filename, { type: blob.type });
+      const result = await FileProcessor.processFile(file);
+
+      // FileProcessor sets source = UPLOAD; override to SERVER_CONSOLIDATED.
+      // `temporary` is flipped to false so the Source column reads "Server".
+      if (result.datasets && result.datasets[0]) {
+        result.datasets[0].source = DATASET_SOURCE.SERVER_CONSOLIDATED;
+        result.datasets[0].temporary = false;
+      }
+
+      await clientDataStore.storeProcessedData(result);
+      return result.datasets[0];
+    } catch (error) {
+      console.warn(`Failed to ingest consolidated server dataset ${entry.dataset_id}:`, error);
       return null;
     }
+  })();
 
-    const blob = await response.blob();
-    const filename = entry.consolidated_path.split("/").pop();
-    const file = new File([blob], filename, { type: blob.type });
-    const result = await FileProcessor.processFile(file);
-
-    // FileProcessor sets source = UPLOAD; override to SERVER_CONSOLIDATED.
-    // `temporary` is flipped to false so the Source column reads "Server".
-    if (result.datasets && result.datasets[0]) {
-      result.datasets[0].source = DATASET_SOURCE.SERVER_CONSOLIDATED;
-      result.datasets[0].temporary = false;
-    }
-
-    await clientDataStore.storeProcessedData(result);
-    return result.datasets[0];
-  } catch (error) {
-    console.warn(`Failed to ingest consolidated server dataset ${entry.dataset_id}:`, error);
-    return null;
+  inflightIngest.set(entry.dataset_id, ingestPromise);
+  try {
+    return await ingestPromise;
+  } finally {
+    inflightIngest.delete(entry.dataset_id);
   }
 };
 
@@ -210,11 +238,17 @@ const ingestAndDispatch = async (consolidatedEntries, dispatch) => {
 
 /**
  * Reconcile IndexedDB SERVER_CONSOLIDATED entries against the live
- * manifest. Two operations:
+ * manifest. Three operations:
  *
- *   1. Sweep: any cached server-side dataset whose `original_dataset_id`
+ *   1. Dedup: when multiple cached rows share an `original_dataset_id`
+ *      (race-induced from concurrent ingest calls), keep the oldest
+ *      and delete the rest. This cleans up duplicates created before
+ *      the `inflightIngest` gate landed in `ingestConsolidatedServerDataset`,
+ *      and is cheap insurance against any future re-introduction of the
+ *      race.
+ *   2. Sweep: any cached server-side dataset whose `original_dataset_id`
  *      no longer appears in the manifest is deleted.
- *   2. Refresh: any cached server-side dataset whose manifest entry's
+ *   3. Refresh: any cached server-side dataset whose manifest entry's
  *      `name` differs from the cached `name` is deleted, so the
  *      subsequent ingest pass re-fetches it with the current metadata.
  *
@@ -235,8 +269,28 @@ const ingestAndDispatch = async (consolidatedEntries, dispatch) => {
 export const reconcileServerConsolidated = async (manifestEntries) => {
   const entryByOriginalId = new Map(manifestEntries.map((e) => [e.dataset_id, e]));
   const cached = await olmstedDB.getServerConsolidatedDatasets();
+
+  // Group by original_dataset_id and delete duplicates within each group,
+  // keeping the lexicographically-smallest storage dataset_id (which is
+  // the timestamp-prefixed value from `generateDatasetId`, so smallest =
+  // oldest). The survivors carry forward into the sweep/refresh logic.
+  const byOriginalId = new Map();
   for (const ds of cached) {
     if (!ds.original_dataset_id) continue;
+    const group = byOriginalId.get(ds.original_dataset_id) ?? [];
+    group.push(ds);
+    byOriginalId.set(ds.original_dataset_id, group);
+  }
+  const survivors = [];
+  for (const group of byOriginalId.values()) {
+    group.sort((a, b) => a.dataset_id.localeCompare(b.dataset_id));
+    survivors.push(group[0]);
+    for (const dup of group.slice(1)) {
+      await clientDataStore.removeDataset(dup.dataset_id);
+    }
+  }
+
+  for (const ds of survivors) {
     const manifestEntry = entryByOriginalId.get(ds.original_dataset_id);
     const removed = !manifestEntry;
     const renamed = manifestEntry && manifestEntry.name && manifestEntry.name !== ds.name;

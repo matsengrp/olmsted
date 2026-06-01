@@ -135,6 +135,27 @@ describe("ingestConsolidatedServerDataset", () => {
     expect(stored).toBeNull();
     expect(await olmstedDB.datasets.count()).toBe(0);
   });
+
+  it("serializes concurrent ingest calls for the same dataset_id (no race)", async () => {
+    // Without the inflight gate, both ingests would pass `findDatasetByOriginalId`
+    // before either had written, then both would store, producing two rows
+    // with the same `original_dataset_id` (the production bug
+    // Monitor + App double-mount triggers).
+    const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
+    globalThis.fetch = jest.fn(async () => mockResponse(consolidatedText));
+
+    const entry = {
+      dataset_id: "fixture-consolidated-001",
+      consolidated_path: "consolidated.fixture-consolidated-001.json"
+    };
+    const [a, b] = await Promise.all([ingestConsolidatedServerDataset(entry), ingestConsolidatedServerDataset(entry)]);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    expect(a).toBeTruthy();
+    expect(b).toBeTruthy();
+    expect(a.dataset_id).toBe(b.dataset_id);
+  });
 });
 
 describe("ingestConsolidatedServerDatasets (manifest-driven)", () => {
@@ -281,6 +302,64 @@ describe("reconcileServerConsolidated", () => {
     const all = await olmstedDB.getAllDatasets();
     expect(all).toHaveLength(1);
     expect(all[0].name).toBe("Legacy Server Record");
+  });
+
+  it("deduplicates cached rows sharing an original_dataset_id, keeping the oldest", async () => {
+    // Race-induced duplicates: two rows with the same original_dataset_id
+    // but different storage dataset_ids (timestamp-prefixed by
+    // generateDatasetId). Reconcile keeps the lexicographically-smallest
+    // storage id (= oldest timestamp) and deletes the rest.
+    await seed({
+      dataset_id: "upload-100-aaa",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-200-bbb",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-300-ccc",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "dup-001", name: "Duplicated Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].dataset_id).toBe("upload-100-aaa");
+  });
+
+  it("deduplicates and sweeps in the same pass", async () => {
+    // Duplicates AND no-longer-in-manifest. Dedup runs first, then sweep
+    // removes the survivor too.
+    await seed({
+      dataset_id: "upload-100-aaa",
+      original_dataset_id: "stale-dup-001",
+      name: "Stale Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-200-bbb",
+      original_dataset_id: "stale-dup-001",
+      name: "Stale Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([]); // empty manifest
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
   });
 });
 
