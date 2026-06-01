@@ -102,7 +102,7 @@ class OlmstedDB extends Dexie {
     const { datasets, clones, trees, datasetId } = processedData;
 
     try {
-      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
+      return await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
         // Store dataset metadata using bulk operation. Dataset records carry
         // an `ident` field from the source file (separate from `dataset_id`,
         // which is the unique storage PK). Source idents can collide across
@@ -113,13 +113,23 @@ class OlmstedDB extends Dexie {
         // `${ident}-{n}` on collision; preserve the original as
         // `original_ident`.
         //
-        // Note: this dedupe is *not* atomic across separate storeDataset
-        // calls — two parallel uploads could each see an empty `taken` set
-        // and pick the same renamed value. In practice fileUpload gates the
-        // UI behind `isProcessing`, so concurrent storeDataset is not
-        // currently reachable. Worth tightening if that ever changes.
+        // Dedup-by-`original_dataset_id`: Dexie serializes `rw` transactions
+        // on the same tables, so two concurrent calls run sequentially — but
+        // without this check the second call would see the first's row,
+        // treat the matching ident as a collision, rename to `${ident}-1`,
+        // and store a second row for the same source dataset. The
+        // application-layer `inflightIngest` gate in `clientDataLoader`
+        // already prevents this for consolidated-server ingest; the storage
+        // layer enforces it for every caller (user uploads, future writers).
+        // When a match is found we skip all writes (dataset + clones + trees)
+        // and return the existing storage id.
         if (datasets.length > 0) {
           const existing = await this.datasets.toArray();
+          const incomingOriginalId = datasets[0].original_dataset_id;
+          if (incomingOriginalId) {
+            const dup = existing.find((d) => d.original_dataset_id === incomingOriginalId);
+            if (dup) return dup.dataset_id;
+          }
           const takenIdents = new Set(existing.map((d) => d.ident).filter(Boolean));
           const datasetsToStore = datasets.map((d) => {
             if (!d.ident) return d;
@@ -201,9 +211,8 @@ class OlmstedDB extends Dexie {
         if (allTreeData.length > 0) {
           await this.trees.bulkPut(allTreeData);
         }
+        return datasetId;
       });
-
-      return datasetId;
     } catch (error) {
       console.error("OlmstedDB: Failed to store dataset:", error);
       throw error;
