@@ -196,12 +196,23 @@ export const ingestConsolidatedServerDataset = async (entry) => {
 
       // FileProcessor sets source = UPLOAD; override to SERVER_CONSOLIDATED.
       // `temporary` is flipped to false so the Source column reads "Server".
+      // The manifest entry's `name` is authoritative — without overriding,
+      // a rename in the manifest that wasn't matched by a rebuild of the
+      // consolidated file would store the file's internal name, then
+      // reconcile's rename trigger would fire on every load (perpetual
+      // re-fetch loop).
       if (result.datasets && result.datasets[0]) {
         result.datasets[0].source = DATASET_SOURCE.SERVER_CONSOLIDATED;
         result.datasets[0].temporary = false;
+        if (entry.name) result.datasets[0].name = entry.name;
       }
 
-      await clientDataStore.storeProcessedData(result);
+      // storeProcessedData returns the actual storage dataset_id — which
+      // is the existing row's id if the storage-layer dedup short-circuited,
+      // not the throwaway from FileProcessor. Patch the returned object so
+      // callers that read `.dataset_id` see what's actually in IndexedDB.
+      const storedDatasetId = await clientDataStore.storeProcessedData(result);
+      result.datasets[0].dataset_id = storedDatasetId;
       return result.datasets[0];
     } catch (error) {
       console.warn(`Failed to ingest consolidated server dataset ${entry.dataset_id}:`, error);
@@ -300,7 +311,10 @@ export const reconcileServerConsolidated = async (manifestEntries) => {
     const manifestEntry = entryByOriginalId.get(ds.original_dataset_id);
     const removed = !manifestEntry;
     const renamed = manifestEntry && manifestEntry.name && manifestEntry.name !== ds.name;
-    const treesWiped = manifestEntry && (await olmstedDB.hasOrphanedClones(ds.dataset_id));
+    // Short-circuit: only check IndexedDB for the orphan condition when
+    // the dataset would otherwise survive (no point doing two extra
+    // queries per dataset we're about to delete anyway).
+    const treesWiped = !removed && !renamed && (await olmstedDB.hasOrphanedClones(ds.dataset_id));
     if (removed || renamed || treesWiped) {
       await clientDataStore.removeDataset(ds.dataset_id);
     }

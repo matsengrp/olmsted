@@ -350,20 +350,53 @@ describe("reconcileServerConsolidated", () => {
       source: "server-consolidated",
       temporary: false
     });
-    // Seed a clone so the orphan-check sees clones-without-trees.
+    // Seed a clone with trees_meta populated, so the orphan-check sees
+    // "trees were expected, but the trees table has none" — the
+    // legacy-cascade-damage signature.
     await olmstedDB.clones.put({
       dataset_id: "upload-survivor",
       clone_id: "clone-1",
       sample_id: "s1",
       name: "Clone 1",
       unique_seqs_count: 1,
-      mean_mut_freq: 0
+      mean_mut_freq: 0,
+      trees_meta: [{ ident: "wiped-tree-ident", tree_id: "t-1", name: "tree" }]
     });
 
     await reconcileServerConsolidated([{ dataset_id: "wiped-001", name: "Wiped Trees Dataset" }]);
 
     const all = await olmstedDB.getAllDatasets();
     expect(all).toHaveLength(0);
+  });
+
+  it("treats datasets with no trees_meta on any clone as legitimately tree-free, not orphaned", async () => {
+    // Some olmsted-cli outputs skip tree-building for every family in a
+    // dataset (the "0 root nodes (expected 1). Skipping this tree." path).
+    // Those datasets land in IndexedDB with clones but no trees AND with
+    // every clone's trees_meta empty. The heal MUST NOT fire on them or
+    // it would force-refetch on every page load.
+    await seed({
+      dataset_id: "upload-tree-free",
+      original_dataset_id: "tree-free-001",
+      name: "Legitimately Tree-Free",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await olmstedDB.clones.put({
+      dataset_id: "upload-tree-free",
+      clone_id: "clone-1",
+      sample_id: "s1",
+      name: "Clone 1",
+      unique_seqs_count: 1,
+      mean_mut_freq: 0,
+      trees_meta: [] // no trees ever expected
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "tree-free-001", name: "Legitimately Tree-Free" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].dataset_id).toBe("upload-tree-free");
   });
 
   it("leaves intact datasets alone (clones + trees both present)", async () => {
@@ -456,5 +489,39 @@ describe("getClientDatasets manifest reconciliation", () => {
     const all = await olmstedDB.getAllDatasets();
     expect(all).toHaveLength(1);
     expect(all[0].original_dataset_id).toBe("would-be-stale-001");
+  });
+
+  it("does not fire the orphan-trees heal when the manifest fetch fails", async () => {
+    // Defense-in-depth: a transient outage must not trigger the recovery
+    // path. Seed a dataset that LOOKS orphan-tree-shaped (clones with
+    // trees_meta, no trees) but make the manifest fetch fail; reconcile
+    // is skipped entirely and the row survives.
+    await olmstedDB.datasets.put({
+      dataset_id: "upload-would-be-healed",
+      original_dataset_id: "would-be-healed-001",
+      name: "Pseudo-Orphan Dataset",
+      source: "server-consolidated",
+      temporary: false,
+      isClientSide: true
+    });
+    await olmstedDB.clones.put({
+      dataset_id: "upload-would-be-healed",
+      clone_id: "clone-1",
+      sample_id: "s1",
+      name: "Clone 1",
+      unique_seqs_count: 1,
+      mean_mut_freq: 0,
+      trees_meta: [{ ident: "would-be-tree", tree_id: "t-1", name: "tree" }]
+    });
+
+    globalThis.fetch = jest.fn(async () => mockResponse("", { ok: false, status: 500 }));
+    const dispatch = jest.fn();
+    await getClientDatasets(dispatch);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].dataset_id).toBe("upload-would-be-healed");
+    const clones = await olmstedDB.clones.where("dataset_id").equals("upload-would-be-healed").toArray();
+    expect(clones).toHaveLength(1);
   });
 });

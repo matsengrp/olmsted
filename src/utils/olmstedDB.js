@@ -268,8 +268,15 @@ class OlmstedDB extends Dexie {
    */
   async hasOrphanedClones(datasetId) {
     try {
-      const cloneCount = await this.clones.where("dataset_id").equals(datasetId).count();
-      if (cloneCount === 0) return false;
+      const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
+      if (clones.length === 0) return false;
+      // Some datasets legitimately have no trees (every family's tree
+      // skipped by olmsted-cli — the "0 root nodes (expected 1). Skipping
+      // this tree." warnings during processing). For those, every clone's
+      // `trees_meta` is empty, so trees were never expected; reporting
+      // them as orphaned would trigger an infinite re-fetch loop.
+      const treesExpected = clones.some((c) => c.trees_meta && c.trees_meta.length > 0);
+      if (!treesExpected) return false;
       const treeCount = await this.trees.where("ident").startsWith(`${datasetId}::`).count();
       return treeCount === 0;
     } catch (error) {
