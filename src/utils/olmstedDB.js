@@ -3,6 +3,7 @@
  */
 
 import Dexie from "dexie";
+import { DATASET_SOURCE } from "../constants/datasetSource";
 
 /**
  * Maximum suffix attempts before firstAvailable gives up. Realistic uploads
@@ -239,6 +240,31 @@ class OlmstedDB extends Dexie {
     } catch (error) {
       console.error("OlmstedDB: Failed to look up dataset by original_dataset_id:", error);
       return null;
+    }
+  }
+
+  /**
+   * Return IndexedDB datasets whose `source` is explicitly
+   * SERVER_CONSOLIDATED. Used by manifest reconciliation as the set
+   * eligible for removal/refresh.
+   *
+   * Deliberately stricter than `sourceOf()` — this checks the raw
+   * `source` field rather than falling back through legacy flags
+   * (`temporary === false` etc.). Reconciliation is destructive, so
+   * records without an explicit `source` are left alone to avoid
+   * sweeping a legacy upload whose `temporary` field happened to be
+   * absent. The cost is that pre-source-enum server entries persist
+   * forever; in practice they're rare and benign.
+   *
+   * @returns {Promise<Object[]>}
+   */
+  async getServerConsolidatedDatasets() {
+    try {
+      const all = await this.datasets.toArray();
+      return all.filter((d) => d.source === DATASET_SOURCE.SERVER_CONSOLIDATED);
+    } catch (error) {
+      console.error("OlmstedDB: Failed to enumerate server-consolidated datasets:", error);
+      return [];
     }
   }
 

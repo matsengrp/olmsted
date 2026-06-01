@@ -17,7 +17,12 @@ jest.mock("../../util/globals", () => ({
   dataBaseURL: "/data"
 }));
 
-const { ingestConsolidatedServerDataset, ingestConsolidatedServerDatasets } = require("../clientDataLoader");
+const {
+  ingestConsolidatedServerDataset,
+  ingestConsolidatedServerDatasets,
+  reconcileServerConsolidated,
+  getClientDatasets
+} = require("../clientDataLoader");
 const olmstedDB = require("../../utils/olmstedDB").default;
 
 const FIXTURE_DIR = path.resolve(__dirname, "../../server/__tests__/__fixtures__/server-data");
@@ -130,6 +135,27 @@ describe("ingestConsolidatedServerDataset", () => {
     expect(stored).toBeNull();
     expect(await olmstedDB.datasets.count()).toBe(0);
   });
+
+  it("serializes concurrent ingest calls for the same dataset_id (no race)", async () => {
+    // Without the inflight gate, both ingests would pass `findDatasetByOriginalId`
+    // before either had written, then both would store, producing two rows
+    // with the same `original_dataset_id` (the production bug
+    // Monitor + App double-mount triggers).
+    const consolidatedText = readFixture("consolidated.fixture-consolidated-001.json");
+    globalThis.fetch = jest.fn(async () => mockResponse(consolidatedText));
+
+    const entry = {
+      dataset_id: "fixture-consolidated-001",
+      consolidated_path: "consolidated.fixture-consolidated-001.json"
+    };
+    const [a, b] = await Promise.all([ingestConsolidatedServerDataset(entry), ingestConsolidatedServerDataset(entry)]);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    expect(a).toBeTruthy();
+    expect(b).toBeTruthy();
+    expect(a.dataset_id).toBe(b.dataset_id);
+  });
 });
 
 describe("ingestConsolidatedServerDatasets (manifest-driven)", () => {
@@ -176,5 +202,199 @@ describe("ingestConsolidatedServerDatasets (manifest-driven)", () => {
     await ingestConsolidatedServerDatasets();
     const all = await olmstedDB.getAllDatasets();
     expect(all).toHaveLength(0);
+  });
+});
+
+describe("reconcileServerConsolidated", () => {
+  beforeEach(async () => {
+    await olmstedDB.ready;
+    await olmstedDB.clearAll();
+  });
+
+  // Seed a dataset record directly, bypassing FileProcessor. Anything not
+  // overridden falls back to the storage-layer defaults the rest of the
+  // app expects on a real ingested record.
+  const seed = (props) =>
+    olmstedDB.datasets.put({
+      dataset_id: `local-${Math.random().toString(36).slice(2)}`,
+      isClientSide: true,
+      ...props
+    });
+
+  it("removes server-consolidated entries no longer present in the manifest", async () => {
+    await seed({
+      original_dataset_id: "stale-001",
+      name: "Stale Server Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      original_dataset_id: "live-001",
+      name: "Live Server Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "live-001", name: "Live Server Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].original_dataset_id).toBe("live-001");
+  });
+
+  it("removes server-consolidated entries whose manifest name has changed", async () => {
+    // Removal here is the intended trigger for re-ingestion: the subsequent
+    // ingest pass will fetch the file fresh because findDatasetByOriginalId
+    // no longer matches.
+    await seed({
+      original_dataset_id: "renamed-001",
+      name: "Old Name",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "renamed-001", name: "New Name" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
+  });
+
+  it("leaves server-consolidated entries with matching name untouched", async () => {
+    await seed({
+      original_dataset_id: "stable-001",
+      name: "Stable Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "stable-001", name: "Stable Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].name).toBe("Stable Dataset");
+  });
+
+  it("never touches UPLOAD entries, even when absent from the manifest", async () => {
+    await seed({
+      original_dataset_id: "user-upload-001",
+      name: "User Upload",
+      source: "upload",
+      temporary: true
+    });
+
+    await reconcileServerConsolidated([]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].original_dataset_id).toBe("user-upload-001");
+  });
+
+  it("skips records missing original_dataset_id (legacy / malformed)", async () => {
+    await seed({
+      // no original_dataset_id
+      name: "Legacy Server Record",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].name).toBe("Legacy Server Record");
+  });
+
+  it("deduplicates cached rows sharing an original_dataset_id, keeping the oldest", async () => {
+    // Race-induced duplicates: two rows with the same original_dataset_id
+    // but different storage dataset_ids (timestamp-prefixed by
+    // generateDatasetId). Reconcile keeps the lexicographically-smallest
+    // storage id (= oldest timestamp) and deletes the rest.
+    await seed({
+      dataset_id: "upload-100-aaa",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-200-bbb",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-300-ccc",
+      original_dataset_id: "dup-001",
+      name: "Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([{ dataset_id: "dup-001", name: "Duplicated Dataset" }]);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].dataset_id).toBe("upload-100-aaa");
+  });
+
+  it("deduplicates and sweeps in the same pass", async () => {
+    // Duplicates AND no-longer-in-manifest. Dedup runs first, then sweep
+    // removes the survivor too.
+    await seed({
+      dataset_id: "upload-100-aaa",
+      original_dataset_id: "stale-dup-001",
+      name: "Stale Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+    await seed({
+      dataset_id: "upload-200-bbb",
+      original_dataset_id: "stale-dup-001",
+      name: "Stale Duplicated Dataset",
+      source: "server-consolidated",
+      temporary: false
+    });
+
+    await reconcileServerConsolidated([]); // empty manifest
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(0);
+  });
+});
+
+describe("getClientDatasets manifest reconciliation", () => {
+  let originalFetch;
+
+  beforeEach(async () => {
+    originalFetch = globalThis.fetch;
+    await olmstedDB.ready;
+    await olmstedDB.clearAll();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("does not delete cached datasets when the manifest fetch fails", async () => {
+    // Offline / 500 / CORS → manifest === null. Reconciliation must be
+    // skipped entirely; the cached entry survives so the user still has
+    // something to look at.
+    await olmstedDB.datasets.put({
+      dataset_id: "local-stale",
+      original_dataset_id: "would-be-stale-001",
+      name: "Cached Server Dataset",
+      source: "server-consolidated",
+      temporary: false,
+      isClientSide: true
+    });
+
+    globalThis.fetch = jest.fn(async () => mockResponse("", { ok: false, status: 500 }));
+    const dispatch = jest.fn();
+    await getClientDatasets(dispatch);
+
+    const all = await olmstedDB.getAllDatasets();
+    expect(all).toHaveLength(1);
+    expect(all[0].original_dataset_id).toBe("would-be-stale-001");
   });
 });
