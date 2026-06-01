@@ -446,4 +446,25 @@ describe("storeDataset (namespacing integration)", () => {
     await olmstedDB.storeDataset(buildDataset("upload-B", "shared-clone", "shared-tree"));
     expect(await olmstedDB.datasets.count()).toBe(2);
   });
+
+  it("removeDataset only deletes trees from the target dataset, not siblings sharing clone_id", async () => {
+    // Regression: trees were previously deleted by `clone_id` matched
+    // against the target dataset's clones. clone_id values come from the
+    // source file (e.g. olmsted-cli), so sibling datasets that ingested
+    // the same file have identical clone_ids — the cascade wiped their
+    // trees too. The bug surfaced as "No tree nodes available" on the
+    // surviving dataset after reconcile's dedup pass removed a duplicate.
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    await olmstedDB.storeDataset(buildDataset("upload-B", "shared-clone", "shared-tree"));
+    expect(await olmstedDB.trees.count()).toBe(2);
+
+    await olmstedDB.removeDataset("upload-A");
+
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    expect(await olmstedDB.clones.count()).toBe(1);
+    expect(await olmstedDB.trees.count()).toBe(1);
+    // The surviving dataset's tree is intact, with its namespaced ident.
+    const tree = (await olmstedDB.trees.toArray())[0];
+    expect(tree.ident).toBe("upload-B::shared-tree");
+  });
 });

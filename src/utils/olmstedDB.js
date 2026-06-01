@@ -420,25 +420,22 @@ class OlmstedDB extends Dexie {
   }
 
   /**
-   * Remove a dataset and all associated data
+   * Remove a dataset and all associated data.
+   *
+   * Trees are deleted by namespaced ident prefix, NOT by `clone_id`.
+   * Tree `clone_id` is a source-file value (e.g. `d1_10935-igk-10935-light`)
+   * and is identical across sibling datasets that ingested the same source
+   * file — a `clone_id`-based delete would cascade and wipe trees belonging
+   * to other datasets. The `ident` field carries the `${datasetId}::`
+   * namespace prefix from `namespacedIdent` (storeDataset above), which
+   * uniquely partitions trees per dataset.
    */
   async removeDataset(datasetId) {
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
-        // Get all clones for this dataset
-        const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
-        const cloneIds = clones.map((c) => c.clone_id);
-
-        // Remove dataset
         await this.datasets.delete(datasetId);
-
-        // Remove clones
         await this.clones.where("dataset_id").equals(datasetId).delete();
-
-        // Remove trees for these clones using bulk operation
-        if (cloneIds.length > 0) {
-          await this.trees.where("clone_id").anyOf(cloneIds).delete();
-        }
+        await this.trees.where("ident").startsWith(`${datasetId}::`).delete();
       });
     } catch (error) {
       console.error("OlmstedDB: Failed to remove dataset:", error);
