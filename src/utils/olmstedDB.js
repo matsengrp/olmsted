@@ -3,6 +3,7 @@
  */
 
 import Dexie from "dexie";
+import { DATASET_SOURCE } from "../constants/datasetSource";
 
 /**
  * Maximum suffix attempts before firstAvailable gives up. Realistic uploads
@@ -101,7 +102,7 @@ class OlmstedDB extends Dexie {
     const { datasets, clones, trees, datasetId } = processedData;
 
     try {
-      await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
+      return await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
         // Store dataset metadata using bulk operation. Dataset records carry
         // an `ident` field from the source file (separate from `dataset_id`,
         // which is the unique storage PK). Source idents can collide across
@@ -112,13 +113,23 @@ class OlmstedDB extends Dexie {
         // `${ident}-{n}` on collision; preserve the original as
         // `original_ident`.
         //
-        // Note: this dedupe is *not* atomic across separate storeDataset
-        // calls — two parallel uploads could each see an empty `taken` set
-        // and pick the same renamed value. In practice fileUpload gates the
-        // UI behind `isProcessing`, so concurrent storeDataset is not
-        // currently reachable. Worth tightening if that ever changes.
+        // Dedup-by-`original_dataset_id`: Dexie serializes `rw` transactions
+        // on the same tables, so two concurrent calls run sequentially — but
+        // without this check the second call would see the first's row,
+        // treat the matching ident as a collision, rename to `${ident}-1`,
+        // and store a second row for the same source dataset. The
+        // application-layer `inflightIngest` gate in `clientDataLoader`
+        // already prevents this for consolidated-server ingest; the storage
+        // layer enforces it for every caller (user uploads, future writers).
+        // When a match is found we skip all writes (dataset + clones + trees)
+        // and return the existing storage id.
         if (datasets.length > 0) {
           const existing = await this.datasets.toArray();
+          const incomingOriginalId = datasets[0].original_dataset_id;
+          if (incomingOriginalId) {
+            const dup = existing.find((d) => d.original_dataset_id === incomingOriginalId);
+            if (dup) return dup.dataset_id;
+          }
           const takenIdents = new Set(existing.map((d) => d.ident).filter(Boolean));
           const datasetsToStore = datasets.map((d) => {
             if (!d.ident) return d;
@@ -200,9 +211,8 @@ class OlmstedDB extends Dexie {
         if (allTreeData.length > 0) {
           await this.trees.bulkPut(allTreeData);
         }
+        return datasetId;
       });
-
-      return datasetId;
     } catch (error) {
       console.error("OlmstedDB: Failed to store dataset:", error);
       throw error;
@@ -239,6 +249,64 @@ class OlmstedDB extends Dexie {
     } catch (error) {
       console.error("OlmstedDB: Failed to look up dataset by original_dataset_id:", error);
       return null;
+    }
+  }
+
+  /**
+   * Detect a dataset whose clones survived but whose trees were wiped.
+   * This is the signature of users hit by the pre-fix `removeDataset`
+   * cascade (deleted trees by `clone_id` rather than namespaced ident,
+   * collateral-damaging sibling datasets that shared clone_ids). The
+   * reconcile pass uses this signal to delete the corrupted row so the
+   * subsequent ingest pass re-fetches the file fresh.
+   *
+   * Returns false for datasets with no clones (a fresh dataset that
+   * just hasn't loaded its clones yet is not corrupted).
+   *
+   * @param {string} datasetId
+   * @returns {Promise<boolean>}
+   */
+  async hasOrphanedClones(datasetId) {
+    try {
+      const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
+      if (clones.length === 0) return false;
+      // Some datasets legitimately have no trees (every family's tree
+      // skipped by olmsted-cli — the "0 root nodes (expected 1). Skipping
+      // this tree." warnings during processing). For those, every clone's
+      // `trees_meta` is empty, so trees were never expected; reporting
+      // them as orphaned would trigger an infinite re-fetch loop.
+      const treesExpected = clones.some((c) => c.trees_meta && c.trees_meta.length > 0);
+      if (!treesExpected) return false;
+      const treeCount = await this.trees.where("ident").startsWith(`${datasetId}::`).count();
+      return treeCount === 0;
+    } catch (error) {
+      console.error("OlmstedDB: Failed to check for orphaned clones:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Return IndexedDB datasets whose `source` is explicitly
+   * SERVER_CONSOLIDATED. Used by manifest reconciliation as the set
+   * eligible for removal/refresh.
+   *
+   * Deliberately stricter than `sourceOf()` — this checks the raw
+   * `source` field rather than falling back through legacy flags
+   * (`temporary === false` etc.). Reconciliation is destructive, so
+   * records without an explicit `source` are left alone to avoid
+   * sweeping a legacy upload whose `temporary` field happened to be
+   * absent. The cost is that pre-source-enum server entries persist
+   * forever; in practice they're rare and benign.
+   *
+   * @returns {Promise<Object[]>}
+   */
+  async getServerConsolidatedDatasets() {
+    try {
+      const all = await this.datasets.toArray();
+      return all.filter((d) => d.source === DATASET_SOURCE.SERVER_CONSOLIDATED);
+    } catch (error) {
+      console.error("OlmstedDB: Failed to enumerate server-consolidated datasets:", error);
+      return [];
     }
   }
 
@@ -385,25 +453,22 @@ class OlmstedDB extends Dexie {
   }
 
   /**
-   * Remove a dataset and all associated data
+   * Remove a dataset and all associated data.
+   *
+   * Trees are deleted by namespaced ident prefix, NOT by `clone_id`.
+   * Tree `clone_id` is a source-file value (e.g. `d1_10935-igk-10935-light`)
+   * and is identical across sibling datasets that ingested the same source
+   * file — a `clone_id`-based delete would cascade and wipe trees belonging
+   * to other datasets. The `ident` field carries the `${datasetId}::`
+   * namespace prefix from `namespacedIdent` (storeDataset above), which
+   * uniquely partitions trees per dataset.
    */
   async removeDataset(datasetId) {
     try {
       await this.transaction("rw", this.datasets, this.clones, this.trees, async () => {
-        // Get all clones for this dataset
-        const clones = await this.clones.where("dataset_id").equals(datasetId).toArray();
-        const cloneIds = clones.map((c) => c.clone_id);
-
-        // Remove dataset
         await this.datasets.delete(datasetId);
-
-        // Remove clones
         await this.clones.where("dataset_id").equals(datasetId).delete();
-
-        // Remove trees for these clones using bulk operation
-        if (cloneIds.length > 0) {
-          await this.trees.where("clone_id").anyOf(cloneIds).delete();
-        }
+        await this.trees.where("ident").startsWith(`${datasetId}::`).delete();
       });
     } catch (error) {
       console.error("OlmstedDB: Failed to remove dataset:", error);

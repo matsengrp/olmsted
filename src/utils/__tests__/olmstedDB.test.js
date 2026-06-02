@@ -391,4 +391,80 @@ describe("storeDataset (namespacing integration)", () => {
     const renamed = datasets.find((d) => d.ident === "ds-shared-1");
     expect(renamed.original_ident).toBe("ds-shared");
   });
+
+  // Builds a processedData payload where the inner dataset carries an
+  // `original_dataset_id`. This is the field FileProcessor preserves from
+  // the source file (`fileProcessor.js:94`) and the field reconcile and
+  // dedup logic key on.
+  const buildDatasetWithOriginalId = (datasetId, originalDatasetId) => ({
+    datasetId,
+    datasets: [
+      {
+        dataset_id: datasetId,
+        original_dataset_id: originalDatasetId,
+        ident: "ds-shared",
+        name: `Dataset ${datasetId}`
+      }
+    ],
+    clones: {
+      [datasetId]: [{ clone_id: "fam-1", ident: "c1", dataset_id: datasetId, trees: [{ ident: "t1", tree_id: "t-1" }] }]
+    },
+    trees: [{ ident: "t1", tree_id: "t-1", clone_id: "fam-1", nodes: { naive: { type: "root" } } }]
+  });
+
+  it("dedups by original_dataset_id: second call returns existing id and writes nothing", async () => {
+    const firstId = await olmstedDB.storeDataset(buildDatasetWithOriginalId("upload-A", "shared-orig-id"));
+    const secondId = await olmstedDB.storeDataset(buildDatasetWithOriginalId("upload-B", "shared-orig-id"));
+
+    expect(firstId).toBe("upload-A");
+    expect(secondId).toBe("upload-A"); // existing id returned, not the new one
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    expect(await olmstedDB.clones.count()).toBe(1);
+    expect(await olmstedDB.trees.count()).toBe(1);
+  });
+
+  it("concurrent storeDataset for the same source file produces exactly one row", async () => {
+    // Dexie serializes rw transactions, so the second call sees the first's
+    // commit. Without the in-transaction dedup, the rename logic treats the
+    // matching ident as a collision and stores a second row with a "-1"
+    // suffix — exactly the production bug observed at olmstedviz.org.
+    const [a, b] = await Promise.all([
+      olmstedDB.storeDataset(buildDatasetWithOriginalId("upload-A", "shared-orig-id")),
+      olmstedDB.storeDataset(buildDatasetWithOriginalId("upload-B", "shared-orig-id"))
+    ]);
+
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    // Exactly one of the two returns is the "winner" id — both should equal
+    // the row that was actually stored.
+    const storedId = (await olmstedDB.datasets.toArray())[0].dataset_id;
+    expect(a).toBe(storedId);
+    expect(b).toBe(storedId);
+  });
+
+  it("does not dedup when original_dataset_id is absent (existing behavior preserved)", async () => {
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    await olmstedDB.storeDataset(buildDataset("upload-B", "shared-clone", "shared-tree"));
+    expect(await olmstedDB.datasets.count()).toBe(2);
+  });
+
+  it("removeDataset only deletes trees from the target dataset, not siblings sharing clone_id", async () => {
+    // Regression: trees were previously deleted by `clone_id` matched
+    // against the target dataset's clones. clone_id values come from the
+    // source file (e.g. olmsted-cli), so sibling datasets that ingested
+    // the same file have identical clone_ids — the cascade wiped their
+    // trees too. The bug surfaced as "No tree nodes available" on the
+    // surviving dataset after reconcile's dedup pass removed a duplicate.
+    await olmstedDB.storeDataset(buildDataset("upload-A", "shared-clone", "shared-tree"));
+    await olmstedDB.storeDataset(buildDataset("upload-B", "shared-clone", "shared-tree"));
+    expect(await olmstedDB.trees.count()).toBe(2);
+
+    await olmstedDB.removeDataset("upload-A");
+
+    expect(await olmstedDB.datasets.count()).toBe(1);
+    expect(await olmstedDB.clones.count()).toBe(1);
+    expect(await olmstedDB.trees.count()).toBe(1);
+    // The surviving dataset's tree is intact, with its namespaced ident.
+    const tree = (await olmstedDB.trees.toArray())[0];
+    expect(tree.ident).toBe("upload-B::shared-tree");
+  });
 });
