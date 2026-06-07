@@ -96,6 +96,7 @@ Datasets persist across browser sessions, combining the convenience of a web app
 ## Data Preparation with olmsted-cli
 
 The `olmsted` command-line tool converts data into Olmsted's JSON format.
+Unlike the web application, this data-preparation step requires a one-time install: `olmsted-cli` is a Python package (Python 3.8 or higher) installed with `pipx install git+https://github.com/matsengrp/olmsted-cli.git` (or by cloning the repository and running `pip install .`).
 It supports two input formats:
 
 - **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are not aware of any tools currently producing output in the newer schema versions, but are committed to supporting them as they become formalized.
