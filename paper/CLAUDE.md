@@ -6,6 +6,18 @@ This is a JOSS (Journal of Open Source Software) paper.
 
 The PDF is built using [inara](https://github.com/openjournals/inara).
 
+### Quick start
+
+From this directory:
+
+```bash
+make pdf
+```
+
+This prefers the Docker build (recommended/reproducible) and falls back to a
+local inara clone at `_ignore/inara` if Docker isn't running. The two
+underlying paths are documented below.
+
 ### Docker (recommended)
 
 From the repository root:

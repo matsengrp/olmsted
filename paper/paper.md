@@ -78,7 +78,8 @@ Specifically, Olmsted allows users to:
 - Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
 
 Olmsted requires no installation: users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly into their local web browser.
-Data processing is handled by a companion command-line tool, [olmsted-cli](https://github.com/matsengrp/olmsted-cli), which converts common immunoinformatics formats into Olmsted's input format.
+Data processing is handled by a companion `olmsted` command-line tool, hosted at the [olmsted-cli](https://github.com/matsengrp/olmsted-cli) repository.
+This tool converts common immunoinformatics formats into Olmsted's input format.
 
 # Features
 
@@ -94,7 +95,7 @@ Datasets persist across browser sessions, combining the convenience of a web app
 
 ## Data Preparation with olmsted-cli
 
-The [olmsted-cli](https://github.com/matsengrp/olmsted-cli) command-line tool converts data into Olmsted's JSON format.
+The `olmsted` command-line tool converts data into Olmsted's JSON format.
 It supports two input formats:
 
 - **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are not aware of any tools currently producing output in the newer schema versions, but are committed to supporting them as they become formalized.
