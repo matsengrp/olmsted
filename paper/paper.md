@@ -50,7 +50,8 @@ bibliography: paper.bib
 # Summary
 
 Olmsted is an open-source, browser-based application for visually exploring B cell repertoires and clonal family tree data.
-In the human immune system, affinity maturation of B cell receptor sequences coding for immunoglobulins (antibodies) begins with a diverse pool of randomly generated naive sequences and leads to a collection of evolutionary histories.
+The immune system learns to recognize new threats by mutating and selecting the cells that produce antibodies, a process that leaves behind a branching evolutionary record much like a family tree.
+In immunological terms, this affinity maturation of B cell receptor sequences coding for immunoglobulins (antibodies) begins with a diverse pool of randomly generated naive sequences and leads to a collection of evolutionary histories.
 High-throughput DNA sequencing of the B cell repertoire, combined with computational reconstruction of these evolutionary histories, produces large collections of clonal families and their associated phylogenetic trees.
 Olmsted enables researchers to scan across collections of clonal families using summary statistics, then interactively explore individual families to visualize phylogenies and amino acid mutations that occurred during affinity maturation.
 
@@ -77,6 +78,8 @@ Specifically, Olmsted allows users to:
 - Trace the mutational history of individual sequences back to their germline origin
 - Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
 
+Earlier versions of Olmsted supported the interactive exploration of B cell lineages in studies of HIV-1-specific antibody responses by the Overbaugh group [@Simonich2019-nn; @Doepker2020-jr; @Doepker2021-ue; @Williams2018-bo], where it was used to navigate and interrogate reconstructed clonal families.
+
 Olmsted requires no installation: users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly into their local web browser.
 Data processing is handled by a companion `olmsted` command-line tool, hosted at the [olmsted-cli](https://github.com/matsengrp/olmsted-cli) repository.
 This tool converts common immunoinformatics formats into Olmsted's input format.
@@ -88,8 +91,6 @@ This tool converts common immunoinformatics formats into Olmsted's input format.
 Users visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser, with no installation, account creation, or data upload to external servers.
 All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
 Datasets persist across browser sessions, combining the convenience of a web application with the privacy of local software.
-
-<!-- ![Landing page at www.olmstedviz.org](./images/1-01-landing-page.png){height="3in"}-->
 
 ![Dataset management interface.](./images/1-02-database-manager.png){height="3in"}
 
@@ -137,7 +138,6 @@ The tree and alignment support zooming and panning, as well as focusing to a sub
 ![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
 4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
-<!-- Dave, are you happy with the following? I think that we can/should talk about the surprise analysis. -->
 For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data.
 
 ![Example ancestral sequence visualization.](./images/2-07-ancestral-sequences.png){height="3in"}
@@ -145,7 +145,9 @@ For this and the clonal family tree view, mutations can be colored by an arbitra
 # Implementation
 
 Olmsted is built with React and Redux, with visualizations implemented in Vega.
-The codebase originated as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain].
+The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], and was actively developed through 2020 before being shelved.
+In 2025 the project was revived and substantially rewritten with the assistance of agentic AI coding tools (Claude Code), which were used to modernize the application's dependencies and JavaScript frameworks, replace the legacy server-side data pipeline with client-side processing and browser-based (IndexedDB) storage, and add a test suite and continuous integration.
+All AI-assisted changes were reviewed and tested by the authors.
 The application can be deployed as a static single-page application or run locally via Docker.
 
 # Acknowledgements
