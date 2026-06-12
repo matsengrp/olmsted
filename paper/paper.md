@@ -64,7 +64,7 @@ However, researchers often lack tools to explore these reconstructions in the de
 Existing visualization tools address different analytical goals.
 AncesTree [@Foglierini2020-am] provides detailed single-tree exploration with amino acid mutation display, but requires Java installation, processes one lineage at a time without a repertoire overview, and handles heavy or light chains separately rather than as pairs.
 ViCloD [@Jeusset2023-ow] focuses on large-scale intraclonal diversity analysis across hundreds of thousands of sequences, primarily for characterizing B cell tumors; it analyzes heavy chains only.
-AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level; it also visualizes heavy chains only.
+AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level, again for heavy chains only.
 ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for database-style querying.
 
 Olmsted combines repertoire-level overview with detailed lineage exploration.
@@ -113,8 +113,8 @@ olmsted process -c config.yaml -n "My Dataset" -o data-olmsted.json
 ```
 The `build-config` command introspects input data and generates a YAML configuration listing all discoverable fields with inferred types and labels, which the user can edit before processing.
 These fields will dynamically populate plotting options and hover tooltip information.
-Once data preparation is done, the resulting file can be shared with collaborators who can use the web interface only.
-Plot configurations can also be exported from the webapp for recreation.
+Once data preparation is done, the resulting file can be shared with collaborators, who then need only the web interface.
+Plot configurations can also be exported from the web app so they can be recreated later.
 
 ## Interactive Visualization
 
@@ -133,7 +133,7 @@ The table can be sorted by any column, and families can be starred for easy refe
 
 3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment.
 Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
-The tree and alignment support zooming and panning, as well as focusing to a subtree based on a selected subroot node.
+The tree and alignment support zooming and panning, as well as focusing on a subtree based on a selected subroot node.
 
 ![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
