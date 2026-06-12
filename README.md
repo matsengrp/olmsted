@@ -50,14 +50,12 @@ Use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to convert your data
 ### Installing olmsted-cli
 
 ```bash
-# Create a conda environment and install
-conda create -n olmsted python=3.9
-conda activate olmsted
-
-git clone https://github.com/matsengrp/olmsted-cli.git
-cd olmsted-cli
-pip install .
+pip install olmsted-cli
+# or, for an isolated environment:
+pipx install olmsted-cli
 ```
+
+See the [olmsted-cli README](https://github.com/matsengrp/olmsted-cli#installation) for from-source/development installs.
 
 ### Basic Usage
 
