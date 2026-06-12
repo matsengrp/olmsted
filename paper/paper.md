@@ -140,7 +140,7 @@ The tree and alignment support zooming and panning, as well as focusing to a sub
 4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
 For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data.
 
-![Example ancestral sequence visualization.](./images/2-07-ancestral-sequences.png){height="3in"}
+![Example ancestral sequence visualization.](./images/2-06-ancestral-sequences.png){height="3in"}
 
 # Implementation
 
