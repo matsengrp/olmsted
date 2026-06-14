@@ -1274,6 +1274,7 @@ class TreeViz extends React.Component {
               {this.renderSubtreeNav(heavyTree || tree)}
               <VegaChart
                 key={vegaChartKey(CHAIN_TYPES.HEAVY, subtreeRoot, this.props.treatSubtreeAsRoot)}
+                name="tree-heavy"
                 onNewView={(view) => {
                   this.setupHeavyChainSignalSync(view);
                   view.addSignalListener("pts_tuple", (name, node) => {
@@ -1291,6 +1292,7 @@ class TreeViz extends React.Component {
               {lightTree ? (
                 <VegaChart
                   key={vegaChartKey(CHAIN_TYPES.LIGHT, subtreeRoot, this.props.treatSubtreeAsRoot)}
+                  name="tree-light"
                   onNewView={(view) => {
                     this.setupLightChainSignalSync(view, 0.4);
                     view.addSignalListener("pts_tuple", (name, node) => {
@@ -1394,6 +1396,7 @@ class TreeViz extends React.Component {
                   {this.renderSubtreeNav(tree)}
                   <VegaChart
                     key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
+                    name="tree"
                     onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}
                     onError={this.handleVegaError}
                     data={this.treeDataFromProps()}

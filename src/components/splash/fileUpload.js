@@ -413,6 +413,7 @@ class FileUpload extends React.Component {
           {/* Hidden file input for programmatic access */}
           <input
             ref={this.fileInputRef}
+            data-testid="splash-file-input"
             type="file"
             accept="application/json, .json, .json.gz, .gz"
             multiple
