@@ -88,14 +88,14 @@ function VegaChart({ spec, data, onNewView, onError, options, name, ...rest }) {
     if (!view || !data) return;
 
     let changed = false;
-    Object.entries(data).forEach(([name, values]) => {
+    Object.entries(data).forEach(([datasetName, values]) => {
       const valuesArray = Array.isArray(values) ? values : [values];
       try {
         // Batch remove+insert into a single changeset so Vega's dataflow
         // never sees an intermediate empty-dataset state (which causes
         // Relay transform errors with downstream references).
         view.change(
-          name,
+          datasetName,
           changeset()
             .remove(() => true)
             .insert(valuesArray)
@@ -104,7 +104,7 @@ function VegaChart({ spec, data, onNewView, onError, options, name, ...rest }) {
       } catch (e) {
         // Dataset may not exist in this spec — only suppress that case
         if (!e.message || !e.message.includes("Unrecognized data set")) {
-          console.warn(`VegaChart: error updating dataset "${name}":`, e);
+          console.warn(`VegaChart: error updating dataset "${datasetName}":`, e);
         }
       }
     });
