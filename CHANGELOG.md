@@ -1,3 +1,9 @@
+## version 2.7.6 - 2026/06/14
+Added:
+* Playwright end-to-end test infrastructure (#287). A happy-path smoke test (`tests/e2e/smoke.spec.js`) drives a real browser through upload → scatterplot → brush → table → tree → subtree-focus, asserting on live Vega View state. New `test:e2e` / `test:e2e:ui` scripts; CI runs it (with browser caching) before the Docker build, blocking the image push on failure.
+* Dev-only Vega View registry: `VegaChart` gained a `name` prop that registers the View on `window.__OLMSTED_VEGA_VIEWS__` when `NODE_ENV !== "production"`, giving e2e tests access to the View API. Dead-code-eliminated from production bundles (zero shipped bytes).
+* `PRE-MERGE-CHECKLIST.md` step 5 now allows skipping the manual browser walk-through for non-render PRs when `npm run test:e2e` passes. `DEVELOPMENT.md` documents the e2e workflow and the Jest-vs-Playwright test-location split.
+
 ## version 2.7.5 - 2026/05/22
 Changed:
 * Added `DESIGN.md` (load-bearing architectural decisions as guardrails) and `PRE-MERGE-CHECKLIST.md` (16-step quality gate for PRs). Slimmed the inline Pre-PR checklist in `CLAUDE.md` to a pointer at the new checklist.
