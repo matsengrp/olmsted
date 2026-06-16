@@ -3,6 +3,10 @@ Added:
 * Playwright end-to-end test infrastructure (#287). A happy-path smoke test (`tests/e2e/smoke.spec.js`) drives a real browser through upload → scatterplot → brush → table → tree → subtree-focus, asserting on live Vega View state. New `test:e2e` / `test:e2e:ui` scripts; CI runs it (with browser caching) before the Docker build, blocking the image push on failure.
 * Dev-only Vega View registry: `VegaChart` gained a `name` prop that registers the View on `window.__OLMSTED_VEGA_VIEWS__` when `NODE_ENV !== "production"`, giving e2e tests access to the View API. Dead-code-eliminated from production bundles (zero shipped bytes).
 * `PRE-MERGE-CHECKLIST.md` step 5 now allows skipping the manual browser walk-through for non-render PRs when `npm run test:e2e` passes. `DEVELOPMENT.md` documents the e2e workflow and the Jest-vs-Playwright test-location split.
+* Additional e2e fixtures copied from olmsted-cli (`airr`, `pcp`, `pcp-paired`, and `merge` golden Olmsted JSONs) alongside the existing `pcp-byhand` fixture, covering the AIRR / PCP / paired / merge ingest paths.
+
+Changed:
+* Split `bin/` into `bin/` (operator-run scripts: AWS deploy/download/invalidate, Docker server launchers) and `scripts/` (build/tooling helpers run by npm and webpack: `build-datasets-manifest.js`, `setup-eslint-plugin.js`, `postbuild.sh`). The manual manifest command is now `node scripts/build-datasets-manifest.js <data-dir>` (was `bin/...`); call sites in `package.json`, `server.js`, and `webpack.config.prod.js` were updated accordingly.
 
 ## version 2.7.5 - 2026/05/22
 Changed:

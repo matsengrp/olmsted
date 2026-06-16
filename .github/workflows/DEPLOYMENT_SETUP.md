@@ -115,7 +115,7 @@ python3 bin/aws_deploy.py app -b YOUR_BUCKET_NAME --invalidate-cloudfront
 
 **Note**: The build process automatically creates the `_deploy/` directory structure:
 - `webpack.config.prod.js` creates `_deploy/dist` and `_deploy/data` before compilation
-- `bin/postbuild.sh` ensures these directories exist and copies static assets
+- `scripts/postbuild.sh` ensures these directories exist and copies static assets
 - No manual directory setup is required
 
 ## Security Notes

@@ -1,5 +1,5 @@
 /**
- * Tests for bin/build-datasets-manifest.js
+ * Tests for scripts/build-datasets-manifest.js
  *
  * Each test uses a fresh temp directory so we can write and re-read
  * the manifest without polluting checked-in fixtures.

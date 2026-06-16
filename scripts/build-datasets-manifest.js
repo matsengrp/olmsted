@@ -21,8 +21,8 @@
  *
  * Direct invocation:
  *
- *   node bin/build-datasets-manifest.js _data/server-snapshot/
- *   node bin/build-datasets-manifest.js _data/server-snapshot/ --allow-duplicates
+ *   node scripts/build-datasets-manifest.js _data/server-snapshot/
+ *   node scripts/build-datasets-manifest.js _data/server-snapshot/ --allow-duplicates
  */
 
 const fs = require("fs");

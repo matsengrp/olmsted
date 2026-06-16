@@ -114,7 +114,7 @@ For production / deploy time, run the same scanner manually before
 uploading:
 
 ```bash
-node bin/build-datasets-manifest.js _deploy/data
+node scripts/build-datasets-manifest.js _deploy/data
 ```
 
 The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
@@ -145,7 +145,7 @@ mkdir -p _deploy/data/consolidated
 cp /path/to/my-dataset.json.gz _deploy/data/consolidated/
 
 # 2. Rebuild the manifest from scratch.
-node bin/build-datasets-manifest.js _deploy/data
+node scripts/build-datasets-manifest.js _deploy/data
 
 # 3. Upload to S3 and invalidate CloudFront. The bucket name is the
 #    same one the GitHub Actions workflow targets via vars.S3_BUCKET_NAME
@@ -430,7 +430,8 @@ olmsted/
 │   ├── css/                  # Stylesheets
 │   ├── images/               # Static images
 │   └── server/               # Express server code
-├── bin/                      # Shell scripts and utilities
+├── bin/                      # Operator-run scripts (AWS deploy, Docker server)
+├── scripts/                  # Build/tooling helpers run by npm/webpack
 ├── data/                     # Local data directory (gitignored)
 ├── _deploy/                  # Production web bundle output (build)
 ├── _devel/                   # Dev-mode webpack output (start)
@@ -598,7 +599,7 @@ console.log("Debug message"); // Remove before committing
 npm run build
 ```
 
-Output is in `_deploy/dist/`. The `bin/postbuild.sh` script copies the static assets (HTML, CSS, images) alongside the bundle in `_deploy/` so the whole directory can be served as-is.
+Output is in `_deploy/dist/`. The `scripts/postbuild.sh` script copies the static assets (HTML, CSS, images) alongside the bundle in `_deploy/` so the whole directory can be served as-is.
 
 ### Docker Build
 

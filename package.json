@@ -11,7 +11,7 @@
   },
   "scripts": {
     "postinstall": "mkdir -p data && npm run setup-eslint-plugin",
-    "setup-eslint-plugin": "node bin/setup-eslint-plugin.js",
+    "setup-eslint-plugin": "node scripts/setup-eslint-plugin.js",
     "clean": "rimraf _deploy/dist",
     "server": "node server.dist.js",
     "build:client": "NODE_ENV=production BABEL_ENV=production webpack --config webpack.config.prod.js",
