@@ -1,4 +1,5 @@
-import { controlsWidth } from "./util/globals";
+/* Width of the left controls sidebar, in px (formerly in the deleted util/globals.js). */
+export const controlsWidth = 220;
 
 /* IF YOU CHANGE THINGS HERE CHANGE THEM IN static.css AS WELL! */
 export const titleFont = "Lato, Helvetica Neue, Helvetica, sans-serif";

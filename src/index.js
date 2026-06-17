@@ -1,5 +1,5 @@
 /* P O L Y F I L L S */
-import "./util/polyfills";
+import "./utils/polyfills";
 /* L I B R A R I E S */
 import React from "react";
 import { createRoot } from "react-dom/client";

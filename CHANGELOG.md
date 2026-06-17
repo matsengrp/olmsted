@@ -1,3 +1,12 @@
+## version 2.7.7 - 2026/06/17
+Removed:
+* Deleted inherited Nextstrain/auspice dead code (#286). Removed `src/util/globals.js` (857 lines, almost entirely flu-phylogenetics vestige) and four orphaned `src/util/` modules with no live callers: `computeResponsive.js`, `stringHelpers.js`, `sets.js`, `perf.js` (and their tests). The two live exports from globals were relocated: `controlsWidth` into `src/globalStyles.js`, `dataBaseURL` into `src/actions/clientDataLoader.js`.
+* Removed the dead performance-timing machinery that only existed to instrument the deleted `perf.js`: the `build:client:perf` / `build:start:perf` / `start:local:perf` scripts, the `babel-plugin-strip-function-call` devDependency, and the `production`/`devtiming` Babel env entries that stripped `timerStart`/`timerEnd` calls.
+
+Changed:
+* Consolidated `src/util/` into `src/utils/` — only the live `polyfills.js` remained, now at `src/utils/polyfills.js`; `src/util/` is deleted, ending the confusing `util/` vs `utils/` split.
+* Reworded the CLAUDE.md "Architecture Principles" to replace aspirational "modern patterns" language with an honest "pragmatic stability" stance (the codebase is class components + `@connect` throughout, 0 hooks; a hooks migration would be a separate tracked epic).
+
 ## version 2.7.6 - 2026/06/14
 Added:
 * Playwright end-to-end test infrastructure (#287). A happy-path smoke test (`tests/e2e/smoke.spec.js`) drives a real browser through upload → scatterplot → brush → table → tree → subtree-focus, asserting on live Vega View state. New `test:e2e` / `test:e2e:ui` scripts; CI runs it (with browser caching) before the Docker build, blocking the image push on failure.

@@ -11,12 +11,6 @@
 import fs from "fs";
 import path from "path";
 
-// src/util/globals.js pulls in d3-scale (ESM-only) for unrelated color
-// constants; mock just the API constant we actually use here.
-jest.mock("../../util/globals", () => ({
-  dataBaseURL: "/data"
-}));
-
 const {
   ingestConsolidatedServerDataset,
   ingestConsolidatedServerDatasets,

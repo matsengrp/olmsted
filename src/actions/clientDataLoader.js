@@ -7,8 +7,10 @@ import * as types from "./types";
 import clientDataStore from "../utils/clientDataStore";
 import olmstedDB from "../utils/olmstedDB";
 import FileProcessor from "../utils/fileProcessor";
-import { dataBaseURL } from "../util/globals";
 import { DATASET_SOURCE } from "../constants/datasetSource";
+
+/* Base path for server-hosted dataset files (formerly in the deleted util/globals.js). */
+const dataBaseURL = "/data";
 
 /**
  * Predicate identifying a manifest entry that points at a single
