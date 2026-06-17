@@ -360,11 +360,16 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
-**What it covers.** `tests/e2e/smoke.spec.js` is a single happy-path test: upload the golden fixture, load it into the App view, assert the scatterplot mounted with families, brush a subset and confirm the table narrows, open a family and assert its tree rendered single-rooted, then focus a subtree and reset to the full tree. Assertions are made against live Vega **View** state (signals and datasets), never canvas pixels — visual regression is intentionally deferred (issue #287, Phase 2).
+**What it covers.**
 
-**How it reaches the Vega views.** `VegaChart` accepts a `name` prop that, in non-production builds only, registers the live View on `window.__OLMSTED_VEGA_VIEWS__` (a `Map`). The test reads from that registry via `page.evaluate`. The registry is gated on `process.env.NODE_ENV !== "production"`, so it is dead-code-eliminated from production bundles (verify with `npm run build` then `grep __OLMSTED_VEGA_VIEWS__ _deploy/dist/bundle.js` — no matches).
+- `tests/e2e/smoke.spec.js` — a single happy-path test: upload the golden fixture, load it into the App view, assert the scatterplot mounted with families, brush a subset and confirm the table narrows, open an unpaired family and assert its tree rendered single-rooted, then focus a subtree and reset to the full tree.
+- `tests/e2e/paired-tree.spec.js` — the paired heavy/light path: upload the paired fixture, open a heavy-chain family, switch the chain selector to "Both chains (stacked)", and assert both the `tree-heavy` and `tree-light` Vega views render single-rooted trees with no console errors.
 
-**The fixture.** `tests/e2e/fixtures/pcp-byhand-olmsted-golden.json` is copied from olmsted-cli; see `tests/e2e/fixtures/README.md` for provenance and how to update it. It is committed (not symlinked) so the suite runs in a fresh clone.
+Assertions are made against live Vega **View** state (signals and datasets), never canvas pixels — visual regression is intentionally deferred (issue #287, Phase 2). Shared View-registry helpers (`viewDataLength`, `waitForViewData`, `nodeTypeCount`, `tableFamilyCount`, …) live in `tests/e2e/helpers.js`.
+
+**How it reaches the Vega views.** `VegaChart` accepts a `name` prop that, in non-production builds only, registers the live View on `window.__OLMSTED_VEGA_VIEWS__` (a `Map`). Tests read from that registry via `page.evaluate`. The registry is gated on `process.env.NODE_ENV !== "production"`, so it is dead-code-eliminated from production bundles (verify with `npm run build` then `grep __OLMSTED_VEGA_VIEWS__ _deploy/dist/bundle.js` — no matches).
+
+**The fixtures.** `tests/e2e/fixtures/` holds Olmsted JSON datasets copied from olmsted-cli (`pcp-byhand` drives the smoke test, `pcp-paired` drives the paired test, plus `airr`/`pcp`/`merge` staged for future specs); see `tests/e2e/fixtures/README.md` for provenance and how to update them. They are committed (not symlinked) so the suite runs in a fresh clone.
 
 **CI.** `.github/workflows/build.yml` caches the Playwright browser, installs Chromium, runs `npx playwright test`, and uploads the HTML report as an artifact (`if: always()`), all before the Docker build — so an e2e failure blocks the image push.
 

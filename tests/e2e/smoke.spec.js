@@ -1,6 +1,7 @@
 // @ts-check
 const path = require("path");
 const { test, expect } = require("@playwright/test");
+const { viewDataLength, viewSignal, waitForViewData, nodeTypeCount, tableFamilyCount } = require("./helpers");
 
 /**
  * End-to-end smoke test (issue #287, Phase 1).
@@ -32,55 +33,6 @@ const ROOT_NODE_TYPE = "root"; // NODE_TYPES.ROOT, src/constants/nodeTypes.js
 // Generous per-test budget: the dev server cold-starts via babel-node and the
 // first webpack compile, then we drive several async Vega dataflow updates.
 test.setTimeout(120 * 1000);
-
-/**
- * Run the named Vega view's dataflow and return a named dataset's length.
- * @returns {Promise<number|null>} length, or null if the view isn't registered
- */
-function viewDataLength(page, name, dataset) {
-  return page.evaluate(
-    async ([n, ds]) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__ && window.__OLMSTED_VEGA_VIEWS__.get(n);
-      if (!view) return null;
-      await view.runAsync();
-      return view.data(ds).length;
-    },
-    [name, dataset]
-  );
-}
-
-/** Read a top-level signal value from the named Vega view. */
-function viewSignal(page, name, signal) {
-  return page.evaluate(
-    ([n, s]) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__ && window.__OLMSTED_VEGA_VIEWS__.get(n);
-      return view ? view.signal(s) : null;
-    },
-    [name, signal]
-  );
-}
-
-/** Wait until the named view is registered and has data in `dataset`. */
-async function waitForViewData(page, name, dataset) {
-  await page.waitForFunction(
-    ([n, ds]) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__ && window.__OLMSTED_VEGA_VIEWS__.get(n);
-      return !!(view && view.data(ds) && view.data(ds).length > 0);
-    },
-    [name, dataset],
-    { timeout: 30000 }
-  );
-}
-
-/** Parse the "Showing N families" footer in the clonal families table. */
-async function tableFamilyCount(page) {
-  const text = await page
-    .getByText(/Showing \d+ families/)
-    .first()
-    .textContent();
-  const match = /Showing (\d+) families/.exec(text || "");
-  return match ? parseInt(match[1], 10) : null;
-}
 
 /**
  * Walk the scatterplot's Vega scene graph and return, in SVG-relative
@@ -168,13 +120,7 @@ test("smoke: upload -> scatterplot -> family -> subtree focus -> brush", async (
   expect(treeLen).toBeGreaterThan(0);
 
   // Exactly one root node (fixture is single-rooted; no synthetic-root path).
-  const rootCount = await page.evaluate(
-    ([rootType]) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__.get("tree");
-      return view.data("nodes").filter((n) => n.type === rootType).length;
-    },
-    [ROOT_NODE_TYPE]
-  );
+  const rootCount = await nodeTypeCount(page, "tree", ROOT_NODE_TYPE);
   expect(rootCount).toBe(1);
 
   const fullTreeNodeCount = await viewDataLength(page, "tree", "nodes");
