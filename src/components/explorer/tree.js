@@ -1408,6 +1408,11 @@ class TreeViz extends React.Component {
           {!isBothMode && !lightChainUnavailable && !completeData && !incompleteTree && (
             <div>
               {this.renderSubtreeNav(tree)}
+              {/* Loading-state placeholder (empty tempVegaData). Intentionally has
+                  no `name` prop so it does NOT register on the e2e View registry —
+                  tests should observe the populated chart above (name="tree"), not
+                  this empty stand-in. Shares the same key, so React swaps this for
+                  the populated chart once completeData becomes true. */}
               <VegaChart
                 key={vegaChartKey("tree", subtreeRoot, this.props.treatSubtreeAsRoot)}
                 onNewView={(view) => this.setupSingleChainView(view, dispatchSelectedSeq)}

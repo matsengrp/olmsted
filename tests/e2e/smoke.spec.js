@@ -1,7 +1,16 @@
 // @ts-check
 const path = require("path");
 const { test, expect } = require("@playwright/test");
-const { viewDataLength, viewSignal, waitForViewData, nodeTypeCount, tableFamilyCount } = require("./helpers");
+const {
+  viewDataLength,
+  viewSignal,
+  waitForViewData,
+  waitForViewDataLength,
+  waitForViewDataLengthBelow,
+  nodeTypeCount,
+  tableFamilyCount,
+  scatterPlotGeometry
+} = require("./helpers");
 
 /**
  * End-to-end smoke test (issue #287, Phase 1).
@@ -33,43 +42,6 @@ const ROOT_NODE_TYPE = "root"; // NODE_TYPES.ROOT, src/constants/nodeTypes.js
 // Generous per-test budget: the dev server cold-starts via babel-node and the
 // first webpack compile, then we drive several async Vega dataflow updates.
 test.setTimeout(120 * 1000);
-
-/**
- * Walk the scatterplot's Vega scene graph and return, in SVG-relative
- * coordinates, the data-symbol centroids and the bounds of the "cell" group
- * (the plot area). Legend/axis/title marks are excluded so only true data
- * points are returned. Used to drive a real brush gesture over a known subset.
- *
- * @returns {Promise<{points: {x:number,y:number}[], cell: {x,y,w,h}|null}>}
- */
-function scatterPlotGeometry(page, name) {
-  return page.evaluate((n) => {
-    const view = window.__OLMSTED_VEGA_VIEWS__ && window.__OLMSTED_VEGA_VIEWS__.get(n);
-    if (!view) return { points: [], cell: null };
-    const points = [];
-    let cell = null;
-    // A "mark" has .marktype and .items (its instances). A group instance's
-    // .items are its child marks. Accumulate group-origin offsets so coords
-    // come out relative to the SVG origin.
-    const isChrome = (mark) => mark.role && /legend|axis|title/.test(mark.role);
-    const walk = (mark, ox, oy) => {
-      if (isChrome(mark)) return;
-      const instances = mark.items || [];
-      if (mark.marktype === "symbol") {
-        for (const inst of instances) points.push({ x: ox + inst.x, y: oy + inst.y });
-      } else if (mark.marktype === "group") {
-        for (const inst of instances) {
-          const gx = ox + (inst.x || 0);
-          const gy = oy + (inst.y || 0);
-          if (mark.name === "cell" && !cell) cell = { x: gx, y: gy, w: inst.width, h: inst.height };
-          for (const childMark of inst.items || []) walk(childMark, gx, gy);
-        }
-      }
-    };
-    walk(view.scenegraph().root, 0, 0);
-    return { points, cell };
-  }, name);
-}
 
 test("smoke: upload -> scatterplot -> family -> subtree focus -> brush", async ({ page }) => {
   const consoleErrors = [];
@@ -136,14 +108,7 @@ test("smoke: upload -> scatterplot -> family -> subtree focus -> brush", async (
   await page.getByRole("button", { name: /Focus Subtree/ }).click();
 
   // The tree remounts (VegaChart key swap, DESIGN.md D8) with fewer nodes.
-  await page.waitForFunction(
-    (prev) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__.get("tree");
-      return view && view.data("nodes").length > 0 && view.data("nodes").length < prev;
-    },
-    fullTreeNodeCount,
-    { timeout: 15000 }
-  );
+  await waitForViewDataLengthBelow(page, "tree", "nodes", fullTreeNodeCount);
   const focusedNodeCount = await viewDataLength(page, "tree", "nodes");
   expect(focusedNodeCount).toBeLessThan(fullTreeNodeCount);
 
@@ -152,14 +117,7 @@ test("smoke: upload -> scatterplot -> family -> subtree focus -> brush", async (
 
   // Reset to the full tree.
   await page.getByRole("button", { name: /Full Tree/ }).click();
-  await page.waitForFunction(
-    (target) => {
-      const view = window.__OLMSTED_VEGA_VIEWS__.get("tree");
-      return view && view.data("nodes").length === target;
-    },
-    fullTreeNodeCount,
-    { timeout: 15000 }
-  );
+  await waitForViewDataLength(page, "tree", "nodes", fullTreeNodeCount);
 
   // --- 6. Brush a subset of scatterplot points -> table narrows ----------
   // Real mouse-drag gesture: the table is driven by a Redux dispatch the
@@ -202,16 +160,9 @@ test("smoke: upload -> scatterplot -> family -> subtree focus -> brush", async (
   await page.mouse.up();
 
   // Table narrows to a strictly smaller, positive number of families.
-  await page.waitForFunction(
-    (total) => {
-      const el = Array.from(document.querySelectorAll("span")).find((s) => /Showing \d+ families/.test(s.textContent));
-      if (!el) return false;
-      const n = parseInt(/Showing (\d+) families/.exec(el.textContent)[1], 10);
-      return n > 0 && n < total;
-    },
-    totalFamilies,
-    { timeout: 15000 }
-  );
+  await expect
+    .poll(async () => (await tableFamilyCount(page)) ?? totalFamilies, { timeout: 15000 })
+    .toBeLessThan(totalFamilies);
   const brushedCount = await tableFamilyCount(page);
   expect(brushedCount).toBeGreaterThan(0);
   expect(brushedCount).toBeLessThan(totalFamilies);
