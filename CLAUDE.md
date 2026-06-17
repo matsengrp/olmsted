@@ -30,7 +30,8 @@ olmsted/
 │   ├── reducers/             # Redux reducers
 │   ├── selectors/            # Reselect memoized selectors
 │   └── middleware/           # Redux middleware
-├── bin/                      # Shell scripts and deployment utilities
+├── bin/                      # Operator-run scripts (AWS deploy, Docker server)
+├── scripts/                  # Build/tooling helpers run by npm/webpack
 ├── data/                     # Local data directory (gitignored)
 ├── docs/                     # Documentation images
 ├── ARCHITECTURE.md           # System architecture documentation

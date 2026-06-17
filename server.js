@@ -3,7 +3,7 @@ const path = require("path");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 const globals = require("./src/server/globals");
-const { buildManifest } = require("./bin/build-datasets-manifest");
+const { buildManifest } = require("./scripts/build-datasets-manifest");
 
 /* documentation in the static site! */
 
@@ -28,7 +28,7 @@ if (localData && localDataPath) {
     );
     if (result.collisions.length > 0) {
       console.warn(
-        `WARNING: ${result.collisions.length} dataset_id collision(s) in ${localDataPath} — the client will silently drop all but one of each colliding pair. Run \`node bin/build-datasets-manifest.js ${localDataPath}\` for details.`
+        `WARNING: ${result.collisions.length} dataset_id collision(s) in ${localDataPath} — the client will silently drop all but one of each colliding pair. Run \`node scripts/build-datasets-manifest.js ${localDataPath}\` for details.`
       );
     }
   } catch (err) {

@@ -416,6 +416,7 @@ class Lineage extends React.Component {
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
                     key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.treeMutationColorBy || "aa"}-${this.state.treeColorByMetric}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    name="lineage"
                     onNewView={(view) => {
                       this.vegaViewRef = view;
                       if (!this.state.vegaViewReady) {

@@ -44,7 +44,7 @@ module.exports = {
         // Run postbuild script after compilation
         compiler.hooks.done.tap("CustomPostBuildPlugin", () => {
           try {
-            execSync("./bin/postbuild.sh", { stdio: "inherit" });
+            execSync("./scripts/postbuild.sh", { stdio: "inherit" });
           } catch (error) {
             console.warn("Postbuild script failed:", error.message);
           }

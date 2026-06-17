@@ -131,6 +131,7 @@ class ClonalFamiliesViz extends React.Component {
           {availableClonalFamilies.length > 0 && (
             <VegaChart
               key={`scatterplot-${fieldMetadata ? "meta" : "default"}`}
+              name="scatterplot"
               onNewView={(view) => {
                 this.setState({ vegaView: view });
                 // Register view with context for config management

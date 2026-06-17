@@ -114,7 +114,7 @@ For production / deploy time, run the same scanner manually before
 uploading:
 
 ```bash
-node bin/build-datasets-manifest.js _deploy/data
+node scripts/build-datasets-manifest.js _deploy/data
 ```
 
 The consolidated single-file shape (`{ metadata, datasets, clones, trees }`)
@@ -145,7 +145,7 @@ mkdir -p _deploy/data/consolidated
 cp /path/to/my-dataset.json.gz _deploy/data/consolidated/
 
 # 2. Rebuild the manifest from scratch.
-node bin/build-datasets-manifest.js _deploy/data
+node scripts/build-datasets-manifest.js _deploy/data
 
 # 3. Upload to S3 and invalidate CloudFront. The bucket name is the
 #    same one the GitHub Actions workflow targets via vars.S3_BUCKET_NAME
@@ -185,6 +185,8 @@ so it is currently a no-op for data uploads. Wiring it up properly
 | `npm test`               | Run all Jest tests                                                                                        |
 | `npm run test:watch`     | Run tests in watch mode (re-runs on file changes)                                                         |
 | `npm run test:coverage`  | Run tests with coverage report                                                                            |
+| `npm run test:e2e`       | Run Playwright end-to-end tests (auto-starts the dev server)                                               |
+| `npm run test:e2e:ui`    | Run Playwright tests in interactive UI mode                                                                |
 | `npm run clean`          | Remove build artifacts                                                                                    |
 
 ### Build Pipeline
@@ -292,7 +294,12 @@ npm test -- --verbose
 
 ### Test Organization
 
-Tests are colocated with source files using the `__tests__/` convention:
+Olmsted has two test layers, kept in separate locations:
+
+- **Jest unit/integration tests** — colocated with the source they cover in `__tests__/` directories (see below). These own pure-function, component-unit, IndexedDB, middleware, and Vega-spec-parse coverage.
+- **Playwright end-to-end tests** — at the top-level `tests/e2e/` directory, alongside the existing non-Jest scaffolding (`tests/performance/`, `tests/test_docker_server.sh`). E2E specs are not unit tests of any single module, so they do not follow the colocated `__tests__/` convention. See [End-to-End Tests (Playwright)](#end-to-end-tests-playwright).
+
+Jest tests are colocated with source files using the `__tests__/` convention:
 
 ```
 src/
@@ -337,6 +344,34 @@ src/
 - **IndexedDB / Dexie** — database CRUD operations and LRU cache logic (using `fake-indexeddb`)
 - **Redux middleware** — URL-sync middleware with mocked `window.history` and Redux store
 - **Vega specs** — structural validation and runtime compatibility (parse + headless View)
+
+### End-to-End Tests (Playwright)
+
+End-to-end tests live in `tests/e2e/` and drive a real Chromium browser against the dev server, covering the full pipeline the Jest suite can't: file upload → React render → Vega rendering → user interaction.
+
+```bash
+# First time only: install the Chromium browser binary
+npx playwright install chromium
+
+# Run the e2e suite (auto-starts `npm start` on port 4000 via the webServer config)
+npm run test:e2e
+
+# Interactive UI mode (watch, time-travel, pick locators)
+npm run test:e2e:ui
+```
+
+**What it covers.**
+
+- `tests/e2e/smoke.spec.js` — a single happy-path test: upload the golden fixture, load it into the App view, assert the scatterplot mounted with families, brush a subset and confirm the table narrows, open an unpaired family and assert its tree rendered single-rooted, then focus a subtree and reset to the full tree.
+- `tests/e2e/paired-tree.spec.js` — the paired heavy/light path: upload the paired fixture, open a heavy-chain family, switch the chain selector to "Both chains (stacked)", and assert both the `tree-heavy` and `tree-light` Vega views render single-rooted trees with no console errors.
+
+Assertions are made against live Vega **View** state (signals and datasets), never canvas pixels — visual regression is intentionally deferred (issue #287, Phase 2). Shared View-registry helpers (`viewDataLength`, `waitForViewData`, `nodeTypeCount`, `tableFamilyCount`, …) live in `tests/e2e/helpers.js`.
+
+**How it reaches the Vega views.** `VegaChart` accepts a `name` prop that, in non-production builds only, registers the live View on `window.__OLMSTED_VEGA_VIEWS__` (a `Map`). Tests read from that registry via `page.evaluate`. The registry is gated on `process.env.NODE_ENV !== "production"`, so it is dead-code-eliminated from production bundles (verify with `npm run build` then `grep __OLMSTED_VEGA_VIEWS__ _deploy/dist/bundle.js` — no matches).
+
+**The fixtures.** `tests/e2e/fixtures/` holds Olmsted JSON datasets copied from olmsted-cli (`pcp-byhand` drives the smoke test, `pcp-paired` drives the paired test, plus `airr`/`pcp`/`merge` staged for future specs); see `tests/e2e/fixtures/README.md` for provenance and how to update them. They are committed (not symlinked) so the suite runs in a fresh clone.
+
+**CI.** `.github/workflows/build.yml` caches the Playwright browser, installs Chromium, runs `npx playwright test`, and uploads the HTML report as an artifact (`if: always()`), all before the Docker build — so an e2e failure blocks the image push.
 
 ### Writing New Tests
 
@@ -400,7 +435,8 @@ olmsted/
 │   ├── css/                  # Stylesheets
 │   ├── images/               # Static images
 │   └── server/               # Express server code
-├── bin/                      # Shell scripts and utilities
+├── bin/                      # Operator-run scripts (AWS deploy, Docker server)
+├── scripts/                  # Build/tooling helpers run by npm/webpack
 ├── data/                     # Local data directory (gitignored)
 ├── _deploy/                  # Production web bundle output (build)
 ├── _devel/                   # Dev-mode webpack output (start)
@@ -568,7 +604,7 @@ console.log("Debug message"); // Remove before committing
 npm run build
 ```
 
-Output is in `_deploy/dist/`. The `bin/postbuild.sh` script copies the static assets (HTML, CSS, images) alongside the bundle in `_deploy/` so the whole directory can be served as-is.
+Output is in `_deploy/dist/`. The `scripts/postbuild.sh` script copies the static assets (HTML, CSS, images) alongside the bundle in `_deploy/` so the whole directory can be served as-is.
 
 ### Docker Build
 
