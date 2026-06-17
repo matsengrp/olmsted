@@ -28,7 +28,7 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 
 # Install npm dependencies (temporarily using npm install for breaking change tests)
-RUN npm install --legacy-peer-deps --ignore-scripts
+RUN npm install --ignore-scripts
 
 # Copy the rest of the application
 COPY . .
