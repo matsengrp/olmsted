@@ -11,7 +11,7 @@ This workflow allows manual deployment to AWS S3 and CloudFront directly from Gi
 3. Name it: `AWS deployment`
 4. Optionally add protection rules:
    - Required reviewers
-   - Restrict to specific branches (e.g., `master` only)
+   - Restrict to specific branches (e.g., `main` only)
 
 ### 2. Configure Environment Variables
 In the "AWS deployment" environment, add these **Variables** (Settings → Environments → AWS deployment → Environment variables):

@@ -136,9 +136,9 @@ See **[PRE-MERGE-CHECKLIST.md](./PRE-MERGE-CHECKLIST.md)** for the full checklis
 
 When code is pushed to any branch, GitHub Actions:
 1. Builds Docker image using the `Dockerfile`
-2. Tags the image (master → git version tag, other branches → branch name)
+2. Tags the image (main → git version tag, other branches → branch name)
 3. Pushes to `quay.io/matsengrp/olmsted:$TAG`
-4. Updates `latest` tag when building from master
+4. Updates `latest` tag when building from main
 
 ### Website Deployment (olmstedviz.org)
 

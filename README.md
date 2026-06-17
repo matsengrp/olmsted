@@ -130,7 +130,7 @@ Example PCP data can be found in the `olmsted-cli/example_data/` directory, demo
 
 The AIRR JSON format is described [here](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
 A list of tools that output this format can be found [here](https://docs.airr-community.org/en/stable/resources/rearrangement_support.html).
-For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/master/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
+For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/main/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
 
 ### Validation
 
@@ -339,7 +339,7 @@ For contributors and maintainers, we provide detailed documentation:
 ### Versioning
 We use git tags to tag [releases of Olmsted](https://github.com/matsengrp/olmsted/releases) using the [semver](https://semver.org/) versioning strategy.
 
-Tag messages, e.g. `Olmsted version 2.0.1 ; uses schema version 2.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/master/bin/process_data.py#L18) with which a given version of Olmsted is compatible.
+Tag messages, e.g. `Olmsted version 2.0.1 ; uses schema version 2.0.0`, contain the [version of the input data schema](https://github.com/matsengrp/olmsted/blob/main/bin/process_data.py#L18) with which a given version of Olmsted is compatible.
 
 The tagged release's major version of Olmsted should always match that of its compatible schema version; should we need to make breaking changes to the schema, we will bump the major versions of both Olmsted and the input schema.
 
