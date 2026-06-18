@@ -187,6 +187,7 @@ so it is currently a no-op for data uploads. Wiring it up properly
 | `npm run test:coverage`  | Run tests with coverage report                                                                            |
 | `npm run test:e2e`       | Run Playwright end-to-end tests (auto-starts the dev server)                                               |
 | `npm run test:e2e:ui`    | Run Playwright tests in interactive UI mode                                                                |
+| `npm run test:perf`      | Run the browser performance test (report-only; `PERF_FAMILIES` sets dataset size)                          |
 | `npm run clean`          | Remove build artifacts                                                                                    |
 
 ### Build Pipeline
@@ -369,6 +370,19 @@ Assertions are made against live Vega **View** state (signals and datasets), nev
 **The fixtures.** `tests/e2e/fixtures/` holds Olmsted JSON datasets copied from olmsted-cli (`pcp-byhand` drives the smoke test, `pcp-paired` drives the paired test, plus `airr`/`pcp`/`merge` staged for future specs); see `tests/e2e/fixtures/README.md` for provenance and how to update them. They are committed (not symlinked) so the suite runs in a fresh clone.
 
 **CI.** `.github/workflows/build.yml` caches the Playwright browser, installs Chromium, runs `npx playwright test`, and uploads the HTML report as an artifact (`if: always()`), all before the Docker build — so an e2e failure blocks the image push.
+
+### Performance Tests (Playwright)
+
+Browser-level performance measurement lives in `tests/performance/` with its own Playwright config (`playwright.perf.config.js`), so it does **not** run with `npm run test:e2e` and is not wired into the blocking CI build. Run it explicitly:
+
+```bash
+npm run test:perf                 # default 500 families
+PERF_FAMILIES=2000 npm run test:perf   # larger local stress run
+```
+
+**What it does.** `tests/performance/makeDataset.js` generates a consolidated Olmsted JSON of `PERF_FAMILIES` families in-process by amplifying a golden fixture (deep-cloning its real clone/tree pairs with fresh IDs — so the synthetic data carries every field the scatterplot/tree need). `perf.spec.js` uploads it through the real browser path and records wall-clock timings for **ingest** (JSON parse + IndexedDB write), **scatterplot interactivity**, and **tree render**, using the same `window.__OLMSTED_VEGA_VIEWS__` registry as the readiness probe.
+
+**Report-only.** Results are printed (`console.table`), attached to the Playwright report, and written to `test-results/perf-results.json`. There are **no timing thresholds** — shared CI runners are too noisy for absolute gates, so the spec asserts only that the full dataset was ingested and a tree rendered. (The first rendered family row is selected via the `data-testid="family-row"` seam in `table.js`.)
 
 ### Writing New Tests
 
