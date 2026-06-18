@@ -383,7 +383,7 @@ PERF_FAMILIES=2000 npm run test:perf   # larger local stress run
 **What it does.** `tests/performance/makeDataset.js` generates a consolidated Olmsted JSON of `PERF_FAMILIES` families in-process by amplifying a golden fixture (deep-cloning its real clone/tree pairs with fresh IDs — so the synthetic data carries every field the scatterplot/tree need). `perf.spec.js` uploads it through the real browser path and records wall-clock timings split into **write** vs **read**, since they matter differently:
 
 - **Write (one-time):** `ingestMs` — upload → processing → IndexedDB `bulkPut`. Paid once per dataset; slow at scale (≈300 ms/MB, dominated by IndexedDB writes, not JS) but off the hot path.
-- **Read (per-view, the interactive workflow):** `scatterplotLoadMs` (read clone metadata back + render) and `treeReadMs` (read one tree + render). These are what a user feels while inspecting datasets.
+- **Read (per-view, the interactive workflow):** `scatterplotLoadMs` (splash "Explore!" first-load — read clone metadata back + render), `updateVizReadMs` (in-app "Update Visualization" re-read — the recurring read), and `treeReadMs` (open a family — read one tree + render). These are what a user feels while inspecting datasets.
 
 Readiness is probed via the same `window.__OLMSTED_VEGA_VIEWS__` registry the e2e tests use.
 

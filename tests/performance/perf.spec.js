@@ -13,8 +13,10 @@ const { makeDataset } = require("./makeDataset");
  *   WRITE (one-time): ingest — upload -> processing -> IndexedDB bulkPut. Paid
  *     once when a dataset is first loaded; slow at scale but not the hot path.
  *   READ (per-view, the actual workflow): loading a dataset into the scatterplot
- *     (reads clone metadata from IndexedDB) and opening a family (reads one tree).
- *     This is what a user feels while inspecting, so it's reported separately.
+ *     via splash "Explore!" (reads clone metadata from IndexedDB), re-reading a
+ *     dataset in-app via "Update Visualization" (the recurring read), and opening
+ *     a family (reads one tree). This is what a user feels while inspecting, so
+ *     it's reported separately.
  *
  * Measurement uses the dev-only Vega View registry (`window.__OLMSTED_VEGA_VIEWS__`)
  * as the readiness probe — the same seam the e2e tests use, no production
@@ -82,12 +84,38 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   const treeReadMs = Date.now() - tTree;
   const treeNodeCount = await viewDataLength(page, "tree", "nodes");
 
+  // Update Visualization re-read: the recurring in-session read (distinct from
+  // the splash "Explore!" first-load). In the in-app DatasetLoadingTable,
+  // unload the dataset then reselect + reload it; "Update Visualization"
+  // (handleBatchUpdate) re-runs getClientClonalFamilies — the same IndexedDB
+  // clone read, via the in-app path. Dataset rows expose role=button with
+  // aria-label "Select row ..."; toggling one creates the pending change that
+  // enables the Update button. (handleBatchUpdate only re-reads datasets that
+  // aren't already loaded, so a genuine re-read requires the unload first.)
+  const datasetRow = page.getByRole("button", { name: /^Select row/ }).first();
+  const updateBtn = page.getByRole("button", { name: /Update Visualization/ });
+
+  await datasetRow.click(); // deselect -> pending unload
+  await updateBtn.click(); // apply: unload (scatterplot unmounts)
+  await expect(page.getByRole("button", { name: /Up-to-Date/ })).toBeVisible({ timeout: 30000 });
+
+  await datasetRow.click(); // reselect -> pending load
+  // Drop the now-stale (unmounted) scatterplot view so the poll below waits for
+  // the reload's fresh registration, not the old view's cached data.
+  await page.evaluate(() => window.__OLMSTED_VEGA_VIEWS__ && window.__OLMSTED_VEGA_VIEWS__.delete("scatterplot"));
+  const tUpdate = Date.now();
+  await updateBtn.click(); // apply: reload -> re-read clones
+  await expect
+    .poll(async () => (await viewDataLength(page, "scatterplot", "source")) ?? -1, { timeout: 120000 })
+    .toBe(NUM_FAMILIES);
+  const updateVizReadMs = Date.now() - tUpdate;
+
   // --- Report (no thresholds) -------------------------------------------
   const results = {
     numFamilies: NUM_FAMILIES,
     datasetMB: Number((datasetBytes / (1024 * 1024)).toFixed(2)),
     write: { ingestMs },
-    read: { scatterplotLoadMs, treeReadMs, totalMs: scatterplotLoadMs + treeReadMs },
+    read: { scatterplotLoadMs, treeReadMs, updateVizReadMs },
     treeNodeCount,
     ci: !!process.env.CI
   };
