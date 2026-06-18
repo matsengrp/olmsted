@@ -7,11 +7,18 @@ const { makeDataset } = require("./makeDataset");
  * Browser-level performance test (issue #317).
  *
  * Generates a large synthetic consolidated dataset in-process, uploads it
- * through the real browser path, and records wall-clock timings for the stages
- * that actually hurt in Olmsted: dataset ingest (JSON parse + IndexedDB write),
- * scatterplot interactivity, and tree render. Measurement uses the dev-only
- * Vega View registry (`window.__OLMSTED_VEGA_VIEWS__`) as the readiness probe —
- * the same seam the e2e tests use, no production instrumentation.
+ * through the real browser path, and records wall-clock timings split into two
+ * groups, because they matter very differently:
+ *
+ *   WRITE (one-time): ingest — upload -> processing -> IndexedDB bulkPut. Paid
+ *     once when a dataset is first loaded; slow at scale but not the hot path.
+ *   READ (per-view, the actual workflow): loading a dataset into the scatterplot
+ *     (reads clone metadata from IndexedDB) and opening a family (reads one tree).
+ *     This is what a user feels while inspecting, so it's reported separately.
+ *
+ * Measurement uses the dev-only Vega View registry (`window.__OLMSTED_VEGA_VIEWS__`)
+ * as the readiness probe — the same seam the e2e tests use, no production
+ * instrumentation.
  *
  * Report-only: timings are printed, attached to the report, and written to
  * test-results/perf-results.json. Assertions confirm the dataset was fully
@@ -26,7 +33,7 @@ const NUM_FAMILIES = Number(process.env.PERF_FAMILIES) || 500;
 // Generous: a large ingest + render on a cold dev server.
 test.setTimeout(240 * 1000);
 
-test(`perf: ingest -> scatterplot -> tree render (${NUM_FAMILIES} families)`, async ({ page }, testInfo) => {
+test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} families`, async ({ page }, testInfo) => {
   const consoleErrors = [];
   page.on("console", (msg) => {
     if (msg.type() === "error") consoleErrors.push(msg.text());
@@ -46,45 +53,53 @@ test(`perf: ingest -> scatterplot -> tree render (${NUM_FAMILIES} families)`, as
 
   await page.goto("/");
 
-  // --- Ingest: upload -> dataset processed and listed -------------------
-  const t0 = Date.now();
+  // ============================ WRITE (one-time) ========================
+  // Ingest: upload -> processing -> IndexedDB bulkPut of clones + trees,
+  // until the dataset appears in the management table.
+  const tIngest = Date.now();
   await page.locator('[data-testid="splash-file-input"]').setInputFiles(fixturePath);
   await expect(page.getByText(datasetName, { exact: false }).first()).toBeVisible({ timeout: 120000 });
-  const ingestMs = Date.now() - t0;
+  const ingestMs = Date.now() - tIngest;
 
-  // --- Scatterplot interactive: Explore -> view has all families --------
+  // ============================ READ (per-view) =========================
+  // Dataset load: Explore -> scatterplot interactive. Reads all clone metadata
+  // for the dataset back from IndexedDB and renders the scatterplot.
   await page.getByText(datasetName, { exact: false }).first().click();
-  const tExplore = Date.now();
+  const tScatter = Date.now();
   await page.getByRole("button", { name: /Explore!/ }).click();
   await expect
     .poll(async () => (await viewDataLength(page, "scatterplot", "source")) ?? -1, { timeout: 120000 })
     .toBe(NUM_FAMILIES);
-  const scatterplotMs = Date.now() - tExplore;
+  const scatterplotLoadMs = Date.now() - tScatter;
 
-  // --- Tree render: open a family -> tree nodes populated ----------------
-  // The families table is virtualized + sorted, so a specific clone_id may not
-  // be in the DOM; click whichever family is the first rendered row. All perf
-  // clones are single-chain, so this renders through the `name="tree"` path.
-  const tFamily = Date.now();
+  // Tree read: open a family -> tree nodes populated. Reads one tree from
+  // IndexedDB and renders it. The families table is virtualized + sorted, so a
+  // specific clone_id may not be in the DOM; click the first rendered row. All
+  // perf clones are single-chain, so this renders through the `name="tree"` path.
+  const tTree = Date.now();
   await page.locator('[data-testid="family-row"]').first().click();
   await waitForViewData(page, "tree", "nodes");
-  const treeRenderMs = Date.now() - tFamily;
+  const treeReadMs = Date.now() - tTree;
   const treeNodeCount = await viewDataLength(page, "tree", "nodes");
 
   // --- Report (no thresholds) -------------------------------------------
   const results = {
     numFamilies: NUM_FAMILIES,
-    datasetBytes,
     datasetMB: Number((datasetBytes / (1024 * 1024)).toFixed(2)),
-    ingestMs,
-    scatterplotMs,
-    treeRenderMs,
+    write: { ingestMs },
+    read: { scatterplotLoadMs, treeReadMs, totalMs: scatterplotLoadMs + treeReadMs },
     treeNodeCount,
     ci: !!process.env.CI
   };
 
-  // eslint-disable-next-line no-console
-  console.table(results);
+  /* eslint-disable no-console */
+  console.log(`\nperf: ${results.numFamilies} families, ${results.datasetMB} MB`);
+  console.log("WRITE (one-time ingest):");
+  console.table(results.write);
+  console.log("READ (per-view — the interactive workflow):");
+  console.table(results.read);
+  /* eslint-enable no-console */
+
   await testInfo.attach("perf-results", {
     body: JSON.stringify(results, null, 2),
     contentType: "application/json"
