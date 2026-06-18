@@ -1,4 +1,4 @@
-/* Width of the left controls sidebar, in px (formerly in the deleted util/globals.js). */
+/* Width of the left controls sidebar, in px. Keep in sync with static.css. */
 export const controlsWidth = 220;
 
 /* IF YOU CHANGE THINGS HERE CHANGE THEM IN static.css AS WELL! */

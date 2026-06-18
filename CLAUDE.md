@@ -23,7 +23,7 @@ olmsted/
 │   │   │   └── vega/         # Vega-based charts and plots
 │   │   ├── splash/           # Landing page and file upload
 │   │   └── util/             # Component-specific utilities
-│   ├── utils/                # Data processing utilities (+ polyfills)
+│   ├── utils/                # Data processing utilities and browser polyfills
 │   ├── store/                # Redux store configuration
 │   ├── actions/              # Redux action creators
 │   ├── reducers/             # Redux reducers

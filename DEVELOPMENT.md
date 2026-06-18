@@ -309,7 +309,7 @@ src/
 │   └── __tests__/
 │       └── trees.test.js
 ├── components/
-│   ├── util/
+│   ├── util/                 # reusable UI components (distinct from src/utils/)
 │   │   ├── loading.js
 │   │   └── __tests__/
 │   │       └── loading.test.js
