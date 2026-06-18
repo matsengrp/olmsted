@@ -392,6 +392,13 @@ Readiness is probed via the same `window.__OLMSTED_VEGA_VIEWS__` registry the e2
 
 **Report-only.** Results are printed (`console.table`), attached to the Playwright report, and written to `test-results/perf-results.json`. There are **no timing thresholds** — shared CI runners are too noisy for absolute gates, so the spec asserts only that the full dataset was ingested and a tree rendered. (The first rendered family row is selected via the `data-testid="family-row"` seam in `table.js`.)
 
+**Interaction latency** (`interactions.spec.js`, same `npm run test:perf` run) covers the laggy-feeling part — interacting with an already-loaded plot. Each interaction sets the relevant Vega signal and measures `view.runAsync()` **in-browser** (`performance.now`), isolating Vega's recompute+render cost (the actual lag). Two tests, each sized for its dimension:
+
+- **Scatterplot** (many families): change `xField` / `yField` / `colorBy` / faceting, `zoom_level`, and a real brush drag (`brushMs`, measured release → table settle).
+- **Tree** (a big tree): `branch_color_by`, `fixed_branch_lengths`, `show_alignment`, `show_labels`.
+
+Writes results to `test-results/interaction-scatterplot.json` / `interaction-tree.json`. Valid alternate values for `<select>` settings are read from the rendered bind options. (Tree zoom/pan is a wheel-driven signal scoped inside the tree group — not settable via the View API — so it's not covered by the set-signal approach; `fixed_branch_lengths` / `show_alignment` exercise the same heavy tree re-render.)
+
 ### Writing New Tests
 
 When adding tests, follow the existing patterns:
