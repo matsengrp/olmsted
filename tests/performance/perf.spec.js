@@ -31,6 +31,10 @@ const { makeDataset } = require("./makeDataset");
  */
 
 const NUM_FAMILIES = Number(process.env.PERF_FAMILIES) || 500;
+// Optional: grow every tree to ~N nodes to stress tree render (template trees
+// are small, 4–30 nodes). For tree-size experiments pair a small PERF_FAMILIES
+// with a large PERF_NODES_PER_TREE.
+const NODES_PER_TREE = Number(process.env.PERF_NODES_PER_TREE) || 0;
 
 // Generous: a large ingest + render on a cold dev server.
 test.setTimeout(240 * 1000);
@@ -42,7 +46,7 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   });
   page.on("pageerror", (err) => consoleErrors.push(String(err)));
 
-  const { dataset, datasetName } = makeDataset(NUM_FAMILIES);
+  const { dataset, datasetName } = makeDataset(NUM_FAMILIES, { nodesPerTree: NODES_PER_TREE || undefined });
 
   // Write the fixture to a temp file (done BEFORE the t0 mark so generation and
   // disk I/O don't count toward ingest). A path also sidesteps Playwright's
@@ -80,9 +84,11 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   // perf clones are single-chain, so this renders through the `name="tree"` path.
   const tTree = Date.now();
   await page.locator('[data-testid="family-row"]').first().click();
-  await waitForViewData(page, "tree", "nodes");
+  // The "tree" dataset is the full stratified tree (all nodes); the "nodes"
+  // dataset is filtered to internal+root only, so use "tree" for the true size.
+  await waitForViewData(page, "tree", "tree");
   const treeReadMs = Date.now() - tTree;
-  const treeNodeCount = await viewDataLength(page, "tree", "nodes");
+  const treeNodeCount = await viewDataLength(page, "tree", "tree");
 
   // Update Visualization re-read: the recurring in-session read (distinct from
   // the splash "Explore!" first-load). In the in-app DatasetLoadingTable,
@@ -113,15 +119,19 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   // --- Report (no thresholds) -------------------------------------------
   const results = {
     numFamilies: NUM_FAMILIES,
+    nodesPerTree: NODES_PER_TREE || "template",
+    treeNodeCount,
     datasetMB: Number((datasetBytes / (1024 * 1024)).toFixed(2)),
     write: { ingestMs },
     read: { scatterplotLoadMs, treeReadMs, updateVizReadMs },
-    treeNodeCount,
     ci: !!process.env.CI
   };
 
   /* eslint-disable no-console */
-  console.log(`\nperf: ${results.numFamilies} families, ${results.datasetMB} MB`);
+  console.log(
+    `\nperf: ${results.numFamilies} families, ${results.datasetMB} MB, ` +
+      `tree ≈ ${results.nodesPerTree} nodes (rendered ${treeNodeCount})`
+  );
   console.log("WRITE (one-time ingest):");
   console.table(results.write);
   console.log("READ (per-view — the interactive workflow):");

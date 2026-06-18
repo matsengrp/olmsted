@@ -14,6 +14,11 @@
  * data carries every field the scatterplot/tree actually need, and stays valid
  * as the input contract evolves (the template is a real olmsted-cli output).
  *
+ * Two independent size knobs:
+ *   - numFamilies  — breadth: drives ingest + scatterplot.
+ *   - nodesPerTree — depth: grows every tree to ~N nodes, to stress tree render
+ *                    (the template's real trees are small, 4–30 nodes).
+ *
  * Deterministic by construction (no RNG) so perf numbers are comparable across
  * runs at the same size.
  */
@@ -26,21 +31,64 @@ const path = require("path");
 // path, matching what we measure.
 const TEMPLATE_PATH = path.join(__dirname, "..", "e2e", "fixtures", "pcp-olmsted-golden.json");
 
+/** Deterministic, well-spread index in [0, n) for step i (no RNG). */
+function spreadIndex(i, n) {
+  return ((i * 2654435761) >>> 0) % n;
+}
+
 /**
- * Build a consolidated Olmsted JSON dataset with `numFamilies` clone/tree pairs.
- * @param {number} numFamilies
- * @returns {{ dataset: object, datasetName: string }}
- *   the consolidated object plus the dataset name the spec needs.
+ * Grow a template tree's node set to ~`target` nodes by attaching re-IDed copies
+ * of the template's real nodes under existing nodes. Produces a valid stratify
+ * structure: exactly one root (parent null), every other node's `parent` points
+ * at an earlier node (acyclic), and all node fields come from real data.
+ *
+ * The tree is rendered from `nodes` via a Vega `stratify` transform, not from
+ * `newick` (newick only feeds the "Download Newick" button), so no newick is
+ * regenerated here.
+ *
+ * @param {Object} tplTree - template tree (nodes as object or array)
+ * @param {number} target - desired node count
+ * @returns {Object} nodes keyed by sequence_id
  */
-function makeDataset(numFamilies = 500) {
+function growTree(tplTree, target) {
+  const tplNodes = Array.isArray(tplTree.nodes) ? tplTree.nodes : Object.values(tplTree.nodes);
+  const tplRoot = tplNodes.find((n) => !n.parent || n.type === "root") || tplNodes[0];
+  const tplNonRoot = tplNodes.filter((n) => n !== tplRoot);
+
+  const root = { ...JSON.parse(JSON.stringify(tplRoot)), sequence_id: "n0", parent: null, type: "root" };
+  const ordered = [root];
+
+  for (let i = 1; i < target; i++) {
+    const parent = ordered[spreadIndex(i, ordered.length)];
+    const tplNode = tplNonRoot.length ? tplNonRoot[i % tplNonRoot.length] : tplRoot;
+    const node = { ...JSON.parse(JSON.stringify(tplNode)), sequence_id: `n${i}`, parent: parent.sequence_id, type: "leaf" };
+    if (parent.type === "leaf") parent.type = "node"; // it now has a child
+    ordered.push(node);
+  }
+
+  const nodes = {};
+  for (const n of ordered) nodes[n.sequence_id] = n;
+  return nodes;
+}
+
+/**
+ * Build a consolidated Olmsted JSON dataset.
+ * @param {number} numFamilies
+ * @param {{ nodesPerTree?: number }} [opts] - if nodesPerTree is set, every tree
+ *   is grown to ~that many nodes (otherwise template trees are used as-is).
+ * @returns {{ dataset: object, datasetName: string, nodesPerTree: number|null }}
+ */
+function makeDataset(numFamilies = 500, opts = {}) {
+  const nodesPerTree = opts.nodesPerTree || null;
   const tpl = JSON.parse(fs.readFileSync(TEMPLATE_PATH, "utf8"));
   const tplDatasetId = tpl.datasets[0].dataset_id;
   const tplClones = tpl.clones[tplDatasetId] || Object.values(tpl.clones)[0];
   const treeByCloneId = {};
   for (const t of tpl.trees) treeByCloneId[t.clone_id] = t;
 
-  const datasetId = `perf-dataset-${numFamilies}`;
-  const datasetName = `perf-${numFamilies}`;
+  const sizeTag = nodesPerTree ? `${numFamilies}f-${nodesPerTree}n` : `${numFamilies}`;
+  const datasetId = `perf-dataset-${sizeTag}`;
+  const datasetName = `perf-${sizeTag}`;
 
   const clones = [];
   const trees = [];
@@ -64,6 +112,7 @@ function makeDataset(numFamilies = 500) {
     clone.unique_seqs_count = 1 + ((i * 104729) % 200);
     clone.trees = [{ ident: treeIdent, clone_id: cloneId, tree_id: treeId, tree_name: treeId, newick: tree.newick }];
 
+    if (nodesPerTree) tree.nodes = growTree(baseTree, nodesPerTree);
     tree.ident = treeIdent;
     tree.clone_id = cloneId;
     tree.tree_id = treeId;
@@ -88,7 +137,7 @@ function makeDataset(numFamilies = 500) {
     trees
   };
 
-  return { dataset: consolidated, datasetName };
+  return { dataset: consolidated, datasetName, nodesPerTree };
 }
 
 module.exports = { makeDataset };

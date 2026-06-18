@@ -376,11 +376,14 @@ Assertions are made against live Vega **View** state (signals and datasets), nev
 Browser-level performance measurement lives in `tests/performance/` with its own Playwright config (`playwright.perf.config.js`), so it does **not** run with `npm run test:e2e` and is not wired into the blocking CI build. Run it explicitly:
 
 ```bash
-npm run test:perf                 # default 500 families
-PERF_FAMILIES=2000 npm run test:perf   # larger local stress run
+npm run test:perf                                  # default 500 families, template tree sizes
+PERF_FAMILIES=2000 npm run test:perf               # breadth: more families (ingest + scatterplot)
+PERF_FAMILIES=20 PERF_NODES_PER_TREE=3000 npm run test:perf   # depth: big trees (tree render)
 ```
 
-**What it does.** `tests/performance/makeDataset.js` generates a consolidated Olmsted JSON of `PERF_FAMILIES` families in-process by amplifying a golden fixture (deep-cloning its real clone/tree pairs with fresh IDs — so the synthetic data carries every field the scatterplot/tree need). `perf.spec.js` uploads it through the real browser path and records wall-clock timings split into **write** vs **read**, since they matter differently:
+Two independent size knobs: **`PERF_FAMILIES`** scales family count (drives ingest + scatterplot), and **`PERF_NODES_PER_TREE`** grows every tree to ~N nodes to stress tree rendering (the template's real trees are only 4–30 nodes). For tree-size experiments, pair a small `PERF_FAMILIES` with a large `PERF_NODES_PER_TREE` to keep the dataset manageable while the opened tree is big.
+
+**What it does.** `tests/performance/makeDataset.js` generates a consolidated Olmsted JSON in-process by amplifying a golden fixture (deep-cloning its real clone/tree pairs with fresh IDs — so the synthetic data carries every field the scatterplot/tree need); when `PERF_NODES_PER_TREE` is set, each tree is grown to the target size from real template nodes (valid `stratify` structure). `perf.spec.js` uploads it through the real browser path and records wall-clock timings split into **write** vs **read**, since they matter differently:
 
 - **Write (one-time):** `ingestMs` — upload → processing → IndexedDB `bulkPut`. Paid once per dataset; slow at scale (≈300 ms/MB, dominated by IndexedDB writes, not JS) but off the hot path.
 - **Read (per-view, the interactive workflow):** `scatterplotLoadMs` (splash "Explore!" first-load — read clone metadata back + render), `updateVizReadMs` (in-app "Update Visualization" re-read — the recurring read), and `treeReadMs` (open a family — read one tree + render). These are what a user feels while inspecting datasets.
