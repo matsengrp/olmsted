@@ -34,19 +34,21 @@ test(`perf: ingest -> scatterplot -> tree render (${NUM_FAMILIES} families)`, as
   page.on("pageerror", (err) => consoleErrors.push(String(err)));
 
   const { dataset, datasetName } = makeDataset(NUM_FAMILIES);
-  const buffer = Buffer.from(JSON.stringify(dataset));
-  const datasetBytes = buffer.byteLength;
+
+  // Write the fixture to a temp file (done BEFORE the t0 mark so generation and
+  // disk I/O don't count toward ingest). A path also sidesteps Playwright's
+  // 50 MB in-memory buffer cap, which large datasets exceed.
+  const fs = require("fs");
+  const path = require("path");
+  const fixturePath = testInfo.outputPath(`${datasetName}.json`);
+  fs.writeFileSync(fixturePath, JSON.stringify(dataset));
+  const datasetBytes = fs.statSync(fixturePath).size;
 
   await page.goto("/");
 
   // --- Ingest: upload -> dataset processed and listed -------------------
-  // setInputFiles accepts an in-memory buffer, so no temp file is needed.
   const t0 = Date.now();
-  await page.locator('[data-testid="splash-file-input"]').setInputFiles({
-    name: `${datasetName}.json`,
-    mimeType: "application/json",
-    buffer
-  });
+  await page.locator('[data-testid="splash-file-input"]').setInputFiles(fixturePath);
   await expect(page.getByText(datasetName, { exact: false }).first()).toBeVisible({ timeout: 120000 });
   const ingestMs = Date.now() - t0;
 
@@ -87,8 +89,6 @@ test(`perf: ingest -> scatterplot -> tree render (${NUM_FAMILIES} families)`, as
     body: JSON.stringify(results, null, 2),
     contentType: "application/json"
   });
-  const fs = require("fs");
-  const path = require("path");
   fs.mkdirSync("test-results", { recursive: true });
   fs.writeFileSync(path.join("test-results", "perf-results.json"), JSON.stringify(results, null, 2));
 
