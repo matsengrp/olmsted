@@ -206,9 +206,6 @@ npm run build
 
 # Build and immediately serve
 npm run build:start
-
-# Build with performance timing
-npm run build:start:perf
 ```
 
 ### Electron (Desktop App)
@@ -312,7 +309,7 @@ src/
 │   └── __tests__/
 │       └── trees.test.js
 ├── components/
-│   ├── util/
+│   ├── util/                 # reusable UI components (distinct from src/utils/)
 │   │   ├── loading.js
 │   │   └── __tests__/
 │   │       └── loading.test.js
@@ -431,7 +428,6 @@ olmsted/
 │   │   ├── olmstedDB.js      # Dexie database schema
 │   │   ├── clientDataStore.js # Storage abstraction + caching
 │   │   └── fileProcessor.js  # File parsing
-│   ├── util/                 # Core application utilities
 │   ├── css/                  # Stylesheets
 │   ├── images/               # Static images
 │   └── server/               # Express server code

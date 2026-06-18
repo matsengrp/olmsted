@@ -23,8 +23,7 @@ olmsted/
 │   │   │   └── vega/         # Vega-based charts and plots
 │   │   ├── splash/           # Landing page and file upload
 │   │   └── util/             # Component-specific utilities
-│   ├── utils/                # Data processing utilities
-│   ├── util/                 # Core application utilities
+│   ├── utils/                # Data processing utilities and browser polyfills
 │   ├── store/                # Redux store configuration
 │   ├── actions/              # Redux action creators
 │   ├── reducers/             # Redux reducers
@@ -96,7 +95,8 @@ npm start
 ### Architecture Principles
 - **Academic KISS**: Functionality over features, simplicity over complexity
 - **Maintainability**: Well-documented, understandable code structure
-- **Future-Proofing**: Modern dependencies and patterns for long-term viability
+- **Pragmatic stability**: This is a maintenance-mode visualization tool. The codebase uses class components with `@connect` decorators throughout (no React hooks) — not because hooks are wrong, but because the existing pattern works and a migration isn't justified by current goals. New feature work should match the surrounding file's style; a hooks migration, if ever desired, should be a separate tracked epic rather than an implied default.
+- **Current dependencies**: Keep dependencies patched and on supported major versions (security, runtime support); this is distinct from rewriting working code to chase new framework patterns.
 
 ### Pre-PR Quality Checklist
 

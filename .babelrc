@@ -11,10 +11,6 @@
     ["@babel/plugin-proposal-decorators", { "legacy": true }]
   ],
   "env": {
-    "devtiming": {
-      "plugins": [
-      ]
-    },
     "dev": {
       "plugins": [
         ["react-refresh/babel", { "skipEnvCheck": true }]
@@ -22,11 +18,6 @@
     },
     "test": {
       "plugins": []
-    },
-    "production": {
-      "plugins": [
-        ["strip-function-call", {"strip": ["timerStart", "timerEnd"]}]
-      ]
     }
   }
 }
