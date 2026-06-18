@@ -51,17 +51,17 @@ function spreadIndex(i, n) {
  * @returns {Object} nodes keyed by sequence_id
  */
 function growTree(tplTree, target) {
-  const tplNodes = Array.isArray(tplTree.nodes) ? tplTree.nodes : Object.values(tplTree.nodes);
-  const tplRoot = tplNodes.find((n) => !n.parent || n.type === "root") || tplNodes[0];
-  const tplNonRoot = tplNodes.filter((n) => n !== tplRoot);
+  const templateNodes = Array.isArray(tplTree.nodes) ? tplTree.nodes : Object.values(tplTree.nodes);
+  const templateRoot = templateNodes.find((n) => !n.parent || n.type === "root") || templateNodes[0];
+  const templateNonRoot = templateNodes.filter((n) => n !== templateRoot);
 
-  const root = { ...JSON.parse(JSON.stringify(tplRoot)), sequence_id: "n0", parent: null, type: "root" };
+  const root = { ...structuredClone(templateRoot), sequence_id: "n0", parent: null, type: "root" };
   const ordered = [root];
 
   for (let i = 1; i < target; i++) {
     const parent = ordered[spreadIndex(i, ordered.length)];
-    const tplNode = tplNonRoot.length ? tplNonRoot[i % tplNonRoot.length] : tplRoot;
-    const node = { ...JSON.parse(JSON.stringify(tplNode)), sequence_id: `n${i}`, parent: parent.sequence_id, type: "leaf" };
+    const templateNode = templateNonRoot.length ? templateNonRoot[i % templateNonRoot.length] : templateRoot;
+    const node = { ...structuredClone(templateNode), sequence_id: `n${i}`, parent: parent.sequence_id, type: "leaf" };
     if (parent.type === "leaf") parent.type = "node"; // it now has a child
     ordered.push(node);
   }
@@ -79,7 +79,9 @@ function growTree(tplTree, target) {
  * @returns {{ dataset: object, datasetName: string, nodesPerTree: number|null }}
  */
 function makeDataset(numFamilies = 500, opts = {}) {
-  const nodesPerTree = opts.nodesPerTree || null;
+  // > 0 (not just truthy): an explicit 0 means "use the template trees", same
+  // as omitting the option — there is no valid zero-node tree.
+  const nodesPerTree = opts.nodesPerTree > 0 ? opts.nodesPerTree : null;
   const tpl = JSON.parse(fs.readFileSync(TEMPLATE_PATH, "utf8"));
   const tplDatasetId = tpl.datasets[0].dataset_id;
   const tplClones = tpl.clones[tplDatasetId] || Object.values(tpl.clones)[0];

@@ -1,6 +1,9 @@
 ## version 2.7.8 - 2026/06/18
 Added:
-* Browser-level performance test harness (#317). `tests/performance/perf.spec.js` (its own `playwright.perf.config.js`, run via `npm run test:perf`) generates a large consolidated dataset in-process — `makeDataset.js` amplifies a golden fixture to `PERF_FAMILIES` families (default 500) — uploads it through the real browser path, and records ingest / scatterplot-interactive / tree-render timings via the dev-only Vega View registry. Report-only (no thresholds); results print to console, attach to the Playwright report, and write `test-results/perf-results.json`. Added a `data-testid="family-row"` seam to the families table for stable row selection.
+* Browser-level performance test harness (#317), under `tests/performance/` with its own `playwright.perf.config.js` (run via `npm run test:perf`; not in `npm run test:e2e` or the blocking CI build). `makeDataset.js` generates a large consolidated dataset in-process by amplifying a golden fixture; two size knobs — `PERF_FAMILIES` (breadth: ingest + scatterplot) and `PERF_NODES_PER_TREE` (depth: grows trees to stress tree render).
+  * `perf.spec.js` records load timings split into **write** (one-time ingest → IndexedDB) and **read** (the interactive workflow): splash "Explore!" first-load, in-app "Update Visualization" re-read, and opening a family.
+  * `interactions.spec.js` records interaction latency by setting Vega signals and timing `runAsync()` in-browser: scatterplot x/y/color/facet/zoom + a real brush drag, and tree branch-color/branch-length/alignment/labels.
+  * All report-only (no thresholds): results print, attach to the Playwright report, and write to `test-results/`. Measurement reuses the dev-only Vega View registry; a `data-testid="family-row"` seam was added to the families table for stable row selection.
 
 Removed:
 * Deleted the stale Python perf-data generators (`tests/performance/generate_raw_test_data.py`, `generate_perf_tests.sh`) — they emitted a non-consolidated format the browser no longer ingests; superseded by `makeDataset.js`.

@@ -1,6 +1,7 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 const { viewDataLength, waitForViewData } = require("../e2e/helpers");
+const { writeFixture, persistResults } = require("./perf-helpers");
 const { makeDataset } = require("./makeDataset");
 
 /**
@@ -46,16 +47,12 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   });
   page.on("pageerror", (err) => consoleErrors.push(String(err)));
 
-  const { dataset, datasetName } = makeDataset(NUM_FAMILIES, { nodesPerTree: NODES_PER_TREE || undefined });
+  const ds = makeDataset(NUM_FAMILIES, { nodesPerTree: NODES_PER_TREE || undefined });
 
-  // Write the fixture to a temp file (done BEFORE the t0 mark so generation and
-  // disk I/O don't count toward ingest). A path also sidesteps Playwright's
-  // 50 MB in-memory buffer cap, which large datasets exceed.
-  const fs = require("fs");
-  const path = require("path");
-  const fixturePath = testInfo.outputPath(`${datasetName}.json`);
-  fs.writeFileSync(fixturePath, JSON.stringify(dataset));
-  const datasetBytes = fs.statSync(fixturePath).size;
+  // Write the fixture to a temp file BEFORE the t0 mark so generation and disk
+  // I/O don't count toward ingest (also sidesteps Playwright's 50 MB buffer cap).
+  const { fixturePath, bytes: datasetBytes } = writeFixture(testInfo, ds);
+  const datasetName = ds.datasetName;
 
   await page.goto("/");
 
@@ -138,12 +135,7 @@ test(`perf: write (ingest) + read (scatterplot, tree) — ${NUM_FAMILIES} famili
   console.table(results.read);
   /* eslint-enable no-console */
 
-  await testInfo.attach("perf-results", {
-    body: JSON.stringify(results, null, 2),
-    contentType: "application/json"
-  });
-  fs.mkdirSync("test-results", { recursive: true });
-  fs.writeFileSync(path.join("test-results", "perf-results.json"), JSON.stringify(results, null, 2));
+  await persistResults(testInfo, "perf-results", results);
 
   // Sanity only: the run actually exercised the full dataset and rendered a tree.
   expect(results.numFamilies).toBe(NUM_FAMILIES);
