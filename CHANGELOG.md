@@ -6,6 +6,7 @@ Removed:
 Changed:
 * Consolidated `src/util/` into `src/utils/` — only the live `polyfills.js` remained, now at `src/utils/polyfills.js`; `src/util/` is deleted, ending the confusing `util/` vs `utils/` split.
 * Reworded the CLAUDE.md "Architecture Principles" to replace aspirational "modern patterns" language with an honest "pragmatic stability" stance (the codebase is class components + `@connect` throughout, 0 hooks; a hooks migration would be a separate tracked epic).
+* Added PRE-MERGE-CHECKLIST.md guidance to avoid `#`-prefixed bare numbers in PR/issue text (GitHub auto-links them to unrelated issues).
 
 ## version 2.7.6 - 2026/06/14
 Added:
