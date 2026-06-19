@@ -187,6 +187,7 @@ so it is currently a no-op for data uploads. Wiring it up properly
 | `npm run test:coverage`  | Run tests with coverage report                                                                            |
 | `npm run test:e2e`       | Run Playwright end-to-end tests (auto-starts the dev server)                                               |
 | `npm run test:e2e:ui`    | Run Playwright tests in interactive UI mode                                                                |
+| `npm run test:perf`      | Run the browser performance test (report-only; `PERF_FAMILIES` sets dataset size)                          |
 | `npm run clean`          | Remove build artifacts                                                                                    |
 
 ### Build Pipeline
@@ -369,6 +370,34 @@ Assertions are made against live Vega **View** state (signals and datasets), nev
 **The fixtures.** `tests/e2e/fixtures/` holds Olmsted JSON datasets copied from olmsted-cli (`pcp-byhand` drives the smoke test, `pcp-paired` drives the paired test, plus `airr`/`pcp`/`merge` staged for future specs); see `tests/e2e/fixtures/README.md` for provenance and how to update them. They are committed (not symlinked) so the suite runs in a fresh clone.
 
 **CI.** `.github/workflows/build.yml` caches the Playwright browser, installs Chromium, runs `npx playwright test`, and uploads the HTML report as an artifact (`if: always()`), all before the Docker build — so an e2e failure blocks the image push.
+
+### Performance Tests (Playwright)
+
+Browser-level performance measurement lives in `tests/performance/` with its own Playwright config (`playwright.perf.config.js`), so it does **not** run with `npm run test:e2e` and is not wired into the blocking CI build. Run it explicitly:
+
+```bash
+npm run test:perf                                  # default 500 families, template tree sizes
+PERF_FAMILIES=2000 npm run test:perf               # breadth: more families (ingest + scatterplot)
+PERF_FAMILIES=20 PERF_NODES_PER_TREE=3000 npm run test:perf   # depth: big trees (tree render)
+```
+
+Two independent size knobs: **`PERF_FAMILIES`** scales family count (drives ingest + scatterplot), and **`PERF_NODES_PER_TREE`** grows every tree to ~N nodes to stress tree rendering (the template's real trees are only 4–30 nodes). For tree-size experiments, pair a small `PERF_FAMILIES` with a large `PERF_NODES_PER_TREE` to keep the dataset manageable while the opened tree is big.
+
+**What it does.** `tests/performance/makeDataset.js` generates a consolidated Olmsted JSON in-process by amplifying a golden fixture (deep-cloning its real clone/tree pairs with fresh IDs — so the synthetic data carries every field the scatterplot/tree need); when `PERF_NODES_PER_TREE` is set, each tree is grown to the target size from real template nodes (valid `stratify` structure). `perf.spec.js` uploads it through the real browser path and records wall-clock timings split into **write** vs **read**, since they matter differently:
+
+- **Write (one-time):** `ingestMs` — upload → processing → IndexedDB `bulkPut`. Paid once per dataset; slow at scale (≈300 ms/MB, dominated by IndexedDB writes, not JS) but off the hot path.
+- **Read (per-view, the interactive workflow):** `scatterplotLoadMs` (splash "Explore!" first-load — read clone metadata back + render), `updateVizReadMs` (in-app "Update Visualization" re-read — the recurring read), and `treeReadMs` (open a family — read one tree + render). These are what a user feels while inspecting datasets.
+
+Readiness is probed via the same `window.__OLMSTED_VEGA_VIEWS__` registry the e2e tests use.
+
+**Report-only.** Results are printed (`console.table`), attached to the Playwright report, and written to `test-results/perf-results.json`. There are **no timing thresholds** — shared CI runners are too noisy for absolute gates, so the spec asserts only that the full dataset was ingested and a tree rendered. (The first rendered family row is selected via the `data-testid="family-row"` seam in `table.js`.)
+
+**Interaction latency** (`interactions.spec.js`, same `npm run test:perf` run) covers the laggy-feeling part — interacting with an already-loaded plot. Each interaction sets the relevant Vega signal and measures `view.runAsync()` **in-browser** (`performance.now`), isolating Vega's recompute+render cost (the actual lag). Two tests, each sized for its dimension:
+
+- **Scatterplot** (many families): change `xField` / `yField` / `colorBy` / faceting, `zoom_level`, and a real brush drag (`brushMs`, measured release → table settle).
+- **Tree** (a big tree): `branch_color_by`, `fixed_branch_lengths`, `show_alignment`, `show_labels`.
+
+Writes results to `test-results/interaction-scatterplot.json` / `interaction-tree.json`. Valid alternate values for `<select>` settings are read from the rendered bind options. (Tree zoom/pan is a wheel-driven signal scoped inside the tree group — not settable via the View API — so it's not covered by the set-signal approach; `fixed_branch_lengths` / `show_alignment` exercise the same heavy tree re-render.)
 
 ### Writing New Tests
 

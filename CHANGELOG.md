@@ -1,3 +1,13 @@
+## version 2.7.8 - 2026/06/18
+Added:
+* Browser-level performance test harness (#317), under `tests/performance/` with its own `playwright.perf.config.js` (run via `npm run test:perf`; not in `npm run test:e2e` or the blocking CI build). `makeDataset.js` generates a large consolidated dataset in-process by amplifying a golden fixture; two size knobs — `PERF_FAMILIES` (breadth: ingest + scatterplot) and `PERF_NODES_PER_TREE` (depth: grows trees to stress tree render).
+  * `perf.spec.js` records load timings split into **write** (one-time ingest → IndexedDB) and **read** (the interactive workflow): splash "Explore!" first-load, in-app "Update Visualization" re-read, and opening a family.
+  * `interactions.spec.js` records interaction latency by setting Vega signals and timing `runAsync()` in-browser: scatterplot x/y/color/facet/zoom + a real brush drag, and tree branch-color/branch-length/alignment/labels.
+  * All report-only (no thresholds): results print, attach to the Playwright report, and write to `test-results/`. Measurement reuses the dev-only Vega View registry; a `data-testid="family-row"` seam was added to the families table for stable row selection.
+
+Removed:
+* Deleted the stale Python perf-data generators (`tests/performance/generate_raw_test_data.py`, `generate_perf_tests.sh`) — they emitted a non-consolidated format the browser no longer ingests; superseded by `makeDataset.js`.
+
 ## version 2.7.7 - 2026/06/17
 Removed:
 * Deleted inherited Nextstrain/auspice dead code (#286). Removed `src/util/globals.js` (857 lines, almost entirely flu-phylogenetics vestige) and four orphaned `src/util/` modules with no live callers: `computeResponsive.js`, `stringHelpers.js`, `sets.js`, `perf.js` (and their tests). The two live exports from globals were relocated: `controlsWidth` into `src/globalStyles.js`, `dataBaseURL` into `src/actions/clientDataLoader.js`.

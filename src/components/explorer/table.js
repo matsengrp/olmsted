@@ -33,6 +33,7 @@ class ResizableVirtualTable extends ResizableTable {
     return (
       <div
         key={datum.ident}
+        data-testid="family-row"
         style={{
           display: "flex",
           alignItems: "center",
