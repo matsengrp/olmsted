@@ -1,3 +1,7 @@
+## version 2.7.9 - 2026/06/22
+Changed:
+* Batched dependency bumps superseding 10 Dependabot PRs (#298, #300, #303, #307, #308, #309, #310, #311, #315, #316): direct deps `js-yaml` 4.1.1→4.2.0, `@babel/core` 7.29.0→7.29.7, `multer` 2.1.1→2.2.0, `webpack-dev-server` 5.2.4→5.2.5; transitive `qs` 6.15.0→6.15.2, `express` 4.22.1→4.22.2, `tmp` 0.2.5→0.2.7, `shell-quote` 1.8.3→1.8.4, `launch-editor` 2.13.2→2.14.1, `tar` 7.5.13→7.5.16, `form-data` 4.0.5→4.0.6. All patch/minor and within existing `package.json` ranges (lockfile-only change). `npm audit` findings drop from 33 (1 critical, 4 high) to 25 (0 critical, 1 high).
+
 ## version 2.7.8 - 2026/06/18
 Added:
 * Browser-level performance test harness (#317), under `tests/performance/` with its own `playwright.perf.config.js` (run via `npm run test:perf`; not in `npm run test:e2e` or the blocking CI build). `makeDataset.js` generates a large consolidated dataset in-process by amplifying a golden fixture; two size knobs — `PERF_FAMILIES` (breadth: ingest + scatterplot) and `PERF_NODES_PER_TREE` (depth: grows trees to stress tree render).
