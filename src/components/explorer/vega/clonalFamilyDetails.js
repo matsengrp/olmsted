@@ -174,6 +174,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Helper to conditionally add bind property
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
 
+  // True for the currently-selected node (the clicked sequence). Used to render
+  // the selected node as a white-filled ring across the tree node marks. Guards
+  // on pts_store length inline (rather than via the `pts` signal alias) so the
+  // [0] access can never run against an empty store.
+  const selectedNodeTest = 'data("pts_store").length && datum.sequence_id === data("pts_store")[0].sequence_id';
+
   // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
   const missingSet = missingFields ? new Set(missingFields) : null;
 
@@ -928,7 +934,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         on: [
           {
             events: { signal: "pts_tuple" },
-            update: `pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type !== '${NODE_TYPES.NAIVE}' && pts_tuple.type !== '${NODE_TYPES.ROOT}' ? pts_tuple.y_tree : null`
+            // Leaf-only: the alignment has rows for leaves, not internal nodes,
+            // so the cross-viz selection band (tree + alignment) is meaningful
+            // only for leaves. Internal nodes are signified by the hollow circle
+            // instead; naive/root stay excluded.
+            update: `pts_tuple && isValid(pts_tuple.y_tree) && pts_tuple.type === '${NODE_TYPES.LEAF}' ? pts_tuple.y_tree : null`
           }
         ]
       },
@@ -1809,17 +1819,20 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                fill: { value: "#000" },
+                // Selected node = white-filled circle with a black ring, so it
+                // stands out and occludes anything behind it; otherwise a solid
+                // black dot.
+                fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
+                fillOpacity: { value: 1 },
+                stroke: { value: "#000" },
+                strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0.5 }],
+                size: [{ test: selectedNodeTest, value: 60 }, { value: 20 }],
                 x: {
                   field: "x"
                 },
                 tooltip: {
                   signal: nodeTooltip
                 }
-              },
-              enter: {
-                size: { value: 20 },
-                stroke: { value: "#000" }
               }
             },
             type: "symbol",
@@ -1866,12 +1879,26 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                fill: { value: "#000" },
-                fillOpacity: { value: "0.5" },
+                // Selected node = white-filled circle with a black ring (matches
+                // the internal-node treatment); otherwise a solid black dot.
+                // Leaf dots stay visible even when labels are shown (no longer
+                // collapse to size 1) so every node has a consistent marker.
+                // Asymmetry vs. the `ancestor` (internal-node) mark is intentional:
+                // unselected leaf dots are 50% opacity with no stroke (pre-existing
+                // look, kept light next to labels), whereas internal nodes are
+                // opaque with a thin stroke.
+                fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
+                fillOpacity: [{ test: selectedNodeTest, value: 1 }, { value: 0.5 }],
+                stroke: { value: "#000" },
+                strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0 }],
                 x: {
                   field: "x"
                 },
-                size: [{ test: "show_labels", value: 1 }, { signal: "leaf_size*2" }],
+                size: [
+                  { test: selectedNodeTest, value: 60 },
+                  { test: "show_labels", value: 20 },
+                  { signal: "leaf_size*2" }
+                ],
                 cursor: { value: "pointer" },
                 tooltip: {
                   signal: nodeTooltipWithTimepoint
@@ -1905,7 +1932,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                dx: { scale: "leaf_label_offset", field: { signal: "leaf_size_by" } },
+                // Offset the label right of the leaf x. The scale term spaces
+                // labels past sized leaf pies (when "leaf size by" is active; it
+                // is undefined otherwise, hence `|| 0`); the +8 reserves room for
+                // the always-present leaf-center node dot so the label clears it.
+                dx: { signal: "(scale('leaf_label_offset', datum[leaf_size_by]) || 0) + 8" },
                 dy: { value: 3 },
                 x: {
                   field: "x"
