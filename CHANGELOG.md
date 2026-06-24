@@ -1,6 +1,6 @@
 ## version 2.7.11 - 2026/06/24
 Added:
-* Clonal-family tree: a "Label size" slider (`leaf_label_scale`, default 1) to scale leaf-label text size, alongside the other tree display controls (#325). Folded into the existing `label_size` signal as a multiplier, so the default renders identically to before; seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved. Zoom-linked scaling remains a possible follow-up (see #320).
+* Clonal-family tree: leaf-label font size now composes three factors (#325): a leaf-spacing-derived **base** (initial size, larger for small trees / smaller for large ones), the current **vertical zoom** level (labels grow/shrink with on-screen leaf spacing as you zoom), and a new **"Label size" slider** (`leaf_label_scale`, default 1) for explicit control. At the default full view with slider = 1 this equals the previous `clamp(leaf_size, 0, 10)`, so default rendering is unchanged; seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved.
 
 ## version 2.7.10 - 2026/06/22
 Removed:

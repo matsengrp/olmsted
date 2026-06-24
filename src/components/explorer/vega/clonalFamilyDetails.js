@@ -836,12 +836,19 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         update: "clamp(max_leaf_size, 10, max_leaf_size)"
       },
       {
-        // Label size for tree leaves: the leaf-spacing-derived base (capped at
-        // 10) scaled by the user's leaf_label_scale slider, then clamped to a
-        // readable range. At leaf_label_scale = 1 this equals the previous
-        // clamp(leaf_size, 0, 10).
+        // Leaf-label font size, composed from three factors:
+        //   1. base — leaf-spacing-derived initial size (px per leaf, capped at
+        //      10): larger for small trees, smaller for large ones.
+        //   2. vertical zoom — span(yext_fencepost)/span(ydom): 1 at the default
+        //      full view, >1 when zoomed in vertically (ydom narrows), so labels
+        //      grow/shrink with the on-screen leaf spacing. (ydom is top-level,
+        //      written by the tree group via push:"outer".)
+        //   3. leaf_label_scale — the user's "Label size" slider.
+        // Clamped to a readable range. At full view + slider=1 this equals the
+        // previous clamp(leaf_size, 0, 10).
         name: "label_size",
-        update: "clamp(clamp(leaf_size, 0, 10) * leaf_label_scale, 1, 40)"
+        update:
+          "clamp(clamp(leaf_size, 0, 10) * (ydom && span(ydom) > 0 ? span(yext_fencepost) / span(ydom) : 1) * leaf_label_scale, 2, 60)"
       },
       {
         value: "datum",
