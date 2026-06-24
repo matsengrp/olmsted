@@ -89,6 +89,14 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
 const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 
+// Residue-letter overlay (the "Show alignment text" toggle): the letter color
+// flips dark/light by the chip's luminance so it reads on any color, mirroring
+// the chip's own fill logic (surprise_color for metric coloring, else aa_color).
+const RESIDUE_TEXT_FILL =
+  "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by])) > 0.55 ? '#000' : '#fff'";
+// Letter sized to the chip; min 6px, capped to the chip width so it doesn't overflow.
+const RESIDUE_TEXT_FONT_SIZE = "clamp(mutation_mark_height * 0.8, 6, mutation_mark_width * 1.2)";
+
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
 // Structural mutation tooltip fields — always shown, with Vega rendering expressions
@@ -502,6 +510,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           }
         ]
       },
+      // Per-residue letters drawn over the alignment chips (the "Show alignment
+      // text" overlay). Filter-gated on the toggle and a min chip width, so the
+      // dataset is EMPTY when off or when chips are too narrow to be legible —
+      // no text marks are instantiated, keeping the common case free. Excludes
+      // gaps/X (those are labelled by x_and_gaps above).
+      {
+        name: "alignment_residue_labels",
+        source: "data_1",
+        transform: [
+          {
+            type: "filter",
+            expr: 'show_alignment_text && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+          }
+        ]
+      },
 
       // /NAIVE DATA:
       // ---------------------------------------------------------------------------
@@ -532,6 +555,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           {
             type: "filter",
             expr: `datum.type == '${NODE_TYPES.NAIVE}'`
+          }
+        ]
+      },
+      // Residue letters for the naive mutation row (same overlay as
+      // alignment_residue_labels, restricted to the naive sequence).
+      {
+        name: "naive_residue_labels",
+        source: "naive_mutations",
+        transform: [
+          {
+            type: "filter",
+            expr: 'show_alignment_text && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
           }
         ]
       }
@@ -1323,6 +1358,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "checkbox",
           name: "Show mutation borders"
+        })
+      },
+      {
+        // Overlay the residue letter on each alignment chip. Off by default; the
+        // letters only render once chips are wide enough to be legible (see the
+        // mutation_mark_width >= 6 gate on the *_residue_labels datasets), so
+        // zooming in reveals them.
+        name: "show_alignment_text",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Show alignment text"
         })
       },
       // Mutation coloring mode: built from field_metadata.mutation or fallback detection
@@ -2442,6 +2489,28 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     }
                   }
                 }
+              },
+              // /RESIDUE LETTER OVERLAY for the naive row (mirrors the main
+              // alignment overlay; same toggle/width gating).
+              {
+                name: "naive_residue_text",
+                type: "text",
+                from: { data: "naive_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fill: { signal: RESIDUE_TEXT_FILL },
+                    y: { signal: "3*naive_group_height/4" },
+                    x: { scale: "aa_position", field: "position" },
+                    tooltip: {
+                      signal: BASIC_MUTATION_TOOLTIP
+                    }
+                  }
+                }
               }
             ],
             // Color legend for naive
@@ -2673,6 +2742,29 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
+                    }
+                  }
+                }
+              },
+              // /RESIDUE LETTER OVERLAY ("Show alignment text"): one letter per
+              // non-gap chip. Its dataset is empty unless the toggle is on and
+              // chips are wide enough, so it costs nothing when off.
+              {
+                name: "alignment_residue_text",
+                type: "text",
+                from: { data: "alignment_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fill: { signal: RESIDUE_TEXT_FILL },
+                    y: { field: "y" },
+                    x: { scale: "aa_position", field: "position" },
+                    tooltip: {
+                      signal: mutationTooltipSignal
                     }
                   }
                 }
