@@ -120,27 +120,29 @@ Plot configurations can also be exported from the web app so they can be recreat
 
 The visualization interface consists of four linked sections:
 
-1. **Clonal Families Scatterplot**: Each clonal family appears as a point, with configurable axes, colors, and faceting.
+1. **Clonal Families Scatterplot** (\autoref{fig:scatterplot}): Each clonal family appears as a point, with configurable axes, colors, and faceting.
 The filter tool narrows the selection of families displayed.
 Users can brush-select regions or click individual points.
 
-![Example scatterplot.](./images/2-02-scatterplot.png){height="3in"}
+![Example scatterplot.\label{fig:scatterplot}](./images/2-02-scatterplot.png){height="3in"}
 
-2. **Selected Clonal Families Table**: Displays metadata for selected families, including V(D)J gene assignments and a visual representation of the recombination event.
+2. **Selected Clonal Families Table** (\autoref{fig:selected-families}): Displays metadata for selected families, including V(D)J gene assignments and a visual representation of the recombination event.
 The table can be sorted by any column, and families can be starred for easy reference.
 
-![Example selected clonal families table.](./images/2-03-selected-clonal-families.png){height="3in"}
+![Example selected clonal families table.\label{fig:selected-families}](./images/2-03-selected-clonal-families.png){height="3in"}
 
-3. **Clonal Family Tree**: Shows the phylogenetic tree alongside a sequence alignment.
+3. **Clonal Family Tree** (\autoref{fig:tree-alignment}): Shows the phylogenetic tree alongside a sequence alignment.
 Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
 The tree and alignment support zooming and panning, as well as focusing on a subtree based on a selected subroot node.
 
-![Example tree and alignment clonal family visualization.](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
+![Example tree and alignment clonal family visualization.\label{fig:tree-alignment}](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
-4. **Ancestral Sequences**: For a selected leaf, displays the complete mutational path from the naive sequence.
-For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data.
+4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence.
+For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data (\autoref{fig:tree-heatmap}).
 
-![Example ancestral sequence visualization.](./images/2-06-ancestral-sequences.png){height="3in"}
+![Example ancestral sequence visualization.\label{fig:ancestral-sequences}](./images/2-06-ancestral-sequences.png){height="3in"}
+
+![Clonal family tree and alignment with mutations colored by a per-site metric as a heatmap, rather than by amino acid identity.\label{fig:tree-heatmap}](./images/2-05-tree-alignment-clonal-families-heatmap.png){height="3in"}
 
 # Implementation
 
