@@ -101,11 +101,19 @@ const NAIVE_CHIP_TOP = 32;
 // Fixed padding below the chips.
 const NAIVE_CHIP_BOTTOM_PAD = 8;
 
-// Residue-letter overlay (the "Show mutation labels" toggle): the letter color
-// flips dark/light by the chip's luminance so it reads on any color, mirroring
-// the chip's own fill logic (surprise_color for metric coloring, else aa_color).
-const RESIDUE_TEXT_FILL =
-  "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by])) > 0.55 ? '#000' : '#fff'";
+// Residue-letter overlay (the "Show mutation labels" toggle). The chip's own
+// luminance (mirroring its fill logic: surprise_color for metric coloring, else
+// aa_color) drives both the letter color and a contrasting outline:
+//   - fill: dark on light chips, light on dark chips
+//   - stroke: the opposite tone, giving each letter a contrasting border so it
+//     stays legible against any chip color.
+const RESIDUE_CHIP_LUMINANCE =
+  "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by]))";
+const RESIDUE_TEXT_FILL = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#000' : '#fff'`;
+const RESIDUE_TEXT_STROKE = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#fff' : '#000'`;
+// Outline width scales with the chip so the border stays proportional; kept thin
+// so it frames the glyph without filling it in.
+const RESIDUE_TEXT_STROKE_WIDTH = "clamp(mutation_mark_width * 0.12, 0.4, 1.2)";
 // Letter sized to the chip: targets 0.8x the chip height but is capped at the
 // chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
 // usually the binding dimension for alignment cells; the previous width*1.2 cap
@@ -2548,6 +2556,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { value: "monospace" },
                     fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
                     fill: { signal: RESIDUE_TEXT_FILL },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: RESIDUE_TEXT_STROKE_WIDTH },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
@@ -2805,6 +2815,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { value: "monospace" },
                     fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
                     fill: { signal: RESIDUE_TEXT_FILL },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: RESIDUE_TEXT_STROKE_WIDTH },
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
