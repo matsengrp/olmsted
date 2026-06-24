@@ -1951,7 +1951,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0.5 }],
                 // The root star is enlarged so its points are clearly legible.
                 size: [
-                  { test: `datum.type == '${NODE_TYPES.ROOT}'`, value: 250 },
+                  { test: `datum.type == '${NODE_TYPES.ROOT}'`, value: 500 },
                   { test: selectedNodeTest, value: 60 },
                   { value: 20 }
                 ],
