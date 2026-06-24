@@ -885,10 +885,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         // User multiplier for leaf-label font size (1 = default). Folded into
         // label_size below, so the default (1) renders identically to before.
-        // Bound in log2 space so the slider is symmetric around its midpoint:
-        // -1 = 0.5x, 0 = 1x (center), +1 = 2x. A linear range can't put 1.0 at
-        // the middle (it would sit at 1/3), so the user slides the exponent and
-        // we exponentiate it into the actual multiplier below.
+        // Bound in log3 space so the slider is symmetric around its midpoint:
+        // -1 = 1/3x, 0 = 1x (center), +1 = 3x. A linear range can't put 1.0 at
+        // the middle, so the user slides the exponent and we exponentiate it
+        // into the actual multiplier below.
         name: "leaf_label_size_exp",
         value: 0,
         ...maybeAddBind({
@@ -900,9 +900,9 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         })
       },
       {
-        // Actual leaf-label size multiplier: 0.5x .. 2x, centered at 1x.
+        // Actual leaf-label size multiplier: 1/3x .. 3x, centered at 1x.
         name: "leaf_label_scale",
-        update: "pow(2, leaf_label_size_exp)"
+        update: "pow(3, leaf_label_size_exp)"
       },
       // Padding to add to the initial tree size to not clip labels
       {
