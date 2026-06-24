@@ -1139,8 +1139,13 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // with scale factor to give space between each mark
       // Using sqrt for slower growth rate when zooming
       {
+        // Chip height tracks the on-screen row spacing: ~75% of a leaf's vertical
+        // space, scaled linearly by the vertical zoom (tree_zoom_y). Linear (not
+        // sqrt) so chips keep pace with the rows as you zoom in — row spacing
+        // grows ∝ tree_zoom_y, so the chips must too. At full view (tree_zoom_y=1)
+        // this is unchanged: clamp(leaf_size*0.75, 0, 20).
         name: "mutation_mark_height",
-        update: "clamp(leaf_size*0.75*sqrt(tree_zoom_y), 0, 20*sqrt(tree_zoom_y))"
+        update: "clamp(leaf_size*0.75*tree_zoom_y, 0, 20*tree_zoom_y)"
       },
       // Padding value to not cut off marks on fully zoomed out
       {

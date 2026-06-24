@@ -2,6 +2,9 @@
 Added:
 * Clonal-family alignment: a **"Show alignment text"** toggle (#324) that overlays the residue letter on each color chip — for both the per-sequence alignment and the naive mutation row. Off by default. Letters render only once chips are wide enough to be legible (≥6px, i.e. zoom in), and the letter color flips dark/light by the chip's luminance so it stays readable on any color. Implemented via filter-gated datasets that are empty when the toggle is off, so there is no rendering cost in the common case; gap/X labels are unchanged.
 
+Changed:
+* Alignment chip **height now scales linearly with vertical zoom** instead of with its square root, so chips keep pace with the leaf-row spacing as you zoom in (previously the height lagged, leaving growing gaps between chips). Full-view appearance is unchanged.
+
 ## version 2.7.12 - 2026/06/24
 Changed:
 * Clonal-family tree node selection (#326): the selected node now renders as a **white-filled circle with a black ring** — uniformly for leaf and internal nodes — and leaf node dots are always visible (they no longer collapse to a 1px point when labels are shown), so every node has a consistent marker. Leaf labels are offset right to make room for the always-present node dot. Selecting an **internal** node no longer draws the cross-visualization highlight band: the band spans full width on both the tree and the alignment, but the alignment has rows only for leaves, so the band was misleading for internal nodes. The band (tree + alignment) is now gated to **leaf** selections — leaf hover/selection is unchanged. Root/naive remain excluded from selection/highlight treatment.
