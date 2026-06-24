@@ -112,12 +112,18 @@ const RESIDUE_TEXT_STROKE = "'#000'";
 // paint-order, so a stroke on the letter itself just bolds it). The halo glyph
 // is the opposite (RESIDUE_TEXT_STROKE) tone with a fattening stroke; the letter
 // then draws on top, leaving a contrasting ring. Width scales with the chip.
-const RESIDUE_HALO_WIDTH = "clamp(mutation_mark_width * 0.25, 1, 3)";
+//
+// These are functions of the chip-width signal name because the two specs use
+// different signals for it: the main tree+alignment spec calls it
+// `mutation_mark_width`, while the lineage spec (seqAlignSpec) calls it
+// `mark_width`. Passing the name in keeps a single source of truth for the
+// expressions and avoids emitting a reference to an undefined signal.
+const residueHaloWidthExpr = (widthSignal) => `clamp(${widthSignal} * 0.25, 1, 3)`;
 // Letter sized to the chip: targets 0.8x the chip height but is capped at the
 // chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
 // usually the binding dimension for alignment cells; the previous width*1.2 cap
 // made the font larger than the cell and grow faster than the zoom.)
-const RESIDUE_TEXT_FONT_SIZE = "clamp(mutation_mark_height * 0.8, 6, mutation_mark_width)";
+const residueFontSizeExpr = (widthSignal) => `clamp(mutation_mark_height * 0.8, 6, ${widthSignal})`;
 
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
@@ -543,7 +549,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'show_mutation_labels && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+            expr: `show_mutation_labels && mutation_mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
           }
         ]
       },
@@ -588,7 +594,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'show_mutation_labels && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+            expr: `show_mutation_labels && mutation_mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
           }
         ]
       }
@@ -2553,10 +2559,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
                     fill: { signal: RESIDUE_TEXT_STROKE },
                     stroke: { signal: RESIDUE_TEXT_STROKE },
-                    strokeWidth: { signal: RESIDUE_HALO_WIDTH },
+                    strokeWidth: { signal: residueHaloWidthExpr("mutation_mark_width") },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" }
                   }
@@ -2572,7 +2578,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
                     fill: { signal: RESIDUE_TEXT_FILL },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
@@ -2831,10 +2837,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
                     fill: { signal: RESIDUE_TEXT_STROKE },
                     stroke: { signal: RESIDUE_TEXT_STROKE },
-                    strokeWidth: { signal: RESIDUE_HALO_WIDTH },
+                    strokeWidth: { signal: residueHaloWidthExpr("mutation_mark_width") },
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" }
                   }
@@ -2850,7 +2856,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
                     fill: { signal: RESIDUE_TEXT_FILL },
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
@@ -3214,7 +3220,7 @@ const seqAlignSpec = (family, options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'show_mutation_labels && mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+            expr: `show_mutation_labels && mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
           }
         ]
       }
@@ -3432,10 +3438,10 @@ const seqAlignSpec = (family, options = {}) => {
             align: { value: "center" },
             baseline: { value: "middle" },
             font: { value: "monospace" },
-            fontSize: { signal: "clamp(mutation_mark_height * 0.8, 6, mark_width)" },
+            fontSize: { signal: residueFontSizeExpr("mark_width") },
             fill: { signal: RESIDUE_TEXT_STROKE },
             stroke: { signal: RESIDUE_TEXT_STROKE },
-            strokeWidth: { signal: "clamp(mark_width * 0.25, 1, 3)" },
+            strokeWidth: { signal: residueHaloWidthExpr("mark_width") },
             y: { scale: "y", field: "seq_id" },
             x: { scale: "aa_position", field: "position" }
           }
@@ -3451,7 +3457,7 @@ const seqAlignSpec = (family, options = {}) => {
             align: { value: "center" },
             baseline: { value: "middle" },
             font: { value: "monospace" },
-            fontSize: { signal: "clamp(mutation_mark_height * 0.8, 6, mark_width)" },
+            fontSize: { signal: residueFontSizeExpr("mark_width") },
             fill: { signal: RESIDUE_TEXT_FILL },
             y: { scale: "y", field: "seq_id" },
             x: { scale: "aa_position", field: "position" },
