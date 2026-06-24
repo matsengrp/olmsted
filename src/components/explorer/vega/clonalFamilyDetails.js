@@ -175,8 +175,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   const maybeAddBind = (bindConfig) => (showControls ? { bind: bindConfig } : {});
 
   // True for the currently-selected node (the clicked sequence). Used to render
-  // the selected node as a hollow (no-fill) circle across the tree node marks.
-  const selectedNodeTest = 'pts && datum.sequence_id === data("pts_store")[0].sequence_id';
+  // the selected node as a white-filled ring across the tree node marks. Guards
+  // on pts_store length inline (rather than via the `pts` signal alias) so the
+  // [0] access can never run against an empty store.
+  const selectedNodeTest = 'data("pts_store").length && datum.sequence_id === data("pts_store")[0].sequence_id';
 
   // Set of missing fields for quick lookup (e.g., "node.lbi", "clone.d_call")
   const missingSet = missingFields ? new Set(missingFields) : null;
@@ -1881,6 +1883,10 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 // the internal-node treatment); otherwise a solid black dot.
                 // Leaf dots stay visible even when labels are shown (no longer
                 // collapse to size 1) so every node has a consistent marker.
+                // Asymmetry vs. the `ancestor` (internal-node) mark is intentional:
+                // unselected leaf dots are 50% opacity with no stroke (pre-existing
+                // look, kept light next to labels), whereas internal nodes are
+                // opaque with a thin stroke.
                 fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
                 fillOpacity: [{ test: selectedNodeTest, value: 1 }, { value: 0.5 }],
                 stroke: { value: "#000" },
