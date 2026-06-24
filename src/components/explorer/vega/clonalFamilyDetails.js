@@ -2323,8 +2323,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         },
         signals: [
           {
+            // Scale the naive block with its chips so the padding around the
+            // naive sequence tracks the chip size. The chip is mutation_mark_height
+            // tall and sits at 3/4 height (= group/4), so group = 4 * chip keeps
+            // the original proportions (gene regions in the top quarter, chip +
+            // padding in the bottom) at any zoom. Previously fixed at 40, which
+            // the now-taller, zoom-scaled chips overflowed.
             name: "naive_group_height",
-            value: 40
+            update: "mutation_mark_height * 4"
           },
           // Horizontal-only clip path for naive_group
           // Clips horizontally to alignment_group_width, but extends far vertically to avoid vertical clipping
