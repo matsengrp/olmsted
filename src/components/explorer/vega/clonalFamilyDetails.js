@@ -94,6 +94,12 @@ const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 // key should stay a constant size, so it uses these fixed values rather than
 // naive_group_height fractions. (Matches the original naive_group_height = 40.)
 const NAIVE_REGION_KEY_HEIGHT = 40;
+// Fixed y of the naive sequence chips' top edge: the region-key zone plus a
+// fixed gap. The chips grow downward from here, so the gap between the region
+// key and the chips stays constant while only the chip band scales with zoom.
+const NAIVE_CHIP_TOP = 32;
+// Fixed padding below the chips.
+const NAIVE_CHIP_BOTTOM_PAD = 8;
 
 // Residue-letter overlay (the "Show mutation labels" toggle): the letter color
 // flips dark/light by the chip's luminance so it reads on any color, mirroring
@@ -2329,14 +2335,20 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         },
         signals: [
           {
-            // Scale the naive block with its chips so the padding around the
-            // naive sequence tracks the chip size. The chip is mutation_mark_height
-            // tall and sits at 3/4 height (= group/4), so group = 4 * chip keeps
-            // the original proportions (gene regions in the top quarter, chip +
-            // padding in the bottom) at any zoom. Previously fixed at 40, which
-            // the now-taller, zoom-scaled chips overflowed.
+            // The naive block grows only to accommodate the chips: a fixed
+            // region-key zone + fixed gap (NAIVE_CHIP_TOP) on top, the chip band
+            // (mutation_mark_height) in the middle, and fixed bottom padding.
+            // So the region-key↔chip gap and the bottom padding stay constant
+            // while the chips scale with vertical zoom.
             name: "naive_group_height",
-            update: "mutation_mark_height * 4"
+            update: `mutation_mark_height + ${NAIVE_CHIP_TOP + NAIVE_CHIP_BOTTOM_PAD}`
+          },
+          {
+            // Vertical center of the naive sequence chips: fixed top (below the
+            // region key) plus half the chip height, so the chip top is pinned
+            // and only its bottom moves as it grows.
+            name: "naive_chip_yc",
+            update: `mutation_mark_height/2 + ${NAIVE_CHIP_TOP}`
           },
           // Horizontal-only clip path for naive_group
           // Clips horizontally to alignment_group_width, but extends far vertically to avoid vertical clipping
@@ -2476,7 +2488,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                       signal: BASIC_MUTATION_TOOLTIP
                     },
                     xc: { scale: "aa_position", field: "position" },
-                    yc: { signal: "3*naive_group_height/4" },
+                    yc: { signal: "naive_chip_yc" },
                     height: { signal: "mutation_mark_height" },
                     width: { signal: "mutation_mark_width" }
                   }
@@ -2502,7 +2514,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { signal: "datum.child_aa == \"-\" ? 'sans-serif' : 'monospace'" },
                     fontSize: { signal: 'datum.child_aa == "-" ? 20 : 15' },
                     opacity: { value: 0.9 },
-                    y: { signal: "3*naive_group_height/4" },
+                    y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
@@ -2524,7 +2536,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { value: "monospace" },
                     fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
                     fill: { signal: RESIDUE_TEXT_FILL },
-                    y: { signal: "3*naive_group_height/4" },
+                    y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
