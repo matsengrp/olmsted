@@ -106,8 +106,11 @@ const NAIVE_CHIP_BOTTOM_PAD = 8;
 // the chip's own fill logic (surprise_color for metric coloring, else aa_color).
 const RESIDUE_TEXT_FILL =
   "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by])) > 0.55 ? '#000' : '#fff'";
-// Letter sized to the chip; min 6px, capped to the chip width so it doesn't overflow.
-const RESIDUE_TEXT_FONT_SIZE = "clamp(mutation_mark_height * 0.8, 6, mutation_mark_width * 1.2)";
+// Letter sized to the chip: targets 0.8x the chip height but is capped at the
+// chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
+// usually the binding dimension for alignment cells; the previous width*1.2 cap
+// made the font larger than the cell and grow faster than the zoom.)
+const RESIDUE_TEXT_FONT_SIZE = "clamp(mutation_mark_height * 0.8, 6, mutation_mark_width)";
 
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
