@@ -821,7 +821,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "range",
           min: 0.5,
-          max: 3,
+          max: 2,
           step: 0.1,
           name: "Label size"
         })
