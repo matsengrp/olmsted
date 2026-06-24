@@ -1,3 +1,7 @@
+## version 2.7.11 - 2026/06/24
+Added:
+* Clonal-family tree: a "Label size" slider (`leaf_label_scale`, default 1) to scale leaf-label text size, alongside the other tree display controls (#325). Folded into the existing `label_size` signal as a multiplier, so the default renders identically to before; seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved. Zoom-linked scaling remains a possible follow-up (see #320).
+
 ## version 2.7.10 - 2026/06/22
 Removed:
 * Dropped `js-yaml` from direct `dependencies` — it was declared but never imported by any app/build JS (only Python `bin/*.py` use PyYAML, an unrelated package). It remains in the tree transitively (eslint, electron-builder use 4.2.0; babel-jest 3.14.2), so nothing changes at runtime. This also retires Dependabot #308 (which had rebased to propose a js-yaml 5.0.0 major) without pulling an unused major-version rewrite into the tree.

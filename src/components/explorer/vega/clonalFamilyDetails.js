@@ -813,6 +813,19 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Show labels"
         })
       },
+      {
+        // User multiplier for leaf-label font size (1 = default). Folded into
+        // label_size below, so the default (1) renders identically to before.
+        name: "leaf_label_scale",
+        value: 1,
+        ...maybeAddBind({
+          input: "range",
+          min: 0.5,
+          max: 3,
+          step: 0.1,
+          name: "Label size"
+        })
+      },
       // Padding to add to the initial tree size to not clip labels
       {
         name: "leaf_label_length_limit",
@@ -823,9 +836,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         update: "clamp(max_leaf_size, 10, max_leaf_size)"
       },
       {
-        // Label size for tree leaves (clamped to max value of 10)
+        // Label size for tree leaves: the leaf-spacing-derived base (capped at
+        // 10) scaled by the user's leaf_label_scale slider, then clamped to a
+        // readable range. At leaf_label_scale = 1 this equals the previous
+        // clamp(leaf_size, 0, 10).
         name: "label_size",
-        update: "clamp(leaf_size, 0, 10)"
+        update: "clamp(clamp(leaf_size, 0, 10) * leaf_label_scale, 1, 40)"
       },
       {
         value: "datum",
