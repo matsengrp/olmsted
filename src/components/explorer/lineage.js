@@ -69,6 +69,7 @@ const mapStateToProps = (state) => {
     // Lineage settings from Redux
     lineageShowEntire: state.clonalFamilies.lineageShowEntire,
     lineageShowBorders: state.clonalFamilies.lineageShowBorders,
+    lineageShowMutationLabels: state.clonalFamilies.lineageShowMutationLabels,
     lineageChain: state.clonalFamilies.lineageChain,
     // Subtree focus (shared with the Phylogeny view)
     subtreeRoot: state.clonalFamilies.subtreeRoot,
@@ -82,6 +83,7 @@ const mapStateToProps = (state) => {
 @connect(mapStateToProps, {
   updateLineageShowEntire: explorerActions.updateLineageShowEntire,
   updateLineageShowBorders: explorerActions.updateLineageShowBorders,
+  updateLineageShowMutationLabels: explorerActions.updateLineageShowMutationLabels,
   updateLineageChain: explorerActions.updateLineageChain
 })
 class Lineage extends React.Component {
@@ -196,6 +198,11 @@ class Lineage extends React.Component {
     updateLineageShowBorders(event.target.checked);
   };
 
+  handleMutationLabelsChange = (event) => {
+    const { updateLineageShowMutationLabels } = this.props;
+    updateLineageShowMutationLabels(event.target.checked);
+  };
+
   /**
    * Get mutation coloring settings cascaded from the tree view.
    */
@@ -222,12 +229,14 @@ class Lineage extends React.Component {
       lightTree,
       lineageShowEntire,
       lineageShowBorders,
+      lineageShowMutationLabels,
       lineageChain,
       subtreeRoot,
       treatSubtreeAsRoot
     } = this.props;
     const showEntireLineage = lineageShowEntire;
     const showMutationBorders = lineageShowBorders;
+    const showMutationLabels = lineageShowMutationLabels;
 
     if (selectedFamily && selectedSeq && selectedTree) {
       // Determine which tree and clone to use based on chain selection
@@ -415,7 +424,7 @@ class Lineage extends React.Component {
                 )}
                 <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden" }}>
                   <VegaChart
-                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${this.state.treeMutationColorBy || "aa"}-${this.state.treeColorByMetric}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
+                    key={`${showEntireLineage ? "show-all" : "show-mutations"}-${showMutationBorders ? "borders" : "no-borders"}-${showMutationLabels ? "labels" : "no-labels"}-${this.state.treeMutationColorBy || "aa"}-${this.state.treeColorByMetric}-${lineageChain}-${lineageData["lineage_seq_counter"]}`}
                     name="lineage"
                     onNewView={(view) => {
                       this.vegaViewRef = view;
@@ -431,6 +440,7 @@ class Lineage extends React.Component {
                     }}
                     spec={seqAlignSpec(lineageData, {
                       showMutationBorders,
+                      showMutationLabels,
                       colorByMutationMetric: this.getTreeMutationSettings().colorByMutationMetric,
                       mutationColorField: this.getTreeMutationSettings().mutationColorBy,
                       mutationMetadata: this.props.dataFields?.field_metadata?.mutation || null
@@ -456,6 +466,16 @@ class Lineage extends React.Component {
                   style={{ marginRight: "6px" }}
                 />
                 Show mutation borders
+              </label>
+              <label htmlFor="show-mutation-labels" style={{ cursor: "pointer" }}>
+                <input
+                  id="show-mutation-labels"
+                  type="checkbox"
+                  checked={showMutationLabels}
+                  onChange={this.handleMutationLabelsChange}
+                  style={{ marginRight: "6px" }}
+                />
+                Show mutation labels
               </label>
               <label htmlFor="show-entire-lineage" style={{ cursor: "pointer" }}>
                 <input

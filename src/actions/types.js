@@ -85,6 +85,7 @@ export const UPDATE_LAST_CLICKED_CHAIN = "UPDATE_LAST_CLICKED_CHAIN";
 // Lineage (ancestral sequence) settings
 export const UPDATE_LINEAGE_SHOW_ENTIRE = "UPDATE_LINEAGE_SHOW_ENTIRE";
 export const UPDATE_LINEAGE_SHOW_BORDERS = "UPDATE_LINEAGE_SHOW_BORDERS";
+export const UPDATE_LINEAGE_SHOW_MUTATION_LABELS = "UPDATE_LINEAGE_SHOW_MUTATION_LABELS";
 export const UPDATE_LINEAGE_CHAIN = "UPDATE_LINEAGE_CHAIN";
 
 // Subtree focus state (shared between Phylogeny and Ancestral Sequences views)

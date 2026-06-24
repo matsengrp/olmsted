@@ -291,15 +291,23 @@ const createControlSignals = (fieldMetadata) => {
       }
     },
     {
-      name: "symbolSize",
-      value: 1,
+      // Bound in log space so the slider is symmetric: -1 = 1/3x, 0 = 1x
+      // (center), +1 = 3x. A linear range puts 1.0 off-center; instead the user
+      // slides the exponent and we exponentiate it into symbolSize below.
+      name: "symbolSizeExp",
+      value: 0,
       bind: {
         name: "Symbol size ",
         input: "range",
-        min: 0.1,
-        max: 3,
+        min: -1,
+        max: 1,
         step: 0.1
       }
+    },
+    {
+      // Actual symbol size multiplier: 1/3x .. 3x, centered at 1x.
+      name: "symbolSize",
+      update: "pow(3, symbolSizeExp)"
     },
     {
       name: "symbolOpacity",

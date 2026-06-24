@@ -122,9 +122,15 @@ describe("facetClonalFamiliesVizSpec", () => {
       expect(sizeBy).toBeDefined();
       expect(sizeBy.value).toBe("<none>");
 
+      // Symbol size is a log slider: the bound control is the exponent
+      // (default 0 = 1x), and symbolSize is derived as pow(3, exponent).
+      const symbolSizeExp = getSignal("symbolSizeExp");
+      expect(symbolSizeExp).toBeDefined();
+      expect(symbolSizeExp.value).toBe(0);
+
       const symbolSize = getSignal("symbolSize");
       expect(symbolSize).toBeDefined();
-      expect(symbolSize.value).toBe(1);
+      expect(symbolSize.update).toBe("pow(3, symbolSizeExp)");
 
       const symbolOpacity = getSignal("symbolOpacity");
       expect(symbolOpacity).toBeDefined();

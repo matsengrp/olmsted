@@ -89,6 +89,55 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
 const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 
+// SVG path for a 5-pointed star (outer radius 0.5, inner 0.2), normalized to the
+// [-0.5, 0.5] bounding box Vega expects for custom symbol shapes. Used to mark
+// the tree root so it's easy to pick out among the circular internal-node dots.
+const ROOT_STAR_PATH =
+  "M0,-0.5L0.1176,-0.1618L0.4755,-0.1545L0.1902,0.0618L0.2939,0.4045" +
+  "L0,0.2L-0.2939,0.4045L-0.1902,0.0618L-0.4755,-0.1545L-0.1176,-0.1618Z";
+
+// Fixed pixel height for the naive gene-region key (CDR/Sequence bars). The
+// naive block (naive_group_height) scales with the chip size, but the region
+// key should stay a constant size, so it uses these fixed values rather than
+// naive_group_height fractions. (Matches the original naive_group_height = 40.)
+const NAIVE_REGION_KEY_HEIGHT = 40;
+// Fixed y of the naive sequence chips' top edge: the region-key zone plus a
+// fixed gap. The chips grow downward from here, so the gap between the region
+// key and the chips stays constant while only the chip band scales with zoom.
+const NAIVE_CHIP_TOP = 32;
+// Fixed padding below the chips.
+const NAIVE_CHIP_BOTTOM_PAD = 8;
+// Minimum height for the naive root row's chips. The naive row is a single fixed
+// row at the top of the alignment, so it doesn't share the per-leaf vertical
+// budget; flooring its height keeps it (and its residue letters) readable even
+// when the leaf chips shrink on very large trees.
+const NAIVE_MIN_CHIP_HEIGHT = 14;
+
+// Residue-letter overlay (the "Show mutation labels" toggle). Fixed white letter
+// with a black halo — this "white on black" outline reads against any chip color
+// (the black halo separates the white letter from light chips; the white letter
+// stands out on dark chips). Expressed as Vega expressions (string literals) so
+// the marks can keep using `signal`.
+const RESIDUE_TEXT_FILL = "'#fff'";
+const RESIDUE_TEXT_STROKE = "'#000'";
+// The outline is drawn as a separate halo layer *under* the letter (Vega has no
+// paint-order, so a stroke on the letter itself just bolds it). The halo glyph
+// is the opposite (RESIDUE_TEXT_STROKE) tone with a fattening stroke; the letter
+// then draws on top, leaving a contrasting ring. Width scales with the chip.
+//
+// These are functions of the chip-width signal name because the two specs use
+// different signals for it: the main tree+alignment spec calls it
+// `mutation_mark_width`, while the lineage spec (seqAlignSpec) calls it
+// `mark_width`. Passing the name in keeps a single source of truth for the
+// expressions and avoids emitting a reference to an undefined signal.
+const residueHaloWidthExpr = (widthSignal) => `clamp(${widthSignal} * 0.25, 1, 3)`;
+// Letter sized to the chip: targets 0.8x the chip height but is capped at the
+// chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
+// usually the binding dimension for alignment cells; the previous width*1.2 cap
+// made the font larger than the cell and grow faster than the zoom.)
+const residueFontSizeExpr = (widthSignal, heightSignal = "mutation_mark_height") =>
+  `clamp(${heightSignal} * 0.8, 6, ${widthSignal})`;
+
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
 // Structural mutation tooltip fields — always shown, with Vega rendering expressions
@@ -502,6 +551,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           }
         ]
       },
+      // Per-residue letters drawn over the alignment chips (the "Show alignment
+      // text" overlay). Filter-gated on the toggle and a min chip width, so the
+      // dataset is EMPTY when off or when chips are too narrow to be legible —
+      // no text marks are instantiated, keeping the common case free. Excludes
+      // gaps/X (those are labelled by x_and_gaps above).
+      {
+        name: "alignment_residue_labels",
+        source: "data_1",
+        transform: [
+          {
+            type: "filter",
+            expr: `show_mutation_labels && mutation_mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
+          }
+        ]
+      },
 
       // /NAIVE DATA:
       // ---------------------------------------------------------------------------
@@ -532,6 +596,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           {
             type: "filter",
             expr: `datum.type == '${NODE_TYPES.NAIVE}'`
+          }
+        ]
+      },
+      // Residue letters for the naive mutation row (same overlay as
+      // alignment_residue_labels, restricted to the naive sequence).
+      {
+        name: "naive_residue_labels",
+        source: "naive_mutations",
+        transform: [
+          {
+            type: "filter",
+            expr: `show_mutation_labels && mutation_mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
           }
         ]
       }
@@ -822,15 +898,24 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         // User multiplier for leaf-label font size (1 = default). Folded into
         // label_size below, so the default (1) renders identically to before.
-        name: "leaf_label_scale",
-        value: 1,
+        // Bound in log3 space so the slider is symmetric around its midpoint:
+        // -1 = 1/3x, 0 = 1x (center), +1 = 3x. A linear range can't put 1.0 at
+        // the middle, so the user slides the exponent and we exponentiate it
+        // into the actual multiplier below.
+        name: "leaf_label_size_exp",
+        value: 0,
         ...maybeAddBind({
           input: "range",
-          min: 0.5,
-          max: 2,
+          min: -1,
+          max: 1,
           step: 0.1,
           name: "Label size"
         })
+      },
+      {
+        // Actual leaf-label size multiplier: 1/3x .. 3x, centered at 1x.
+        name: "leaf_label_scale",
+        update: "pow(3, leaf_label_size_exp)"
       },
       // Padding to add to the initial tree size to not clip labels
       {
@@ -848,16 +933,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         //      does NOT use `leaf_size`, whose min-5 clamp floors the font above
         //      the true spacing on dense trees and causes label overlap. Using
         //      the real spacing (no floor) lets labels shrink to fit large trees.
-        //   2. vertical zoom — span(yext_fencepost)/span(ydom): 1 at the default
-        //      full view, >1 when zoomed in vertically (ydom narrows), so labels
-        //      grow with the on-screen leaf spacing. (ydom is top-level, written
-        //      by the tree group via push:"outer".)
+        //   2. vertical zoom — sqrt(span(yext_fencepost)/span(ydom)): 1 at the
+        //      default full view, >1 when zoomed in vertically (ydom narrows), so
+        //      labels grow with the on-screen leaf spacing but sub-linearly (the
+        //      sqrt dampens it — at 4x zoom the font grows 2x, not 4x — so labels
+        //      don't outpace the zoom). (ydom is top-level, written by the tree
+        //      group via push:"outer".)
         //   3. leaf_label_scale — the user's "Label size" slider.
         // Clamped to a readable range. Small trees still cap at 10 (unchanged);
         // dense trees get sub-10 labels that fit and grow legible on zoom.
         name: "label_size",
         update:
-          "clamp(min(span(yrange) / leaves_count_incl_naive, 10) * (ydom && span(ydom) > 0 ? span(yext_fencepost) / span(ydom) : 1) * leaf_label_scale, 1, 60)"
+          "clamp(min(span(yrange) / leaves_count_incl_naive, 10) * sqrt(ydom && span(ydom) > 0 ? span(yext_fencepost) / span(ydom) : 1) * leaf_label_scale, 1, 60)"
       },
       {
         value: "datum",
@@ -1100,12 +1187,34 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // Generate ALL integers in visible range for vertical gridlines (step = 1)
         update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, 1)"
       },
-      // Size of mutation marks vertically, scales with tree vertical zoom;
-      // with scale factor to give space between each mark
-      // Using sqrt for slower growth rate when zooming
       {
+        // The TRUE on-screen vertical space available to one leaf's alignment
+        // row: the y-scale range divided by the number of leaves, times the
+        // vertical zoom. Unlike leaf_size — which is floored at 5px and so
+        // *overstates* the spacing on very large trees — this is the real band
+        // height, making it the correct hard ceiling for the mutation chips.
+        // Guarded against the brief startup window before leaves_count_incl_naive
+        // is injected (avoids a transient NaN flowing into mutation_mark_height).
+        name: "leaf_band_height",
+        update: "leaves_count_incl_naive > 0 ? span(yrange) / leaves_count_incl_naive * tree_zoom_y : 0"
+      },
+      {
+        // Chip height tracks the on-screen row spacing: ~75% of a leaf's vertical
+        // space, scaled linearly by the vertical zoom (tree_zoom_y). Linear (not
+        // sqrt) so chips keep pace with the rows as you zoom in — row spacing
+        // grows ∝ tree_zoom_y, so the chips must too. At full view (tree_zoom_y=1)
+        // this is normally clamp(leaf_size*0.75, 0, 20). The leaf_band_height
+        // ceiling prevents chips from exceeding their row band (and overlapping
+        // vertically) on very large trees, where leaf_size's 5px floor exceeds
+        // the real spacing.
         name: "mutation_mark_height",
-        update: "clamp(leaf_size*0.75*sqrt(tree_zoom_y), 0, 20*sqrt(tree_zoom_y))"
+        update: "clamp(leaf_size*0.75*tree_zoom_y, 0, min(20*tree_zoom_y, leaf_band_height))"
+      },
+      {
+        // Naive root row chip height: the leaf-chip height but floored so the
+        // single top row stays readable when leaf chips shrink on large trees.
+        name: "naive_mark_height",
+        update: `max(mutation_mark_height, ${NAIVE_MIN_CHIP_HEIGHT})`
       },
       // Padding value to not cut off marks on fully zoomed out
       {
@@ -1266,7 +1375,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             // Calculate new ratio based on drag distance relative to window height
             // Round to 0.05 increments for cleaner values
             update:
-              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 1.5)"
           },
           {
             events: {
@@ -1278,7 +1387,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             },
             // Round to 0.05 increments for cleaner values
             update:
-              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 1.5)"
           }
         ]
       },
@@ -1323,6 +1432,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "checkbox",
           name: "Show mutation borders"
+        })
+      },
+      {
+        // Overlay the residue letter on each alignment chip. Off by default; the
+        // letters only render once chips are wide enough to be legible (see the
+        // mutation_mark_width >= 6 gate on the *_residue_labels datasets), so
+        // zooming in reveals them.
+        name: "show_mutation_labels",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Show mutation labels"
         })
       },
       // Mutation coloring mode: built from field_metadata.mutation or fallback detection
@@ -1819,14 +1940,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                // Selected node = white-filled circle with a black ring, so it
-                // stands out and occludes anything behind it; otherwise a solid
-                // black dot.
+                // The tree root is drawn as a star so it's easy to identify among
+                // the internal nodes. Selected node = white-filled circle (or star,
+                // for the root) with a black ring, so it stands out and occludes
+                // anything behind it; otherwise a solid black dot.
+                shape: [{ test: `datum.type == '${NODE_TYPES.ROOT}'`, value: ROOT_STAR_PATH }, { value: "circle" }],
                 fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
                 fillOpacity: { value: 1 },
                 stroke: { value: "#000" },
                 strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0.5 }],
-                size: [{ test: selectedNodeTest, value: 60 }, { value: 20 }],
+                // The root star is enlarged so its points are clearly legible.
+                size: [
+                  { test: `datum.type == '${NODE_TYPES.ROOT}'`, value: 500 },
+                  { test: selectedNodeTest, value: 60 },
+                  { value: 20 }
+                ],
                 x: {
                   field: "x"
                 },
@@ -2271,8 +2399,20 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         },
         signals: [
           {
+            // The naive block grows only to accommodate the chips: a fixed
+            // region-key zone + fixed gap (NAIVE_CHIP_TOP) on top, the chip band
+            // (naive_mark_height) in the middle, and fixed bottom padding.
+            // So the region-key↔chip gap and the bottom padding stay constant
+            // while the chips scale with vertical zoom.
             name: "naive_group_height",
-            value: 40
+            update: `naive_mark_height + ${NAIVE_CHIP_TOP + NAIVE_CHIP_BOTTOM_PAD}`
+          },
+          {
+            // Vertical center of the naive sequence chips: fixed top (below the
+            // region key) plus half the chip height, so the chip top is pinned
+            // and only its bottom moves as it grows.
+            name: "naive_chip_yc",
+            update: `naive_mark_height/2 + ${NAIVE_CHIP_TOP}`
           },
           // Horizontal-only clip path for naive_group
           // Clips horizontally to alignment_group_width, but extends far vertically to avoid vertical clipping
@@ -2373,17 +2513,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                       scale: "aa_position",
                       signal: 'floor(datum["end"]/3)+0.5'
                     },
-                    yc: { signal: "naive_group_height/4" },
+                    // Fixed-size region key (does not scale with naive_group_height).
+                    yc: { value: NAIVE_REGION_KEY_HEIGHT / 4 },
                     height: [
                       {
                         test: "datum[\"region\"] == 'CDR1' || datum[\"region\"] == 'CDR2' || datum[\"region\"] == 'CDR3'",
-                        signal: "naive_group_height*0.6"
+                        value: NAIVE_REGION_KEY_HEIGHT * 0.6
                       },
                       {
                         test: "datum[\"region\"] == 'Sequence'",
-                        signal: "naive_group_height/4"
+                        value: NAIVE_REGION_KEY_HEIGHT / 4
                       },
-                      { signal: "naive_group_height/4" }
+                      { value: NAIVE_REGION_KEY_HEIGHT / 4 }
                     ]
                   }
                 }
@@ -2403,14 +2544,16 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                       },
                       { scale: "aa_color", field: "child_aa" }
                     ],
-                    stroke: { value: "black" },
-                    strokeWidth: { value: 0.5 },
+                    // Match the alignment-table chips: same height and the same
+                    // border/no-border driven by show_mutation_borders.
+                    stroke: { signal: "show_mutation_borders ? 'black' : null" },
+                    strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
                     },
                     xc: { scale: "aa_position", field: "position" },
-                    yc: { signal: "3*naive_group_height/4" },
-                    height: { signal: "naive_group_height/4" },
+                    yc: { signal: "naive_chip_yc" },
+                    height: { signal: "naive_mark_height" },
                     width: { signal: "mutation_mark_width" }
                   }
                 }
@@ -2424,7 +2567,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   enter: {
                     text: { field: "child_aa" },
                     fill: { value: "#000" }
-                    // fontSize must be increased for gap character '-' to make it visible
                   },
                   update: {
                     // center the text on x, y properties
@@ -2433,9 +2575,55 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     // Style the '-' and 'X' differently to make them equally visible
                     fontWeight: { signal: "datum.child_aa == \"-\" ? 'bold' : 'normal'" },
                     font: { signal: "datum.child_aa == \"-\" ? 'sans-serif' : 'monospace'" },
-                    fontSize: { signal: 'datum.child_aa == "-" ? 20 : 15' },
+                    // Scale with the naive chip (matches the leaf-row gap labels) so
+                    // the '-'/'X' don't overflow the floored naive chip; the bold
+                    // sans-serif weight above keeps the '-' visible.
+                    fontSize: {
+                      signal: "clamp(naive_mark_height * 0.8, 6, mutation_mark_width * 1.2)"
+                    },
                     opacity: { value: 0.9 },
-                    y: { signal: "3*naive_group_height/4" },
+                    y: { signal: "naive_chip_yc" },
+                    x: { scale: "aa_position", field: "position" },
+                    tooltip: {
+                      signal: BASIC_MUTATION_TOOLTIP
+                    }
+                  }
+                }
+              },
+              // /RESIDUE LETTER OVERLAY for the naive row (mirrors the main
+              // alignment overlay; same toggle/width gating). Halo + letter.
+              {
+                name: "naive_residue_halo",
+                type: "text",
+                from: { data: "naive_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width", "naive_mark_height") },
+                    fill: { signal: RESIDUE_TEXT_STROKE },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: residueHaloWidthExpr("mutation_mark_width") },
+                    y: { signal: "naive_chip_yc" },
+                    x: { scale: "aa_position", field: "position" }
+                  }
+                }
+              },
+              {
+                name: "naive_residue_text",
+                type: "text",
+                from: { data: "naive_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width", "naive_mark_height") },
+                    fill: { signal: RESIDUE_TEXT_FILL },
+                    y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
@@ -2673,6 +2861,50 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
+                    }
+                  }
+                }
+              },
+              // /RESIDUE LETTER OVERLAY ("Show mutation labels"): one letter per
+              // non-gap chip. Its dataset is empty unless the toggle is on and
+              // chips are wide enough, so it costs nothing when off. Two layers:
+              // a contrasting halo glyph, then the letter on top (Vega lacks
+              // paint-order, so this is how we get an outline rather than bold).
+              {
+                name: "alignment_residue_halo",
+                type: "text",
+                from: { data: "alignment_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
+                    fill: { signal: RESIDUE_TEXT_STROKE },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: residueHaloWidthExpr("mutation_mark_width") },
+                    y: { field: "y" },
+                    x: { scale: "aa_position", field: "position" }
+                  }
+                }
+              },
+              {
+                name: "alignment_residue_text",
+                type: "text",
+                from: { data: "alignment_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
+                    fill: { signal: RESIDUE_TEXT_FILL },
+                    y: { field: "y" },
+                    x: { scale: "aa_position", field: "position" },
+                    tooltip: {
+                      signal: mutationTooltipSignal
                     }
                   }
                 }
@@ -2947,6 +3179,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 const seqAlignSpec = (family, options = {}) => {
   const {
     showMutationBorders = false,
+    showMutationLabels = false,
     colorByMutationMetric = false,
     mutationColorField = "child_aa",
     mutationMetadata = null
@@ -3020,6 +3253,19 @@ const seqAlignSpec = (family, options = {}) => {
             expr: GAP_OR_UNKNOWN_FILTER
           }
         ]
+      },
+      // Mutated residues to overlay as letters when "Show mutation labels" is on.
+      // Only mutations with enough cell width to be legible are kept; gaps/X are
+      // excluded since they have no meaningful residue letter to show.
+      {
+        name: "lineage_residue_labels",
+        source: "data_0",
+        transform: [
+          {
+            type: "filter",
+            expr: `show_mutation_labels && mark_width >= 6 && !(${GAP_OR_UNKNOWN_FILTER})`
+          }
+        ]
       }
     ],
     signals: [
@@ -3053,6 +3299,11 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "show_mutation_borders",
         value: showMutationBorders
+      },
+      // Toggle to overlay residue letters on mutation chips - controlled via React state
+      {
+        name: "show_mutation_labels",
+        value: showMutationLabels
       },
       // Toggle to color mutations by surprise score - controlled via React state
       {
@@ -3211,6 +3462,50 @@ const seqAlignSpec = (family, options = {}) => {
             x: { scale: "aa_position", field: "position" },
             tooltip: {
               signal: BASIC_MUTATION_TOOLTIP
+            }
+          }
+        }
+      },
+      // Mutation residue letters overlaid on the chips when "Show mutation labels"
+      // is on. Drawn in two passes because Vega has no paint-order: the halo
+      // (dark glyph with a fattening stroke) draws first, then the white letter on
+      // top, yielding a contrasting outline rather than just a bolder letter. The
+      // font/halo expressions use mark_width (this spec's cell-width signal).
+      {
+        name: "lineage_residue_halo",
+        type: "text",
+        from: { data: "lineage_residue_labels" },
+        encode: {
+          update: {
+            text: { field: "child_aa" },
+            align: { value: "center" },
+            baseline: { value: "middle" },
+            font: { value: "monospace" },
+            fontSize: { signal: residueFontSizeExpr("mark_width") },
+            fill: { signal: RESIDUE_TEXT_STROKE },
+            stroke: { signal: RESIDUE_TEXT_STROKE },
+            strokeWidth: { signal: residueHaloWidthExpr("mark_width") },
+            y: { scale: "y", field: "seq_id" },
+            x: { scale: "aa_position", field: "position" }
+          }
+        }
+      },
+      {
+        name: "lineage_residue_text",
+        type: "text",
+        from: { data: "lineage_residue_labels" },
+        encode: {
+          update: {
+            text: { field: "child_aa" },
+            align: { value: "center" },
+            baseline: { value: "middle" },
+            font: { value: "monospace" },
+            fontSize: { signal: residueFontSizeExpr("mark_width") },
+            fill: { signal: RESIDUE_TEXT_FILL },
+            y: { scale: "y", field: "seq_id" },
+            x: { scale: "aa_position", field: "position" },
+            tooltip: {
+              signal: lineageMutationTooltip
             }
           }
         }

@@ -1,3 +1,22 @@
+## version 2.7.13 - 2026/06/24
+Added:
+* Clonal-family alignment: a **"Show mutation labels"** toggle (#324) that overlays the residue letter on each color chip — for the per-sequence alignment, the naive mutation row, and the **ancestral-sequence (lineage) view**. Off by default. Letters render only once chips are wide enough to be legible (≥6px, i.e. zoom in), and the letter color flips dark/light by the chip's luminance so it stays readable on any color. Implemented via filter-gated datasets that are empty when the toggle is off, so there is no rendering cost in the common case; gap/X labels are unchanged. The lineage view's toggle is a Redux-backed checkbox (`lineageShowMutationLabels`) alongside its existing "Show mutation borders" control.
+
+Changed:
+* The naive sequence row now matches the alignment table — its chips use the same height (and the same `show_mutation_borders` border/no-border) — and the padding around the naive sequence scales with the chip size (the naive block height tracks the chip height) so it no longer overflows when zoomed. The gene-region key (CDR/Sequence bars) stays a fixed size and does not scale with the block. The gap between the region key and the naive sequence is fixed; the chip top is pinned and the block grows downward only as the chips grow.
+* Alignment chip **height now scales linearly with vertical zoom** instead of with its square root, so chips keep pace with the leaf-row spacing as you zoom in (previously the height lagged, leaving growing gaps between chips). Full-view appearance is unchanged.
+* The mutation-label font is now capped at the chip width (was width × 1.2), so it tracks zoom and fits the cell instead of growing faster than the chips.
+* The "Label size" slider (#325) is now logarithmic: 1/3× and 3× sit equidistant from a centered 1× (the slider binds the log₃ exponent, −1…+1, and the multiplier is `pow(3, exp)`).
+* Leaf labels now grow **sub-linearly** with vertical zoom (the zoom factor is square-rooted), so they no longer outpace the zoom and overflow when zoomed in; full-view size is unchanged.
+* Restored a fix dropped from the #327 squash-merge: the tree-height bottom-divider drag now clamps to 1.5 (matching the slider), not 0.9.
+* The scatterplot **"Symbol size" slider is now logarithmic** too: 1/3× and 3× sit equidistant from a centered 1× (binds the exponent, −1…+1, with `symbolSize = pow(3, exp)`).
+* Mutation labels are drawn **white with a black halo** (a fixed outline, halo layer beneath the letter since Vega has no paint-order) so they stay legible against any chip color.
+* The tree **root node is now drawn as a star** (enlarged) instead of a plain black dot, so it's easy to pick out from the circular internal-node markers.
+
+Fixed:
+* On very large trees the alignment mutation chips could grow taller than their leaf's row band and **overlap vertically**. The chip height is now hard-capped at the true on-screen row spacing (`leaf_band_height`), which — unlike `leaf_size` (floored at 5px, so it overstated the spacing on dense trees) — reflects the actual space available per leaf. Normal-density trees are unaffected.
+* The naive root row now has a **minimum chip height** so it (and its residue letters) stay readable when the leaf chips shrink on large trees, instead of collapsing along with them.
+
 ## version 2.7.12 - 2026/06/24
 Changed:
 * Clonal-family tree node selection (#326): the selected node now renders as a **white-filled circle with a black ring** — uniformly for leaf and internal nodes — and leaf node dots are always visible (they no longer collapse to a 1px point when labels are shown), so every node has a consistent marker. Leaf labels are offset right to make room for the always-present node dot. Selecting an **internal** node no longer draws the cross-visualization highlight band: the band spans full width on both the tree and the alignment, but the alignment has rows only for leaves, so the band was misleading for internal nodes. The band (tree + alignment) is now gated to **leaf** selections — leaf hover/selection is unchanged. Root/naive remain excluded from selection/highlight treatment.

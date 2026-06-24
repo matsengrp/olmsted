@@ -159,6 +159,10 @@ export const updateLineageShowBorders = (showBorders) => {
   return { type: types.UPDATE_LINEAGE_SHOW_BORDERS, showBorders };
 };
 
+export const updateLineageShowMutationLabels = (showMutationLabels) => {
+  return { type: types.UPDATE_LINEAGE_SHOW_MUTATION_LABELS, showMutationLabels };
+};
+
 export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };

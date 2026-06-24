@@ -27,6 +27,7 @@ const initialState = {
   // Lineage (ancestral sequence) visualization settings
   lineageShowEntire: false,
   lineageShowBorders: false,
+  lineageShowMutationLabels: false,
   lineageChain: CHAIN_TYPES.HEAVY,
   // Subtree focus (shared by Phylogeny and Ancestral Sequences views).
   // subtreeRoot is the sequence_id of the focused subtree's root node, or null.
@@ -186,6 +187,9 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_LINEAGE_SHOW_BORDERS: {
       return { ...state, lineageShowBorders: action.showBorders };
+    }
+    case types.UPDATE_LINEAGE_SHOW_MUTATION_LABELS: {
+      return { ...state, lineageShowMutationLabels: action.showMutationLabels };
     }
     case types.UPDATE_LINEAGE_CHAIN: {
       return { ...state, lineageChain: action.chain };
