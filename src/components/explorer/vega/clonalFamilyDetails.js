@@ -1239,7 +1239,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           name: "Tree height",
           input: "range",
           min: 0.2,
-          max: 0.9,
+          // Cap at 1.5 to match the scatterplot's "Plot height" control.
+          max: 1.5,
           step: 0.05
         }),
         on: [
