@@ -5,6 +5,9 @@ Added:
 Changed:
 * The naive sequence row now matches the alignment table — its chips use the same height (and the same `show_mutation_borders` border/no-border) — and the padding around the naive sequence scales with the chip size (the naive block height tracks the chip height) so it no longer overflows when zoomed. The gene-region key (CDR/Sequence bars) stays a fixed size and does not scale with the block. The gap between the region key and the naive sequence is fixed; the chip top is pinned and the block grows downward only as the chips grow.
 * Alignment chip **height now scales linearly with vertical zoom** instead of with its square root, so chips keep pace with the leaf-row spacing as you zoom in (previously the height lagged, leaving growing gaps between chips). Full-view appearance is unchanged.
+* The mutation-label font is now capped at the chip width (was width × 1.2), so it tracks zoom and fits the cell instead of growing faster than the chips.
+* The "Label size" slider (#325) is now logarithmic: 0.5× and 2× sit equidistant from a centered 1× (the slider binds the log₂ exponent, −1…+1, and the multiplier is `pow(2, exp)`).
+* Restored a fix dropped from the #327 squash-merge: the tree-height bottom-divider drag now clamps to 1.5 (matching the slider), not 0.9.
 
 ## version 2.7.12 - 2026/06/24
 Changed:

@@ -872,15 +872,24 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         // User multiplier for leaf-label font size (1 = default). Folded into
         // label_size below, so the default (1) renders identically to before.
-        name: "leaf_label_scale",
-        value: 1,
+        // Bound in log2 space so the slider is symmetric around its midpoint:
+        // -1 = 0.5x, 0 = 1x (center), +1 = 2x. A linear range can't put 1.0 at
+        // the middle (it would sit at 1/3), so the user slides the exponent and
+        // we exponentiate it into the actual multiplier below.
+        name: "leaf_label_size_exp",
+        value: 0,
         ...maybeAddBind({
           input: "range",
-          min: 0.5,
-          max: 2,
+          min: -1,
+          max: 1,
           step: 0.1,
           name: "Label size"
         })
+      },
+      {
+        // Actual leaf-label size multiplier: 0.5x .. 2x, centered at 1x.
+        name: "leaf_label_scale",
+        update: "pow(2, leaf_label_size_exp)"
       },
       // Padding to add to the initial tree size to not clip labels
       {
@@ -1321,7 +1330,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             // Calculate new ratio based on drag distance relative to window height
             // Round to 0.05 increments for cleaner values
             update:
-              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 1.5)"
           },
           {
             events: {
@@ -1333,7 +1342,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             },
             // Round to 0.05 increments for cleaner values
             update:
-              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 0.9)"
+              "clamp(round((bottom_divider_drag_start_ratio + (event.clientY - bottom_divider_drag_start_y) / windowSize()[1]) * 20) / 20, 0.2, 1.5)"
           }
         ]
       },
