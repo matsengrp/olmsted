@@ -89,6 +89,12 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
 const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 
+// Fixed pixel height for the naive gene-region key (CDR/Sequence bars). The
+// naive block (naive_group_height) scales with the chip size, but the region
+// key should stay a constant size, so it uses these fixed values rather than
+// naive_group_height fractions. (Matches the original naive_group_height = 40.)
+const NAIVE_REGION_KEY_HEIGHT = 40;
+
 // Residue-letter overlay (the "Show mutation labels" toggle): the letter color
 // flips dark/light by the chip's luminance so it reads on any color, mirroring
 // the chip's own fill logic (surprise_color for metric coloring, else aa_color).
@@ -2431,17 +2437,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                       scale: "aa_position",
                       signal: 'floor(datum["end"]/3)+0.5'
                     },
-                    yc: { signal: "naive_group_height/4" },
+                    // Fixed-size region key (does not scale with naive_group_height).
+                    yc: { value: NAIVE_REGION_KEY_HEIGHT / 4 },
                     height: [
                       {
                         test: "datum[\"region\"] == 'CDR1' || datum[\"region\"] == 'CDR2' || datum[\"region\"] == 'CDR3'",
-                        signal: "naive_group_height*0.6"
+                        value: NAIVE_REGION_KEY_HEIGHT * 0.6
                       },
                       {
                         test: "datum[\"region\"] == 'Sequence'",
-                        signal: "naive_group_height/4"
+                        value: NAIVE_REGION_KEY_HEIGHT / 4
                       },
-                      { signal: "naive_group_height/4" }
+                      { value: NAIVE_REGION_KEY_HEIGHT / 4 }
                     ]
                   }
                 }

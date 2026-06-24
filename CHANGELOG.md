@@ -3,7 +3,7 @@ Added:
 * Clonal-family alignment: a **"Show mutation labels"** toggle (#324) that overlays the residue letter on each color chip — for both the per-sequence alignment and the naive mutation row. Off by default. Letters render only once chips are wide enough to be legible (≥6px, i.e. zoom in), and the letter color flips dark/light by the chip's luminance so it stays readable on any color. Implemented via filter-gated datasets that are empty when the toggle is off, so there is no rendering cost in the common case; gap/X labels are unchanged.
 
 Changed:
-* The naive sequence row now matches the alignment table — its chips use the same height (and the same `show_mutation_borders` border/no-border) — and the padding around the naive sequence scales with the chip size (the naive block height tracks the chip height) so it no longer overflows when zoomed.
+* The naive sequence row now matches the alignment table — its chips use the same height (and the same `show_mutation_borders` border/no-border) — and the padding around the naive sequence scales with the chip size (the naive block height tracks the chip height) so it no longer overflows when zoomed. The gene-region key (CDR/Sequence bars) stays a fixed size and does not scale with the block.
 * Alignment chip **height now scales linearly with vertical zoom** instead of with its square root, so chips keep pace with the leaf-row spacing as you zoom in (previously the height lagged, leaving growing gaps between chips). Full-view appearance is unchanged.
 
 ## version 2.7.12 - 2026/06/24
