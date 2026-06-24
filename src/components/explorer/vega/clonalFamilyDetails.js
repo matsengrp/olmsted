@@ -3130,6 +3130,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
 const seqAlignSpec = (family, options = {}) => {
   const {
     showMutationBorders = false,
+    showMutationLabels = false,
     colorByMutationMetric = false,
     mutationColorField = "child_aa",
     mutationMetadata = null
@@ -3203,6 +3204,19 @@ const seqAlignSpec = (family, options = {}) => {
             expr: GAP_OR_UNKNOWN_FILTER
           }
         ]
+      },
+      // Mutated residues to overlay as letters when "Show mutation labels" is on.
+      // Only mutations with enough cell width to be legible are kept; gaps/X are
+      // excluded since they have no meaningful residue letter to show.
+      {
+        name: "lineage_residue_labels",
+        source: "data_0",
+        transform: [
+          {
+            type: "filter",
+            expr: 'show_mutation_labels && mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+          }
+        ]
       }
     ],
     signals: [
@@ -3236,6 +3250,11 @@ const seqAlignSpec = (family, options = {}) => {
       {
         name: "show_mutation_borders",
         value: showMutationBorders
+      },
+      // Toggle to overlay residue letters on mutation chips - controlled via React state
+      {
+        name: "show_mutation_labels",
+        value: showMutationLabels
       },
       // Toggle to color mutations by surprise score - controlled via React state
       {
@@ -3394,6 +3413,50 @@ const seqAlignSpec = (family, options = {}) => {
             x: { scale: "aa_position", field: "position" },
             tooltip: {
               signal: BASIC_MUTATION_TOOLTIP
+            }
+          }
+        }
+      },
+      // Mutation residue letters overlaid on the chips when "Show mutation labels"
+      // is on. Drawn in two passes because Vega has no paint-order: the halo
+      // (dark glyph with a fattening stroke) draws first, then the white letter on
+      // top, yielding a contrasting outline rather than just a bolder letter. The
+      // font/halo expressions use mark_width (this spec's cell-width signal).
+      {
+        name: "lineage_residue_halo",
+        type: "text",
+        from: { data: "lineage_residue_labels" },
+        encode: {
+          update: {
+            text: { field: "child_aa" },
+            align: { value: "center" },
+            baseline: { value: "middle" },
+            font: { value: "monospace" },
+            fontSize: { signal: "clamp(mutation_mark_height * 0.8, 6, mark_width)" },
+            fill: { signal: RESIDUE_TEXT_STROKE },
+            stroke: { signal: RESIDUE_TEXT_STROKE },
+            strokeWidth: { signal: "clamp(mark_width * 0.25, 1, 3)" },
+            y: { scale: "y", field: "seq_id" },
+            x: { scale: "aa_position", field: "position" }
+          }
+        }
+      },
+      {
+        name: "lineage_residue_text",
+        type: "text",
+        from: { data: "lineage_residue_labels" },
+        encode: {
+          update: {
+            text: { field: "child_aa" },
+            align: { value: "center" },
+            baseline: { value: "middle" },
+            font: { value: "monospace" },
+            fontSize: { signal: "clamp(mutation_mark_height * 0.8, 6, mark_width)" },
+            fill: { signal: RESIDUE_TEXT_FILL },
+            y: { scale: "y", field: "seq_id" },
+            x: { scale: "aa_position", field: "position" },
+            tooltip: {
+              signal: lineageMutationTooltip
             }
           }
         }
