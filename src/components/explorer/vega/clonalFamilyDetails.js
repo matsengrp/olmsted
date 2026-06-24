@@ -1817,9 +1817,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                fill: { value: "#000" },
-                // Selected node = hollow circle: drop the fill and show a ring.
-                fillOpacity: [{ test: selectedNodeTest, value: 0 }, { value: 1 }],
+                // Selected node = white-filled circle with a black ring, so it
+                // stands out and occludes anything behind it; otherwise a solid
+                // black dot.
+                fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
+                fillOpacity: { value: 1 },
                 stroke: { value: "#000" },
                 strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0.5 }],
                 size: [{ test: selectedNodeTest, value: 60 }, { value: 20 }],
@@ -1875,12 +1877,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                fill: { value: "#000" },
-                // Selected node = hollow circle (matches the internal-node dots);
-                // otherwise a filled dot. Leaf dots stay visible even when labels
-                // are shown (no longer collapse to size 1) so every node has a
-                // consistent marker.
-                fillOpacity: [{ test: selectedNodeTest, value: 0 }, { value: 0.5 }],
+                // Selected node = white-filled circle with a black ring (matches
+                // the internal-node treatment); otherwise a solid black dot.
+                // Leaf dots stay visible even when labels are shown (no longer
+                // collapse to size 1) so every node has a consistent marker.
+                fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
+                fillOpacity: [{ test: selectedNodeTest, value: 1 }, { value: 0.5 }],
                 stroke: { value: "#000" },
                 strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0 }],
                 x: {
@@ -1924,7 +1926,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                dx: { scale: "leaf_label_offset", field: { signal: "leaf_size_by" } },
+                // Offset the label right of the leaf x. The scale term spaces
+                // labels past sized leaf pies (when "leaf size by" is active; it
+                // is undefined otherwise, hence `|| 0`); the +8 reserves room for
+                // the always-present leaf-center node dot so the label clears it.
+                dx: { signal: "(scale('leaf_label_offset', datum[leaf_size_by]) || 0) + 8" },
                 dy: { value: 3 },
                 x: {
                   field: "x"

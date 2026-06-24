@@ -1,6 +1,6 @@
 ## version 2.7.12 - 2026/06/24
 Changed:
-* Clonal-family tree node selection (#326): the selected node now renders as a **hollow (no-fill) black circle** — uniformly for leaf and internal nodes — and leaf node dots are always visible (they no longer collapse to a 1px point when labels are shown), so every node has a consistent marker. Selecting an **internal** node no longer draws the cross-visualization highlight band: the band spans full width on both the tree and the alignment, but the alignment has rows only for leaves, so the band was misleading for internal nodes. The band (tree + alignment) is now gated to **leaf** selections — leaf hover/selection is unchanged. Root/naive remain excluded from selection/highlight treatment.
+* Clonal-family tree node selection (#326): the selected node now renders as a **white-filled circle with a black ring** — uniformly for leaf and internal nodes — and leaf node dots are always visible (they no longer collapse to a 1px point when labels are shown), so every node has a consistent marker. Leaf labels are offset right to make room for the always-present node dot. Selecting an **internal** node no longer draws the cross-visualization highlight band: the band spans full width on both the tree and the alignment, but the alignment has rows only for leaves, so the band was misleading for internal nodes. The band (tree + alignment) is now gated to **leaf** selections — leaf hover/selection is unchanged. Root/naive remain excluded from selection/highlight treatment.
 
 ## version 2.7.11 - 2026/06/24
 Added:
