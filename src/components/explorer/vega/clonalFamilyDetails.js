@@ -2455,14 +2455,16 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                       },
                       { scale: "aa_color", field: "child_aa" }
                     ],
-                    stroke: { value: "black" },
-                    strokeWidth: { value: 0.5 },
+                    // Match the alignment-table chips: same height and the same
+                    // border/no-border driven by show_mutation_borders.
+                    stroke: { signal: "show_mutation_borders ? 'black' : null" },
+                    strokeWidth: { signal: "show_mutation_borders ? 0.5 : 0" },
                     tooltip: {
                       signal: BASIC_MUTATION_TOOLTIP
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: { signal: "3*naive_group_height/4" },
-                    height: { signal: "naive_group_height/4" },
+                    height: { signal: "mutation_mark_height" },
                     width: { signal: "mutation_mark_width" }
                   }
                 }
