@@ -1180,17 +1180,16 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // Generate ALL integers in visible range for vertical gridlines (step = 1)
         update: "sequence(max(0, ceil(aa_domain_start)), min(max_aa_seq_length, floor(aa_domain_end)) + 1, 1)"
       },
-      // Size of mutation marks vertically, scales with tree vertical zoom;
-      // with scale factor to give space between each mark
-      // Using sqrt for slower growth rate when zooming
       {
         // The TRUE on-screen vertical space available to one leaf's alignment
         // row: the y-scale range divided by the number of leaves, times the
         // vertical zoom. Unlike leaf_size — which is floored at 5px and so
         // *overstates* the spacing on very large trees — this is the real band
         // height, making it the correct hard ceiling for the mutation chips.
+        // Guarded against the brief startup window before leaves_count_incl_naive
+        // is injected (avoids a transient NaN flowing into mutation_mark_height).
         name: "leaf_band_height",
-        update: "span(yrange) / leaves_count_incl_naive * tree_zoom_y"
+        update: "leaves_count_incl_naive > 0 ? span(yrange) / leaves_count_incl_naive * tree_zoom_y : 0"
       },
       {
         // Chip height tracks the on-screen row spacing: ~75% of a leaf's vertical
@@ -2554,7 +2553,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   enter: {
                     text: { field: "child_aa" },
                     fill: { value: "#000" }
-                    // fontSize must be increased for gap character '-' to make it visible
                   },
                   update: {
                     // center the text on x, y properties
@@ -2563,7 +2561,12 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     // Style the '-' and 'X' differently to make them equally visible
                     fontWeight: { signal: "datum.child_aa == \"-\" ? 'bold' : 'normal'" },
                     font: { signal: "datum.child_aa == \"-\" ? 'sans-serif' : 'monospace'" },
-                    fontSize: { signal: 'datum.child_aa == "-" ? 20 : 15' },
+                    // Scale with the naive chip (matches the leaf-row gap labels) so
+                    // the '-'/'X' don't overflow the floored naive chip; the bold
+                    // sans-serif weight above keeps the '-' visible.
+                    fontSize: {
+                      signal: "clamp(naive_mark_height * 0.8, 6, mutation_mark_width * 1.2)"
+                    },
                     opacity: { value: 0.9 },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
