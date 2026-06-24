@@ -1,3 +1,7 @@
+## version 2.7.11 - 2026/06/24
+Added:
+* Clonal-family tree: leaf-label font size now composes three factors (#325): a spacing-derived **base** (the actual full-view px per leaf, capped at 10 — larger for small trees, smaller for large ones), the current **vertical zoom** level (labels grow with on-screen leaf spacing as you zoom), and a new **"Label size" slider** (`leaf_label_scale`, default 1, range 0.5–2). The base now uses the real leaf spacing rather than `leaf_size` (whose min-5 clamp floored the font above the true spacing on large trees and caused **label overlap**); dense trees now get sub-10 labels that fit and grow legible on zoom-in. Small trees still cap at 10 (unchanged); seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved.
+
 ## version 2.7.10 - 2026/06/22
 Removed:
 * Dropped `js-yaml` from direct `dependencies` — it was declared but never imported by any app/build JS (only Python `bin/*.py` use PyYAML, an unrelated package). It remains in the tree transitively (eslint, electron-builder use 4.2.0; babel-jest 3.14.2), so nothing changes at runtime. This also retires Dependabot #308 (which had rebased to propose a js-yaml 5.0.0 major) without pulling an unused major-version rewrite into the tree.
