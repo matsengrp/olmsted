@@ -73,7 +73,7 @@ This multi-scale navigation is delivered through a zero-installation web applica
 Specifically, Olmsted allows users to:
 
 - View all clonal families simultaneously in a configurable scatterplot
-- Filter and select families based on biological criteria (mutation frequency, sequence count, V/J gene usage)
+- Filter and select families based on biological criteria (mutation frequency, sequence count, V(D)J gene usage)
 - Examine phylogenetic trees with aligned sequences showing mutations from the naive ancestor
 - Trace the mutational history of individual sequences back to their germline origin
 - Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
@@ -126,7 +126,7 @@ Users can brush-select regions or click individual points.
 
 ![Example scatterplot.](./images/2-02-scatterplot.png){height="3in"}
 
-2. **Selected Clonal Families Table**: Displays metadata for selected families, including V/J gene assignments and a visual representation of the recombination event.
+2. **Selected Clonal Families Table**: Displays metadata for selected families, including V(D)J gene assignments and a visual representation of the recombination event.
 The table can be sorted by any column, and families can be starred for easy reference.
 
 ![Example selected clonal families table.](./images/2-03-selected-clonal-families.png){height="3in"}
