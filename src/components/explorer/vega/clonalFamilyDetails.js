@@ -111,9 +111,11 @@ const RESIDUE_CHIP_LUMINANCE =
   "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by]))";
 const RESIDUE_TEXT_FILL = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#000' : '#fff'`;
 const RESIDUE_TEXT_STROKE = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#fff' : '#000'`;
-// Outline width scales with the chip so the border stays proportional; kept thin
-// so it frames the glyph without filling it in.
-const RESIDUE_TEXT_STROKE_WIDTH = "clamp(mutation_mark_width * 0.12, 0.4, 1.2)";
+// The outline is drawn as a separate halo layer *under* the letter (Vega has no
+// paint-order, so a stroke on the letter itself just bolds it). The halo glyph
+// is the opposite (RESIDUE_TEXT_STROKE) tone with a fattening stroke; the letter
+// then draws on top, leaving a contrasting ring. Width scales with the chip.
+const RESIDUE_HALO_WIDTH = "clamp(mutation_mark_width * 0.25, 1, 3)";
 // Letter sized to the chip: targets 0.8x the chip height but is capped at the
 // chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
 // usually the binding dimension for alignment cells; the previous width*1.2 cap
@@ -2543,7 +2545,26 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 }
               },
               // /RESIDUE LETTER OVERLAY for the naive row (mirrors the main
-              // alignment overlay; same toggle/width gating).
+              // alignment overlay; same toggle/width gating). Halo + letter.
+              {
+                name: "naive_residue_halo",
+                type: "text",
+                from: { data: "naive_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fill: { signal: RESIDUE_TEXT_STROKE },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: RESIDUE_HALO_WIDTH },
+                    y: { signal: "naive_chip_yc" },
+                    x: { scale: "aa_position", field: "position" }
+                  }
+                }
+              },
               {
                 name: "naive_residue_text",
                 type: "text",
@@ -2556,8 +2577,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { value: "monospace" },
                     fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
                     fill: { signal: RESIDUE_TEXT_FILL },
-                    stroke: { signal: RESIDUE_TEXT_STROKE },
-                    strokeWidth: { signal: RESIDUE_TEXT_STROKE_WIDTH },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {
@@ -2802,7 +2821,28 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
               },
               // /RESIDUE LETTER OVERLAY ("Show mutation labels"): one letter per
               // non-gap chip. Its dataset is empty unless the toggle is on and
-              // chips are wide enough, so it costs nothing when off.
+              // chips are wide enough, so it costs nothing when off. Two layers:
+              // a contrasting halo glyph, then the letter on top (Vega lacks
+              // paint-order, so this is how we get an outline rather than bold).
+              {
+                name: "alignment_residue_halo",
+                type: "text",
+                from: { data: "alignment_residue_labels" },
+                encode: {
+                  update: {
+                    text: { field: "child_aa" },
+                    align: { value: "center" },
+                    baseline: { value: "middle" },
+                    font: { value: "monospace" },
+                    fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
+                    fill: { signal: RESIDUE_TEXT_STROKE },
+                    stroke: { signal: RESIDUE_TEXT_STROKE },
+                    strokeWidth: { signal: RESIDUE_HALO_WIDTH },
+                    y: { field: "y" },
+                    x: { scale: "aa_position", field: "position" }
+                  }
+                }
+              },
               {
                 name: "alignment_residue_text",
                 type: "text",
@@ -2815,8 +2855,6 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     font: { value: "monospace" },
                     fontSize: { signal: RESIDUE_TEXT_FONT_SIZE },
                     fill: { signal: RESIDUE_TEXT_FILL },
-                    stroke: { signal: RESIDUE_TEXT_STROKE },
-                    strokeWidth: { signal: RESIDUE_TEXT_STROKE_WIDTH },
                     y: { field: "y" },
                     x: { scale: "aa_position", field: "position" },
                     tooltip: {

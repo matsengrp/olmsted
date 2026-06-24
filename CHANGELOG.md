@@ -9,7 +9,7 @@ Changed:
 * The "Label size" slider (#325) is now logarithmic: 0.5× and 2× sit equidistant from a centered 1× (the slider binds the log₂ exponent, −1…+1, and the multiplier is `pow(2, exp)`).
 * Restored a fix dropped from the #327 squash-merge: the tree-height bottom-divider drag now clamps to 1.5 (matching the slider), not 0.9.
 * The scatterplot **"Symbol size" slider is now logarithmic** too: 1/3× and 3× sit equidistant from a centered 1× (binds the exponent, −1…+1, with `symbolSize = pow(3, exp)`).
-* Mutation labels now have a **contrasting outline** around each letter (stroke the opposite tone to the luminance-based fill), so they stay legible against any chip color.
+* Mutation labels now have a **contrasting outline** around each letter — drawn as a halo layer beneath the letter (Vega has no paint-order, so stroking the letter itself only bolds it), in the opposite tone to the luminance-based fill — so they stay legible against any chip color.
 
 ## version 2.7.12 - 2026/06/24
 Changed:
