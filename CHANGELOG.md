@@ -12,6 +12,10 @@ Changed:
 * The scatterplot **"Symbol size" slider is now logarithmic** too: 1/3× and 3× sit equidistant from a centered 1× (binds the exponent, −1…+1, with `symbolSize = pow(3, exp)`).
 * Mutation labels are drawn **white with a black halo** (a fixed outline, halo layer beneath the letter since Vega has no paint-order) so they stay legible against any chip color.
 
+Fixed:
+* On very large trees the alignment mutation chips could grow taller than their leaf's row band and **overlap vertically**. The chip height is now hard-capped at the true on-screen row spacing (`leaf_band_height`), which — unlike `leaf_size` (floored at 5px, so it overstated the spacing on dense trees) — reflects the actual space available per leaf. Normal-density trees are unaffected.
+* The naive root row now has a **minimum chip height** so it (and its residue letters) stay readable when the leaf chips shrink on large trees, instead of collapsing along with them.
+
 ## version 2.7.12 - 2026/06/24
 Changed:
 * Clonal-family tree node selection (#326): the selected node now renders as a **white-filled circle with a black ring** — uniformly for leaf and internal nodes — and leaf node dots are always visible (they no longer collapse to a 1px point when labels are shown), so every node has a consistent marker. Leaf labels are offset right to make room for the always-present node dot. Selecting an **internal** node no longer draws the cross-visualization highlight band: the band spans full width on both the tree and the alignment, but the alignment has rows only for leaves, so the band was misleading for internal nodes. The band (tree + alignment) is now gated to **leaf** selections — leaf hover/selection is unchanged. Root/naive remain excluded from selection/highlight treatment.

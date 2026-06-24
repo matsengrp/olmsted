@@ -100,6 +100,11 @@ const NAIVE_REGION_KEY_HEIGHT = 40;
 const NAIVE_CHIP_TOP = 32;
 // Fixed padding below the chips.
 const NAIVE_CHIP_BOTTOM_PAD = 8;
+// Minimum height for the naive root row's chips. The naive row is a single fixed
+// row at the top of the alignment, so it doesn't share the per-leaf vertical
+// budget; flooring its height keeps it (and its residue letters) readable even
+// when the leaf chips shrink on very large trees.
+const NAIVE_MIN_CHIP_HEIGHT = 14;
 
 // Residue-letter overlay (the "Show mutation labels" toggle). Fixed white letter
 // with a black halo — this "white on black" outline reads against any chip color
@@ -123,7 +128,8 @@ const residueHaloWidthExpr = (widthSignal) => `clamp(${widthSignal} * 0.25, 1, 3
 // chip *width* so it tracks horizontal zoom 1:1 and fits the cell. (The width is
 // usually the binding dimension for alignment cells; the previous width*1.2 cap
 // made the font larger than the cell and grow faster than the zoom.)
-const residueFontSizeExpr = (widthSignal) => `clamp(mutation_mark_height * 0.8, 6, ${widthSignal})`;
+const residueFontSizeExpr = (widthSignal, heightSignal = "mutation_mark_height") =>
+  `clamp(${heightSignal} * 0.8, 6, ${widthSignal})`;
 
 // Built-in mutation fields — always in tooltip regardless of metadata
 // From/To show AA with codon in parentheses: e.g., "S (AGC)"
@@ -1178,13 +1184,31 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       // with scale factor to give space between each mark
       // Using sqrt for slower growth rate when zooming
       {
+        // The TRUE on-screen vertical space available to one leaf's alignment
+        // row: the y-scale range divided by the number of leaves, times the
+        // vertical zoom. Unlike leaf_size — which is floored at 5px and so
+        // *overstates* the spacing on very large trees — this is the real band
+        // height, making it the correct hard ceiling for the mutation chips.
+        name: "leaf_band_height",
+        update: "span(yrange) / leaves_count_incl_naive * tree_zoom_y"
+      },
+      {
         // Chip height tracks the on-screen row spacing: ~75% of a leaf's vertical
         // space, scaled linearly by the vertical zoom (tree_zoom_y). Linear (not
         // sqrt) so chips keep pace with the rows as you zoom in — row spacing
         // grows ∝ tree_zoom_y, so the chips must too. At full view (tree_zoom_y=1)
-        // this is unchanged: clamp(leaf_size*0.75, 0, 20).
+        // this is normally clamp(leaf_size*0.75, 0, 20). The leaf_band_height
+        // ceiling prevents chips from exceeding their row band (and overlapping
+        // vertically) on very large trees, where leaf_size's 5px floor exceeds
+        // the real spacing.
         name: "mutation_mark_height",
-        update: "clamp(leaf_size*0.75*tree_zoom_y, 0, 20*tree_zoom_y)"
+        update: "clamp(leaf_size*0.75*tree_zoom_y, 0, min(20*tree_zoom_y, leaf_band_height))"
+      },
+      {
+        // Naive root row chip height: the leaf-chip height but floored so the
+        // single top row stays readable when leaf chips shrink on large trees.
+        name: "naive_mark_height",
+        update: `max(mutation_mark_height, ${NAIVE_MIN_CHIP_HEIGHT})`
       },
       // Padding value to not cut off marks on fully zoomed out
       {
@@ -2364,18 +2388,18 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
           {
             // The naive block grows only to accommodate the chips: a fixed
             // region-key zone + fixed gap (NAIVE_CHIP_TOP) on top, the chip band
-            // (mutation_mark_height) in the middle, and fixed bottom padding.
+            // (naive_mark_height) in the middle, and fixed bottom padding.
             // So the region-key↔chip gap and the bottom padding stay constant
             // while the chips scale with vertical zoom.
             name: "naive_group_height",
-            update: `mutation_mark_height + ${NAIVE_CHIP_TOP + NAIVE_CHIP_BOTTOM_PAD}`
+            update: `naive_mark_height + ${NAIVE_CHIP_TOP + NAIVE_CHIP_BOTTOM_PAD}`
           },
           {
             // Vertical center of the naive sequence chips: fixed top (below the
             // region key) plus half the chip height, so the chip top is pinned
             // and only its bottom moves as it grows.
             name: "naive_chip_yc",
-            update: `mutation_mark_height/2 + ${NAIVE_CHIP_TOP}`
+            update: `naive_mark_height/2 + ${NAIVE_CHIP_TOP}`
           },
           // Horizontal-only clip path for naive_group
           // Clips horizontally to alignment_group_width, but extends far vertically to avoid vertical clipping
@@ -2516,7 +2540,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     },
                     xc: { scale: "aa_position", field: "position" },
                     yc: { signal: "naive_chip_yc" },
-                    height: { signal: "mutation_mark_height" },
+                    height: { signal: "naive_mark_height" },
                     width: { signal: "mutation_mark_width" }
                   }
                 }
@@ -2561,7 +2585,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width", "naive_mark_height") },
                     fill: { signal: RESIDUE_TEXT_STROKE },
                     stroke: { signal: RESIDUE_TEXT_STROKE },
                     strokeWidth: { signal: residueHaloWidthExpr("mutation_mark_width") },
@@ -2580,7 +2604,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                     align: { value: "center" },
                     baseline: { value: "middle" },
                     font: { value: "monospace" },
-                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width") },
+                    fontSize: { signal: residueFontSizeExpr("mutation_mark_width", "naive_mark_height") },
                     fill: { signal: RESIDUE_TEXT_FILL },
                     y: { signal: "naive_chip_yc" },
                     x: { scale: "aa_position", field: "position" },
