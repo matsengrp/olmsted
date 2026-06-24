@@ -101,16 +101,13 @@ const NAIVE_CHIP_TOP = 32;
 // Fixed padding below the chips.
 const NAIVE_CHIP_BOTTOM_PAD = 8;
 
-// Residue-letter overlay (the "Show mutation labels" toggle). The chip's own
-// luminance (mirroring its fill logic: surprise_color for metric coloring, else
-// aa_color) drives both the letter color and a contrasting outline:
-//   - fill: dark on light chips, light on dark chips
-//   - stroke: the opposite tone, giving each letter a contrasting border so it
-//     stays legible against any chip color.
-const RESIDUE_CHIP_LUMINANCE =
-  "luminance((color_by_mutation_metric && datum[mutation_color_by] != null) ? scale('surprise_color', datum[mutation_color_by]) : scale('aa_color', datum[mutation_color_by]))";
-const RESIDUE_TEXT_FILL = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#000' : '#fff'`;
-const RESIDUE_TEXT_STROKE = `${RESIDUE_CHIP_LUMINANCE} > 0.55 ? '#fff' : '#000'`;
+// Residue-letter overlay (the "Show mutation labels" toggle). Fixed white letter
+// with a black halo — this "white on black" outline reads against any chip color
+// (the black halo separates the white letter from light chips; the white letter
+// stands out on dark chips). Expressed as Vega expressions (string literals) so
+// the marks can keep using `signal`.
+const RESIDUE_TEXT_FILL = "'#fff'";
+const RESIDUE_TEXT_STROKE = "'#000'";
 // The outline is drawn as a separate halo layer *under* the letter (Vega has no
 // paint-order, so a stroke on the letter itself just bolds it). The halo glyph
 // is the opposite (RESIDUE_TEXT_STROKE) tone with a fattening stroke; the letter
