@@ -89,6 +89,13 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
 const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 
+// SVG path for a 5-pointed star (outer radius 0.5, inner 0.2), normalized to the
+// [-0.5, 0.5] bounding box Vega expects for custom symbol shapes. Used to mark
+// the tree root so it's easy to pick out among the circular internal-node dots.
+const ROOT_STAR_PATH =
+  "M0,-0.5L0.1176,-0.1618L0.4755,-0.1545L0.1902,0.0618L0.2939,0.4045" +
+  "L0,0.2L-0.2939,0.4045L-0.1902,0.0618L-0.4755,-0.1545L-0.1176,-0.1618Z";
+
 // Fixed pixel height for the naive gene-region key (CDR/Sequence bars). The
 // naive block (naive_group_height) scales with the chip size, but the region
 // key should stay a constant size, so it uses these fixed values rather than
@@ -1933,14 +1940,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                 y: {
                   field: "y"
                 },
-                // Selected node = white-filled circle with a black ring, so it
-                // stands out and occludes anything behind it; otherwise a solid
-                // black dot.
+                // The tree root is drawn as a star so it's easy to identify among
+                // the internal nodes. Selected node = white-filled circle (or star,
+                // for the root) with a black ring, so it stands out and occludes
+                // anything behind it; otherwise a solid black dot.
+                shape: [{ test: `datum.type == '${NODE_TYPES.ROOT}'`, value: ROOT_STAR_PATH }, { value: "circle" }],
                 fill: [{ test: selectedNodeTest, value: "#fff" }, { value: "#000" }],
                 fillOpacity: { value: 1 },
                 stroke: { value: "#000" },
                 strokeWidth: [{ test: selectedNodeTest, value: 1.5 }, { value: 0.5 }],
-                size: [{ test: selectedNodeTest, value: 60 }, { value: 20 }],
+                // The root star is enlarged so its points are clearly legible.
+                size: [
+                  { test: `datum.type == '${NODE_TYPES.ROOT}'`, value: 150 },
+                  { test: selectedNodeTest, value: 60 },
+                  { value: 20 }
+                ],
                 x: {
                   field: "x"
                 },

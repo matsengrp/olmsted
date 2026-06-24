@@ -11,6 +11,7 @@ Changed:
 * Restored a fix dropped from the #327 squash-merge: the tree-height bottom-divider drag now clamps to 1.5 (matching the slider), not 0.9.
 * The scatterplot **"Symbol size" slider is now logarithmic** too: 1/3× and 3× sit equidistant from a centered 1× (binds the exponent, −1…+1, with `symbolSize = pow(3, exp)`).
 * Mutation labels are drawn **white with a black halo** (a fixed outline, halo layer beneath the letter since Vega has no paint-order) so they stay legible against any chip color.
+* The tree **root node is now drawn as a star** (enlarged) instead of a plain black dot, so it's easy to pick out from the circular internal-node markers.
 
 Fixed:
 * On very large trees the alignment mutation chips could grow taller than their leaf's row band and **overlap vertically**. The chip height is now hard-capped at the true on-screen row spacing (`leaf_band_height`), which — unlike `leaf_size` (floored at 5px, so it overstated the spacing on dense trees) — reflects the actual space available per leaf. Normal-density trees are unaffected.
