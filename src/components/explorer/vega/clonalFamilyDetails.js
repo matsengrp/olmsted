@@ -837,18 +837,21 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       },
       {
         // Leaf-label font size, composed from three factors:
-        //   1. base — leaf-spacing-derived initial size (px per leaf, capped at
-        //      10): larger for small trees, smaller for large ones.
+        //   1. base — the actual full-view vertical spacing per leaf
+        //      (span(yrange)/leaves), capped at 10. NOTE: this intentionally
+        //      does NOT use `leaf_size`, whose min-5 clamp floors the font above
+        //      the true spacing on dense trees and causes label overlap. Using
+        //      the real spacing (no floor) lets labels shrink to fit large trees.
         //   2. vertical zoom — span(yext_fencepost)/span(ydom): 1 at the default
         //      full view, >1 when zoomed in vertically (ydom narrows), so labels
-        //      grow/shrink with the on-screen leaf spacing. (ydom is top-level,
-        //      written by the tree group via push:"outer".)
+        //      grow with the on-screen leaf spacing. (ydom is top-level, written
+        //      by the tree group via push:"outer".)
         //   3. leaf_label_scale — the user's "Label size" slider.
-        // Clamped to a readable range. At full view + slider=1 this equals the
-        // previous clamp(leaf_size, 0, 10).
+        // Clamped to a readable range. Small trees still cap at 10 (unchanged);
+        // dense trees get sub-10 labels that fit and grow legible on zoom.
         name: "label_size",
         update:
-          "clamp(clamp(leaf_size, 0, 10) * (ydom && span(ydom) > 0 ? span(yext_fencepost) / span(ydom) : 1) * leaf_label_scale, 2, 60)"
+          "clamp(min(span(yrange) / leaves_count_incl_naive, 10) * (ydom && span(ydom) > 0 ? span(yext_fencepost) / span(ydom) : 1) * leaf_label_scale, 1, 60)"
       },
       {
         value: "datum",

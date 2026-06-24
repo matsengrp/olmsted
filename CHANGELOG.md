@@ -1,6 +1,6 @@
 ## version 2.7.11 - 2026/06/24
 Added:
-* Clonal-family tree: leaf-label font size now composes three factors (#325): a leaf-spacing-derived **base** (initial size, larger for small trees / smaller for large ones), the current **vertical zoom** level (labels grow/shrink with on-screen leaf spacing as you zoom), and a new **"Label size" slider** (`leaf_label_scale`, default 1) for explicit control. At the default full view with slider = 1 this equals the previous `clamp(leaf_size, 0, 10)`, so default rendering is unchanged; seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved.
+* Clonal-family tree: leaf-label font size now composes three factors (#325): a spacing-derived **base** (the actual full-view px per leaf, capped at 10 — larger for small trees, smaller for large ones), the current **vertical zoom** level (labels grow with on-screen leaf spacing as you zoom), and a new **"Label size" slider** (`leaf_label_scale`, default 1, range 0.5–2). The base now uses the real leaf spacing rather than `leaf_size` (whose min-5 clamp floored the font above the true spacing on large trees and caused **label overlap**); dense trees now get sub-10 labels that fit and grow legible on zoom-in. Small trees still cap at 10 (unchanged); seed-label emphasis (×1.5, bold) and `show_labels` behavior are preserved.
 
 ## version 2.7.10 - 2026/06/22
 Removed:
