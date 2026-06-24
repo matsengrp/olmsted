@@ -7,6 +7,7 @@ Changed:
 * Alignment chip **height now scales linearly with vertical zoom** instead of with its square root, so chips keep pace with the leaf-row spacing as you zoom in (previously the height lagged, leaving growing gaps between chips). Full-view appearance is unchanged.
 * The mutation-label font is now capped at the chip width (was width × 1.2), so it tracks zoom and fits the cell instead of growing faster than the chips.
 * The "Label size" slider (#325) is now logarithmic: 1/3× and 3× sit equidistant from a centered 1× (the slider binds the log₃ exponent, −1…+1, and the multiplier is `pow(3, exp)`).
+* Leaf labels now grow **sub-linearly** with vertical zoom (the zoom factor is square-rooted), so they no longer outpace the zoom and overflow when zoomed in; full-view size is unchanged.
 * Restored a fix dropped from the #327 squash-merge: the tree-height bottom-divider drag now clamps to 1.5 (matching the slider), not 0.9.
 * The scatterplot **"Symbol size" slider is now logarithmic** too: 1/3× and 3× sit equidistant from a centered 1× (binds the exponent, −1…+1, with `symbolSize = pow(3, exp)`).
 * Mutation labels are drawn **white with a black halo** (a fixed outline, halo layer beneath the letter since Vega has no paint-order) so they stay legible against any chip color.
