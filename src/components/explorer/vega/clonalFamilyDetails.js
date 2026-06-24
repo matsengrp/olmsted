@@ -89,7 +89,7 @@ const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFi
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
 const GAP_OR_UNKNOWN_FILTER = 'datum.child_aa == "-" || datum.child_aa == "X"';
 
-// Residue-letter overlay (the "Show alignment text" toggle): the letter color
+// Residue-letter overlay (the "Show mutation labels" toggle): the letter color
 // flips dark/light by the chip's luminance so it reads on any color, mirroring
 // the chip's own fill logic (surprise_color for metric coloring, else aa_color).
 const RESIDUE_TEXT_FILL =
@@ -521,7 +521,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'show_alignment_text && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+            expr: 'show_mutation_labels && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
           }
         ]
       },
@@ -566,7 +566,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         transform: [
           {
             type: "filter",
-            expr: 'show_alignment_text && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
+            expr: 'show_mutation_labels && mutation_mark_width >= 6 && datum.child_aa != "-" && datum.child_aa != "X"'
           }
         ]
       }
@@ -1370,11 +1370,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         // letters only render once chips are wide enough to be legible (see the
         // mutation_mark_width >= 6 gate on the *_residue_labels datasets), so
         // zooming in reveals them.
-        name: "show_alignment_text",
+        name: "show_mutation_labels",
         value: false,
         ...maybeAddBind({
           input: "checkbox",
-          name: "Show alignment text"
+          name: "Show mutation labels"
         })
       },
       // Mutation coloring mode: built from field_metadata.mutation or fallback detection
@@ -2753,7 +2753,7 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
                   }
                 }
               },
-              // /RESIDUE LETTER OVERLAY ("Show alignment text"): one letter per
+              // /RESIDUE LETTER OVERLAY ("Show mutation labels"): one letter per
               // non-gap chip. Its dataset is empty unless the toggle is on and
               // chips are wide enough, so it costs nothing when off.
               {
