@@ -20,6 +20,9 @@ import { buildVegaTooltipExpr } from "../../../utils/fieldMetadata";
 const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
   const seen = new Set();
   const continuousFields = [];
+  // field name -> human-readable label, used to show descriptive text in the
+  // tree control dropdowns while keeping the raw field name as the signal value.
+  const labelFor = {};
 
   for (const metadata of [nodeMetadata, branchMetadata]) {
     if (!metadata) continue;
@@ -27,6 +30,7 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
       const display = meta.display || DEFAULT_DISPLAY;
       if (meta.type === "continuous" && display === "dropdown" && !seen.has(field)) {
         continuousFields.push(field);
+        labelFor[field] = meta.label || field;
         seen.add(field);
       }
     }
@@ -35,9 +39,21 @@ const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
   return {
     leafSize: ["<none>", ...continuousFields],
     branchWidth: ["<none>", ...continuousFields],
-    branchColor: ["<none>", ...continuousFields, "parent"]
+    branchColor: ["<none>", ...continuousFields, "parent"],
+    labelFor
   };
 };
+
+// Display labels for the sentinel options used by the tree control dropdowns.
+// The "<none>" sentinel intentionally has no override, so it falls back to
+// displaying its raw value.
+const TREE_OPTION_LABELS = { parent: "Parent" };
+
+// Build the parallel `labels` array for a Vega select binding from a list of
+// raw field names (plus sentinels). Signal values stay the field names; only the
+// dropdown text changes, so scales, datum lookups, and tooltips are unaffected.
+const treeSelectLabels = (options, labelFor) =>
+  options.map((option) => TREE_OPTION_LABELS[option] || labelFor[option] || option);
 
 /**
  * Build node tooltip by iterating resolved node + branch metadata.
@@ -830,7 +846,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "select",
           name: "Leaf size by",
-          options: treeFields.leafSize
+          options: treeFields.leafSize,
+          labels: treeSelectLabels(treeFields.leafSize, treeFields.labelFor)
         })
       },
       {
@@ -847,12 +864,22 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
       {
         name: "branch_width_by",
         value: "<none>",
-        ...maybeAddBind({ input: "select", name: "Branch width by", options: treeFields.branchWidth })
+        ...maybeAddBind({
+          input: "select",
+          name: "Branch width by",
+          options: treeFields.branchWidth,
+          labels: treeSelectLabels(treeFields.branchWidth, treeFields.labelFor)
+        })
       },
       {
         name: "branch_color_by",
         value: "parent",
-        ...maybeAddBind({ input: "select", name: "Branch color by", options: treeFields.branchColor })
+        ...maybeAddBind({
+          input: "select",
+          name: "Branch color by",
+          options: treeFields.branchColor,
+          labels: treeSelectLabels(treeFields.branchColor, treeFields.labelFor)
+        })
       },
       {
         name: "branch_color_scheme",
@@ -1453,7 +1480,8 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "select",
           name: "Mutation color by",
-          options: mutationColorValues
+          options: mutationColorValues,
+          labels: mutationColorOptions.map((o) => o.label)
         })
       },
       // Mutation color scheme (for continuous heatmap fields)

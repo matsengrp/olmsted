@@ -32,6 +32,7 @@ export const CLONE_FIELD_DEFAULTS = {
   j_call: null,
   junction_start: null,
   junction_length: null,
+  cdr3_length: null,
   cdr1_alignment_start: null,
   cdr1_alignment_end: null,
   cdr2_alignment_start: null,

@@ -113,6 +113,24 @@ describe("facetClonalFamiliesVizSpec", () => {
       expect(colorBy.bind.options).toContain("subject_id");
     });
 
+    it("dropdowns carry descriptive labels parallel to their options", () => {
+      const yField = getSignal("yField");
+      // labels array matches options length, value stays the raw field name
+      expect(yField.bind.labels).toBeInstanceOf(Array);
+      expect(yField.bind.labels.length).toBe(yField.bind.options.length);
+      // the descriptive label is shown for known fields
+      const muIdx = yField.bind.options.indexOf("mean_mut_freq");
+      expect(yField.bind.labels[muIdx]).toBe("Mean Mutation Freq");
+      const usIdx = yField.bind.options.indexOf("unique_seqs_count");
+      expect(yField.bind.labels[usIdx]).toBe("Unique Sequences");
+
+      // the "<none>" sentinel falls back to displaying its raw value
+      const colorBy = getSignal("colorBy");
+      expect(colorBy.bind.options[0]).toBe("<none>");
+      expect(colorBy.bind.labels[0]).toBe("<none>");
+      expect(colorBy.bind.labels.length).toBe(colorBy.bind.options.length);
+    });
+
     it("has shape and size controls", () => {
       const shapeBy = getSignal("shapeBy");
       expect(shapeBy).toBeDefined();

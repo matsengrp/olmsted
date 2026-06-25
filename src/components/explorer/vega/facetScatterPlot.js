@@ -184,12 +184,15 @@ const createSelectionSignals = () => [
 const buildFieldOptions = (fieldMetadata) => {
   // fieldMetadata should always be resolved by resolveFieldMetadata before reaching here
   if (!fieldMetadata) {
-    return { continuous: [], categorical: [], tooltip: [] };
+    return { continuous: [], categorical: [], tooltip: [], labelFor: {} };
   }
 
   const continuous = [];
   const categorical = [];
   const tooltip = [];
+  // field name -> human-readable label, used to show descriptive text in the
+  // control dropdowns while keeping the raw field name as the signal value.
+  const labelFor = {};
 
   // field_metadata is resolved with builtins merged (by resolveFieldMetadata)
   // display: "dropdown" (default) → dropdown + tooltip based on type
@@ -200,6 +203,7 @@ const buildFieldOptions = (fieldMetadata) => {
     if (display === "skip") continue;
 
     const entry = { field, label: meta.label || field };
+    labelFor[field] = entry.label;
     if (meta.format) entry.format = meta.format;
     if (meta.expr) entry.expr = meta.expr;
 
@@ -216,8 +220,14 @@ const buildFieldOptions = (fieldMetadata) => {
       tooltip.push(entry);
     }
   }
-  return { continuous, categorical, tooltip };
+  return { continuous, categorical, tooltip, labelFor };
 };
+
+// Build the parallel `labels` array for a Vega select binding: each raw field
+// name maps to its descriptive label, so the dropdown shows readable text while
+// the signal value stays the field name. Options without a label (e.g. the
+// "<none>" sentinel) fall back to displaying the raw value.
+const selectLabels = (options, labelFor) => options.map((option) => labelFor[option] || option);
 
 /**
  * Build a Vega tooltip signal expression from tooltip field entries.
@@ -230,9 +240,15 @@ const buildTooltipSignal = (tooltipFields) => buildVegaTooltipExpr(tooltipFields
 
 // Helper function to create control signals (dropdowns)
 const createControlSignals = (fieldMetadata) => {
-  const { continuous, categorical } = buildFieldOptions(fieldMetadata);
+  const { continuous, categorical, labelFor } = buildFieldOptions(fieldMetadata);
   const yDefault = continuous.includes("mean_mut_freq") ? "mean_mut_freq" : continuous[0];
   const xDefault = continuous.includes("unique_seqs_count") ? "unique_seqs_count" : continuous[0];
+
+  // Option lists (raw field names + the "<none>" sentinel) paired with their
+  // display labels. Signal values stay the field names; only the dropdown text
+  // changes, so scales, datum lookups, tooltips, and URL state are unaffected.
+  const categoricalWithNone = ["<none>", ...categorical];
+  const continuousWithNone = ["<none>", ...continuous];
 
   return [
     // Facet control - columns only (row faceting deferred to future PR due to gridline clipping issues)
@@ -242,7 +258,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "Facet by",
         input: "select",
-        options: ["<none>", ...categorical]
+        options: categoricalWithNone,
+        labels: selectLabels(categoricalWithNone, labelFor)
       }
     },
     {
@@ -251,7 +268,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "Y variable ",
         input: "select",
-        options: continuous
+        options: continuous,
+        labels: selectLabels(continuous, labelFor)
       }
     },
     {
@@ -260,7 +278,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "X variable ",
         input: "select",
-        options: continuous
+        options: continuous,
+        labels: selectLabels(continuous, labelFor)
       }
     },
     {
@@ -269,7 +288,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "Color by ",
         input: "select",
-        options: ["<none>", ...categorical]
+        options: categoricalWithNone,
+        labels: selectLabels(categoricalWithNone, labelFor)
       }
     },
     {
@@ -278,7 +298,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "Shape by ",
         input: "select",
-        options: ["<none>", ...categorical]
+        options: categoricalWithNone,
+        labels: selectLabels(categoricalWithNone, labelFor)
       }
     },
     {
@@ -287,7 +308,8 @@ const createControlSignals = (fieldMetadata) => {
       bind: {
         name: "Size by ",
         input: "select",
-        options: ["<none>", ...continuous]
+        options: continuousWithNone,
+        labels: selectLabels(continuousWithNone, labelFor)
       }
     },
     {
