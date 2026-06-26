@@ -6,6 +6,7 @@ import * as explorerActions from "../../actions/explorer";
 import { getBrushedClonalFamilies, getCloneChain, getReferenceFieldValue } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
+import ColumnPicker from "./ColumnPicker";
 import { ResizableTable } from "../util/resizableTable";
 import { InfoButtonCell } from "../tables/RowInfoModal";
 import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
@@ -413,7 +414,8 @@ const mapStateToProps = (state) => {
     pagination: pagination,
     selectedFamily: state.clonalFamilies.selectedFamily,
     selectingStatus: state.clonalFamilies.brushSelecting,
-    starredFamilies: starredFamilies
+    starredFamilies: starredFamilies,
+    familiesHiddenColumns: state.clonalFamilies.familiesHiddenColumns
   };
 };
 
@@ -421,7 +423,8 @@ const mapStateToProps = (state) => {
   selectFamily: explorerActions.selectFamily,
   starAllFamilies: explorerActions.starAllFamilies,
   unstarAllFamilies: explorerActions.unstarAllFamilies,
-  clearStarredFamilies: explorerActions.clearStarredFamilies
+  clearStarredFamilies: explorerActions.clearStarredFamilies,
+  toggleFamiliesColumn: explorerActions.toggleFamiliesColumn
 })
 class ClonalFamiliesTable extends React.Component {
   constructor(props) {
@@ -493,7 +496,9 @@ class ClonalFamiliesTable extends React.Component {
       starredFamilies,
       starAllFamilies,
       unstarAllFamilies,
-      clearStarredFamilies
+      clearStarredFamilies,
+      familiesHiddenColumns,
+      toggleFamiliesColumn
     } = this.props;
     const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst, showOnlyStarred } = this.state;
 
@@ -538,6 +543,40 @@ class ClonalFamiliesTable extends React.Component {
     const visibleIdents = visibleClonalFamilies.map((f) => f.ident);
     const visibleStarredCount = visibleIdents.filter((id) => starredFamilies.includes(id)).length;
     const allVisibleStarred = visibleStarredCount === visibleClonalFamilies.length && visibleClonalFamilies.length > 0;
+
+    // Full column set (display order). Columns marked `required` are action/identity
+    // columns that stay fixed (locked visible). The rest are user-toggleable via the
+    // Columns picker; `familiesHiddenColumns` (Redux) tracks which are hidden.
+    const allMappings = [
+      ["Star", StarCell, { sortable: false, required: true }],
+      ["Select", SelectAttribute, { required: true }],
+      ["Info", InfoButtonCell, { sortable: false, required: true }],
+      ["Naive sequence", NaiveSequence, { required: true }],
+      ["Family ID", "clone_id", { required: true }],
+      ["Unique Seq Count", "unique_seqs_count"],
+      ["V gene", "v_call"],
+      ["D gene", "d_call"],
+      ["J gene", "j_call"],
+      ["Locus", "sample.locus", { unspecified: true }],
+      ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
+      ["Paired", "is_paired"],
+      ["Pair ID", "pair_id"],
+      ["CDR3 length", "cdr3_length"],
+      ["Mut freq", "mean_mut_freq"],
+      ["Seed run", "has_seed"],
+      ["Subject", "subject_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "subject_id") }],
+      ["Sample", "sample_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "sample_id") }],
+      [
+        "Timepoint",
+        "sample.timepoint_id",
+        { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "timepoint_id") }
+      ],
+      ["Dataset", DatasetName, { sortKey: "dataset_id" }]
+    ];
+    const columnDefs = allMappings.map(([name, , options = {}]) => ({ name, required: !!options.required }));
+    const visibleMappings = allMappings.filter(
+      ([name, , options = {}]) => options.required || !familiesHiddenColumns.includes(name)
+    );
 
     const starButtonStyle = {
       background: "none",
@@ -643,6 +682,7 @@ class ClonalFamiliesTable extends React.Component {
               Clear Stars ({starredFamilies.length})
             </button>
           )}
+          <ColumnPicker columns={columnDefs} hiddenColumns={familiesHiddenColumns} onToggle={toggleFamiliesColumn} />
           <DownloadCSV
             data={visibleClonalFamilies}
             columns={csvColumns}
@@ -681,38 +721,7 @@ class ClonalFamiliesTable extends React.Component {
       <Table
         data={visibleClonalFamilies}
         widthMap={columnWidthMap}
-        mappings={[
-          ["Star", StarCell, { sortable: false }],
-          ["Select", SelectAttribute],
-          ["Info", InfoButtonCell, { sortable: false }],
-          ["Naive sequence", NaiveSequence],
-          ["Family ID", "clone_id"],
-          ["Unique Seq Count", "unique_seqs_count"],
-          ["V gene", "v_call"],
-          ["D gene", "d_call"],
-          ["J gene", "j_call"],
-          ["Locus", "sample.locus", { unspecified: true }],
-          ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
-          ["Paired", "is_paired"],
-          ["Pair ID", "pair_id"],
-          ["CDR3 length", "cdr3_length"],
-          ["Mut freq", "mean_mut_freq"],
-          ["Seed run", "has_seed"],
-          [
-            "Subject",
-            "subject_id",
-            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "subject_id") }
-          ],
-          ["Sample", "sample_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "sample_id") }],
-          [
-            "Timepoint",
-            "sample.timepoint_id",
-            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "timepoint_id") }
-          ],
-          // ["Path", 'path'],
-          // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-          ["Dataset", DatasetName, { sortKey: "dataset_id" }]
-        ]}
+        mappings={visibleMappings}
         selectedFamily={this.selectedFamily}
         pagination={pagination}
         footerAction={footerAction}
