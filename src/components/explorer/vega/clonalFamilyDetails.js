@@ -15,7 +15,7 @@ import { buildVegaTooltipExpr } from "../../../utils/fieldMetadata";
  *
  * @param {Object|null} nodeMetadata - field_metadata.node from dataset
  * @param {Object|null} branchMetadata - field_metadata.branch from dataset
- * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[] }}
+ * @returns {{ leafSize: string[], branchWidth: string[], branchColor: string[], labelFor: Object }}
  */
 const buildTreeFieldOptions = (nodeMetadata, branchMetadata) => {
   const seen = new Set();

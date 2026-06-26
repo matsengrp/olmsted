@@ -179,7 +179,7 @@ const createSelectionSignals = () => [
  * Falls back to hardcoded defaults when metadata is absent.
  *
  * @param {Object|null} fieldMetadata - field_metadata.clone from dataset
- * @returns {{ continuous: string[], categorical: string[], tooltip: Object[] }}
+ * @returns {{ continuous: string[], categorical: string[], tooltip: Object[], labelFor: Object }}
  */
 const buildFieldOptions = (fieldMetadata) => {
   // fieldMetadata should always be resolved by resolveFieldMetadata before reaching here
