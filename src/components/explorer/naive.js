@@ -32,8 +32,8 @@ const buildCloneRegions = (clone, familyLabel) => {
   const dAlignmentEnd = clone.d_alignment_end;
   const jAlignmentStart = clone.j_alignment_start;
   const jAlignmentEnd = clone.j_alignment_end;
-  const junctionStart = clone.junction_start;
-  const junctionLength = clone.junction_length;
+  const cdr3Start = clone.cdr3_alignment_start;
+  const cdr3End = clone.cdr3_alignment_end;
   const cdr1Start = clone.cdr1_alignment_start;
   const cdr1End = clone.cdr1_alignment_end;
   const cdr2Start = clone.cdr2_alignment_start;
@@ -48,7 +48,7 @@ const buildCloneRegions = (clone, familyLabel) => {
     vAlignmentEnd || 0,
     dAlignmentEnd || 0,
     jAlignmentEnd || 0,
-    (junctionStart || 0) + (junctionLength || 0),
+    cdr3End || 0,
     cdr1End || 0,
     cdr2End || 0
   );
@@ -71,11 +71,8 @@ const buildCloneRegions = (clone, familyLabel) => {
     {
       family: familyLabel,
       region: "CDR3",
-      start: junctionStart,
-      end:
-        junctionStart !== null && junctionStart !== undefined && junctionLength !== null && junctionLength !== undefined
-          ? junctionStart + junctionLength
-          : null
+      start: cdr3Start,
+      end: cdr3End
     },
     // Layer 2 (middle): Grey background bar
     {

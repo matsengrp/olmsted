@@ -35,9 +35,9 @@
             "label": "J Gene",
             "display": "dropdown"
           },
-          "junction_length": {
+          "cdr3_length": {
             "type": "continuous",
-            "label": "Junction Length",
+            "label": "CDR3 Length",
             "display": "dropdown"
           },
           "locus": {
@@ -180,7 +180,7 @@
         "dataset_id": "test-field-metadata",
         "unique_seqs_count": 5,
         "mean_mut_freq": 0.02,
-        "junction_length": 15,
+        "cdr3_length": 15,
         "sample_id": "sample1",
         "subject_id": "subject_A",
         "v_call": "IGHV1-2",
@@ -209,7 +209,7 @@
         "dataset_id": "test-field-metadata",
         "unique_seqs_count": 12,
         "mean_mut_freq": 0.07,
-        "junction_length": 21,
+        "cdr3_length": 21,
         "sample_id": "sample1",
         "subject_id": "subject_A",
         "v_call": "IGHV3-30",
@@ -238,7 +238,7 @@
         "dataset_id": "test-field-metadata",
         "unique_seqs_count": 3,
         "mean_mut_freq": 0.04,
-        "junction_length": 18,
+        "cdr3_length": 18,
         "sample_id": "sample1",
         "subject_id": "subject_B",
         "v_call": "IGHV1-2",
@@ -267,7 +267,7 @@
         "dataset_id": "test-field-metadata",
         "unique_seqs_count": 8,
         "mean_mut_freq": 0.11,
-        "junction_length": 24,
+        "cdr3_length": 24,
         "sample_id": "sample1",
         "subject_id": "subject_B",
         "v_call": "IGHV4-34",
