@@ -167,6 +167,16 @@ export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };
 
+// Toggle visibility of an optional column in the clonal-families table.
+export const toggleFamiliesColumn = (column) => {
+  return { type: types.TOGGLE_FAMILIES_COLUMN, column };
+};
+
+// Replace the set of hidden families-table columns (used to apply a saved layout).
+export const setFamiliesHiddenColumns = (columns) => {
+  return { type: types.SET_FAMILIES_HIDDEN_COLUMNS, columns };
+};
+
 // Subtree focus actions (shared with lineage view)
 export const updateSubtreeRoot = (subtreeRoot) => {
   return { type: types.UPDATE_SUBTREE_ROOT, subtreeRoot };

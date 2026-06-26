@@ -1,3 +1,7 @@
+## version 2.7.16 - 2026/06/26
+Added:
+* The clonal-families table has a **"Columns" picker** to show/hide columns (#323). Action/identity columns (Star, Select, Info, Naive sequence, Family ID) are locked visible; all other columns are toggleable. The chosen layout lives in Redux (`familiesHiddenColumns`) and persists per browser via `sessionStorage`. (Drag-and-drop reordering and the other tables follow in later commits; CSV export still includes the full column set.)
+
 ## version 2.7.15 - 2026/06/26
 Changed:
 * The **gene-region diagram now uses `cdr3_alignment_start` / `cdr3_alignment_end`** for the CDR3 region (consistent with the `cdr1_*`/`cdr2_*` fields), replacing the old `junction_start` + `junction_length` pair. The region builder is shared (`naive.js` `buildCloneRegions`), so this applies everywhere it renders: the selected-families table diagram, the tree+alignment viz's naive region key, and the alignment CDR shading. Requires the regenerated demo data to emit the `cdr3_alignment_*` fields.

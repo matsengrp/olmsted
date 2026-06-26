@@ -297,6 +297,40 @@ describe("clonalFamilies reducer", () => {
     });
   });
 
+  describe("TOGGLE_FAMILIES_COLUMN", () => {
+    it("hides a previously visible column", () => {
+      const state = clonalFamilies(initialState, {
+        type: types.TOGGLE_FAMILIES_COLUMN,
+        column: "Mut freq"
+      });
+      expect(state.familiesHiddenColumns).toContain("Mut freq");
+    });
+
+    it("re-shows a hidden column", () => {
+      const stateWithHidden = { ...initialState, familiesHiddenColumns: ["Mut freq"] };
+      const state = clonalFamilies(stateWithHidden, {
+        type: types.TOGGLE_FAMILIES_COLUMN,
+        column: "Mut freq"
+      });
+      expect(state.familiesHiddenColumns).not.toContain("Mut freq");
+    });
+  });
+
+  describe("SET_FAMILIES_HIDDEN_COLUMNS", () => {
+    it("replaces the hidden-columns set", () => {
+      const state = clonalFamilies(initialState, {
+        type: types.SET_FAMILIES_HIDDEN_COLUMNS,
+        columns: ["Subject", "Sample"]
+      });
+      expect(state.familiesHiddenColumns).toEqual(["Subject", "Sample"]);
+    });
+
+    it("defaults to an empty array when columns is missing", () => {
+      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_HIDDEN_COLUMNS });
+      expect(state.familiesHiddenColumns).toEqual([]);
+    });
+  });
+
   describe("SET_FILTER", () => {
     it("adds a filter", () => {
       const state = clonalFamilies(initialState, {
