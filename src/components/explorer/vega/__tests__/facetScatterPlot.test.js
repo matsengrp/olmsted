@@ -131,6 +131,21 @@ describe("facetClonalFamiliesVizSpec", () => {
       expect(colorBy.bind.labels.length).toBe(colorBy.bind.options.length);
     });
 
+    it("exposes a field_label_map and uses it for axis/legend/facet titles", () => {
+      const map = getSignal("field_label_map");
+      expect(map).toBeDefined();
+      expect(map.value.mean_mut_freq).toBe("Mean Mutation Freq");
+      expect(map.value.unique_seqs_count).toBe("Unique Sequences");
+
+      // axis / facet / legend titles look up the descriptive label by the
+      // selected field, falling back to the raw field name
+      const json = JSON.stringify(spec);
+      expect(json).toContain("field_label_map[xField] || xField");
+      expect(json).toContain("field_label_map[yField] || yField");
+      expect(json).toContain("field_label_map[colorBy] || colorBy");
+      expect(json).toContain("field_label_map[facet_col_signal] || facet_col_signal");
+    });
+
     it("has shape and size controls", () => {
       const shapeBy = getSignal("shapeBy");
       expect(shapeBy).toBeDefined();

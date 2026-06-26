@@ -251,6 +251,14 @@ const createControlSignals = (fieldMetadata) => {
   const continuousWithNone = ["<none>", ...continuous];
 
   return [
+    // Field name -> display label map, exposed as a signal so axis/legend/facet
+    // titles can show the descriptive label for whichever field is selected
+    // (e.g. field_label_map[xField] || xField). Static; the field controls
+    // themselves still carry the raw field name as their value.
+    {
+      name: "field_label_map",
+      value: labelFor
+    },
     // Facet control - columns only (row faceting deferred to future PR due to gridline clipping issues)
     {
       name: "facet_col_signal",
@@ -766,7 +774,7 @@ const createScales = () => [
 const createLegends = () => [
   {
     stroke: "color",
-    title: { signal: "colorBy" },
+    title: { signal: "field_label_map[colorBy] || colorBy" },
     encode: {
       symbols: {
         update: {
@@ -778,7 +786,7 @@ const createLegends = () => [
   },
   {
     shape: "shape",
-    title: { signal: "shapeBy" },
+    title: { signal: "field_label_map[shapeBy] || shapeBy" },
     encode: {
       symbols: {
         update: {
@@ -806,7 +814,7 @@ const createHeaderMarks = () => [
     type: "group",
     role: "column-title",
     title: {
-      text: { signal: "facet_col_signal == '<none>' ? '' : facet_col_signal" },
+      text: { signal: "facet_col_signal == '<none>' ? '' : (field_label_map[facet_col_signal] || facet_col_signal)" },
       offset: 10,
       style: "guide-title"
     }
@@ -821,7 +829,7 @@ const createHeaderMarks = () => [
         scale: "y",
         orient: "left",
         grid: false,
-        title: { signal: "yField" },
+        title: { signal: "field_label_map[yField] || yField" },
         labelOverlap: true,
         tickCount: { signal: "ceil(child_height/40)" },
         zindex: 1
@@ -854,7 +862,7 @@ const createHeaderMarks = () => [
         scale: "x",
         orient: "bottom",
         grid: false,
-        title: { signal: "xField" },
+        title: { signal: "field_label_map[xField] || xField" },
         labelFlush: true,
         labelOverlap: true,
         tickCount: { signal: "ceil(child_width/40)" },

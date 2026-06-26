@@ -2,6 +2,7 @@
 Changed:
 * The clonal-families table now has a **"CDR3 length"** column populated from a `cdr3_length` clone field, replacing the former "Junction length" column (which read `junction_length`) (#332). `cdr3_length` is registered as an optional clone field; the V(D)J recombination diagram still uses `junction_length` for the junction region. Populating the column requires regenerating the demo data in olmsted-cli to emit `cdr3_length` (and a matching `field_metadata` label).
 * The scatterplot and tree control **dropdowns now show descriptive field labels** (from `field_metadata`) instead of raw field names — e.g. "Mean Mutation Freq" rather than `mean_mut_freq` (#332). The `<none>` option keeps its `<none>` text. Implemented via Vega's select-binding `labels` array; the selected signal **value is still the raw field name**, so scales, tooltips, deep-link URLs, and saved configs are unaffected.
+* The scatterplot **x/y axis titles, facet-column header, and color/shape legend titles** now show the descriptive field label too (e.g. "Mean Mutation Freq" instead of `mean_mut_freq`), via a `field_label_map` signal looked up by the selected field (#332).
 
 ## version 2.7.13 - 2026/06/24
 Added:
