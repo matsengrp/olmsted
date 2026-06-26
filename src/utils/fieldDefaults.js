@@ -32,6 +32,10 @@ export const CLONE_FIELD_DEFAULTS = {
   j_call: null,
   junction_start: null,
   junction_length: null,
+  // Table-only display metric (the "CDR3 length" column). Like junction_length,
+  // its absence just renders a blank cell, so it is intentionally not surfaced
+  // in getMissingFieldSummary (that warning is for fields that break a viz).
+  cdr3_length: null,
   cdr1_alignment_start: null,
   cdr1_alignment_end: null,
   cdr2_alignment_start: null,

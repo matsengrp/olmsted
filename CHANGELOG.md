@@ -1,3 +1,9 @@
+## version 2.7.14 - 2026/06/25
+Changed:
+* The clonal-families table now has a **"CDR3 length"** column populated from a `cdr3_length` clone field, replacing the former "Junction length" column (which read `junction_length`) (#332). `cdr3_length` is registered as an optional clone field; the V(D)J recombination diagram still uses `junction_length` for the junction region. Populating the column requires regenerating the demo data in olmsted-cli to emit `cdr3_length` (and a matching `field_metadata` label).
+* The scatterplot and tree control **dropdowns now show descriptive field labels** (from `field_metadata`) instead of raw field names — e.g. "Mean Mutation Freq" rather than `mean_mut_freq` (#332). The `<none>` option keeps its `<none>` text. Implemented via Vega's select-binding `labels` array; the selected signal **value is still the raw field name**, so scales, tooltips, deep-link URLs, and saved configs are unaffected.
+* The scatterplot **x/y axis titles, facet-column header, and color/shape legend titles** now show the descriptive field label too (e.g. "Mean Mutation Freq" instead of `mean_mut_freq`), via a `field_label_map` signal looked up by the selected field (#332).
+
 ## version 2.7.13 - 2026/06/24
 Added:
 * Clonal-family alignment: a **"Show mutation labels"** toggle (#324) that overlays the residue letter on each color chip — for the per-sequence alignment, the naive mutation row, and the **ancestral-sequence (lineage) view**. Off by default. Letters render only once chips are wide enough to be legible (≥6px, i.e. zoom in), and the letter color flips dark/light by the chip's luminance so it stays readable on any color. Implemented via filter-gated datasets that are empty when the toggle is off, so there is no rendering cost in the common case; gap/X labels are unchanged. The lineage view's toggle is a Redux-backed checkbox (`lineageShowMutationLabels`) alongside its existing "Show mutation borders" control.
