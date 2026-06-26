@@ -1,3 +1,7 @@
+## version 2.7.15 - 2026/06/26
+Changed:
+* The **gene-region diagram now uses `cdr3_alignment_start` / `cdr3_alignment_end`** for the CDR3 region (consistent with the `cdr1_*`/`cdr2_*` fields), replacing the old `junction_start` + `junction_length` pair. The region builder is shared (`naive.js` `buildCloneRegions`), so this applies everywhere it renders: the selected-families table diagram, the tree+alignment viz's naive region key, and the alignment CDR shading. Requires the regenerated demo data to emit the `cdr3_alignment_*` fields.
+
 ## version 2.7.14 - 2026/06/25
 Changed:
 * The clonal-families table now has a **"CDR3 length"** column populated from a `cdr3_length` clone field, replacing the former "Junction length" column (which read `junction_length`) (#332). `cdr3_length` is registered as an optional clone field; the V(D)J recombination diagram still uses `junction_length` for the junction region. Populating the column requires regenerating the demo data in olmsted-cli to emit `cdr3_length` (and a matching `field_metadata` label).

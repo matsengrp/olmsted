@@ -30,16 +30,16 @@ export const NODE_FIELD_DEFAULTS = {
 export const CLONE_FIELD_DEFAULTS = {
   d_call: null,
   j_call: null,
-  junction_start: null,
-  junction_length: null,
-  // Table-only display metric (the "CDR3 length" column). Like junction_length,
-  // its absence just renders a blank cell, so it is intentionally not surfaced
-  // in getMissingFieldSummary (that warning is for fields that break a viz).
+  // Table-only display metric (the "CDR3 length" column). Its absence just
+  // renders a blank cell, so it is intentionally not surfaced in
+  // getMissingFieldSummary (that warning is for fields that break a viz).
   cdr3_length: null,
   cdr1_alignment_start: null,
   cdr1_alignment_end: null,
   cdr2_alignment_start: null,
   cdr2_alignment_end: null,
+  cdr3_alignment_start: null,
+  cdr3_alignment_end: null,
   germline_alignment: null
 };
 
@@ -221,7 +221,7 @@ export function getMissingFieldSummary(missingFields) {
     summary.push("Branch distances (defaulted to unit length)");
   }
 
-  const missingCdr = ["cdr1_alignment_start", "cdr2_alignment_start", "junction_start"].filter((f) =>
+  const missingCdr = ["cdr1_alignment_start", "cdr2_alignment_start", "cdr3_alignment_start"].filter((f) =>
     set.has(`clone.${f}`)
   );
   if (missingCdr.length > 0) {

@@ -18,8 +18,8 @@ describe("fieldDefaults", () => {
           clone_id: "c1",
           d_call: "IGHD1",
           j_call: "IGHJ4",
-          junction_start: 10,
-          junction_length: 20,
+          cdr3_alignment_start: 35,
+          cdr3_alignment_end: 50,
           cdr1_alignment_start: 5,
           cdr1_alignment_end: 15,
           cdr2_alignment_start: 20,
@@ -187,8 +187,8 @@ describe("fieldDefaults", () => {
 
       expect(clone.d_call).toBeNull();
       expect(clone.j_call).toBeNull();
-      expect(clone.junction_start).toBeNull();
-      expect(clone.junction_length).toBeNull();
+      expect(clone.cdr3_alignment_start).toBeNull();
+      expect(clone.cdr3_alignment_end).toBeNull();
       expect(clone.cdr1_alignment_start).toBeNull();
       expect(clone.germline_alignment).toBeNull();
       // Existing fields preserved
@@ -311,7 +311,7 @@ describe("fieldDefaults", () => {
         "clone.germline_alignment",
         "clone.cdr1_alignment_start",
         "clone.cdr2_alignment_start",
-        "clone.junction_start"
+        "clone.cdr3_alignment_start"
       ];
 
       const summary = getMissingFieldSummary(missingFields);
