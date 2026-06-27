@@ -50,14 +50,12 @@ Use [olmsted-cli](https://github.com/matsengrp/olmsted-cli) to convert your data
 ### Installing olmsted-cli
 
 ```bash
-# Create a conda environment and install
-conda create -n olmsted python=3.9
-conda activate olmsted
-
-git clone https://github.com/matsengrp/olmsted-cli.git
-cd olmsted-cli
-pip install .
+pip install olmsted-cli
+# or, for an isolated environment:
+pipx install olmsted-cli
 ```
+
+See the [olmsted-cli README](https://github.com/matsengrp/olmsted-cli#installation) for from-source/development installs.
 
 ### Basic Usage
 
@@ -321,7 +319,7 @@ For contributors and maintainers, we provide detailed documentation:
 ### Technology Stack
 
 - **React 19** with Redux for state management
-- **Vega 5** for declarative visualizations
+- **Vega 6** for declarative visualizations
 - **Dexie (IndexedDB)** for client-side data persistence
 - **Express** server with webpack dev middleware
 

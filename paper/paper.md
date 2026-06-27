@@ -1,0 +1,161 @@
+---
+title: 'Olmsted: Rich Interactive Visualization of B Cell Lineages'
+tags:
+  - JavaScript
+  - immunology
+  - B cell receptor
+  - phylogenetics
+  - visualization
+  - antibody
+authors:
+  - name: David H. Rich
+    orcid: 0009-0005-2501-4032
+    affiliation: 1
+  - name: Elias Harkins
+    orcid: 0000-0001-6525-9134
+    affiliation: 1
+  - name: Christopher T. Small
+    affiliation: 1
+  - name: Kevin Sung
+    orcid: 0000-0002-7289-845X
+    affiliation: 1
+  - name: Laura Doepker
+    orcid: 0000-0003-4514-5003
+    affiliation: 2
+  - name: Duncan Ralph
+    orcid: 0000-0002-2527-8610
+    affiliation: 1
+  - name: Amrit Dhar
+    orcid: 0000-0003-4573-596X
+    affiliation: 1
+  - name: Mackenzie S. Kopp
+    orcid: 0000-0002-7436-5622
+    affiliation: 2
+  - name: Julie Overbaugh
+    orcid: 0000-0002-0239-9444
+    affiliation: 2
+  - name: Frederick A. Matsen IV
+    orcid: 0000-0003-0607-6025
+    corresponding: true
+    affiliation: 1
+affiliations:
+  - name: Computational Biology Program, Fred Hutchinson Cancer Center, Seattle, WA, USA
+    index: 1
+  - name: Human Biology Division, Fred Hutchinson Cancer Center, Seattle, WA, USA
+    index: 2
+date: 4 December 2025
+bibliography: paper.bib
+---
+
+# Summary
+
+Olmsted is an open-source, browser-based application for visually exploring B cell repertoires and clonal family tree data.
+The immune system learns to recognize new threats by mutating and selecting the cells that produce antibodies, a process that leaves behind a branching evolutionary record much like a family tree.
+In immunological terms, this affinity maturation of B cell receptor sequences coding for immunoglobulins (antibodies) begins with a diverse pool of randomly generated naive sequences and leads to a collection of evolutionary histories.
+High-throughput DNA sequencing of the B cell repertoire, combined with computational reconstruction of these evolutionary histories, produces large collections of clonal families and their associated phylogenetic trees.
+Olmsted enables researchers to scan across collections of clonal families using summary statistics, then interactively explore individual families to visualize phylogenies and amino acid mutations that occurred during affinity maturation.
+
+# Statement of Need
+
+Researchers studying B cell responses rely on high-throughput sequencing to characterize antibody repertoires.
+Computational tools can reconstruct the evolutionary histories of these sequences, producing large collections of clonal families (groups of sequences descended from a common naive ancestor) and phylogenetic trees describing their diversification.
+However, researchers often lack tools to explore these reconstructions in the detail necessary to choose sequences for functional, structural, or biochemical studies.
+
+Existing visualization tools address different analytical goals.
+AncesTree [@Foglierini2020-am] provides detailed single-tree exploration with amino acid mutation display, but requires Java installation, processes one lineage at a time without a repertoire overview, and handles heavy or light chains separately rather than as pairs.
+ViCloD [@Jeusset2023-ow] focuses on large-scale intraclonal diversity analysis across hundreds of thousands of sequences, primarily for characterizing B cell tumors; it analyzes heavy chains only.
+AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level, again for heavy chains only.
+ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for database-style querying.
+
+Olmsted combines repertoire-level overview with detailed lineage exploration.
+Researchers can scan across all clonal families in a scatterplot, then drill down to examine phylogenetic trees with aligned amino acid sequences showing mutations from the naive ancestor.
+This multi-scale navigation is delivered through a zero-installation web application that keeps data client-side, supporting practical decisions about which sequences to prioritize for downstream experimental studies.
+Specifically, Olmsted allows users to:
+
+- View all clonal families simultaneously in a configurable scatterplot
+- Filter and select families based on biological criteria (mutation frequency, sequence count, V(D)J gene usage)
+- Examine phylogenetic trees with aligned sequences showing mutations from the naive ancestor
+- Trace the mutational history of individual sequences back to their germline origin
+- Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
+
+Earlier versions of Olmsted supported the interactive exploration of B cell lineages in studies of HIV-1-specific antibody responses by the Overbaugh group [@Simonich2019-nn; @Doepker2020-jr; @Doepker2021-ue; @Williams2018-bo], where it was used to navigate and interrogate reconstructed clonal families.
+
+Olmsted requires no installation: users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly into their local web browser.
+Data processing is handled by a companion `olmsted` command-line tool, hosted at the [olmsted-cli](https://github.com/matsengrp/olmsted-cli) repository.
+This tool converts common immunoinformatics formats into Olmsted's input format.
+
+# Features
+
+## Client-Side Data Management
+
+Users visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser, with no installation, account creation, or data upload to external servers.
+All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
+Datasets persist across browser sessions (\autoref{fig:database}), combining the convenience of a web application with the privacy of local software.
+
+![Dataset management interface.\label{fig:database}](./images/1-02-database-manager.png){height="3in"}
+
+## Data Preparation with olmsted-cli
+
+The `olmsted` command-line tool converts data into Olmsted's JSON format.
+Unlike the web application, this data-preparation step requires a one-time install: `olmsted-cli` is a Python package (Python 3.8 or higher) installed with `pip install olmsted-cli` (or `pipx install olmsted-cli` for an isolated environment).
+It supports two input formats:
+
+- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are not aware of any tools currently producing output in the newer schema versions, but are committed to supporting them as they become formalized.
+- **PCP (Parent-Child Pair) format**: A CSV-based format with explicit parent-child relationships
+
+Example usage:
+```bash
+# Generate a config from your data, then edit it
+olmsted build-config -i data.json -o config.yaml
+
+# Process with the config
+olmsted process -c config.yaml -n "My Dataset" -o data-olmsted.json
+```
+The `build-config` command introspects input data and generates a YAML configuration listing all discoverable fields with inferred types and labels, which the user can edit before processing.
+These fields will dynamically populate plotting options and hover tooltip information.
+Once data preparation is done, the resulting file can be shared with collaborators, who then need only the web interface.
+Plot configurations can also be exported from the web app so they can be recreated later.
+
+## Interactive Visualization
+
+The visualization interface consists of four linked sections:
+
+1. **Clonal Families Scatterplot** (\autoref{fig:scatterplot}): Each clonal family appears as a point, with configurable axes, colors, and faceting.
+The filter tool narrows the selection of families displayed.
+Users can brush-select regions or click individual points.
+
+![Example scatterplot.\label{fig:scatterplot}](./images/2-02-scatterplot.png){height="3in"}
+
+2. **Selected Clonal Families Table** (\autoref{fig:selected-families}): Displays metadata for selected families, including V(D)J gene assignments and a visual representation of the recombination event.
+The table can be sorted by any column, and families can be starred for easy reference.
+
+![Example selected clonal families table.\label{fig:selected-families}](./images/2-03-selected-clonal-families.png){height="3in"}
+
+3. **Clonal Family Tree** (\autoref{fig:tree-alignment}): Shows the phylogenetic tree alongside a sequence alignment.
+Colors indicate amino acid mutations relative to the naive sequence by default, or a heatmap can display contiguous per-site data.
+The tree and alignment support zooming and panning, as well as focusing on a subtree based on a selected subroot node.
+
+![Example tree and alignment clonal family visualization.\label{fig:tree-alignment}](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
+
+4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence, traced through the reconstructed ancestral sequences along the inferred phylogenetic tree.
+For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data—for example, a per-site per-amino acid selection score such as those produced by a deep amino acid selection model (DASM) [@Matsen2026-zo]—and displayed as a heatmap (\autoref{fig:tree-heatmap}).
+
+![Example ancestral sequence visualization.\label{fig:ancestral-sequences}](./images/2-06-ancestral-sequences.png){height="3in"}
+
+![Clonal family tree and alignment with mutations colored by a per-site metric as a heatmap, rather than by amino acid identity.\label{fig:tree-heatmap}](./images/2-05-tree-alignment-clonal-families-heatmap.png){height="3in"}
+
+# Implementation
+
+Olmsted is built with React and Redux, with visualizations implemented in Vega.
+The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], and was actively developed through 2020 before being shelved.
+In 2025 the project was revived and substantially rewritten with the assistance of agentic AI coding tools (Claude Code), which were used to modernize the application's dependencies and JavaScript frameworks, replace the legacy server-side data pipeline with client-side processing and browser-based (IndexedDB) storage, and add a test suite and continuous integration.
+All AI-assisted changes were reviewed and tested by the authors.
+The application can be deployed as a static single-page application or run locally via Docker.
+
+# Acknowledgements
+
+We thank Trevor Bedford, James Hadfield, and other authors of Nextstrain, on which Olmsted's source code is based.
+We are grateful to the AIRR data representation working group for their cooperative development of the AIRR lineage schema.
+This work was supported by National Institutes of Health grants R01 AI146028, R01 GM113246, R01 AI120961, R01 AI138709, U19 AI117891, and U19 AI128914, and by the Howard Hughes Medical Institute.
+
+# References
