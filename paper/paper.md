@@ -138,7 +138,7 @@ The tree and alignment support zooming and panning, as well as focusing on a sub
 ![Example tree and alignment clonal family visualization.\label{fig:tree-alignment}](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
 4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence, traced through the reconstructed ancestral sequences along the inferred phylogenetic tree.
-For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data—for example, a per-site per-amino acid selection score such as those produced by the deep amino acid selection model (DASM) [@Matsen2026-zo]—and displayed as a heatmap (\autoref{fig:tree-heatmap}).
+For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data—for example, a per-site per-amino acid selection score such as those produced by a deep amino acid selection model (DASM) [@Matsen2026-zo]—and displayed as a heatmap (\autoref{fig:tree-heatmap}).
 
 ![Example ancestral sequence visualization.\label{fig:ancestral-sequences}](./images/2-06-ancestral-sequences.png){height="3in"}
 
