@@ -90,9 +90,9 @@ This tool converts common immunoinformatics formats into Olmsted's input format.
 
 Users visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser, with no installation, account creation, or data upload to external servers.
 All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
-Datasets persist across browser sessions, combining the convenience of a web application with the privacy of local software.
+Datasets persist across browser sessions (\autoref{fig:database}), combining the convenience of a web application with the privacy of local software.
 
-![Dataset management interface.](./images/1-02-database-manager.png){height="3in"}
+![Dataset management interface.\label{fig:database}](./images/1-02-database-manager.png){height="3in"}
 
 ## Data Preparation with olmsted-cli
 
@@ -137,8 +137,8 @@ The tree and alignment support zooming and panning, as well as focusing on a sub
 
 ![Example tree and alignment clonal family visualization.\label{fig:tree-alignment}](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
-4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence.
-For this and the clonal family tree view, mutations can be colored by an arbitrary value expressed in the data (\autoref{fig:tree-heatmap}).
+4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence, traced through the reconstructed ancestral sequences along the inferred phylogenetic tree.
+For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data—for example, a per-site per-amino acid selection score such as those produced by the deep amino acid selection model (DASM) [@Matsen2026-zo]—and displayed as a heatmap (\autoref{fig:tree-heatmap}).
 
 ![Example ancestral sequence visualization.\label{fig:ancestral-sequences}](./images/2-06-ancestral-sequences.png){height="3in"}
 
