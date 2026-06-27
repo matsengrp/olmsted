@@ -1,3 +1,27 @@
+## version 3.0.0 - 2026/06/27
+
+First tagged release of the revived and substantially rewritten Olmsted. The
+project, originally developed 2018–2020, was revived in 2025 with modernized
+dependencies and frameworks. Headline changes since the 2.x line:
+
+* **Client-side data pipeline.** The legacy server-side dataset flow was
+  removed; data is now processed and stored entirely in the browser via
+  IndexedDB, so datasets persist across sessions and never leave the user's
+  machine. Data preparation moved to the standalone `olmsted-cli` Python
+  package (AIRR and PCP input formats).
+* **Dynamic field metadata.** Scatterplot axes/color/shape/facet, the filter
+  panel, the families table, and tooltips are all driven by `field_metadata`
+  discovered from the input data, with descriptive labels in controls.
+* **Richer tree & alignment viz.** Subtree-as-root focus, per-mutation color
+  scores, mutation-label overlays, heatmap coloring, leaf-label sizing,
+  log-scale size sliders, and gene-region (CDR1/CDR2/CDR3) shading.
+* **Engineering.** Vega ecosystem upgraded to v6; Jest unit tests and
+  Playwright e2e/performance harnesses added; CI/CD modernized; auspice dead
+  code removed; default branch renamed master → main; dependencies patched.
+* **Paper.** Added a JOSS manuscript under `paper/`.
+
+See the 2.x entries below for the detailed per-change history.
+
 ## version 2.7.15 - 2026/06/26
 Changed:
 * The **gene-region diagram now uses `cdr3_alignment_start` / `cdr3_alignment_end`** for the CDR3 region (consistent with the `cdr1_*`/`cdr2_*` fields), replacing the old `junction_start` + `junction_length` pair. The region builder is shared (`naive.js` `buildCloneRegions`), so this applies everywhere it renders: the selected-families table diagram, the tree+alignment viz's naive region key, and the alignment CDR shading. Requires the regenerated demo data to emit the `cdr3_alignment_*` fields.
