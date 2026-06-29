@@ -5,10 +5,11 @@ import { CHAIN_TYPES } from "../constants/chainTypes";
 // Per-browser persistence for the families-table column layout (live working
 // layout; the named-config system remains the source of truth for saved layouts).
 const FAMILIES_HIDDEN_COLUMNS_KEY = "olmsted_families_hidden_columns";
+const FAMILIES_COLUMN_ORDER_KEY = "olmsted_families_column_order";
 
-const readFamiliesHiddenColumns = () => {
+const readSessionArray = (key) => {
   try {
-    const saved = sessionStorage.getItem(FAMILIES_HIDDEN_COLUMNS_KEY);
+    const saved = sessionStorage.getItem(key);
     const parsed = saved ? JSON.parse(saved) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch (_e) {
@@ -16,9 +17,9 @@ const readFamiliesHiddenColumns = () => {
   }
 };
 
-const persistFamiliesHiddenColumns = (columns) => {
+const persistSessionArray = (key, value) => {
   try {
-    sessionStorage.setItem(FAMILIES_HIDDEN_COLUMNS_KEY, JSON.stringify(columns));
+    sessionStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
     console.warn("Failed to persist families column layout to sessionStorage:", e);
   }
@@ -61,7 +62,9 @@ const initialState = {
   // Starred families (pinned for easy reference)
   starredFamilies: [],
   // Optional families-table columns the user has hidden (by column header name)
-  familiesHiddenColumns: readFamiliesHiddenColumns(),
+  familiesHiddenColumns: readSessionArray(FAMILIES_HIDDEN_COLUMNS_KEY),
+  // Display order of optional families-table columns (by header name); [] = default
+  familiesColumnOrder: readSessionArray(FAMILIES_COLUMN_ORDER_KEY),
   // High-level filters: { fieldName: [selectedValues], ... }
   // Empty object means no filters applied
   filters: {}
@@ -235,13 +238,18 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
       const familiesHiddenColumns = state.familiesHiddenColumns.includes(column)
         ? state.familiesHiddenColumns.filter((c) => c !== column)
         : [...state.familiesHiddenColumns, column];
-      persistFamiliesHiddenColumns(familiesHiddenColumns);
+      persistSessionArray(FAMILIES_HIDDEN_COLUMNS_KEY, familiesHiddenColumns);
       return { ...state, familiesHiddenColumns };
     }
     case types.SET_FAMILIES_HIDDEN_COLUMNS: {
       const familiesHiddenColumns = action.columns || [];
-      persistFamiliesHiddenColumns(familiesHiddenColumns);
+      persistSessionArray(FAMILIES_HIDDEN_COLUMNS_KEY, familiesHiddenColumns);
       return { ...state, familiesHiddenColumns };
+    }
+    case types.SET_FAMILIES_COLUMN_ORDER: {
+      const familiesColumnOrder = action.order || [];
+      persistSessionArray(FAMILIES_COLUMN_ORDER_KEY, familiesColumnOrder);
+      return { ...state, familiesColumnOrder };
     }
     case types.TOGGLE_STARRED_FAMILY: {
       const { ident } = action;

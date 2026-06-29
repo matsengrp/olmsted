@@ -177,6 +177,11 @@ export const setFamiliesHiddenColumns = (columns) => {
   return { type: types.SET_FAMILIES_HIDDEN_COLUMNS, columns };
 };
 
+// Set the display order of the optional families-table columns (by header name).
+export const setFamiliesColumnOrder = (order) => {
+  return { type: types.SET_FAMILIES_COLUMN_ORDER, order };
+};
+
 // Subtree focus actions (shared with lineage view)
 export const updateSubtreeRoot = (subtreeRoot) => {
   return { type: types.UPDATE_SUBTREE_ROOT, subtreeRoot };

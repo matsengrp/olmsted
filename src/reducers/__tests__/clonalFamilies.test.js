@@ -331,6 +331,21 @@ describe("clonalFamilies reducer", () => {
     });
   });
 
+  describe("SET_FAMILIES_COLUMN_ORDER", () => {
+    it("sets the optional column order", () => {
+      const state = clonalFamilies(initialState, {
+        type: types.SET_FAMILIES_COLUMN_ORDER,
+        order: ["Mut freq", "V gene", "CDR3 length"]
+      });
+      expect(state.familiesColumnOrder).toEqual(["Mut freq", "V gene", "CDR3 length"]);
+    });
+
+    it("defaults to an empty array when order is missing", () => {
+      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_COLUMN_ORDER });
+      expect(state.familiesColumnOrder).toEqual([]);
+    });
+  });
+
   describe("SET_FILTER", () => {
     it("adds a filter", () => {
       const state = clonalFamilies(initialState, {
