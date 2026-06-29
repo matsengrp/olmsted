@@ -1,51 +1,132 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
 /**
  * A small "Columns" popover for toggling table column visibility.
  *
- * Required columns are listed but locked (checked + disabled) so the table
- * stays usable. Toggling an optional column calls `onToggle(name)`; the parent
- * owns the visibility state (Redux), so this component is presentational.
+ * The menu is rendered in a portal (document.body) and positioned with `fixed`
+ * coordinates anchored to the button, so it isn't clipped by the table's
+ * `overflow: hidden` containers. Required columns are listed but locked
+ * (checked + disabled) so the table stays usable; toggling an optional column
+ * calls `onToggle(name)` — the parent owns the visibility state (Redux).
  */
 class ColumnPicker extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
-    this.containerRef = React.createRef();
+    this.state = { open: false, anchorRect: null };
+    this.buttonRef = React.createRef();
+    this.menuRef = React.createRef();
     this.handleDocumentMouseDown = this.handleDocumentMouseDown.bind(this);
+    this.handleReposition = this.handleReposition.bind(this);
   }
 
   componentWillUnmount() {
+    this.removeListeners();
+  }
+
+  addListeners() {
+    document.addEventListener("mousedown", this.handleDocumentMouseDown);
+    // Capture phase so we catch scrolls in nested (table) scroll containers too.
+    window.addEventListener("scroll", this.handleReposition, true);
+    window.addEventListener("resize", this.handleReposition);
+  }
+
+  removeListeners() {
     document.removeEventListener("mousedown", this.handleDocumentMouseDown);
+    window.removeEventListener("scroll", this.handleReposition, true);
+    window.removeEventListener("resize", this.handleReposition);
   }
 
   handleDocumentMouseDown(event) {
-    // Close when clicking outside the picker.
-    if (this.containerRef.current && !this.containerRef.current.contains(event.target)) {
+    const inButton = this.buttonRef.current && this.buttonRef.current.contains(event.target);
+    const inMenu = this.menuRef.current && this.menuRef.current.contains(event.target);
+    if (!inButton && !inMenu) {
       this.close();
     }
   }
 
+  handleReposition() {
+    if (this.buttonRef.current) {
+      this.setState({ anchorRect: this.buttonRef.current.getBoundingClientRect() });
+    }
+  }
+
   toggleOpen = () => {
-    this.setState((prev) => {
-      const open = !prev.open;
-      if (open) {
-        document.addEventListener("mousedown", this.handleDocumentMouseDown);
-      } else {
-        document.removeEventListener("mousedown", this.handleDocumentMouseDown);
-      }
-      return { open };
-    });
+    if (this.state.open) {
+      this.close();
+    } else {
+      const anchorRect = this.buttonRef.current ? this.buttonRef.current.getBoundingClientRect() : null;
+      this.setState({ open: true, anchorRect });
+      this.addListeners();
+    }
   };
 
   close() {
-    document.removeEventListener("mousedown", this.handleDocumentMouseDown);
+    this.removeListeners();
     this.setState({ open: false });
   }
 
-  render() {
+  renderMenu() {
     const { columns, hiddenColumns, onToggle } = this.props;
+    const { anchorRect } = this.state;
+    if (!anchorRect) return null;
+    const hiddenSet = new Set(hiddenColumns);
+
+    // Anchor the menu's bottom-right to the button's top-right (opens upward,
+    // since the picker lives in the table footer). Fixed coords escape clipping.
+    const menuStyle = {
+      position: "fixed",
+      bottom: window.innerHeight - anchorRect.top + 4,
+      right: window.innerWidth - anchorRect.right,
+      background: "#fff",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      padding: "6px 0",
+      minWidth: "180px",
+      maxHeight: "320px",
+      overflowY: "auto",
+      zIndex: 2000
+    };
+
+    return ReactDOM.createPortal(
+      <div ref={this.menuRef} role="menu" style={menuStyle}>
+        {columns.map((col) => {
+          const checked = col.required || !hiddenSet.has(col.name);
+          return (
+            <label
+              key={col.name}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "4px 12px",
+                fontSize: "12px",
+                cursor: col.required ? "default" : "pointer",
+                color: col.required ? "#999" : "inherit",
+                whiteSpace: "nowrap"
+              }}
+              title={col.required ? "Always shown" : undefined}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={col.required}
+                onChange={() => onToggle(col.name)}
+                style={{ cursor: col.required ? "default" : "pointer" }}
+              />
+              {col.name}
+            </label>
+          );
+        })}
+      </div>,
+      document.body
+    );
+  }
+
+  render() {
+    const { columns, hiddenColumns } = this.props;
     const { open } = this.state;
     const hiddenSet = new Set(hiddenColumns);
     const hiddenOptionalCount = columns.filter((c) => !c.required && hiddenSet.has(c.name)).length;
@@ -64,8 +145,9 @@ class ColumnPicker extends React.Component {
     };
 
     return (
-      <div ref={this.containerRef} style={{ position: "relative", display: "inline-block" }}>
+      <>
         <button
+          ref={this.buttonRef}
           type="button"
           onClick={this.toggleOpen}
           style={buttonStyle}
@@ -75,56 +157,8 @@ class ColumnPicker extends React.Component {
         >
           Columns{hiddenOptionalCount > 0 ? ` (${hiddenOptionalCount} hidden)` : ""}
         </button>
-        {open && (
-          <div
-            role="menu"
-            style={{
-              position: "absolute",
-              bottom: "100%",
-              right: 0,
-              marginBottom: "4px",
-              background: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              padding: "6px 0",
-              minWidth: "180px",
-              maxHeight: "320px",
-              overflowY: "auto",
-              zIndex: 1000
-            }}
-          >
-            {columns.map((col) => {
-              const checked = col.required || !hiddenSet.has(col.name);
-              return (
-                <label
-                  key={col.name}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "4px 12px",
-                    fontSize: "12px",
-                    cursor: col.required ? "default" : "pointer",
-                    color: col.required ? "#999" : "inherit",
-                    whiteSpace: "nowrap"
-                  }}
-                  title={col.required ? "Always shown" : undefined}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={col.required}
-                    onChange={() => onToggle(col.name)}
-                    style={{ cursor: col.required ? "default" : "pointer" }}
-                  />
-                  {col.name}
-                </label>
-              );
-            })}
-          </div>
-        )}
-      </div>
+        {open && this.renderMenu()}
+      </>
     );
   }
 }
