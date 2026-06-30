@@ -24,7 +24,7 @@ See the 2.x entries below for the detailed per-change history.
 
 ## version 2.7.16 - 2026/06/26
 Added:
-* The clonal-families table has a **"Columns" picker** to show/hide columns (#323). Action/identity columns (Star, Select, Info, Naive sequence, Family ID) are locked visible; all other columns are toggleable. The chosen layout lives in Redux (`familiesHiddenColumns`) and persists per browser via `sessionStorage`. (CSV export still includes the full column set.)
+* The clonal-families table has a **"Columns" picker** to show/hide columns (#323). Action/identity columns (Star, Select, Info, Naive sequence, Family ID) are locked visible; all other columns are toggleable. The picker lists **every clone variable in `field_metadata`** — both `dropdown` and `tooltip` display fields — so any data field can be added as a column; field-metadata-derived extras default to hidden (opt-in), while the standard columns default to visible. Per-column visibility lives in Redux (`familiesColumnVisibility`) and persists per browser via `sessionStorage`. (CSV export still includes the full standard column set.)
 * The clonal-families table's optional columns can be **reordered by drag-and-drop** (#323), via @dnd-kit — drag a column header's grip, or use the keyboard (focus the grip, Space to pick up, arrows to move, Space to drop). Required columns stay fixed at the front. The order persists per browser (`familiesColumnOrder`). Column resize now composes with reorder: widths are keyed by column identity rather than position, so a resized column keeps its width when moved or when other columns are hidden.
 
 ## version 2.7.15 - 2026/06/26

@@ -167,14 +167,14 @@ export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };
 
-// Toggle visibility of an optional column in the clonal-families table.
-export const toggleFamiliesColumn = (column) => {
-  return { type: types.TOGGLE_FAMILIES_COLUMN, column };
+// Set the visibility of one optional families-table column (explicit override).
+export const setFamiliesColumnVisibility = (column, visible) => {
+  return { type: types.SET_FAMILIES_COLUMN_VISIBILITY, column, visible };
 };
 
-// Replace the set of hidden families-table columns (used to apply a saved layout).
-export const setFamiliesHiddenColumns = (columns) => {
-  return { type: types.SET_FAMILIES_HIDDEN_COLUMNS, columns };
+// Replace the whole families-table column-visibility override map (apply a layout).
+export const setFamiliesColumnVisibilityMap = (visibility) => {
+  return { type: types.SET_FAMILIES_COLUMN_VISIBILITY_MAP, visibility };
 };
 
 // Set the display order of the optional families-table columns (by header name).

@@ -68,10 +68,9 @@ class ColumnPicker extends React.Component {
   }
 
   renderMenu() {
-    const { columns, hiddenColumns, onToggle } = this.props;
+    const { columns, onToggle } = this.props;
     const { anchorRect } = this.state;
     if (!anchorRect) return null;
-    const hiddenSet = new Set(hiddenColumns);
 
     // Anchor the menu's bottom-right to the button's top-right (opens upward,
     // since the picker lives in the table footer). Fixed coords escape clipping.
@@ -93,7 +92,7 @@ class ColumnPicker extends React.Component {
     return ReactDOM.createPortal(
       <div ref={this.menuRef} role="menu" style={menuStyle}>
         {columns.map((col) => {
-          const checked = col.required || !hiddenSet.has(col.name);
+          const checked = col.required || col.visible;
           return (
             <label
               key={col.name}
@@ -126,10 +125,9 @@ class ColumnPicker extends React.Component {
   }
 
   render() {
-    const { columns, hiddenColumns } = this.props;
+    const { columns } = this.props;
     const { open } = this.state;
-    const hiddenSet = new Set(hiddenColumns);
-    const hiddenOptionalCount = columns.filter((c) => !c.required && hiddenSet.has(c.name)).length;
+    const hiddenOptionalCount = columns.filter((c) => !c.required && !c.visible).length;
 
     const buttonStyle = {
       background: "none",
@@ -164,11 +162,11 @@ class ColumnPicker extends React.Component {
 }
 
 ColumnPicker.propTypes = {
-  // All toggleable + required columns, in display order: { name, required }
-  columns: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string.isRequired, required: PropTypes.bool }))
-    .isRequired,
-  // Names of optional columns currently hidden
-  hiddenColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  // All columns in display order: { name, required, visible }. Required columns
+  // render checked + locked; others render checked iff visible.
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({ name: PropTypes.string.isRequired, required: PropTypes.bool, visible: PropTypes.bool })
+  ).isRequired,
   // Called with a column name when an optional column is toggled
   onToggle: PropTypes.func.isRequired
 };

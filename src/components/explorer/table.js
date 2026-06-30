@@ -4,7 +4,12 @@ import * as _ from "lodash";
 import { FiStar } from "react-icons/fi";
 import { arrayMove } from "@dnd-kit/sortable";
 import * as explorerActions from "../../actions/explorer";
-import { getBrushedClonalFamilies, getCloneChain, getReferenceFieldValue } from "../../selectors/clonalFamilies";
+import {
+  getBrushedClonalFamilies,
+  getCloneChain,
+  getReferenceFieldValue,
+  getResolvedFieldMetadata
+} from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
 import ColumnPicker from "./ColumnPicker";
@@ -366,21 +371,73 @@ const FAMILIES_COLUMN_MAPPINGS = [
 
 const FAMILIES_REQUIRED_MAPPINGS = FAMILIES_COLUMN_MAPPINGS.filter(([, , o = {}]) => o.required);
 const FAMILIES_OPTIONAL_MAPPINGS = FAMILIES_COLUMN_MAPPINGS.filter(([, , o = {}]) => !o.required);
-const FAMILIES_OPTIONAL_NAMES = FAMILIES_OPTIONAL_MAPPINGS.map(([name]) => name);
+
+// Clone field_metadata field names already represented by a hardcoded column
+// (so we don't offer a duplicate generic column for them). The accessor→field
+// mapping is irregular (e.g. the "Locus" column reads "sample.locus"), so this
+// is maintained explicitly.
+const FAMILIES_COVERED_FIELDS = new Set([
+  "clone_id",
+  "unique_seqs_count",
+  "v_call",
+  "d_call",
+  "j_call",
+  "locus",
+  "is_paired",
+  "pair_id",
+  "cdr3_length",
+  "mean_mut_freq",
+  "has_seed",
+  "subject_id",
+  "sample_id",
+  "timepoint_id",
+  "dataset_name",
+  "dataset_id"
+]);
+
+// Build generic optional columns for every clone field_metadata variable that
+// isn't already a hardcoded column — both `dropdown` and `tooltip` display
+// fields, so all data variables are available in the Columns picker.
+const buildExtraOptionalMappings = (cloneFieldMetadata) => {
+  if (!cloneFieldMetadata) return [];
+  return Object.entries(cloneFieldMetadata)
+    .filter(([field, meta]) => {
+      const display = meta && meta.display;
+      return (display === "dropdown" || display === "tooltip") && !FAMILIES_COVERED_FIELDS.has(field);
+    })
+    .map(([field, meta]) => [meta.label || field, field, { extra: true }]);
+};
+
+// A column's default visibility: required + hardcoded "primary" optional columns
+// are visible; field-metadata-derived extras default to hidden (opt-in).
+const columnDefaultVisible = (options = {}) => !options.extra;
+
+// Effective visibility = the user's explicit override, else the column default.
+const isColumnVisible = (name, options, visibilityOverrides) => {
+  const override = visibilityOverrides[name];
+  return override === undefined ? columnDefaultVisible(options) : override;
+};
+
+// All optional columns: the hardcoded set plus the field-metadata-derived extras.
+const familiesOptionalMappings = (cloneFieldMetadata) => [
+  ...FAMILIES_OPTIONAL_MAPPINGS,
+  ...buildExtraOptionalMappings(cloneFieldMetadata)
+];
 
 // Resolve the effective optional-column order from the saved order: saved names
 // that still exist, then any optional columns not yet in the saved order (in
 // their default position). Robust to columns being added/removed over time.
-const effectiveOptionalOrder = (savedOrder) => {
-  const saved = (savedOrder || []).filter((n) => FAMILIES_OPTIONAL_NAMES.includes(n));
-  const missing = FAMILIES_OPTIONAL_NAMES.filter((n) => !saved.includes(n));
+const effectiveOptionalOrder = (savedOrder, optionalMappings) => {
+  const optionalNames = optionalMappings.map(([name]) => name);
+  const saved = (savedOrder || []).filter((n) => optionalNames.includes(n));
+  const missing = optionalNames.filter((n) => !saved.includes(n));
   return [...saved, ...missing];
 };
 
 // Required columns first (fixed), then optional columns in the user's order.
-const orderedFamiliesMappings = (savedOrder) => {
-  const byName = new Map(FAMILIES_OPTIONAL_MAPPINGS.map((m) => [m[0], m]));
-  const orderedOptional = effectiveOptionalOrder(savedOrder).map((n) => byName.get(n));
+const orderedFamiliesMappings = (savedOrder, optionalMappings) => {
+  const byName = new Map(optionalMappings.map((m) => [m[0], m]));
+  const orderedOptional = effectiveOptionalOrder(savedOrder, optionalMappings).map((n) => byName.get(n));
   return [...FAMILIES_REQUIRED_MAPPINGS, ...orderedOptional];
 };
 
@@ -394,8 +451,9 @@ const mapStateToProps = (state) => {
     selectedFamily: state.clonalFamilies.selectedFamily,
     selectingStatus: state.clonalFamilies.brushSelecting,
     starredFamilies: starredFamilies,
-    familiesHiddenColumns: state.clonalFamilies.familiesHiddenColumns,
-    familiesColumnOrder: state.clonalFamilies.familiesColumnOrder
+    familiesColumnVisibility: state.clonalFamilies.familiesColumnVisibility,
+    familiesColumnOrder: state.clonalFamilies.familiesColumnOrder,
+    cloneFieldMetadata: getResolvedFieldMetadata(state).clone
   };
 };
 
@@ -404,7 +462,7 @@ const mapStateToProps = (state) => {
   starAllFamilies: explorerActions.starAllFamilies,
   unstarAllFamilies: explorerActions.unstarAllFamilies,
   clearStarredFamilies: explorerActions.clearStarredFamilies,
-  toggleFamiliesColumn: explorerActions.toggleFamiliesColumn,
+  setFamiliesColumnVisibility: explorerActions.setFamiliesColumnVisibility,
   setFamiliesColumnOrder: explorerActions.setFamiliesColumnOrder
 })
 class ClonalFamiliesTable extends React.Component {
@@ -462,8 +520,8 @@ class ClonalFamiliesTable extends React.Component {
   // full optional order (so hidden columns keep their relative positions), then
   // persist the new order.
   handleColumnReorder = (activeName, overName) => {
-    const { familiesColumnOrder, setFamiliesColumnOrder } = this.props;
-    const order = effectiveOptionalOrder(familiesColumnOrder);
+    const { familiesColumnOrder, setFamiliesColumnOrder, cloneFieldMetadata } = this.props;
+    const order = effectiveOptionalOrder(familiesColumnOrder, familiesOptionalMappings(cloneFieldMetadata));
     const from = order.indexOf(activeName);
     const to = order.indexOf(overName);
     if (from === -1 || to === -1 || from === to) return;
@@ -490,9 +548,10 @@ class ClonalFamiliesTable extends React.Component {
       starAllFamilies,
       unstarAllFamilies,
       clearStarredFamilies,
-      familiesHiddenColumns,
-      toggleFamiliesColumn,
-      familiesColumnOrder
+      familiesColumnVisibility,
+      setFamiliesColumnVisibility,
+      familiesColumnOrder,
+      cloneFieldMetadata
     } = this.props;
     const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst, showOnlyStarred } = this.state;
 
@@ -541,10 +600,14 @@ class ClonalFamiliesTable extends React.Component {
     // Columns in the user's order (required first, then optional per
     // familiesColumnOrder), then filtered by visibility. The picker lists the
     // full ordered set; the table renders only the visible ones.
-    const orderedMappings = orderedFamiliesMappings(familiesColumnOrder);
-    const columnDefs = orderedMappings.map(([name, , options = {}]) => ({ name, required: !!options.required }));
+    const orderedMappings = orderedFamiliesMappings(familiesColumnOrder, familiesOptionalMappings(cloneFieldMetadata));
+    const columnDefs = orderedMappings.map(([name, , options = {}]) => ({
+      name,
+      required: !!options.required,
+      visible: !!options.required || isColumnVisible(name, options, familiesColumnVisibility)
+    }));
     const visibleMappings = orderedMappings.filter(
-      ([name, , options = {}]) => options.required || !familiesHiddenColumns.includes(name)
+      ([name, , options = {}]) => options.required || isColumnVisible(name, options, familiesColumnVisibility)
     );
 
     const starButtonStyle = {
@@ -651,7 +714,13 @@ class ClonalFamiliesTable extends React.Component {
               Clear Stars ({starredFamilies.length})
             </button>
           )}
-          <ColumnPicker columns={columnDefs} hiddenColumns={familiesHiddenColumns} onToggle={toggleFamiliesColumn} />
+          <ColumnPicker
+            columns={columnDefs}
+            onToggle={(name) => {
+              const col = columnDefs.find((c) => c.name === name);
+              if (col && !col.required) setFamiliesColumnVisibility(name, !col.visible);
+            }}
+          />
           <DownloadCSV
             data={visibleClonalFamilies}
             columns={csvColumns}

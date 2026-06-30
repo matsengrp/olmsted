@@ -297,37 +297,39 @@ describe("clonalFamilies reducer", () => {
     });
   });
 
-  describe("TOGGLE_FAMILIES_COLUMN", () => {
-    it("hides a previously visible column", () => {
+  describe("SET_FAMILIES_COLUMN_VISIBILITY", () => {
+    it("records an explicit visibility override for a column", () => {
       const state = clonalFamilies(initialState, {
-        type: types.TOGGLE_FAMILIES_COLUMN,
-        column: "Mut freq"
+        type: types.SET_FAMILIES_COLUMN_VISIBILITY,
+        column: "Mut freq",
+        visible: false
       });
-      expect(state.familiesHiddenColumns).toContain("Mut freq");
+      expect(state.familiesColumnVisibility["Mut freq"]).toBe(false);
     });
 
-    it("re-shows a hidden column", () => {
-      const stateWithHidden = { ...initialState, familiesHiddenColumns: ["Mut freq"] };
-      const state = clonalFamilies(stateWithHidden, {
-        type: types.TOGGLE_FAMILIES_COLUMN,
-        column: "Mut freq"
+    it("merges with existing overrides", () => {
+      const withOverride = { ...initialState, familiesColumnVisibility: { "Mut freq": false } };
+      const state = clonalFamilies(withOverride, {
+        type: types.SET_FAMILIES_COLUMN_VISIBILITY,
+        column: "V gene",
+        visible: true
       });
-      expect(state.familiesHiddenColumns).not.toContain("Mut freq");
+      expect(state.familiesColumnVisibility).toEqual({ "Mut freq": false, "V gene": true });
     });
   });
 
-  describe("SET_FAMILIES_HIDDEN_COLUMNS", () => {
-    it("replaces the hidden-columns set", () => {
+  describe("SET_FAMILIES_COLUMN_VISIBILITY_MAP", () => {
+    it("replaces the whole visibility map", () => {
       const state = clonalFamilies(initialState, {
-        type: types.SET_FAMILIES_HIDDEN_COLUMNS,
-        columns: ["Subject", "Sample"]
+        type: types.SET_FAMILIES_COLUMN_VISIBILITY_MAP,
+        visibility: { Subject: false }
       });
-      expect(state.familiesHiddenColumns).toEqual(["Subject", "Sample"]);
+      expect(state.familiesColumnVisibility).toEqual({ Subject: false });
     });
 
-    it("defaults to an empty array when columns is missing", () => {
-      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_HIDDEN_COLUMNS });
-      expect(state.familiesHiddenColumns).toEqual([]);
+    it("defaults to an empty object when visibility is missing", () => {
+      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_COLUMN_VISIBILITY_MAP });
+      expect(state.familiesColumnVisibility).toEqual({});
     });
   });
 
