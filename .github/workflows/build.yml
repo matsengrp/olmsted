@@ -61,12 +61,17 @@ jobs:
           exit 1
       - name: Run example in the Docker image
         run: docker run --rm -p 8080:3999 quay.io/matsengrp/olmsted:$TAG & sleep 20 && curl -I localhost:8080
+      # Registry and Slack steps need repository secrets, which GitHub withholds
+      # from Dependabot-triggered runs. Skip them for dependabot so its PRs go
+      # green on build+test+e2e instead of failing on inaccessible secrets.
       - name: Login to Registry
+        if: github.actor != 'dependabot[bot]'
         run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
       - name: publish to Registry
+        if: github.actor != 'dependabot[bot]'
         run: docker push quay.io/matsengrp/olmsted:$TAG && docker tag quay.io/matsengrp/olmsted:$TAG quay.io/matsengrp/olmsted:latest && docker push quay.io/matsengrp/olmsted:latest
       - name: Slack Notification
-        if: failure()
+        if: failure() && github.actor != 'dependabot[bot]'
         uses: slackapi/slack-github-action@v3
         with:
           webhook: ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
