@@ -87,7 +87,7 @@ ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for dat
 
 Olmsted differs from these tools along several independent axes, each individually uncommon.
 It integrates repertoire-scale scanning with per-lineage amino acid resolution in one interface: a configurable scatterplot of an entire repertoire is linked to a combined phylogenetic-tree-and-alignment view.
-In practice this lets a researcher spot a striking family in the overview—an unusually expanded or hypermutated one, say—and drill straight into its mutations without switching tools.
+In practice this lets a researcher spot a striking family in the overview (an unusually expanded or hypermutated one, say) and drill straight into its mutations without switching tools.
 It displays paired heavy and light chains side by side, which is essential for antibody discovery, where a functional antibody requires both chains of a pair.
 It traces full ancestral mutational paths from the naive sequence, and it can overlay model-derived per-site scores on a lineage (see below).
 Each of these capabilities is rare or absent among existing tools.
@@ -95,8 +95,8 @@ Each of these capabilities is rare or absent among existing tools.
 The most fundamental distinction, however, is structural.
 Every tool above is either installed and run locally (AncesTree requires a Java installation; ImmuneDB is a database system to be deployed and maintained) or built as the front end of its own analysis pipeline (ViCloD and AIRRscape couple exploration to the specific processing and data they generate).
 Olmsted is instead a standalone visualization layer, decoupled from any reconstruction method: it consumes a documented, standards-based input format, so lineages built by any upstream pipeline can be explored in it, with no installation and no data leaving the browser.
-To our knowledge, it is the only installation-free B cell lineage visualization tool that is not tied to a particular upstream analysis pipeline
-This separation of concerns that lets the visualization improve independently of, and interoperate with, the fast-moving ecosystem of reconstruction methods.
+To our knowledge, it is the only installation-free B cell lineage visualization tool that is not tied to a particular upstream analysis pipeline.
+This separation of concerns lets the visualization improve independently of, and interoperate with, the fast-moving ecosystem of reconstruction methods.
 
 # Software Design
 
@@ -115,7 +115,7 @@ Correctness of this domain logic is protected by a suite of over 600 automated t
 The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], a viewer for viral-genome phylogeography, and was actively developed through 2020 before being shelved.
 It was revived and substantially rewritten in 2025.
 Of the roughly 80 source modules in the current application, about three-quarters were written after the fork; the remainder are generic framework scaffolding (layout, navigation, URL routing, and store configuration), most of which has itself been rewritten.
-None of the domain-specific visualizations—the repertoire scatterplot, the combined tree-and-alignment view, the ancestral-lineage tracer, or the V(D)J recombination display—derive from Auspice, whose visualizations target a different domain entirely.
+None of the domain-specific visualizations (the repertoire scatterplot, the combined tree-and-alignment view, the ancestral-lineage tracer, or the V(D)J recombination display) derive from Auspice, whose visualizations target a different domain entirely.
 Olmsted retains from Auspice a general architectural pattern (a React/Redux single-page application with deep-linkable URL state) rather than reusable visualization code.
 
 ## Data Preparation with olmsted-cli
@@ -164,7 +164,8 @@ The tree and alignment support zooming and panning, as well as focusing on a sub
 ![Example tree and alignment clonal family visualization.\label{fig:tree-alignment}](./images/2-04-tree-alignment-clonal-families.png){height="3in"}
 
 4. **Ancestral Sequences** (\autoref{fig:ancestral-sequences}): For a selected leaf, displays the complete mutational path from the naive sequence, traced through the reconstructed ancestral sequences along the inferred phylogenetic tree.
-For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data—for example, a per-site per-amino acid selection score such as those produced by a deep amino acid selection model (DASM) [@Matsen2026-zo]—and displayed as a heatmap (\autoref{fig:tree-heatmap}).
+For this and the clonal family tree view, mutations can be colored by an arbitrary numeric value supplied for each mutation in the input data and displayed as a heatmap (\autoref{fig:tree-heatmap}).
+An example is a per-site, per-amino-acid selection score such as those produced by a deep amino acid selection model (DASM) [@Matsen2026-zo].
 
 ![Example ancestral sequence visualization.\label{fig:ancestral-sequences}](./images/2-06-ancestral-sequences.png){height="3in"}
 
