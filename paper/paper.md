@@ -61,13 +61,7 @@ Researchers studying B cell responses rely on high-throughput sequencing to char
 Computational tools can reconstruct the evolutionary histories of these sequences, producing large collections of clonal families (groups of sequences descended from a common naive ancestor) and phylogenetic trees describing their diversification.
 However, researchers often lack tools to explore these reconstructions in the detail necessary to choose sequences for functional, structural, or biochemical studies.
 
-Existing visualization tools address different analytical goals.
-AncesTree [@Foglierini2020-am] provides detailed single-tree exploration with amino acid mutation display, but requires Java installation, processes one lineage at a time without a repertoire overview, and handles heavy or light chains separately rather than as pairs.
-ViCloD [@Jeusset2023-ow] focuses on large-scale intraclonal diversity analysis across hundreds of thousands of sequences, primarily for characterizing B cell tumors; it analyzes heavy chains only.
-AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level, again for heavy chains only.
-ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for database-style querying.
-
-Olmsted combines repertoire-level overview with detailed lineage exploration.
+Olmsted addresses this gap by combining repertoire-level overview with detailed lineage exploration.
 Researchers can scan across all clonal families in a scatterplot, then drill down to examine phylogenetic trees with aligned amino acid sequences showing mutations from the naive ancestor.
 This multi-scale navigation is delivered through a zero-installation web application that keeps data client-side, supporting practical decisions about which sequences to prioritize for downstream experimental studies.
 Specifically, Olmsted allows users to:
@@ -78,21 +72,51 @@ Specifically, Olmsted allows users to:
 - Trace the mutational history of individual sequences back to their germline origin
 - Visualize paired heavy and light chain sequences together, which is essential for selecting antibodies for expression
 
-Earlier versions of Olmsted supported the interactive exploration of B cell lineages in studies of HIV-1-specific antibody responses by the Overbaugh group [@Simonich2019-nn; @Doepker2020-jr; @Doepker2021-ue; @Williams2018-bo], where it was used to navigate and interrogate reconstructed clonal families.
+The submission under review is the Olmsted web application: the interactive, client-side visualization tool in this repository.
+A companion command-line utility, [olmsted-cli](https://github.com/matsengrp/olmsted-cli), converts common immunoinformatics formats into the Olmsted JSON input format.
+This utility is a thin, self-contained format shim rather than the scholarly contribution.
+The substantial engineering and domain modeling of this project live in the web application, which we describe below.
 
-Olmsted requires no installation: users simply visit [olmstedviz.org](http://olmstedviz.org) and upload their data directly into their local web browser.
-Data processing is handled by a companion `olmsted` command-line tool, hosted at the [olmsted-cli](https://github.com/matsengrp/olmsted-cli) repository.
-This tool converts common immunoinformatics formats into Olmsted's input format.
+# State of the Field
 
-# Features
+Several existing tools visualize B cell repertoire and lineage data, but each addresses a different analytical goal and none combines a repertoire-wide overview with interactive, paired-chain lineage exploration.
+AncesTree [@Foglierini2020-am] provides detailed single-tree exploration with amino acid mutation display, but requires Java installation, processes one lineage at a time without a repertoire overview, and handles heavy or light chains separately rather than as pairs.
+ViCloD [@Jeusset2023-ow] focuses on large-scale intraclonal diversity analysis across hundreds of thousands of sequences, primarily for characterizing B cell tumors; it analyzes heavy chains only.
+AIRRscape [@Waltari2022-bz] enables comparison across multiple repertoires to identify convergent antibody responses at the population level, again for heavy chains only.
+ImmuneDB [@Rosenfeld2016-mj] presents collections in paginated list form for database-style querying.
 
-## Client-Side Data Management
+Olmsted differs from these tools along several independent axes, each individually uncommon.
+It integrates repertoire-scale scanning with per-lineage amino acid resolution in one interface: a configurable scatterplot of an entire repertoire is linked to a combined phylogenetic-tree-and-alignment view.
+In practice this lets a researcher spot a striking family in the overview—an unusually expanded or hypermutated one, say—and drill straight into its mutations without switching tools.
+It displays paired heavy and light chains side by side, which is essential for antibody discovery, where a functional antibody requires both chains of a pair.
+It traces full ancestral mutational paths from the naive sequence, and it can overlay model-derived per-site scores on a lineage (see below).
+Each of these capabilities is rare or absent among existing tools.
 
-Users visit [olmstedviz.org](http://olmstedviz.org) and load data via drag-and-drop or file browser, with no installation, account creation, or data upload to external servers.
-All processing occurs client-side using browser-based storage (IndexedDB), ensuring that sensitive patient data never leaves the researcher's machine.
-Datasets persist across browser sessions (\autoref{fig:database}), combining the convenience of a web application with the privacy of local software.
+The most fundamental distinction, however, is structural.
+Every tool above is either installed and run locally (AncesTree requires a Java installation; ImmuneDB is a database system to be deployed and maintained) or built as the front end of its own analysis pipeline (ViCloD and AIRRscape couple exploration to the specific processing and data they generate).
+Olmsted is instead a standalone visualization layer, decoupled from any reconstruction method: it consumes a documented, standards-based input format, so lineages built by any upstream pipeline can be explored in it, with no installation and no data leaving the browser.
+To our knowledge, it is the only installation-free B cell lineage visualization tool that is not tied to a particular upstream analysis pipeline
+This separation of concerns that lets the visualization improve independently of, and interoperate with, the fast-moving ecosystem of reconstruction methods.
+
+# Software Design
+
+Olmsted is built with React and Redux, with all visualizations implemented as Vega specifications [@Satyanarayan2016-rv] and rendered through a single wrapper component.
+The application is deliberately client-side only: it performs no server-side computation, and uploaded data is stored in the browser (IndexedDB, via Dexie) and never transmitted (\autoref{fig:database}).
+This is both a privacy guarantee—sensitive patient-derived sequences never leave the researcher's machine—and an operational simplification, since the public instance at [olmstedviz.org](http://olmstedviz.org) is served as static files with no backend to maintain.
 
 ![Dataset management interface.\label{fig:database}](./images/1-02-database-manager.png){height="3in"}
+
+The engineering effort in the application, as distinct from upstream tree-building tools and the olmsted-cli format shim, is substantial and domain-specific.
+It includes: a lazy-loading data model that keeps thousand-family datasets responsive by loading heavy per-tree sequence data only on demand; a field-metadata system that lets dataset-supplied fields dynamically populate axes, color encodings, tooltips, and table columns without code changes; reconciliation of "forest" inputs (multiple disconnected subtrees) into a single rooted tree via consensus synthetic roots; and a Vega-wrapper abstraction that preserves zoom, pan, and brush state across data updates.
+These decisions, and the guardrails that protect them, are documented in the repository's `DESIGN.md` and `ARCHITECTURE.md`.
+Correctness of this domain logic is protected by a suite of over 600 automated tests across 29 files, run in continuous integration alongside linting and a production build.
+
+**Provenance.**
+The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], a viewer for viral-genome phylogeography, and was actively developed through 2020 before being shelved.
+It was revived and substantially rewritten in 2025.
+Of the roughly 80 source modules in the current application, about three-quarters were written after the fork; the remainder are generic framework scaffolding (layout, navigation, URL routing, and store configuration), most of which has itself been rewritten.
+None of the domain-specific visualizations—the repertoire scatterplot, the combined tree-and-alignment view, the ancestral-lineage tracer, or the V(D)J recombination display—derive from Auspice, whose visualizations target a different domain entirely.
+Olmsted retains from Auspice a general architectural pattern (a React/Redux single-page application with deep-linkable URL state) rather than reusable visualization code.
 
 ## Data Preparation with olmsted-cli
 
@@ -100,7 +124,7 @@ The `olmsted` command-line tool converts data into Olmsted's JSON format.
 Unlike the web application, this data-preparation step requires a one-time install: `olmsted-cli` is a Python package (Python 3.8 or higher) installed with `pip install olmsted-cli` (or `pipx install olmsted-cli` for an isolated environment).
 It supports two input formats:
 
-- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are not aware of any tools currently producing output in the newer schema versions, but are committed to supporting them as they become formalized.
+- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are committed to supporting the newer schema versions as they become formalized.
 - **PCP (Parent-Child Pair) format**: A CSV-based format with explicit parent-child relationships
 
 Example usage:
@@ -115,6 +139,8 @@ The `build-config` command introspects input data and generates a YAML configura
 These fields will dynamically populate plotting options and hover tooltip information.
 Once data preparation is done, the resulting file can be shared with collaborators, who then need only the web interface.
 Plot configurations can also be exported from the web app so they can be recreated later.
+
+# Features
 
 ## Interactive Visualization
 
@@ -144,12 +170,21 @@ For this and the clonal family tree view, mutations can be colored by an arbitra
 
 ![Clonal family tree and alignment with mutations colored by a per-site metric as a heatmap, rather than by amino acid identity.\label{fig:tree-heatmap}](./images/2-05-tree-alignment-clonal-families-heatmap.png){height="3in"}
 
-# Implementation
+# Research Impact Statement
 
-Olmsted is built with React and Redux, with visualizations implemented in Vega.
-The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], and was actively developed through 2020 before being shelved.
-In 2025 the project was revived and substantially rewritten with the assistance of agentic AI coding tools (Claude Code), which were used to modernize the application's dependencies and JavaScript frameworks, replace the legacy server-side data pipeline with client-side processing and browser-based (IndexedDB) storage, and add a test suite and continuous integration.
-All AI-assisted changes were reviewed and tested by the authors.
+Earlier versions of Olmsted supported the interactive exploration of B cell lineages in studies of HIV-1-specific antibody responses by the Overbaugh group [@Simonich2019-nn; @Doepker2020-jr; @Doepker2021-ue; @Williams2018-bo], where it was used to navigate and interrogate reconstructed clonal families and to select antibodies for functional characterization.
+Tracing ancestral paths from a naive sequence to observed antibodies is central to studying affinity maturation trajectories, such as the development of broadly neutralizing antibodies against HIV.
+By making these trajectories, the underlying phylogenies, and paired heavy/light chains directly explorable in the browser, Olmsted lowers the barrier to prioritizing sequences for expression and biochemical study.
+The revived tool is positioned to serve the broader B cell phylogenetics community through its use of the AIRR Community's data standards [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema], enabling a standards-based, interoperable analysis pipeline.
+The application also supports emerging analyses: per-site, per-amino-acid selection scores from deep amino acid selection models (DASM) [@Matsen2026-zo] can be overlaid on lineages as a heatmap, turning Olmsted into a viewer for model-derived quantities as well as observed mutations.
+
+# AI Usage Disclosure
+
+The 2018–2020 development of Olmsted predates the availability of AI coding assistants and was written conventionally.
+The 2025 revival was carried out with substantial assistance from agentic AI coding tools (Claude Code).
+These tools were used to modernize the application's dependencies and JavaScript frameworks, replace the legacy server-side data pipeline with client-side processing and browser-based (IndexedDB) storage, and add the test suite and continuous integration described above.
+AI assistance was also used in preparing repository documentation and in drafting portions of this manuscript.
+All AI-assisted changes to code and text were reviewed, edited, and tested by the authors, who take full responsibility for the content.
 The application can be deployed as a static single-page application or run locally via Docker.
 
 # Acknowledgements
