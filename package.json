@@ -106,7 +106,7 @@
     "css-loader": "^7.1.4",
     "diff": "^8.0.4",
     "electron": "^41.1.0",
-    "electron-builder": "^26.8.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.39.4",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^10.1.8",
