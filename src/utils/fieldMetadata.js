@@ -54,7 +54,27 @@ export function buildVegaTooltipExpr(fields, options = {}) {
   const { nullFallback = null, quoteStyle = "double" } = options;
   const q = quoteStyle === "single" ? "'" : '"';
 
-  const parts = fields.map((f) => {
+  // De-duplicate by label. The tooltip is a Vega object literal, and two
+  // fields sharing a label would emit the same key twice — an invalid
+  // expression that fails to parse and breaks rendering entirely (e.g. the
+  // built-in topological `type` field and a CLI-supplied `node_type` field
+  // both labeled "Node Type"). First occurrence wins, since builtins are
+  // ordered first and are the more canonical owner of a label.
+  const seenLabels = new Set();
+  const uniqueFields = fields.filter((f) => {
+    if (seenLabels.has(f.label)) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `buildVegaTooltipExpr: dropping field "${f.field}" — its label ` +
+          `"${f.label}" is already used by an earlier field in this tooltip.`
+      );
+      return false;
+    }
+    seenLabels.add(f.label);
+    return true;
+  });
+
+  const parts = uniqueFields.map((f) => {
     const label = quoteStyle === "single" ? f.label.replace(/'/g, "\\'") : f.label.replace(/"/g, '\\"');
 
     // Custom expression takes precedence

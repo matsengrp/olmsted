@@ -225,6 +225,21 @@ describe("concatTreeWithAlignmentSpec", () => {
       const noControls = concatTreeWithAlignmentSpec({ showControls: false });
       expect(() => vega.parse(noControls)).not.toThrow();
     });
+
+    it("parses when node metadata reuses a built-in tooltip label", () => {
+      // Regression: a CLI-supplied node field (e.g. AIRR-C v2 `node_type`)
+      // whose label collides with the built-in topological `type` field
+      // ("Node Type") used to emit a duplicate object key in the tooltip
+      // signal — an invalid Vega expression that failed to parse and broke
+      // tree/alignment rendering entirely.
+      const resolved = resolveFieldMetadata({
+        node: {
+          node_type: { type: "categorical", display: "tooltip", label: "Node Type" },
+        },
+      });
+      const collidingSpec = concatTreeWithAlignmentSpec({ fieldMetadata: resolved });
+      expect(() => vega.parse(collidingSpec)).not.toThrow();
+    });
   });
 });
 
