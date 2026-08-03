@@ -131,6 +131,7 @@
   "overrides": {
     "canvas-prebuilt": "npm:@empty/module@1.0.0",
     "yargs-parser": "^20.2.9",
+    "fast-uri": "^3.1.5",
     "react-collapsible": {
       "react": "$react",
       "react-dom": "$react-dom"
