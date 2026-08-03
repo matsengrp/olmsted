@@ -106,7 +106,7 @@
     "css-loader": "^7.1.4",
     "diff": "^8.0.4",
     "electron": "^41.1.0",
-    "electron-builder": "^26.8.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.39.4",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^10.1.8",
@@ -124,13 +124,14 @@
     "rimraf": "^5.0.7",
     "style-loader": "^4.0.0",
     "webpack-cli": "^7.0.2",
-    "webpack-dev-server": "^5.2.4",
+    "webpack-dev-server": "^5.2.6",
     "webpack-hot-middleware": "^2.26.1",
     "webpack-shell-plugin": "^0.5.0"
   },
   "overrides": {
     "canvas-prebuilt": "npm:@empty/module@1.0.0",
     "yargs-parser": "^20.2.9",
+    "fast-uri": "^3.1.5",
     "react-collapsible": {
       "react": "$react",
       "react-dom": "$react-dom"
