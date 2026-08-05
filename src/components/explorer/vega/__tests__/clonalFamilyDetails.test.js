@@ -234,8 +234,8 @@ describe("concatTreeWithAlignmentSpec", () => {
       // tree/alignment rendering entirely.
       const resolved = resolveFieldMetadata({
         node: {
-          node_type: { type: "categorical", display: "tooltip", label: "Node Type" },
-        },
+          node_type: { type: "categorical", display: "tooltip", label: "Node Type" }
+        }
       });
       const collidingSpec = concatTreeWithAlignmentSpec({ fieldMetadata: resolved });
       expect(() => vega.parse(collidingSpec)).not.toThrow();
