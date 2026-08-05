@@ -447,6 +447,46 @@ describe("storeDataset (namespacing integration)", () => {
     expect(await olmstedDB.datasets.count()).toBe(2);
   });
 
+  it("resolves distinct, correct tree content per dataset when tree idents collide (issue #304)", async () => {
+    // Reproduces the reported symptom directly: two datasets derived from
+    // the same source (e.g. before/after an olmsted-cli fix) share tree
+    // idents, but carry different node data (distance/length here). Storing
+    // both and reading each back by its own namespaced ident must not
+    // cross-talk — last-write-wins on the shared raw ident would silently
+    // serve dataset B's nodes when viewing dataset A.
+    const buildWithNodeData = (datasetId, nodeDistance) => ({
+      datasetId,
+      datasets: [{ dataset_id: datasetId, ident: "ds-shared", name: `Dataset ${datasetId}` }],
+      clones: {
+        [datasetId]: [
+          {
+            clone_id: "fam-1",
+            ident: "shared-clone",
+            dataset_id: datasetId,
+            trees: [{ ident: "shared-tree", tree_id: "t-1" }]
+          }
+        ]
+      },
+      trees: [
+        {
+          ident: "shared-tree",
+          tree_id: "t-1",
+          clone_id: "fam-1",
+          nodes: { naive: { type: "root", distance: nodeDistance } }
+        }
+      ]
+    });
+
+    await olmstedDB.storeDataset(buildWithNodeData("upload-A", 0));
+    await olmstedDB.storeDataset(buildWithNodeData("upload-B", 0.5));
+
+    const treeA = await olmstedDB.getTreeByIdent(namespacedIdent("upload-A", "shared-tree"));
+    const treeB = await olmstedDB.getTreeByIdent(namespacedIdent("upload-B", "shared-tree"));
+
+    expect(treeA.nodes.find((n) => n.sequence_id === "naive").distance).toBe(0);
+    expect(treeB.nodes.find((n) => n.sequence_id === "naive").distance).toBe(0.5);
+  });
+
   it("removeDataset only deletes trees from the target dataset, not siblings sharing clone_id", async () => {
     // Regression: trees were previously deleted by `clone_id` matched
     // against the target dataset's clones. clone_id values come from the
