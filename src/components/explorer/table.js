@@ -2,13 +2,28 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiStar } from "react-icons/fi";
+import { arrayMove } from "@dnd-kit/sortable";
 import * as explorerActions from "../../actions/explorer";
-import { getBrushedClonalFamilies, getCloneChain, getReferenceFieldValue } from "../../selectors/clonalFamilies";
+import {
+  getBrushedClonalFamilies,
+  getCloneChain,
+  getReferenceFieldValue,
+  getResolvedFieldMetadata
+} from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
+import ColumnPicker from "../util/ColumnPicker";
+import ResizableTableHeader from "../util/ResizableTableHeader";
 import { ResizableTable } from "../util/resizableTable";
 import { InfoButtonCell } from "../tables/RowInfoModal";
 import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
+import { TABLE_KEYS } from "../../constants/tableColumns";
+import {
+  orderedMappings as buildOrderedMappings,
+  effectiveOptionalOrder,
+  buildColumnDefs,
+  filterVisibleMappings
+} from "../../utils/columnLayout";
 
 // Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
 class ResizableVirtualTable extends ResizableTable {
@@ -16,7 +31,7 @@ class ResizableVirtualTable extends ResizableTable {
     const { selectedFamily, mappings, dispatch, starredFamilies } = this.props;
     const isSelected = selectedFamily && datum.ident === selectedFamily.ident;
     const isStarred = starredFamilies && starredFamilies.includes(datum.ident);
-    const { columnWidths, hoveredRowId } = this.state;
+    const { hoveredRowId } = this.state;
     const isHovered = hoveredRowId === datum.ident;
 
     // Determine background color with hover effect
@@ -58,6 +73,7 @@ class ResizableVirtualTable extends ResizableTable {
           const key = datum.ident + "." + (isAttr ? AttrOrComponent : name);
           const isEvenColumn = colIndex % 2 === 0;
           const emptyLabel = options.unspecified ? UNSPECIFIED_LABEL : "—";
+          const colWidth = this.getColumnWidth(name);
 
           const style = {
             padding: 8,
@@ -67,9 +83,9 @@ class ResizableVirtualTable extends ResizableTable {
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            width: columnWidths[colIndex],
-            minWidth: columnWidths[colIndex],
-            maxWidth: columnWidths[colIndex],
+            width: colWidth,
+            minWidth: colWidth,
+            maxWidth: colWidth,
             borderRight: "1px solid #eee"
           };
 
@@ -114,8 +130,8 @@ class ResizableVirtualTable extends ResizableTable {
   }
 
   render() {
-    const { data, containerHeight = 500, mappings, dispatch, footerAction } = this.props;
-    const { scrollTop, columnWidths, scrollbarWidth } = this.state;
+    const { data, containerHeight = 500, mappings, dispatch, footerAction, pagination, onReorderColumns } = this.props;
+    const { scrollTop, scrollbarWidth } = this.state;
     const rowHeight = 40;
 
     // Calculate which items are visible
@@ -145,98 +161,15 @@ class ResizableVirtualTable extends ResizableTable {
             paddingRight: scrollbarWidth + "px"
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              fontWeight: "bold",
-              fontSize: 13,
-              height: "40px",
-              minWidth: "fit-content"
-            }}
-          >
-            {_.map(mappings, ([name, AttrOrComponent, options = {}], colIndex) => {
-              const isEvenColumn = colIndex % 2 === 0;
-              const isAttr = typeof AttrOrComponent === "string";
-              const isSortable = options.sortable !== false && (isAttr || options.sortKey);
-              const sortKey = isAttr ? AttrOrComponent : options.sortKey;
-
-              const style = {
-                fontSize: 13,
-                padding: 8,
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: isEvenColumn ? "#e9ecef" : "#f8f9fa",
-                width: columnWidths[colIndex],
-                minWidth: columnWidths[colIndex],
-                maxWidth: columnWidths[colIndex],
-                borderRight: "1px solid #dee2e6",
-                position: "relative",
-                cursor: isSortable ? "pointer" : "default"
-              };
-
-              const { pagination } = this.props;
-              const isCurrentSort = isSortable && pagination && pagination.order_by === sortKey;
-              const sortDesc = pagination && pagination.desc;
-
-              /**
-               * Handle keyboard activation for sortable column headers
-               * WCAG 2.1.1: Sortable headers must be keyboard accessible
-               * Using button role as this performs an action (sorting)
-               */
-              const handleHeaderKeyDown = (e) => {
-                if ((e.key === "Enter" || e.key === " ") && isSortable) {
-                  e.preventDefault();
-                  dispatch(explorerActions.toggleSort(sortKey));
-                }
-              };
-
-              return (
-                <div
-                  key={name}
-                  style={style}
-                  onClick={() => {
-                    if (isSortable) {
-                      dispatch(explorerActions.toggleSort(sortKey));
-                    }
-                  }}
-                  onKeyDown={handleHeaderKeyDown}
-                  role={isSortable ? "button" : "columnheader"} // Button for sortable, columnheader for non-sortable
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                  tabIndex={isSortable ? 0 : undefined} // Only sortable columns are focusable
-                  aria-sort={isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none"} // Announce sort state
-                  aria-label={isSortable ? `Sort by ${name}` : undefined}
-                >
-                  <span
-                    style={{
-                      flex: 1,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {name}
-                    {isSortable && isCurrentSort && (
-                      <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>
-                    )}
-                  </span>
-                  {/* Resize handle */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: "4px",
-                      cursor: "col-resize",
-                      backgroundColor: "transparent"
-                    }}
-                    onMouseDown={(e) => this.onMouseDown(e, colIndex)}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          <ResizableTableHeader
+            mappings={mappings}
+            sortColumn={pagination && pagination.order_by}
+            sortDesc={pagination && pagination.desc}
+            getColumnWidth={(name) => this.getColumnWidth(name)}
+            onSort={(sortKey) => dispatch(explorerActions.toggleSort(sortKey))}
+            onResizeStart={(e, name) => this.onMouseDown(e, name)}
+            onReorder={onReorderColumns}
+          />
         </div>
 
         {/* Scrollable Body */}
@@ -289,8 +222,17 @@ class ResizableVirtualTable extends ResizableTable {
 }))
 class Table extends React.Component {
   render() {
-    const { data, mappings, selectedFamily, dispatch, pagination, footerAction, widthMap, starredFamilies } =
-      this.props;
+    const {
+      data,
+      mappings,
+      selectedFamily,
+      dispatch,
+      pagination,
+      footerAction,
+      widthMap,
+      starredFamilies,
+      onReorderColumns
+    } = this.props;
     return (
       <ResizableVirtualTable
         data={data}
@@ -302,6 +244,7 @@ class Table extends React.Component {
         containerHeight={500}
         footerAction={footerAction}
         starredFamilies={starredFamilies}
+        onReorderColumns={onReorderColumns}
       />
     );
   }
@@ -404,16 +347,95 @@ class SelectAttribute extends React.Component {
   }
 }
 
+// Full clonal-families column set in default display order. Columns marked
+// `required` are action/identity columns that stay fixed (locked visible,
+// non-draggable); the rest are user-toggleable and reorderable.
+const FAMILIES_COLUMN_MAPPINGS = [
+  ["Star", StarCell, { sortable: false, required: true }],
+  ["Select", SelectAttribute, { required: true }],
+  ["Info", InfoButtonCell, { sortable: false, required: true }],
+  ["Naive sequence", NaiveSequence, { required: true }],
+  ["Family ID", "clone_id", { required: true }],
+  ["Unique Seq Count", "unique_seqs_count"],
+  ["V gene", "v_call"],
+  ["D gene", "d_call"],
+  ["J gene", "j_call"],
+  ["Locus", "sample.locus", { unspecified: true }],
+  ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
+  ["Paired", "is_paired"],
+  ["Pair ID", "pair_id"],
+  ["CDR3 length", "cdr3_length"],
+  ["Mut freq", "mean_mut_freq"],
+  ["Seed run", "has_seed"],
+  ["Subject", "subject_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "subject_id") }],
+  ["Sample", "sample_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "sample_id") }],
+  [
+    "Timepoint",
+    "sample.timepoint_id",
+    { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "timepoint_id") }
+  ],
+  ["Dataset", DatasetName, { sortKey: "dataset_id" }]
+];
+
+const FAMILIES_REQUIRED_MAPPINGS = FAMILIES_COLUMN_MAPPINGS.filter(([, , o = {}]) => o.required);
+const FAMILIES_OPTIONAL_MAPPINGS = FAMILIES_COLUMN_MAPPINGS.filter(([, , o = {}]) => !o.required);
+
+// Clone field_metadata field names already represented by a hardcoded column
+// (so we don't offer a duplicate generic column for them). The accessor→field
+// mapping is irregular (e.g. the "Locus" column reads "sample.locus"), so this
+// is maintained explicitly.
+const FAMILIES_COVERED_FIELDS = new Set([
+  "clone_id",
+  "unique_seqs_count",
+  "v_call",
+  "d_call",
+  "j_call",
+  "locus",
+  "is_paired",
+  "pair_id",
+  "cdr3_length",
+  "mean_mut_freq",
+  "has_seed",
+  "subject_id",
+  "sample_id",
+  "timepoint_id",
+  "dataset_name",
+  "dataset_id"
+]);
+
+// Build generic optional columns for every clone field_metadata variable that
+// isn't already a hardcoded column — both `dropdown` and `tooltip` display
+// fields, so all data variables are available in the Columns picker.
+const buildExtraOptionalMappings = (cloneFieldMetadata) => {
+  if (!cloneFieldMetadata) return [];
+  return Object.entries(cloneFieldMetadata)
+    .filter(([field, meta]) => {
+      const display = meta && meta.display;
+      return (display === "dropdown" || display === "tooltip") && !FAMILIES_COVERED_FIELDS.has(field);
+    })
+    .map(([field, meta]) => [meta.label || field, field, { extra: true }]);
+};
+
+// All optional columns: the hardcoded set plus the field-metadata-derived extras.
+const familiesOptionalMappings = (cloneFieldMetadata) => [
+  ...FAMILIES_OPTIONAL_MAPPINGS,
+  ...buildExtraOptionalMappings(cloneFieldMetadata)
+];
+
 const mapStateToProps = (state) => {
   const brushedClonalFamilies = getBrushedClonalFamilies(state);
   const { pagination, starredFamilies } = state.clonalFamilies;
+  const familiesColumns = state.tableColumns[TABLE_KEYS.FAMILIES];
 
   return {
     brushedClonalFamilies: brushedClonalFamilies,
     pagination: pagination,
     selectedFamily: state.clonalFamilies.selectedFamily,
     selectingStatus: state.clonalFamilies.brushSelecting,
-    starredFamilies: starredFamilies
+    starredFamilies: starredFamilies,
+    familiesColumnVisibility: familiesColumns.visibility,
+    familiesColumnOrder: familiesColumns.order,
+    cloneFieldMetadata: getResolvedFieldMetadata(state).clone
   };
 };
 
@@ -421,7 +443,9 @@ const mapStateToProps = (state) => {
   selectFamily: explorerActions.selectFamily,
   starAllFamilies: explorerActions.starAllFamilies,
   unstarAllFamilies: explorerActions.unstarAllFamilies,
-  clearStarredFamilies: explorerActions.clearStarredFamilies
+  clearStarredFamilies: explorerActions.clearStarredFamilies,
+  setFamiliesColumnVisibility: explorerActions.setFamiliesColumnVisibility,
+  setFamiliesColumnOrder: explorerActions.setFamiliesColumnOrder
 })
 class ClonalFamiliesTable extends React.Component {
   constructor(props) {
@@ -474,6 +498,18 @@ class ClonalFamiliesTable extends React.Component {
     });
   };
 
+  // Reorder optional columns: move `activeName` to `overName`'s slot within the
+  // full optional order (so hidden columns keep their relative positions), then
+  // persist the new order.
+  handleColumnReorder = (activeName, overName) => {
+    const { familiesColumnOrder, setFamiliesColumnOrder, cloneFieldMetadata } = this.props;
+    const order = effectiveOptionalOrder(familiesColumnOrder, familiesOptionalMappings(cloneFieldMetadata));
+    const from = order.indexOf(activeName);
+    const to = order.indexOf(overName);
+    if (from === -1 || to === -1 || from === to) return;
+    setFamiliesColumnOrder(arrayMove(order, from, to));
+  };
+
   componentDidUpdate(prevProps) {
     const { selectingStatus, brushedClonalFamilies, selectFamily } = this.props;
     // Checks:
@@ -493,7 +529,11 @@ class ClonalFamiliesTable extends React.Component {
       starredFamilies,
       starAllFamilies,
       unstarAllFamilies,
-      clearStarredFamilies
+      clearStarredFamilies,
+      familiesColumnVisibility,
+      setFamiliesColumnVisibility,
+      familiesColumnOrder,
+      cloneFieldMetadata
     } = this.props;
     const { starAllHovered, unstarAllHovered, clearStarsHovered, sortStarredFirst, showOnlyStarred } = this.state;
 
@@ -538,6 +578,17 @@ class ClonalFamiliesTable extends React.Component {
     const visibleIdents = visibleClonalFamilies.map((f) => f.ident);
     const visibleStarredCount = visibleIdents.filter((id) => starredFamilies.includes(id)).length;
     const allVisibleStarred = visibleStarredCount === visibleClonalFamilies.length && visibleClonalFamilies.length > 0;
+
+    // Columns in the user's order (required first, then optional per
+    // familiesColumnOrder), then filtered by visibility. The picker lists the
+    // full ordered set; the table renders only the visible ones.
+    const orderedMappings = buildOrderedMappings(
+      FAMILIES_REQUIRED_MAPPINGS,
+      familiesOptionalMappings(cloneFieldMetadata),
+      familiesColumnOrder
+    );
+    const columnDefs = buildColumnDefs(orderedMappings, familiesColumnVisibility);
+    const visibleMappings = filterVisibleMappings(orderedMappings, familiesColumnVisibility);
 
     const starButtonStyle = {
       background: "none",
@@ -643,6 +694,13 @@ class ClonalFamiliesTable extends React.Component {
               Clear Stars ({starredFamilies.length})
             </button>
           )}
+          <ColumnPicker
+            columns={columnDefs}
+            onToggle={(name) => {
+              const col = columnDefs.find((c) => c.name === name);
+              if (col && !col.required) setFamiliesColumnVisibility(name, !col.visible);
+            }}
+          />
           <DownloadCSV
             data={visibleClonalFamilies}
             columns={csvColumns}
@@ -681,41 +739,11 @@ class ClonalFamiliesTable extends React.Component {
       <Table
         data={visibleClonalFamilies}
         widthMap={columnWidthMap}
-        mappings={[
-          ["Star", StarCell, { sortable: false }],
-          ["Select", SelectAttribute],
-          ["Info", InfoButtonCell, { sortable: false }],
-          ["Naive sequence", NaiveSequence],
-          ["Family ID", "clone_id"],
-          ["Unique Seq Count", "unique_seqs_count"],
-          ["V gene", "v_call"],
-          ["D gene", "d_call"],
-          ["J gene", "j_call"],
-          ["Locus", "sample.locus", { unspecified: true }],
-          ["Chain", ChainDisplay, { sortKey: "sample.locus" }],
-          ["Paired", "is_paired"],
-          ["Pair ID", "pair_id"],
-          ["CDR3 length", "cdr3_length"],
-          ["Mut freq", "mean_mut_freq"],
-          ["Seed run", "has_seed"],
-          [
-            "Subject",
-            "subject_id",
-            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "subject_id") }
-          ],
-          ["Sample", "sample_id", { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "sample_id") }],
-          [
-            "Timepoint",
-            "sample.timepoint_id",
-            { unspecified: true, valueAccessor: (d) => getReferenceFieldValue(d, "timepoint_id") }
-          ],
-          // ["Path", 'path'],
-          // ["Entity", ({datum}) => _.toString(_.toPairs(datum))],
-          ["Dataset", DatasetName, { sortKey: "dataset_id" }]
-        ]}
+        mappings={visibleMappings}
         selectedFamily={this.selectedFamily}
         pagination={pagination}
         footerAction={footerAction}
+        onReorderColumns={this.handleColumnReorder}
       />
     );
   }

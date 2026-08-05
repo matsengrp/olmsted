@@ -103,6 +103,12 @@ export const CONFIG_MODAL_CLOSE = "CONFIG_MODAL_CLOSE";
 // UI state
 export const UPDATE_CURRENT_SECTION = "UPDATE_CURRENT_SECTION";
 
+// Table column layout (visibility / order) - generic across all tables that
+// support a column picker (see src/constants/tableColumns.js for table keys)
+export const SET_TABLE_COLUMN_VISIBILITY = "SET_TABLE_COLUMN_VISIBILITY";
+export const SET_TABLE_COLUMN_VISIBILITY_MAP = "SET_TABLE_COLUMN_VISIBILITY_MAP";
+export const SET_TABLE_COLUMN_ORDER = "SET_TABLE_COLUMN_ORDER";
+
 // Starred families
 export const TOGGLE_STARRED_FAMILY = "TOGGLE_STARRED_FAMILY";
 export const CLEAR_STARRED_FAMILIES = "CLEAR_STARRED_FAMILIES";

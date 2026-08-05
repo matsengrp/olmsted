@@ -15,13 +15,21 @@ import {
   importConfigFromJson,
   applyScatterplotSettings,
   applyTreeSettings,
+  applyTableSettings,
   extractCurrentSettings,
   resolveValue,
   DEFAULT_SCATTERPLOT_SETTINGS,
   DEFAULT_TREE_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
-  DEFAULT_LINEAGE_SETTINGS
+  DEFAULT_LINEAGE_SETTINGS,
+  DEFAULT_TABLE_SETTINGS
 } from "../../utils/configManager";
+
+// Action creators applyTableSettings needs to dispatch a table column layout
+const TABLE_LAYOUT_ACTIONS = {
+  setTableColumnVisibilityMap: explorerActions.setTableColumnVisibilityMap,
+  setTableColumnOrder: explorerActions.setTableColumnOrder
+};
 
 const modalOverlayStyle = {
   position: "fixed",
@@ -239,6 +247,11 @@ class ConfigModal extends React.Component {
       }
     }
 
+    // Apply table column-layout settings (visibility/order per table)
+    if (config.settings.tables) {
+      applyTableSettings(dispatch, config.settings.tables, TABLE_LAYOUT_ACTIONS);
+    }
+
     // Mark config as active in Redux
     dispatch(configActions.applyConfig(config.id));
 
@@ -291,6 +304,9 @@ class ConfigModal extends React.Component {
     dispatch(explorerActions.updateLineageShowEntire(DEFAULT_LINEAGE_SETTINGS.showEntire));
     dispatch(explorerActions.updateLineageShowBorders(DEFAULT_LINEAGE_SETTINGS.showBorders));
     dispatch(explorerActions.updateLineageChain(DEFAULT_LINEAGE_SETTINGS.chain));
+
+    // Apply default table column layout (all columns visible, default order)
+    applyTableSettings(dispatch, DEFAULT_TABLE_SETTINGS, TABLE_LAYOUT_ACTIONS);
 
     // Clear active config
     dispatch(configActions.clearActiveConfig());

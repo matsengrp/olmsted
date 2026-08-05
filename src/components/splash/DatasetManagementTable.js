@@ -2,15 +2,24 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiStar } from "react-icons/fi";
+import { arrayMove } from "@dnd-kit/sortable";
 import { red } from "./displayError";
 import { getClientClonalFamilies } from "../../actions/clientDataLoader";
 import clientDataStore from "../../utils/clientDataStore";
 import * as types from "../../actions/types";
 import * as explorerActions from "../../actions/explorer";
 import { isUserUpload } from "../../constants/datasetSource";
+import { TABLE_KEYS } from "../../constants/tableColumns";
+import {
+  orderedMappings,
+  effectiveOptionalOrder,
+  buildColumnDefs,
+  filterVisibleMappings
+} from "../../utils/columnLayout";
 import { LoadingStatus } from "../util/loading";
 import { ResizableTable } from "../util/resizableTable";
 import DownloadCSV from "../util/downloadCsv";
+import ColumnPicker from "../util/ColumnPicker";
 import {
   SizeCell,
   UploadTimeCell,
@@ -147,6 +156,27 @@ function handleDatasetSelect(dataset, dispatch) {
   }
 }
 
+// Full column set in default display order. Star/Load/Info/Name/Delete are
+// action/identity columns that stay fixed (locked visible, non-draggable); the
+// rest are user-toggleable and reorderable via the Columns picker. Delete stays
+// pinned to the end regardless of optional-column order (see render()).
+const DATASET_MANAGEMENT_LEADING_MAPPINGS = [
+  ["Star", DatasetStarCell, { sortable: false, required: true }],
+  ["Load", LoadStatusCell, { sortKey: "loading", required: true }],
+  ["Info", DatasetInfoCell, { sortable: false, required: true }],
+  ["Name", (d) => d.name || d.dataset_id, { sortKey: "name", required: true }]
+];
+const DATASET_MANAGEMENT_OPTIONAL_MAPPINGS = [
+  ["Source", (d) => (isUserUpload(d) ? "Local" : "Server"), { style: { fontSize: "12px" }, sortKey: "source" }],
+  ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
+  ["Subjects", "subjects_count"],
+  ["Families", "clone_count"],
+  ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
+  ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
+  ["Missing Fields", MissingFieldsCell, { sortable: false }]
+];
+const DATASET_MANAGEMENT_TRAILING_MAPPINGS = [["Delete", DatasetDeleteCell, { sortable: false, required: true }]];
+
 class DatasetManagementTableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -214,8 +244,20 @@ class DatasetManagementTableComponent extends React.Component {
     });
   };
 
+  // Reorder optional columns: move `activeName` to `overName`'s slot within the
+  // full optional order (so hidden columns keep their relative positions), then
+  // persist the new order. Delete stays pinned to the end (see render()).
+  handleColumnReorder = (activeName, overName) => {
+    const { columnOrder, dispatch } = this.props;
+    const order = effectiveOptionalOrder(columnOrder, DATASET_MANAGEMENT_OPTIONAL_MAPPINGS);
+    const from = order.indexOf(activeName);
+    const to = order.indexOf(overName);
+    if (from === -1 || to === -1 || from === to) return;
+    dispatch(explorerActions.setDatasetManagementColumnOrder(arrayMove(order, from, to)));
+  };
+
   render() {
-    const { availableDatasets, starredDatasets, dispatch } = this.props;
+    const { availableDatasets, starredDatasets, dispatch, columnVisibility, columnOrder } = this.props;
     const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
       this.state;
 
@@ -239,24 +281,15 @@ class DatasetManagementTableComponent extends React.Component {
       ? _.orderBy(filteredDatasets, [(d) => (starredDatasets.includes(d.dataset_id) ? 1 : 0)], ["desc"])
       : filteredDatasets;
 
-    // Build mappings for the table
-    // Action columns: Star, Load, Info at beginning; Delete at end
-    const mappings = [
-      ["Star", DatasetStarCell, { sortable: false }],
-      ["Load", LoadStatusCell, { sortKey: "loading" }],
-      ["Info", DatasetInfoCell, { sortable: false }],
-      ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
-      ["Source", (d) => (isUserUpload(d) ? "Local" : "Server"), { style: { fontSize: "12px" }, sortKey: "source" }],
-      ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
-      ["Subjects", "subjects_count"],
-      ["Families", "clone_count"],
-      ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
-      ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
-      ["Missing Fields", MissingFieldsCell, { sortable: false }]
+    // Columns in the user's order (leading required, then optional per
+    // columnOrder, then Delete pinned last), filtered by visibility. The picker
+    // lists the full ordered set; the table renders only the visible ones.
+    const allOrderedMappings = [
+      ...orderedMappings(DATASET_MANAGEMENT_LEADING_MAPPINGS, DATASET_MANAGEMENT_OPTIONAL_MAPPINGS, columnOrder),
+      ...DATASET_MANAGEMENT_TRAILING_MAPPINGS
     ];
-
-    // Delete column at the end
-    mappings.push(["Delete", DatasetDeleteCell, { sortable: false }]);
+    const columnDefs = buildColumnDefs(allOrderedMappings, columnVisibility);
+    const mappings = filterVisibleMappings(allOrderedMappings, columnVisibility);
 
     // CSV columns for export
     const csvColumns = getDatasetCsvColumns();
@@ -372,6 +405,14 @@ class DatasetManagementTableComponent extends React.Component {
               Clear Stars ({starredDatasets.length})
             </button>
           )}
+          <ColumnPicker
+            columns={columnDefs}
+            onToggle={(name) => {
+              const col = columnDefs.find((c) => c.name === name);
+              if (col && !col.required)
+                dispatch(explorerActions.setDatasetManagementColumnVisibility(name, !col.visible));
+            }}
+          />
           <DownloadCSV
             data={sortedDatasets}
             columns={csvColumns}
@@ -410,6 +451,7 @@ class DatasetManagementTableComponent extends React.Component {
           }}
           getRowStyle={getRowStyle}
           onRowClick={(dataset) => handleDatasetSelect(dataset, dispatch)}
+          onReorderColumns={this.handleColumnReorder}
           footerAction={footerAction}
         />
       </div>
@@ -418,5 +460,7 @@ class DatasetManagementTableComponent extends React.Component {
 }
 
 export const DatasetManagementTable = connect((state) => ({
-  starredDatasets: state.datasets.starredDatasets || []
+  starredDatasets: state.datasets.starredDatasets || [],
+  columnVisibility: state.tableColumns[TABLE_KEYS.DATASET_MANAGEMENT].visibility,
+  columnOrder: state.tableColumns[TABLE_KEYS.DATASET_MANAGEMENT].order
 }))(DatasetManagementTableComponent);

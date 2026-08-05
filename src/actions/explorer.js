@@ -3,6 +3,7 @@ import * as types from "./types";
 import { getClientTree } from "./clientDataLoader";
 import * as treesSelector from "../selectors/trees";
 import { getPairedClone, getAllClonalFamilies, getCloneChain } from "../selectors/clonalFamilies";
+import { TABLE_KEYS } from "../constants/tableColumns";
 
 export const pageDown = { type: types.PAGE_DOWN };
 export const pageUp = { type: types.PAGE_UP };
@@ -166,6 +167,42 @@ export const updateLineageShowMutationLabels = (showMutationLabels) => {
 export const updateLineageChain = (chain) => {
   return { type: types.UPDATE_LINEAGE_CHAIN, chain };
 };
+
+// Set the visibility of one optional column (explicit override) on the given
+// table (see src/constants/tableColumns.js TABLE_KEYS for valid table names).
+export const setTableColumnVisibility = (table, column, visible) => {
+  return { type: types.SET_TABLE_COLUMN_VISIBILITY, table, column, visible };
+};
+
+// Replace the whole column-visibility override map for a table (apply a layout).
+export const setTableColumnVisibilityMap = (table, visibility) => {
+  return { type: types.SET_TABLE_COLUMN_VISIBILITY_MAP, table, visibility };
+};
+
+// Set the display order of a table's optional columns (by header name).
+export const setTableColumnOrder = (table, order) => {
+  return { type: types.SET_TABLE_COLUMN_ORDER, table, order };
+};
+
+// Per-table convenience wrappers around the generic column-layout actions above,
+// so each table's `connect()` can bind them by name via mapDispatchToProps.
+export const setFamiliesColumnVisibility = (column, visible) =>
+  setTableColumnVisibility(TABLE_KEYS.FAMILIES, column, visible);
+export const setFamiliesColumnVisibilityMap = (visibility) =>
+  setTableColumnVisibilityMap(TABLE_KEYS.FAMILIES, visibility);
+export const setFamiliesColumnOrder = (order) => setTableColumnOrder(TABLE_KEYS.FAMILIES, order);
+
+export const setDatasetLoadingColumnVisibility = (column, visible) =>
+  setTableColumnVisibility(TABLE_KEYS.DATASET_LOADING, column, visible);
+export const setDatasetLoadingColumnVisibilityMap = (visibility) =>
+  setTableColumnVisibilityMap(TABLE_KEYS.DATASET_LOADING, visibility);
+export const setDatasetLoadingColumnOrder = (order) => setTableColumnOrder(TABLE_KEYS.DATASET_LOADING, order);
+
+export const setDatasetManagementColumnVisibility = (column, visible) =>
+  setTableColumnVisibility(TABLE_KEYS.DATASET_MANAGEMENT, column, visible);
+export const setDatasetManagementColumnVisibilityMap = (visibility) =>
+  setTableColumnVisibilityMap(TABLE_KEYS.DATASET_MANAGEMENT, visibility);
+export const setDatasetManagementColumnOrder = (order) => setTableColumnOrder(TABLE_KEYS.DATASET_MANAGEMENT, order);
 
 // Subtree focus actions (shared with lineage view)
 export const updateSubtreeRoot = (subtreeRoot) => {

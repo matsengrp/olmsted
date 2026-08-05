@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import * as _ from "lodash";
 import { FiRefreshCw, FiDatabase, FiStar, FiX } from "react-icons/fi";
+import { arrayMove } from "@dnd-kit/sortable";
 import { GreenCheckmark, LoadingStatus } from "../util/loading";
 import { countLoadedClonalFamilies } from "../../selectors/clonalFamilies";
 import { ResizableTable } from "../util/resizableTable";
@@ -11,8 +12,16 @@ import { changePage } from "../../actions/navigation";
 import { resolveFieldMetadata } from "../../utils/fieldMetadata";
 import { DEFAULT_DISPLAY, DISPLAY_MODE_ICONS } from "../../constants/fieldDefaults";
 import { isUserUpload } from "../../constants/datasetSource";
+import { TABLE_KEYS } from "../../constants/tableColumns";
+import {
+  orderedMappings,
+  effectiveOptionalOrder,
+  buildColumnDefs,
+  filterVisibleMappings
+} from "../../utils/columnLayout";
 import * as types from "../../actions/types";
 import DownloadCSV from "../util/downloadCsv";
+import ColumnPicker from "../util/ColumnPicker";
 import {
   SizeCell,
   UploadTimeCell,
@@ -164,11 +173,33 @@ function SelectionCell({ datum, selectedDatasets }) {
 SelectionCell.isReactComponent = true;
 LoadStatusDisplay.isReactComponent = true;
 
+// Full column set in default display order. Star/Select/Status/Info/Name are
+// action/identity columns that stay fixed (locked visible, non-draggable); the
+// rest are user-toggleable and reorderable via the Columns picker.
+const DATASET_LOADING_COLUMN_MAPPINGS = [
+  ["Star", DatasetStarCell, { sortable: false, required: true }],
+  ["Select", SelectionCell, { sortable: false, required: true }],
+  ["Status", LoadStatusDisplay, { sortable: false, required: true }],
+  ["Info", DatasetInfoCell, { sortable: false, required: true }],
+  ["Name", (d) => d.name || d.dataset_id, { sortKey: "name", required: true }],
+  ["Source", (d) => (isUserUpload(d) ? "Local" : "Server"), { style: { fontSize: "12px" }, sortKey: "source" }],
+  ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
+  ["Subjects", "subjects_count"],
+  ["Families", "clone_count"],
+  ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
+  ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
+  ["Missing Fields", MissingFieldsCell, { sortable: false }]
+];
+const DATASET_LOADING_REQUIRED_MAPPINGS = DATASET_LOADING_COLUMN_MAPPINGS.filter(([, , o = {}]) => o.required);
+const DATASET_LOADING_OPTIONAL_MAPPINGS = DATASET_LOADING_COLUMN_MAPPINGS.filter(([, , o = {}]) => !o.required);
+
 @connect((state) => ({
   loadedClonalFamilies: countLoadedClonalFamilies(state.datasets.availableDatasets),
   selectedDatasets: state.datasets.selectedDatasets,
   allDatasets: state.datasets.availableDatasets,
-  starredDatasets: state.datasets.starredDatasets || []
+  starredDatasets: state.datasets.starredDatasets || [],
+  columnVisibility: state.tableColumns[TABLE_KEYS.DATASET_LOADING].visibility,
+  columnOrder: state.tableColumns[TABLE_KEYS.DATASET_LOADING].order
 }))
 export default class DatasetLoadingTable extends React.Component {
   constructor(props) {
@@ -212,6 +243,18 @@ export default class DatasetLoadingTable extends React.Component {
       writeSession(SESSION_KEYS.showOnlyStarred, newValue);
       return { showOnlyStarred: newValue };
     });
+  };
+
+  // Reorder optional columns: move `activeName` to `overName`'s slot within the
+  // full optional order (so hidden columns keep their relative positions), then
+  // persist the new order.
+  handleColumnReorder = (activeName, overName) => {
+    const { columnOrder, dispatch } = this.props;
+    const order = effectiveOptionalOrder(columnOrder, DATASET_LOADING_OPTIONAL_MAPPINGS);
+    const from = order.indexOf(activeName);
+    const to = order.indexOf(overName);
+    if (from === -1 || to === -1 || from === to) return;
+    dispatch(explorerActions.setDatasetLoadingColumnOrder(arrayMove(order, from, to)));
   };
 
   toggleHideServerData = () => {
@@ -494,7 +537,16 @@ export default class DatasetLoadingTable extends React.Component {
 
   render() {
     // Use all datasets (including loaded ones)
-    const { allDatasets, datasets, selectedDatasets, starredDatasets, dispatch, loadedClonalFamilies } = this.props;
+    const {
+      allDatasets,
+      datasets,
+      selectedDatasets,
+      starredDatasets,
+      dispatch,
+      loadedClonalFamilies,
+      columnVisibility,
+      columnOrder
+    } = this.props;
     const { sortStarredFirst, showOnlyStarred, hideServerData, starAllHovered, unstarAllHovered, clearStarsHovered } =
       this.state;
     const allDatasetsRaw = allDatasets || datasets || [];
@@ -519,22 +571,16 @@ export default class DatasetLoadingTable extends React.Component {
       selectedDatasets.filter((id) => !currentlyLoaded.has(id)).length +
       Array.from(currentlyLoaded).filter((id) => !selectedDatasets.includes(id)).length;
 
-    // Build mappings for the table - same as DatasetManagementTable but with selection checkboxes
-    // Action columns grouped at the beginning: Star, Select, Status, Info (no Delete in loading table)
-    const mappings = [
-      ["Star", DatasetStarCell, { sortable: false }],
-      ["Select", SelectionCell, { sortable: false }],
-      ["Status", LoadStatusDisplay, { sortable: false }],
-      ["Info", DatasetInfoCell, { sortable: false }],
-      ["Name", (d) => d.name || d.dataset_id, { sortKey: "name" }],
-      ["Source", (d) => (isUserUpload(d) ? "Local" : "Server"), { style: { fontSize: "12px" }, sortKey: "source" }],
-      ["Size (MB)", SizeCell, { sortKey: "file_size", style: { textAlign: "right" } }],
-      ["Subjects", "subjects_count"],
-      ["Families", "clone_count"],
-      ["Upload Time", UploadTimeCell, { sortKey: "upload_time" }],
-      ["Build Time", BuildTimeCell, { sortKey: "build.time" }],
-      ["Missing Fields", MissingFieldsCell, { sortable: false }]
-    ];
+    // Columns in the user's order (required first, then optional per
+    // columnOrder), then filtered by visibility. The picker lists the full
+    // ordered set; the table renders only the visible ones.
+    const allOrderedMappings = orderedMappings(
+      DATASET_LOADING_REQUIRED_MAPPINGS,
+      DATASET_LOADING_OPTIONAL_MAPPINGS,
+      columnOrder
+    );
+    const columnDefs = buildColumnDefs(allOrderedMappings, columnVisibility);
+    const mappings = filterVisibleMappings(allOrderedMappings, columnVisibility);
 
     // CSV columns for export
     const csvColumns = getDatasetCsvColumns();
@@ -650,6 +696,13 @@ export default class DatasetLoadingTable extends React.Component {
               Clear Stars ({starredDatasets.length})
             </button>
           )}
+          <ColumnPicker
+            columns={columnDefs}
+            onToggle={(name) => {
+              const col = columnDefs.find((c) => c.name === name);
+              if (col && !col.required) dispatch(explorerActions.setDatasetLoadingColumnVisibility(name, !col.visible));
+            }}
+          />
           <DownloadCSV
             data={allDatasetsToUse}
             columns={csvColumns}
@@ -693,6 +746,7 @@ export default class DatasetLoadingTable extends React.Component {
           }}
           getRowStyle={getRowStyle}
           onRowClick={(dataset) => dispatch(explorerActions.toggleDatasetSelection(dataset.dataset_id))}
+          onReorderColumns={this.handleColumnReorder}
           footerAction={footerAction}
         />
 
