@@ -15,18 +15,18 @@ const RESIZE_HANDLE_STYLE = {
 };
 
 /**
- * Header row for the clonal-families table with drag-and-drop column reordering.
+ * Header row for ResizableTable-based tables, with drag-and-drop column reordering.
  *
  * Required (action/identity) columns render fixed; optional columns are wrapped
  * in a SortableColumnHeader and can be reordered by dragging their grip or via
  * the keyboard. Reordering only emits the new order of the *optional* columns;
  * sort-on-click and the resize handle are preserved per column.
  *
- * A function component (not the surrounding class) because dnd-kit's sensor
- * setup requires hooks. ARIA: the cell carries role="columnheader" + aria-sort;
- * the sort label is a button inside it; the grip is a separate reorder control.
+ * A function component (not a class) because dnd-kit's sensor setup requires
+ * hooks. ARIA: the cell carries role="columnheader" + aria-sort; the sort label
+ * is a button inside it; the grip is a separate reorder control.
  */
-function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onResizeStart, onReorder }) {
+function ResizableTableHeader({ mappings, sortColumn, sortDesc, getColumnWidth, onSort, onResizeStart, onReorder }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -42,8 +42,8 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
   };
 
   const sortStateFor = (sortKey, isSortable) => {
-    const isCurrentSort = isSortable && pagination && pagination.order_by === sortKey;
-    const ariaSort = isCurrentSort ? (pagination.desc ? "descending" : "ascending") : "none";
+    const isCurrentSort = isSortable && sortColumn === sortKey;
+    const ariaSort = isCurrentSort ? (sortDesc ? "descending" : "ascending") : "none";
     return { isCurrentSort, ariaSort };
   };
 
@@ -75,7 +75,7 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
         style={{ ...labelStyle, cursor: "pointer", background: "none", border: "none", font: "inherit", padding: 0 }}
       >
         {name}
-        {isCurrentSort && <span style={{ marginLeft: 4 }}>{pagination.desc ? "▼" : "▲"}</span>}
+        {isCurrentSort && <span style={{ marginLeft: 4 }}>{sortDesc ? "▼" : "▲"}</span>}
       </span>
     ) : (
       <span style={labelStyle}>{name}</span>
@@ -88,9 +88,9 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
     );
   };
 
-  const cellStyle = (name, colIndex) => {
+  const cellStyle = (name, colIndex, isSticky) => {
     const colWidth = getColumnWidth(name);
-    return {
+    const style = {
       fontSize: 13,
       padding: 8,
       height: "40px",
@@ -103,6 +103,15 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
       borderRight: "1px solid #dee2e6",
       position: "relative"
     };
+    if (isSticky) {
+      style.position = "sticky";
+      style.right = 0;
+      style.zIndex = 2;
+      style.borderLeft = "1px solid #dee2e6";
+      style.borderRight = "none";
+      style.backgroundColor = "#e9ecef";
+    }
+    return style;
   };
 
   return (
@@ -115,7 +124,7 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
             const isSortable = options.sortable !== false && (isAttr || options.sortKey);
             const { ariaSort } = sortStateFor(sortKey, isSortable);
             const inner = renderCellInner(name, AttrOrComponent, options);
-            const style = cellStyle(name, colIndex);
+            const style = cellStyle(name, colIndex, options.sticky === true);
             if (options.required) {
               return (
                 <div key={name} style={style} role="columnheader" aria-sort={ariaSort}>
@@ -135,17 +144,19 @@ function FamiliesTableHeader({ mappings, pagination, getColumnWidth, onSort, onR
   );
 }
 
-FamiliesTableHeader.propTypes = {
+ResizableTableHeader.propTypes = {
   mappings: PropTypes.array.isRequired,
-  pagination: PropTypes.object,
+  sortColumn: PropTypes.string,
+  sortDesc: PropTypes.bool,
   getColumnWidth: PropTypes.func.isRequired,
   onSort: PropTypes.func.isRequired,
   onResizeStart: PropTypes.func.isRequired,
   onReorder: PropTypes.func.isRequired
 };
 
-FamiliesTableHeader.defaultProps = {
-  pagination: null
+ResizableTableHeader.defaultProps = {
+  sortColumn: null,
+  sortDesc: false
 };
 
-export default FamiliesTableHeader;
+export default ResizableTableHeader;

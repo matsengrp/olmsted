@@ -4,9 +4,10 @@
  */
 
 import { CHAIN_TYPES } from "../constants/chainTypes";
+import { ALL_TABLE_KEYS } from "../constants/tableColumns";
 
 // Current config schema version
-export const CONFIG_VERSION = "1.2";
+export const CONFIG_VERSION = "1.3";
 
 // Reserved keyword for "use application default"
 export const DEFAULT_KEYWORD = "<default>";
@@ -101,6 +102,14 @@ export const DEFAULT_LINEAGE_SETTINGS = {
   showBorders: false,
   chain: CHAIN_TYPES.HEAVY
 };
+
+// Default table column-layout settings (added in CONFIG_VERSION 1.3): no
+// customization - empty visibility overrides, default column order - one
+// entry per table in TABLE_KEYS (see src/constants/tableColumns.js).
+export const DEFAULT_TABLE_SETTINGS = ALL_TABLE_KEYS.reduce((settings, table) => {
+  settings[table] = { visibility: {}, order: [] };
+  return settings;
+}, {});
 
 /**
  * Resolve a config value, substituting defaults for the reserved keyword
@@ -205,6 +214,28 @@ export const extractLineageSettings = (reduxState) => {
 };
 
 /**
+ * Extract current table column-layout settings (visibility/order per table)
+ * from Redux state
+ * @param {Object} reduxState - The Redux state
+ * @returns {Object} Current table settings, keyed by table name
+ */
+export const extractTableSettings = (reduxState) => {
+  if (!reduxState || !reduxState.tableColumns) {
+    return { ...DEFAULT_TABLE_SETTINGS };
+  }
+
+  const settings = {};
+  ALL_TABLE_KEYS.forEach((table) => {
+    const tableState = reduxState.tableColumns[table] || DEFAULT_TABLE_SETTINGS[table];
+    settings[table] = {
+      visibility: tableState.visibility || {},
+      order: tableState.order || []
+    };
+  });
+  return settings;
+};
+
+/**
  * Extract all current settings
  * @param {Object} scatterplotView - Scatterplot Vega view
  * @param {Object} treeView - Tree Vega view
@@ -216,7 +247,8 @@ export const extractCurrentSettings = (scatterplotView, treeView, reduxState) =>
     scatterplot: extractScatterplotSettings(scatterplotView),
     tree: extractTreeSettings(treeView),
     global: extractGlobalSettings(reduxState),
-    lineage: extractLineageSettings(reduxState)
+    lineage: extractLineageSettings(reduxState),
+    tables: extractTableSettings(reduxState)
   };
 };
 
@@ -329,6 +361,34 @@ export const applyLineageSettings = (dispatch, settings, actions) => {
 };
 
 /**
+ * Apply table column-layout settings via Redux dispatch. Tables absent from
+ * `settings` (e.g. a CONFIG_VERSION 1.2 config saved before tables existed)
+ * are left untouched rather than reset, matching how the other settings
+ * categories handle configs from before they existed.
+ * @param {Function} dispatch - Redux dispatch function
+ * @param {Object} settings - Table settings to apply, keyed by table name
+ * @param {Object} actions - Action creators { setTableColumnVisibilityMap, setTableColumnOrder }
+ */
+export const applyTableSettings = (dispatch, settings, actions) => {
+  if (!dispatch || !settings || !actions) return;
+
+  ALL_TABLE_KEYS.forEach((table) => {
+    const tableSettings = settings[table];
+    if (!tableSettings) return;
+
+    if (tableSettings.visibility !== undefined && actions.setTableColumnVisibilityMap) {
+      const visibility = resolveValue(tableSettings.visibility, DEFAULT_TABLE_SETTINGS[table].visibility);
+      dispatch(actions.setTableColumnVisibilityMap(table, visibility || {}));
+    }
+
+    if (tableSettings.order !== undefined && actions.setTableColumnOrder) {
+      const order = resolveValue(tableSettings.order, DEFAULT_TABLE_SETTINGS[table].order);
+      dispatch(actions.setTableColumnOrder(table, order || []));
+    }
+  });
+};
+
+/**
  * Apply complete config to all views
  * @param {Object} config - Config object with settings
  * @param {Object} scatterplotView - Scatterplot Vega view
@@ -339,7 +399,7 @@ export const applyLineageSettings = (dispatch, settings, actions) => {
 export const applyConfig = (config, scatterplotView, treeView, dispatch, actions) => {
   if (!config || !config.settings) return;
 
-  const { scatterplot, tree, global, lineage } = config.settings;
+  const { scatterplot, tree, global, lineage, tables } = config.settings;
 
   if (scatterplot) {
     applyScatterplotSettings(scatterplotView, scatterplot);
@@ -355,6 +415,10 @@ export const applyConfig = (config, scatterplotView, treeView, dispatch, actions
 
   if (lineage) {
     applyLineageSettings(dispatch, lineage, actions);
+  }
+
+  if (tables) {
+    applyTableSettings(dispatch, tables, actions);
   }
 };
 
@@ -388,7 +452,8 @@ export const getDefaultConfig = () => {
     scatterplot: { ...DEFAULT_SCATTERPLOT_SETTINGS },
     tree: { ...DEFAULT_TREE_SETTINGS },
     global: { ...DEFAULT_GLOBAL_SETTINGS },
-    lineage: { ...DEFAULT_LINEAGE_SETTINGS }
+    lineage: { ...DEFAULT_LINEAGE_SETTINGS },
+    tables: { ...DEFAULT_TABLE_SETTINGS }
   });
 };
 

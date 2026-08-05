@@ -12,11 +12,18 @@ import {
 } from "../../selectors/clonalFamilies";
 import { NaiveSequence } from "./naive";
 import DownloadCSV from "../util/downloadCsv";
-import ColumnPicker from "./ColumnPicker";
-import FamiliesTableHeader from "./FamiliesTableHeader";
+import ColumnPicker from "../util/ColumnPicker";
+import ResizableTableHeader from "../util/ResizableTableHeader";
 import { ResizableTable } from "../util/resizableTable";
 import { InfoButtonCell } from "../tables/RowInfoModal";
 import { UNSPECIFIED_LABEL } from "../../constants/displayLabels";
+import { TABLE_KEYS } from "../../constants/tableColumns";
+import {
+  orderedMappings as buildOrderedMappings,
+  effectiveOptionalOrder,
+  buildColumnDefs,
+  filterVisibleMappings
+} from "../../utils/columnLayout";
 
 // Extends ResizableTable with ClonalFamilies-specific row rendering and virtual scrolling
 class ResizableVirtualTable extends ResizableTable {
@@ -154,9 +161,10 @@ class ResizableVirtualTable extends ResizableTable {
             paddingRight: scrollbarWidth + "px"
           }}
         >
-          <FamiliesTableHeader
+          <ResizableTableHeader
             mappings={mappings}
-            pagination={pagination}
+            sortColumn={pagination && pagination.order_by}
+            sortDesc={pagination && pagination.desc}
             getColumnWidth={(name) => this.getColumnWidth(name)}
             onSort={(sortKey) => dispatch(explorerActions.toggleSort(sortKey))}
             onResizeStart={(e, name) => this.onMouseDown(e, name)}
@@ -408,42 +416,16 @@ const buildExtraOptionalMappings = (cloneFieldMetadata) => {
     .map(([field, meta]) => [meta.label || field, field, { extra: true }]);
 };
 
-// A column's default visibility: required + hardcoded "primary" optional columns
-// are visible; field-metadata-derived extras default to hidden (opt-in).
-const columnDefaultVisible = (options = {}) => !options.extra;
-
-// Effective visibility = the user's explicit override, else the column default.
-const isColumnVisible = (name, options, visibilityOverrides) => {
-  const override = visibilityOverrides[name];
-  return override === undefined ? columnDefaultVisible(options) : override;
-};
-
 // All optional columns: the hardcoded set plus the field-metadata-derived extras.
 const familiesOptionalMappings = (cloneFieldMetadata) => [
   ...FAMILIES_OPTIONAL_MAPPINGS,
   ...buildExtraOptionalMappings(cloneFieldMetadata)
 ];
 
-// Resolve the effective optional-column order from the saved order: saved names
-// that still exist, then any optional columns not yet in the saved order (in
-// their default position). Robust to columns being added/removed over time.
-const effectiveOptionalOrder = (savedOrder, optionalMappings) => {
-  const optionalNames = optionalMappings.map(([name]) => name);
-  const saved = (savedOrder || []).filter((n) => optionalNames.includes(n));
-  const missing = optionalNames.filter((n) => !saved.includes(n));
-  return [...saved, ...missing];
-};
-
-// Required columns first (fixed), then optional columns in the user's order.
-const orderedFamiliesMappings = (savedOrder, optionalMappings) => {
-  const byName = new Map(optionalMappings.map((m) => [m[0], m]));
-  const orderedOptional = effectiveOptionalOrder(savedOrder, optionalMappings).map((n) => byName.get(n));
-  return [...FAMILIES_REQUIRED_MAPPINGS, ...orderedOptional];
-};
-
 const mapStateToProps = (state) => {
   const brushedClonalFamilies = getBrushedClonalFamilies(state);
   const { pagination, starredFamilies } = state.clonalFamilies;
+  const familiesColumns = state.tableColumns[TABLE_KEYS.FAMILIES];
 
   return {
     brushedClonalFamilies: brushedClonalFamilies,
@@ -451,8 +433,8 @@ const mapStateToProps = (state) => {
     selectedFamily: state.clonalFamilies.selectedFamily,
     selectingStatus: state.clonalFamilies.brushSelecting,
     starredFamilies: starredFamilies,
-    familiesColumnVisibility: state.clonalFamilies.familiesColumnVisibility,
-    familiesColumnOrder: state.clonalFamilies.familiesColumnOrder,
+    familiesColumnVisibility: familiesColumns.visibility,
+    familiesColumnOrder: familiesColumns.order,
     cloneFieldMetadata: getResolvedFieldMetadata(state).clone
   };
 };
@@ -600,15 +582,13 @@ class ClonalFamiliesTable extends React.Component {
     // Columns in the user's order (required first, then optional per
     // familiesColumnOrder), then filtered by visibility. The picker lists the
     // full ordered set; the table renders only the visible ones.
-    const orderedMappings = orderedFamiliesMappings(familiesColumnOrder, familiesOptionalMappings(cloneFieldMetadata));
-    const columnDefs = orderedMappings.map(([name, , options = {}]) => ({
-      name,
-      required: !!options.required,
-      visible: !!options.required || isColumnVisible(name, options, familiesColumnVisibility)
-    }));
-    const visibleMappings = orderedMappings.filter(
-      ([name, , options = {}]) => options.required || isColumnVisible(name, options, familiesColumnVisibility)
+    const orderedMappings = buildOrderedMappings(
+      FAMILIES_REQUIRED_MAPPINGS,
+      familiesOptionalMappings(cloneFieldMetadata),
+      familiesColumnOrder
     );
+    const columnDefs = buildColumnDefs(orderedMappings, familiesColumnVisibility);
+    const visibleMappings = filterVisibleMappings(orderedMappings, familiesColumnVisibility);
 
     const starButtonStyle = {
       background: "none",

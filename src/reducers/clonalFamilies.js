@@ -2,28 +2,6 @@ import * as _ from "lodash";
 import * as types from "../actions/types";
 import { CHAIN_TYPES } from "../constants/chainTypes";
 
-// Per-browser persistence for the families-table column layout (live working
-// layout; the named-config system remains the source of truth for saved layouts).
-const FAMILIES_COLUMN_VISIBILITY_KEY = "olmsted_families_column_visibility";
-const FAMILIES_COLUMN_ORDER_KEY = "olmsted_families_column_order";
-
-const readSessionJson = (key, fallback) => {
-  try {
-    const saved = sessionStorage.getItem(key);
-    return saved ? JSON.parse(saved) : fallback;
-  } catch (_e) {
-    return fallback;
-  }
-};
-
-const persistSessionJson = (key, value) => {
-  try {
-    sessionStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {
-    console.warn("Failed to persist families column layout to sessionStorage:", e);
-  }
-};
-
 const initialState = {
   brushSelecting: false,
   brushSelection: undefined,
@@ -60,12 +38,6 @@ const initialState = {
   currentSection: "",
   // Starred families (pinned for easy reference)
   starredFamilies: [],
-  // Per-column visibility overrides for the families table ({ name: bool }).
-  // Columns absent from the map use their default visibility (primary columns
-  // visible; field-metadata-derived extra columns hidden).
-  familiesColumnVisibility: readSessionJson(FAMILIES_COLUMN_VISIBILITY_KEY, {}),
-  // Display order of optional families-table columns (by header name); [] = default
-  familiesColumnOrder: readSessionJson(FAMILIES_COLUMN_ORDER_KEY, []),
   // High-level filters: { fieldName: [selectedValues], ... }
   // Empty object means no filters applied
   filters: {}
@@ -233,21 +205,6 @@ const clonalFamilies = (state = _.clone(initialState), action) => {
     }
     case types.UPDATE_CURRENT_SECTION: {
       return { ...state, currentSection: action.section };
-    }
-    case types.SET_FAMILIES_COLUMN_VISIBILITY: {
-      const familiesColumnVisibility = { ...state.familiesColumnVisibility, [action.column]: action.visible };
-      persistSessionJson(FAMILIES_COLUMN_VISIBILITY_KEY, familiesColumnVisibility);
-      return { ...state, familiesColumnVisibility };
-    }
-    case types.SET_FAMILIES_COLUMN_VISIBILITY_MAP: {
-      const familiesColumnVisibility = action.visibility || {};
-      persistSessionJson(FAMILIES_COLUMN_VISIBILITY_KEY, familiesColumnVisibility);
-      return { ...state, familiesColumnVisibility };
-    }
-    case types.SET_FAMILIES_COLUMN_ORDER: {
-      const familiesColumnOrder = action.order || [];
-      persistSessionJson(FAMILIES_COLUMN_ORDER_KEY, familiesColumnOrder);
-      return { ...state, familiesColumnOrder };
     }
     case types.TOGGLE_STARRED_FAMILY: {
       const { ident } = action;

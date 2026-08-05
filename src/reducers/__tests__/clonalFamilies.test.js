@@ -297,57 +297,6 @@ describe("clonalFamilies reducer", () => {
     });
   });
 
-  describe("SET_FAMILIES_COLUMN_VISIBILITY", () => {
-    it("records an explicit visibility override for a column", () => {
-      const state = clonalFamilies(initialState, {
-        type: types.SET_FAMILIES_COLUMN_VISIBILITY,
-        column: "Mut freq",
-        visible: false
-      });
-      expect(state.familiesColumnVisibility["Mut freq"]).toBe(false);
-    });
-
-    it("merges with existing overrides", () => {
-      const withOverride = { ...initialState, familiesColumnVisibility: { "Mut freq": false } };
-      const state = clonalFamilies(withOverride, {
-        type: types.SET_FAMILIES_COLUMN_VISIBILITY,
-        column: "V gene",
-        visible: true
-      });
-      expect(state.familiesColumnVisibility).toEqual({ "Mut freq": false, "V gene": true });
-    });
-  });
-
-  describe("SET_FAMILIES_COLUMN_VISIBILITY_MAP", () => {
-    it("replaces the whole visibility map", () => {
-      const state = clonalFamilies(initialState, {
-        type: types.SET_FAMILIES_COLUMN_VISIBILITY_MAP,
-        visibility: { Subject: false }
-      });
-      expect(state.familiesColumnVisibility).toEqual({ Subject: false });
-    });
-
-    it("defaults to an empty object when visibility is missing", () => {
-      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_COLUMN_VISIBILITY_MAP });
-      expect(state.familiesColumnVisibility).toEqual({});
-    });
-  });
-
-  describe("SET_FAMILIES_COLUMN_ORDER", () => {
-    it("sets the optional column order", () => {
-      const state = clonalFamilies(initialState, {
-        type: types.SET_FAMILIES_COLUMN_ORDER,
-        order: ["Mut freq", "V gene", "CDR3 length"]
-      });
-      expect(state.familiesColumnOrder).toEqual(["Mut freq", "V gene", "CDR3 length"]);
-    });
-
-    it("defaults to an empty array when order is missing", () => {
-      const state = clonalFamilies(initialState, { type: types.SET_FAMILIES_COLUMN_ORDER });
-      expect(state.familiesColumnOrder).toEqual([]);
-    });
-  });
-
   describe("SET_FILTER", () => {
     it("adds a filter", () => {
       const state = clonalFamilies(initialState, {

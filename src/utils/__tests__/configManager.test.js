@@ -7,17 +7,20 @@ import {
   DEFAULT_TREE_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
   DEFAULT_LINEAGE_SETTINGS,
+  DEFAULT_TABLE_SETTINGS,
   resolveValue,
   generateConfigId,
   extractScatterplotSettings,
   extractTreeSettings,
   extractGlobalSettings,
   extractLineageSettings,
+  extractTableSettings,
   extractCurrentSettings,
   applyScatterplotSettings,
   applyTreeSettings,
   applyGlobalSettings,
   applyLineageSettings,
+  applyTableSettings,
   applyConfig,
   createConfig,
   getDefaultConfig,
@@ -25,6 +28,7 @@ import {
   exportConfigToJson,
   importConfigFromJson
 } from "../configManager";
+import { TABLE_KEYS } from "../../constants/tableColumns";
 import { mockConfig } from "../../__test-data__/mockState";
 
 describe("constants", () => {
@@ -153,6 +157,29 @@ describe("extractLineageSettings", () => {
   });
 });
 
+describe("extractTableSettings", () => {
+  it("returns defaults when state is null", () => {
+    expect(extractTableSettings(null)).toEqual(DEFAULT_TABLE_SETTINGS);
+  });
+
+  it("returns defaults when tableColumns is missing", () => {
+    expect(extractTableSettings({})).toEqual(DEFAULT_TABLE_SETTINGS);
+  });
+
+  it("extracts visibility and order per table from state", () => {
+    const state = {
+      tableColumns: {
+        [TABLE_KEYS.FAMILIES]: { visibility: { "Mut freq": false }, order: ["V gene"] },
+        [TABLE_KEYS.DATASET_LOADING]: { visibility: {}, order: [] },
+        [TABLE_KEYS.DATASET_MANAGEMENT]: { visibility: {}, order: [] }
+      }
+    };
+    const result = extractTableSettings(state);
+    expect(result[TABLE_KEYS.FAMILIES]).toEqual({ visibility: { "Mut freq": false }, order: ["V gene"] });
+    expect(result[TABLE_KEYS.DATASET_LOADING]).toEqual({ visibility: {}, order: [] });
+  });
+});
+
 describe("extractCurrentSettings", () => {
   it("combines all settings", () => {
     const result = extractCurrentSettings(null, null, null);
@@ -160,6 +187,8 @@ describe("extractCurrentSettings", () => {
     expect(result).toHaveProperty("tree");
     expect(result).toHaveProperty("global");
     expect(result).toHaveProperty("lineage");
+    expect(result).toHaveProperty("tables");
+    expect(result.tables).toEqual(DEFAULT_TABLE_SETTINGS);
   });
 });
 
@@ -262,6 +291,37 @@ describe("applyLineageSettings", () => {
   });
 });
 
+describe("applyTableSettings", () => {
+  it("does nothing when dispatch is null", () => {
+    expect(() => applyTableSettings(null, {}, {})).not.toThrow();
+  });
+
+  it("dispatches visibility-map and order actions for each table present in settings", () => {
+    const dispatch = jest.fn();
+    const actions = {
+      setTableColumnVisibilityMap: jest.fn((table, visibility) => ({ type: "T", table, visibility })),
+      setTableColumnOrder: jest.fn((table, order) => ({ type: "T", table, order }))
+    };
+    const settings = {
+      [TABLE_KEYS.FAMILIES]: { visibility: { "Mut freq": false }, order: ["V gene"] }
+    };
+    applyTableSettings(dispatch, settings, actions);
+    expect(actions.setTableColumnVisibilityMap).toHaveBeenCalledWith(TABLE_KEYS.FAMILIES, { "Mut freq": false });
+    expect(actions.setTableColumnOrder).toHaveBeenCalledWith(TABLE_KEYS.FAMILIES, ["V gene"]);
+    expect(dispatch).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips tables absent from settings (e.g. a pre-1.3 config)", () => {
+    const dispatch = jest.fn();
+    const actions = {
+      setTableColumnVisibilityMap: jest.fn(),
+      setTableColumnOrder: jest.fn()
+    };
+    applyTableSettings(dispatch, {}, actions);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+});
+
 describe("applyConfig", () => {
   it("does nothing when config is null", () => {
     expect(() => applyConfig(null)).not.toThrow();
@@ -269,6 +329,72 @@ describe("applyConfig", () => {
 
   it("does nothing when config.settings is missing", () => {
     expect(() => applyConfig({ id: "1" })).not.toThrow();
+  });
+
+  it("applies table settings when present", () => {
+    const dispatch = jest.fn();
+    const actions = {
+      setTableColumnVisibilityMap: jest.fn(() => ({ type: "T" })),
+      setTableColumnOrder: jest.fn(() => ({ type: "T" }))
+    };
+    const config = {
+      id: "1",
+      settings: {
+        tables: { [TABLE_KEYS.FAMILIES]: { visibility: { "Mut freq": false }, order: [] } }
+      }
+    };
+    applyConfig(config, null, null, dispatch, actions);
+    expect(actions.setTableColumnVisibilityMap).toHaveBeenCalledWith(TABLE_KEYS.FAMILIES, { "Mut freq": false });
+  });
+
+  it("migration: a pre-1.3 config lacking `tables` applies cleanly without touching table layout", () => {
+    const dispatch = jest.fn();
+    const actions = {
+      setTableColumnVisibilityMap: jest.fn(),
+      setTableColumnOrder: jest.fn(),
+      setFilter: jest.fn(() => ({ type: "T" })),
+      clearAllFilters: jest.fn(() => ({ type: "T" }))
+    };
+    const legacyConfig = {
+      id: "1",
+      version: "1.2",
+      settings: {
+        global: { filters: {} }
+        // no `tables` key - this is what a config saved before CONFIG_VERSION 1.3 looks like
+      }
+    };
+    expect(() => applyConfig(legacyConfig, null, null, dispatch, actions)).not.toThrow();
+    expect(actions.setTableColumnVisibilityMap).not.toHaveBeenCalled();
+    expect(actions.setTableColumnOrder).not.toHaveBeenCalled();
+  });
+});
+
+describe("table column layout config round-trip", () => {
+  it("extract -> createConfig -> applyTableSettings restores the same visibility/order", () => {
+    const reduxState = {
+      tableColumns: {
+        [TABLE_KEYS.FAMILIES]: { visibility: { "Mut freq": false, Subject: true }, order: ["Subject", "V gene"] },
+        [TABLE_KEYS.DATASET_LOADING]: { visibility: { Source: false }, order: [] },
+        [TABLE_KEYS.DATASET_MANAGEMENT]: { visibility: {}, order: [] }
+      }
+    };
+
+    const settings = extractCurrentSettings(null, null, reduxState);
+    const config = createConfig("My Layout", settings);
+
+    const dispatch = jest.fn();
+    const actions = {
+      setTableColumnVisibilityMap: jest.fn(() => ({ type: "T" })),
+      setTableColumnOrder: jest.fn(() => ({ type: "T" }))
+    };
+    applyConfig(config, null, null, dispatch, actions);
+
+    expect(actions.setTableColumnVisibilityMap).toHaveBeenCalledWith(TABLE_KEYS.FAMILIES, {
+      "Mut freq": false,
+      Subject: true
+    });
+    expect(actions.setTableColumnOrder).toHaveBeenCalledWith(TABLE_KEYS.FAMILIES, ["Subject", "V gene"]);
+    expect(actions.setTableColumnVisibilityMap).toHaveBeenCalledWith(TABLE_KEYS.DATASET_LOADING, { Source: false });
   });
 });
 
@@ -301,10 +427,12 @@ describe("getDefaultConfig", () => {
   it("returns a config with all default settings", () => {
     const config = getDefaultConfig();
     expect(config.name).toBe("Default");
+    expect(config.version).toBe(CONFIG_VERSION);
     expect(config.settings.scatterplot).toEqual(DEFAULT_SCATTERPLOT_SETTINGS);
     expect(config.settings.tree).toEqual(DEFAULT_TREE_SETTINGS);
     expect(config.settings.global).toEqual(DEFAULT_GLOBAL_SETTINGS);
     expect(config.settings.lineage).toEqual(DEFAULT_LINEAGE_SETTINGS);
+    expect(config.settings.tables).toEqual(DEFAULT_TABLE_SETTINGS);
   });
 });
 
