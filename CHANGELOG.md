@@ -24,7 +24,8 @@ See the 2.x entries below for the detailed per-change history.
 
 ## version 3.0.1 - 2026/08/05
 Added:
-* The tree (Phylogeny) view has an **"Order children by" control** (#331) for ladderizing sibling clades: input order (default, today's behavior), number of leaves, max leaf depth, or total leaf multiplicity, plus an "Order children descending" toggle. The per-node subtree aggregates backing this are computed once in `computeTreeData` (`src/selectors/trees.js`), memoized on the tree itself — switching the ordering control re-lays-out the tree but never re-triggers that computation. Implemented as Vega-bound signals (`child_order_by`, `child_order_desc`), matching every other tree control, so the choice is captured by the named-config system like `branch_color_by`/`show_labels`/etc.
+* The tree (Phylogeny) view has an **"Order children by" control** (#331) for ladderizing sibling clades: input order (default, today's behavior), number of leaves, max leaf depth (topological), max leaf distance from root (branch length — only offered when the tree has distance data, matching the "Branch length" control), or total leaf multiplicity, plus an "Order children descending" toggle. The per-node subtree aggregates backing this are computed once in `computeTreeData` (`src/selectors/trees.js`), memoized on the tree itself — switching the ordering control re-lays-out the tree but never re-triggers that computation. Implemented as Vega-bound signals (`child_order_by`, `child_order_desc`), matching every other tree control, so the choice is captured by the named-config system like `branch_color_by`/`show_labels`/etc.
+* The tree's **node tooltip now shows the subtree ordering aggregates** (leaves in subtree, max leaf depth, max leaf distance, total multiplicity) driving the new "Order children by" control, so the values are visible without devtools.
 
 ## version 2.7.16 - 2026/06/26
 Added:

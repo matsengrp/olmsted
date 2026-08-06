@@ -52,9 +52,12 @@ export const scatterplotDatasetsData = [{ dataset_id: "dataset-1", name: "Test D
 
 // Minimal tree: naive → root → leaf1, leaf2
 // Ordering aggregates (subtree_leaf_count / subtree_max_leaf_depth /
-// subtree_total_multiplicity / input_order_index) mirror what
-// computeTreeData (src/selectors/trees.js) would compute for this shape, so
-// the "sibling ordering (#331)" runtime tests exercise real field values.
+// subtree_max_leaf_distance / subtree_total_multiplicity / input_order_index)
+// mirror what computeTreeData (src/selectors/trees.js) would compute for this
+// shape, so the "sibling ordering (#331)" runtime tests exercise real field
+// values. Note leaf-1 (distance 0.05, multiplicity 3) and leaf-2 (distance
+// 0.08, multiplicity 1) disagree between distance and multiplicity ordering —
+// deliberately, so tests can tell the two fields apart.
 export const treeNodesData = [
   {
     sequence_id: "naive",
@@ -65,6 +68,7 @@ export const treeNodesData = [
     lbr: 0,
     subtree_leaf_count: 2,
     subtree_max_leaf_depth: 2,
+    subtree_max_leaf_distance: 0.08,
     subtree_total_multiplicity: 4,
     input_order_index: 0
   },
@@ -77,6 +81,7 @@ export const treeNodesData = [
     lbr: 1.0,
     subtree_leaf_count: 2,
     subtree_max_leaf_depth: 2,
+    subtree_max_leaf_distance: 0.08,
     subtree_total_multiplicity: 4,
     input_order_index: 1
   },
@@ -94,6 +99,7 @@ export const treeNodesData = [
     ],
     subtree_leaf_count: 1,
     subtree_max_leaf_depth: 2,
+    subtree_max_leaf_distance: 0.05,
     subtree_total_multiplicity: 3,
     input_order_index: 2
   },
@@ -108,6 +114,7 @@ export const treeNodesData = [
     timepoint_multiplicities: [{ timepoint_id: "day-0", multiplicity: 1 }],
     subtree_leaf_count: 1,
     subtree_max_leaf_depth: 2,
+    subtree_max_leaf_distance: 0.08,
     subtree_total_multiplicity: 1,
     input_order_index: 3
   }

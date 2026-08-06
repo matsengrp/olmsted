@@ -250,8 +250,9 @@ const buildConsensus = (sequences) => {
 
 /**
  * Bottom-up per-node subtree aggregates used to order tree children (#331):
- * leaf count, deepest-leaf depth, and total leaf multiplicity across each
- * node's own subtree. `bfsOrder` (root-first, non-decreasing depth, from the
+ * leaf count, deepest-leaf depth (topological), deepest-leaf distance
+ * (branch length from root), and total leaf multiplicity across each node's
+ * own subtree. `bfsOrder` (root-first, non-decreasing depth, from the
  * caller's BFS) lets this fold each node into its parent in a single reverse
  * pass — every descendant is folded in before its ancestor's turn comes,
  * since descendants always sort later in `bfsOrder`.
@@ -259,6 +260,7 @@ const buildConsensus = (sequences) => {
 const computeSubtreeOrderingAggregates = (nodes, childrenMap, depthMap, bfsOrder) => {
   const leafCount = {};
   const maxLeafDepth = {};
+  const maxLeafDistance = {};
   const totalMultiplicity = {};
   const parentById = {};
 
@@ -269,10 +271,12 @@ const computeSubtreeOrderingAggregates = (nodes, childrenMap, depthMap, bfsOrder
     if (isLeaf) {
       leafCount[id] = 1;
       maxLeafDepth[id] = depthMap[id] ?? 0;
+      maxLeafDistance[id] = node.distance || 0;
       totalMultiplicity[id] = node.multiplicity || 0;
     } else {
       leafCount[id] = 0;
       maxLeafDepth[id] = 0;
+      maxLeafDistance[id] = 0;
       totalMultiplicity[id] = 0;
     }
   }
@@ -283,10 +287,11 @@ const computeSubtreeOrderingAggregates = (nodes, childrenMap, depthMap, bfsOrder
     if (!parentId) continue;
     leafCount[parentId] += leafCount[id];
     maxLeafDepth[parentId] = Math.max(maxLeafDepth[parentId], maxLeafDepth[id]);
+    maxLeafDistance[parentId] = Math.max(maxLeafDistance[parentId], maxLeafDistance[id]);
     totalMultiplicity[parentId] += totalMultiplicity[id];
   }
 
-  return { leafCount, maxLeafDepth, totalMultiplicity };
+  return { leafCount, maxLeafDepth, maxLeafDistance, totalMultiplicity };
 };
 
 const SYNTHETIC_ROOT_ID = "__synthetic_root__";
@@ -415,7 +420,7 @@ export const computeTreeData = (tree) => {
           queue.push([childId, d + 1]);
         }
       }
-      const { leafCount, maxLeafDepth, totalMultiplicity } = computeSubtreeOrderingAggregates(
+      const { leafCount, maxLeafDepth, maxLeafDistance, totalMultiplicity } = computeSubtreeOrderingAggregates(
         treeData.nodes,
         childrenMap,
         depthMap,
@@ -429,6 +434,7 @@ export const computeTreeData = (tree) => {
               // Ordering aggregates for the tree view's "order children by" control (#331)
               subtree_leaf_count: leafCount[n.sequence_id],
               subtree_max_leaf_depth: maxLeafDepth[n.sequence_id],
+              subtree_max_leaf_distance: maxLeafDistance[n.sequence_id],
               subtree_total_multiplicity: totalMultiplicity[n.sequence_id],
               input_order_index: index
             }

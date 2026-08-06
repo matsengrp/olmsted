@@ -277,6 +277,11 @@ describe("concatTreeWithAlignmentSpec", () => {
       const byId = await runWithOrdering("total_multiplicity", true);
       expect(byId["leaf-1"].y_tree).toBeLessThan(byId["leaf-2"].y_tree);
     });
+
+    it("orders ascending by max leaf distance (leaf-1, dist 0.05, before leaf-2, dist 0.08) — the opposite of multiplicity order", async () => {
+      const byId = await runWithOrdering("max_leaf_distance", false);
+      expect(byId["leaf-1"].y_tree).toBeLessThan(byId["leaf-2"].y_tree);
+    });
   });
 });
 
