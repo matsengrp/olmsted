@@ -79,6 +79,10 @@ const buildOrderingTooltipFields = (hasDistance) => [
   { field: "subtree_total_multiplicity", label: "Total multiplicity in subtree" }
 ];
 
+// Builds a node tooltip expression that switches, at hover time, on the
+// `show_ordering_tooltip_fields` signal — a plain Vega ternary over two
+// pre-built object-literal expressions, so toggling the checkbox needs no
+// spec rebuild (see the "Show ordering info in tooltip" control).
 const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = [], hasDistance = false) => {
   const fields = [];
   const seen = new Set();
@@ -95,9 +99,11 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = [], 
     }
   }
 
-  return buildVegaTooltipExpr(fields.concat(extraFields, buildOrderingTooltipFields(hasDistance)), {
+  const withoutOrdering = buildVegaTooltipExpr(fields.concat(extraFields), { nullFallback: "N/A" });
+  const withOrdering = buildVegaTooltipExpr(fields.concat(extraFields, buildOrderingTooltipFields(hasDistance)), {
     nullFallback: "N/A"
   });
+  return `(show_ordering_tooltip_fields ? (${withOrdering}) : (${withoutOrdering}))`;
 };
 
 /**
@@ -986,6 +992,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         ...maybeAddBind({
           input: "checkbox",
           name: "Order children descending"
+        })
+      },
+      {
+        name: "show_ordering_tooltip_fields",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Show ordering info in tooltip"
         })
       },
       // === DISPLAY CONTROLS ===

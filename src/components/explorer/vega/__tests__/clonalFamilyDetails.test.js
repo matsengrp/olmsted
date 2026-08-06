@@ -283,6 +283,22 @@ describe("concatTreeWithAlignmentSpec", () => {
       expect(byId["leaf-1"].y_tree).toBeLessThan(byId["leaf-2"].y_tree);
     });
   });
+
+  describe("ordering tooltip toggle (#331)", () => {
+    it("has a 'Show ordering info in tooltip' checkbox signal, defaulting to off", () => {
+      const signal = spec.signals.find((s) => s.name === "show_ordering_tooltip_fields");
+      expect(signal).toBeDefined();
+      expect(signal.value).toBe(false);
+    });
+
+    it("wraps the node tooltip content in a show_ordering_tooltip_fields conditional", () => {
+      const specString = JSON.stringify(spec);
+      // The conditional itself, and the ordering fields it gates, must both
+      // be present in the built tooltip expression.
+      expect(specString).toContain("show_ordering_tooltip_fields");
+      expect(specString).toContain("Leaves in subtree");
+    });
+  });
 });
 
 describe("seqAlignSpec", () => {

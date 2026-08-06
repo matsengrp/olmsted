@@ -49,6 +49,7 @@ export const TREE_SIGNALS = [
   // Sibling ordering ("ladderize", #331)
   "child_order_by",
   "child_order_desc",
+  "show_ordering_tooltip_fields",
   // Alignment zoom/pan state (tree zoom/pan are computed signals, not directly settable)
   "alignment_zoom",
   "alignment_pan"
@@ -91,6 +92,7 @@ export const DEFAULT_TREE_SETTINGS = {
   // Sibling ordering ("ladderize", #331) defaults
   child_order_by: "input",
   child_order_desc: false,
+  show_ordering_tooltip_fields: false,
   // Alignment zoom/pan defaults
   alignment_zoom: 1,
   alignment_pan: 0
