@@ -65,7 +65,25 @@ const treeSelectLabels = (options, labelFor) =>
  * @param {Object[]} extraFields - Additional fields to append (e.g., timepoint)
  * @returns {string} Vega expression for the tooltip signal
  */
-const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = []) => {
+// Sibling-ordering aggregates (#331) — shown in every node tooltip so the
+// values driving "Order children by" are visible without devtools.
+// "Max leaf distance" only means something when the tree has distance data
+// (matching the "max_leaf_distance" order-by option's own gating), so it's
+// only included when the caller confirms that via `hasDistance`.
+const buildOrderingTooltipFields = (hasDistance) => [
+  { field: "subtree_leaf_count", label: "Leaves in subtree" },
+  { field: "subtree_max_leaf_depth", label: "Max leaf depth in subtree" },
+  ...(hasDistance
+    ? [{ field: "subtree_max_leaf_distance", label: "Max leaf distance in subtree", format: ".3f" }]
+    : []),
+  { field: "subtree_total_multiplicity", label: "Total multiplicity in subtree" }
+];
+
+// Builds a node tooltip expression that switches, at hover time, on the
+// `show_ordering_tooltip_fields` signal — a plain Vega ternary over two
+// pre-built object-literal expressions, so toggling the checkbox needs no
+// spec rebuild (see the "Show ordering info in tooltip" control).
+const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = [], hasDistance = false) => {
   const fields = [];
   const seen = new Set();
 
@@ -81,7 +99,11 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = []) 
     }
   }
 
-  return buildVegaTooltipExpr(fields.concat(extraFields), { nullFallback: "N/A" });
+  const withoutOrdering = buildVegaTooltipExpr(fields.concat(extraFields), { nullFallback: "N/A" });
+  const withOrdering = buildVegaTooltipExpr(fields.concat(extraFields, buildOrderingTooltipFields(hasDistance)), {
+    nullFallback: "N/A"
+  });
+  return `(show_ordering_tooltip_fields ? (${withOrdering}) : (${withoutOrdering}))`;
 };
 
 /**
@@ -89,17 +111,22 @@ const buildNodeTooltipSignal = (nodeMetadata, branchMetadata, extraFields = []) 
  * Only adds timepoint fields when metadata is absent (fallback) or
  * when metadata explicitly declares timepoint fields.
  */
-const buildNodeTooltipWithTimepointSignal = (nodeMetadata, branchMetadata, hasFieldMetadata = false) => {
+const buildNodeTooltipWithTimepointSignal = (
+  nodeMetadata,
+  branchMetadata,
+  hasFieldMetadata = false,
+  hasDistance = false
+) => {
   // Only include timepoint fields when no metadata exists (old data likely has timepoints)
   // When metadata is present, timepoint fields should be declared there if available
   if (hasFieldMetadata) {
-    return buildNodeTooltipSignal(nodeMetadata, branchMetadata);
+    return buildNodeTooltipSignal(nodeMetadata, branchMetadata, [], hasDistance);
   }
   const timepointFields = [
     { field: "timepoint_multiplicity_key", label: "Timepoint" },
     { field: "timepoint_multiplicity_value", label: "Timepoint Multiplicity" }
   ];
-  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, timepointFields);
+  return buildNodeTooltipSignal(nodeMetadata, branchMetadata, timepointFields, hasDistance);
 };
 
 // Vega filter: selects gap ("-") and unknown ("X") characters for special rendering
@@ -262,8 +289,14 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
   // Build dynamic node tooltip signals (includes branch metrics on child nodes)
   const branchMetadata = fieldMetadata?.branch || null;
   const hasFieldMeta = !!fieldMetadata;
-  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata);
-  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(nodeMetadata, branchMetadata, hasFieldMeta);
+  const hasDistanceField = hasNodeField("distance");
+  const nodeTooltip = buildNodeTooltipSignal(nodeMetadata, branchMetadata, [], hasDistanceField);
+  const nodeTooltipWithTimepoint = buildNodeTooltipWithTimepointSignal(
+    nodeMetadata,
+    branchMetadata,
+    hasFieldMeta,
+    hasDistanceField
+  );
 
   // Build mutation coloring options from field_metadata.mutation
   // display: "dropdown" (default) → color option based on type
@@ -377,6 +410,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "tree",
         transform: [
           { key: "sequence_id", type: "stratify", parentKey: "parent" },
+          // Sibling ordering (#331): pick the precomputed subtree aggregate the
+          // "Order children by" control points at (defaulting to the original
+          // input-array order), negating it when descending is checked so the
+          // tree transform's sort can stay a plain ascending sort.
+          {
+            type: "formula",
+            expr: "(child_order_desc ? -1 : 1) * (child_order_by == 'leaf_count' ? datum.subtree_leaf_count : child_order_by == 'max_leaf_depth' ? datum.subtree_max_leaf_depth : child_order_by == 'max_leaf_distance' ? datum.subtree_max_leaf_distance : child_order_by == 'total_multiplicity' ? datum.subtree_total_multiplicity : datum.input_order_index)",
+            as: "child_sort_value"
+          },
           {
             // The size of the tree here should be constant with the number of leaves;
             // the zoom signals rely on xext, yext to be the same no matter the zoom
@@ -386,7 +428,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             separation: false,
             // We are only using the y values from this transform, x comes from "distance"
             size: [{ signal: "leaves_count_incl_naive" }, { signal: "width" }],
-            as: ["y_tree", "x_tree", "depth", "children"]
+            as: ["y_tree", "x_tree", "depth", "children"],
+            // d3-hierarchy's node.sort() calls this comparator with the tree
+            // node wrapper, not the raw datum — the field lives one level
+            // down at node.data.<field>.
+            sort: { field: "data.child_sort_value", order: "ascending" }
           },
 
           // Calculate x_raw based on the current mode (for extent calculation)
@@ -912,6 +958,49 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "branch_color_scale",
         update:
           'indexof(categorical_seq_metrics, branch_color_by) > 0 ? "branch_color_categorical" : "branch_color_sequential"'
+      },
+      // Sibling ordering ("ladderize", #331). Default is "input" (today's
+      // behavior — input-array order) so existing saved views/URLs are unaffected.
+      // "max_leaf_distance" (branch length from root, as opposed to
+      // "max_leaf_depth"'s topological edge count) is only offered when the
+      // tree actually has distance data, matching the "Branch length" control.
+      {
+        name: "child_order_by",
+        value: "input",
+        ...maybeAddBind({
+          input: "select",
+          name: "Order children by",
+          options: [
+            "input",
+            "leaf_count",
+            "max_leaf_depth",
+            ...(hasNodeField("distance") ? ["max_leaf_distance"] : []),
+            "total_multiplicity"
+          ],
+          labels: [
+            "Input order",
+            "Number of leaves",
+            "Max leaf depth",
+            ...(hasNodeField("distance") ? ["Max leaf distance from root"] : []),
+            "Total leaf multiplicity"
+          ]
+        })
+      },
+      {
+        name: "child_order_desc",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Order children descending"
+        })
+      },
+      {
+        name: "show_ordering_tooltip_fields",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Show ordering info in tooltip"
+        })
       },
       // === DISPLAY CONTROLS ===
       {

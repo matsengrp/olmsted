@@ -139,6 +139,99 @@ describe("computeTreeData", () => {
     expect(mutAtPos3.selection_contribution).toBe(4.1);
     expect(mutAtPos3.region).toBe("CDR2");
   });
+
+  describe("subtree ordering aggregates (#331)", () => {
+    it("computes leaf count / max leaf depth / total multiplicity for a simple tree", () => {
+      const result = computeTreeData(mockTree);
+      const byId = Object.fromEntries(result.nodes.map((n) => [n.sequence_id, n]));
+
+      // inferred_naive -> internal-1 -> {leaf-1 (mult 2), leaf-2 (mult 1)}, both leaves at depth 2
+      // mockTreeNodes has no `distance` field, so it falls back to 0.
+      expect(byId["leaf-1"].subtree_leaf_count).toBe(1);
+      expect(byId["leaf-1"].subtree_max_leaf_depth).toBe(2);
+      expect(byId["leaf-1"].subtree_max_leaf_distance).toBe(0);
+      expect(byId["leaf-1"].subtree_total_multiplicity).toBe(2);
+
+      expect(byId["internal-1"].subtree_leaf_count).toBe(2);
+      expect(byId["internal-1"].subtree_max_leaf_depth).toBe(2);
+      expect(byId["internal-1"].subtree_max_leaf_distance).toBe(0);
+      expect(byId["internal-1"].subtree_total_multiplicity).toBe(3);
+
+      expect(byId["inferred_naive"].subtree_leaf_count).toBe(2);
+      expect(byId["inferred_naive"].subtree_max_leaf_depth).toBe(2);
+      expect(byId["inferred_naive"].subtree_max_leaf_distance).toBe(0);
+      expect(byId["inferred_naive"].subtree_total_multiplicity).toBe(3);
+
+      // input_order_index mirrors the (post-normalization) array position
+      expect(byId["inferred_naive"].input_order_index).toBe(0);
+      expect(byId["internal-1"].input_order_index).toBe(1);
+      expect(byId["leaf-1"].input_order_index).toBe(2);
+      expect(byId["leaf-2"].input_order_index).toBe(3);
+    });
+
+    it("distinguishes leaf count, max leaf depth, max leaf distance, and multiplicity across asymmetric siblings", () => {
+      // root -> A (leaf, mult 10, depth 1, one long branch: distance 0.5)
+      //      -> B -> B1 -> B1a (leaf, mult 1, depth 3, short branches: distance 0.1)
+      //           -> B2 (leaf, mult 1, depth 2, distance 0.05)
+      const asymmetricTree = {
+        ident: "tree-asym",
+        nodes: [
+          { sequence_id: "root", type: "root", parent: null, sequence_alignment_aa: "MKVL" },
+          {
+            sequence_id: "A",
+            type: "leaf",
+            parent: "root",
+            sequence_alignment_aa: "MKVL",
+            multiplicity: 10,
+            distance: 0.5
+          },
+          { sequence_id: "B", type: "internal", parent: "root", sequence_alignment_aa: "MKVL" },
+          { sequence_id: "B1", type: "internal", parent: "B", sequence_alignment_aa: "MKVL" },
+          {
+            sequence_id: "B1a",
+            type: "leaf",
+            parent: "B1",
+            sequence_alignment_aa: "MKVL",
+            multiplicity: 1,
+            distance: 0.1
+          },
+          {
+            sequence_id: "B2",
+            type: "leaf",
+            parent: "B",
+            sequence_alignment_aa: "MKVL",
+            multiplicity: 1,
+            distance: 0.05
+          }
+        ]
+      };
+      const result = computeTreeData(asymmetricTree);
+      const byId = Object.fromEntries(result.nodes.map((n) => [n.sequence_id, n]));
+
+      // A: single leaf, shallow but on a long branch, high multiplicity
+      expect(byId["A"]).toMatchObject({
+        subtree_leaf_count: 1,
+        subtree_max_leaf_depth: 1,
+        subtree_max_leaf_distance: 0.5,
+        subtree_total_multiplicity: 10
+      });
+      // B: two leaves, topologically deeper but on short branches, lower total multiplicity than A
+      expect(byId["B"]).toMatchObject({
+        subtree_leaf_count: 2,
+        subtree_max_leaf_depth: 3,
+        subtree_max_leaf_distance: 0.1,
+        subtree_total_multiplicity: 2
+      });
+      // By leaf count or topological depth B ranks above A; by branch-length
+      // distance or multiplicity A ranks above B — confirms the four metrics
+      // are independent (topological depth and branch-length distance in
+      // particular can and do disagree).
+      expect(byId["B"].subtree_leaf_count).toBeGreaterThan(byId["A"].subtree_leaf_count);
+      expect(byId["B"].subtree_max_leaf_depth).toBeGreaterThan(byId["A"].subtree_max_leaf_depth);
+      expect(byId["B"].subtree_max_leaf_distance).toBeLessThan(byId["A"].subtree_max_leaf_distance);
+      expect(byId["B"].subtree_total_multiplicity).toBeLessThan(byId["A"].subtree_total_multiplicity);
+    });
+  });
 });
 
 describe("computeLineageDataWithOptions", () => {
