@@ -377,6 +377,15 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "tree",
         transform: [
           { key: "sequence_id", type: "stratify", parentKey: "parent" },
+          // Sibling ordering (#331): pick the precomputed subtree aggregate the
+          // "Order children by" control points at (defaulting to the original
+          // input-array order), negating it when descending is checked so the
+          // tree transform's sort can stay a plain ascending sort.
+          {
+            type: "formula",
+            expr: "(child_order_desc ? -1 : 1) * (child_order_by == 'leaf_count' ? datum.subtree_leaf_count : child_order_by == 'max_leaf_depth' ? datum.subtree_max_leaf_depth : child_order_by == 'total_multiplicity' ? datum.subtree_total_multiplicity : datum.input_order_index)",
+            as: "child_sort_value"
+          },
           {
             // The size of the tree here should be constant with the number of leaves;
             // the zoom signals rely on xext, yext to be the same no matter the zoom
@@ -386,7 +395,11 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
             separation: false,
             // We are only using the y values from this transform, x comes from "distance"
             size: [{ signal: "leaves_count_incl_naive" }, { signal: "width" }],
-            as: ["y_tree", "x_tree", "depth", "children"]
+            as: ["y_tree", "x_tree", "depth", "children"],
+            // d3-hierarchy's node.sort() calls this comparator with the tree
+            // node wrapper, not the raw datum — the field lives one level
+            // down at node.data.<field>.
+            sort: { field: "data.child_sort_value", order: "ascending" }
           },
 
           // Calculate x_raw based on the current mode (for extent calculation)
@@ -912,6 +925,26 @@ const concatTreeWithAlignmentSpec = (options = {}) => {
         name: "branch_color_scale",
         update:
           'indexof(categorical_seq_metrics, branch_color_by) > 0 ? "branch_color_categorical" : "branch_color_sequential"'
+      },
+      // Sibling ordering ("ladderize", #331). Default is "input" (today's
+      // behavior — input-array order) so existing saved views/URLs are unaffected.
+      {
+        name: "child_order_by",
+        value: "input",
+        ...maybeAddBind({
+          input: "select",
+          name: "Order children by",
+          options: ["input", "leaf_count", "max_leaf_depth", "total_multiplicity"],
+          labels: ["Input order", "Number of leaves", "Max leaf depth", "Total leaf multiplicity"]
+        })
+      },
+      {
+        name: "child_order_desc",
+        value: false,
+        ...maybeAddBind({
+          input: "checkbox",
+          name: "Order children descending"
+        })
       },
       // === DISPLAY CONTROLS ===
       {

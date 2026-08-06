@@ -51,6 +51,10 @@ export const scatterplotDatasetsData = [{ dataset_id: "dataset-1", name: "Test D
 // --- clonalFamilyDetails.js: tree + alignment ---
 
 // Minimal tree: naive → root → leaf1, leaf2
+// Ordering aggregates (subtree_leaf_count / subtree_max_leaf_depth /
+// subtree_total_multiplicity / input_order_index) mirror what
+// computeTreeData (src/selectors/trees.js) would compute for this shape, so
+// the "sibling ordering (#331)" runtime tests exercise real field values.
 export const treeNodesData = [
   {
     sequence_id: "naive",
@@ -58,7 +62,11 @@ export const treeNodesData = [
     type: "naive",
     distance: 0,
     lbi: 0,
-    lbr: 0
+    lbr: 0,
+    subtree_leaf_count: 2,
+    subtree_max_leaf_depth: 2,
+    subtree_total_multiplicity: 4,
+    input_order_index: 0
   },
   {
     sequence_id: "root",
@@ -66,7 +74,11 @@ export const treeNodesData = [
     type: "root",
     distance: 0.01,
     lbi: 0.5,
-    lbr: 1.0
+    lbr: 1.0,
+    subtree_leaf_count: 2,
+    subtree_max_leaf_depth: 2,
+    subtree_total_multiplicity: 4,
+    input_order_index: 1
   },
   {
     sequence_id: "leaf-1",
@@ -79,7 +91,11 @@ export const treeNodesData = [
     timepoint_multiplicities: [
       { timepoint_id: "day-0", multiplicity: 2 },
       { timepoint_id: "day-7", multiplicity: 1 }
-    ]
+    ],
+    subtree_leaf_count: 1,
+    subtree_max_leaf_depth: 2,
+    subtree_total_multiplicity: 3,
+    input_order_index: 2
   },
   {
     sequence_id: "leaf-2",
@@ -89,7 +105,11 @@ export const treeNodesData = [
     multiplicity: 1,
     cluster_multiplicity: 1,
     affinity: 0.6,
-    timepoint_multiplicities: [{ timepoint_id: "day-0", multiplicity: 1 }]
+    timepoint_multiplicities: [{ timepoint_id: "day-0", multiplicity: 1 }],
+    subtree_leaf_count: 1,
+    subtree_max_leaf_depth: 2,
+    subtree_total_multiplicity: 1,
+    input_order_index: 3
   }
 ];
 

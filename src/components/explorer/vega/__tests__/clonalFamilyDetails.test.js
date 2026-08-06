@@ -241,6 +241,43 @@ describe("concatTreeWithAlignmentSpec", () => {
       expect(() => vega.parse(collidingSpec)).not.toThrow();
     });
   });
+
+  describe("sibling ordering (#331)", () => {
+    // leaf-1 (multiplicity 3) and leaf-2 (multiplicity 1) are both direct
+    // children of "root" in treeNodesData; sorting by total multiplicity
+    // should swap their relative y_tree order depending on direction.
+    const runWithOrdering = async (childOrderBy, childOrderDesc) => {
+      const runtime = vega.parse(spec);
+      const view = new vega.View(runtime, { renderer: "none" });
+      view.data("source_0", treeNodesData);
+      view.data("source_1", treeAlignmentData);
+      view.data("naive_data", naiveGeneRegionData);
+      view.data("cdr_bounds", cdrBoundsData);
+      view.data("leaves_count_incl_naive", leavesCountData);
+      view.data("seed", seedData);
+      if (childOrderBy !== undefined) view.signal("child_order_by", childOrderBy);
+      if (childOrderDesc !== undefined) view.signal("child_order_desc", childOrderDesc);
+      await view.runAsync();
+      const byId = Object.fromEntries(view.data("tree").map((d) => [d.sequence_id, d]));
+      view.finalize();
+      return byId;
+    };
+
+    it("defaults to input order (leaf-1 before leaf-2, as in treeNodesData)", async () => {
+      const byId = await runWithOrdering();
+      expect(byId["leaf-1"].y_tree).toBeLessThan(byId["leaf-2"].y_tree);
+    });
+
+    it("orders ascending by total multiplicity (leaf-2, mult 1, before leaf-1, mult 3)", async () => {
+      const byId = await runWithOrdering("total_multiplicity", false);
+      expect(byId["leaf-2"].y_tree).toBeLessThan(byId["leaf-1"].y_tree);
+    });
+
+    it("descending reverses the order (leaf-1 before leaf-2)", async () => {
+      const byId = await runWithOrdering("total_multiplicity", true);
+      expect(byId["leaf-1"].y_tree).toBeLessThan(byId["leaf-2"].y_tree);
+    });
+  });
 });
 
 describe("seqAlignSpec", () => {

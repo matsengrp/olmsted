@@ -248,6 +248,47 @@ const buildConsensus = (sequences) => {
   return consensus;
 };
 
+/**
+ * Bottom-up per-node subtree aggregates used to order tree children (#331):
+ * leaf count, deepest-leaf depth, and total leaf multiplicity across each
+ * node's own subtree. `bfsOrder` (root-first, non-decreasing depth, from the
+ * caller's BFS) lets this fold each node into its parent in a single reverse
+ * pass — every descendant is folded in before its ancestor's turn comes,
+ * since descendants always sort later in `bfsOrder`.
+ */
+const computeSubtreeOrderingAggregates = (nodes, childrenMap, depthMap, bfsOrder) => {
+  const leafCount = {};
+  const maxLeafDepth = {};
+  const totalMultiplicity = {};
+  const parentById = {};
+
+  for (const node of nodes) {
+    const id = node.sequence_id;
+    parentById[id] = node.parent || null;
+    const isLeaf = !childrenMap[id] || childrenMap[id].length === 0;
+    if (isLeaf) {
+      leafCount[id] = 1;
+      maxLeafDepth[id] = depthMap[id] ?? 0;
+      totalMultiplicity[id] = node.multiplicity || 0;
+    } else {
+      leafCount[id] = 0;
+      maxLeafDepth[id] = 0;
+      totalMultiplicity[id] = 0;
+    }
+  }
+
+  for (let i = bfsOrder.length - 1; i >= 0; i--) {
+    const id = bfsOrder[i];
+    const parentId = parentById[id];
+    if (!parentId) continue;
+    leafCount[parentId] += leafCount[id];
+    maxLeafDepth[parentId] = Math.max(maxLeafDepth[parentId], maxLeafDepth[id]);
+    totalMultiplicity[parentId] += totalMultiplicity[id];
+  }
+
+  return { leafCount, maxLeafDepth, totalMultiplicity };
+};
+
 const SYNTHETIC_ROOT_ID = "__synthetic_root__";
 
 /**
@@ -364,16 +405,34 @@ export const computeTreeData = (tree) => {
     }
     if (rootId) {
       const depthMap = {};
+      const bfsOrder = [];
       const queue = [[rootId, 0]];
       while (queue.length > 0) {
         const [nodeId, d] = queue.shift();
         depthMap[nodeId] = d;
+        bfsOrder.push(nodeId);
         for (const childId of childrenMap[nodeId] || []) {
           queue.push([childId, d + 1]);
         }
       }
-      treeData.nodes = treeData.nodes.map((n) =>
-        depthMap[n.sequence_id] !== undefined ? { ...n, node_depth: depthMap[n.sequence_id] } : n
+      const { leafCount, maxLeafDepth, totalMultiplicity } = computeSubtreeOrderingAggregates(
+        treeData.nodes,
+        childrenMap,
+        depthMap,
+        bfsOrder
+      );
+      treeData.nodes = treeData.nodes.map((n, index) =>
+        depthMap[n.sequence_id] !== undefined
+          ? {
+              ...n,
+              node_depth: depthMap[n.sequence_id],
+              // Ordering aggregates for the tree view's "order children by" control (#331)
+              subtree_leaf_count: leafCount[n.sequence_id],
+              subtree_max_leaf_depth: maxLeafDepth[n.sequence_id],
+              subtree_total_multiplicity: totalMultiplicity[n.sequence_id],
+              input_order_index: index
+            }
+          : n
       );
     }
   }

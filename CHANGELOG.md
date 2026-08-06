@@ -22,6 +22,10 @@ dependencies and frameworks. Headline changes since the 2.x line:
 
 See the 2.x entries below for the detailed per-change history.
 
+## version 3.0.1 - 2026/08/05
+Added:
+* The tree (Phylogeny) view has an **"Order children by" control** (#331) for ladderizing sibling clades: input order (default, today's behavior), number of leaves, max leaf depth, or total leaf multiplicity, plus an "Order children descending" toggle. The per-node subtree aggregates backing this are computed once in `computeTreeData` (`src/selectors/trees.js`), memoized on the tree itself — switching the ordering control re-lays-out the tree but never re-triggers that computation. Implemented as Vega-bound signals (`child_order_by`, `child_order_desc`), matching every other tree control, so the choice is captured by the named-config system like `branch_color_by`/`show_labels`/etc.
+
 ## version 2.7.16 - 2026/06/26
 Added:
 * The clonal-families table has a **"Columns" picker** to show/hide columns (#323). Action/identity columns (Star, Select, Info, Naive sequence, Family ID) are locked visible; all other columns are toggleable. The picker lists **every clone variable in `field_metadata`** — both `dropdown` and `tooltip` display fields — so any data field can be added as a column; field-metadata-derived extras default to hidden (opt-in), while the standard columns default to visible. Per-column visibility lives in Redux and persists per browser via `sessionStorage`. (CSV export still includes the full standard column set.)
