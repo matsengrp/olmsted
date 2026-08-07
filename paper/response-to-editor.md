@@ -45,4 +45,14 @@ We have restructured the paper to include explicit sections with the required he
 
 This restructuring brings the paper somewhat over the usual word-count target; we judged the added scope and provenance detail to be worth the length given the questions above, but we are happy to trim if you would prefer.
 
+## 4. Suggested reviewers
+
+We suggest the following potential reviewers, each a maintainer of a widely used tool in B cell repertoire and lineage analysis and well placed to evaluate Olmsted's fit within that ecosystem:
+
+- **Jason Vander Heiden** (GitHub `javh`), a leader in the AIRR Community and a core developer of the Immcantation framework. He co-authored the AIRR Community's standardized data representations, the input standard Olmsted consumes: Vander Heiden et al. (2018), "AIRR Community Standardized Representations for Annotated Immune Repertoires," *Frontiers in Immunology* 9:2206, doi:10.3389/fimmu.2018.02206.
+- **Chaim Schramm** (GitHub `scharch`), maintainer of SONAR, the antibody-ontogeny pipeline developed by the Structural Bioinformatics Section of the Vaccine Research Center (NIAID, NIH) and the Shapiro lab at Columbia (https://github.com/scharch/SONAR): Schramm et al. (2016), "SONAR: A High-Throughput Pipeline for Inferring Antibody Ontogenies from Longitudinal Sequencing of B Cell Transcripts," *Frontiers in Immunology* 7:372, doi:10.3389/fimmu.2016.00372.
+- **Kenneth Hoehn** (GitHub `kbhoehn`), maintainer of dowser, the most widely used B cell receptor phylogenetics package (https://github.com/immcantation/dowser): Hoehn et al. (2022), "Phylogenetic analysis of migration, differentiation, and class switching in B cells," *PLOS Computational Biology* 18(4):e1009885, doi:10.1371/journal.pcbi.1009885.
+
+In the interest of transparency: I (Erick) am one of the many co-authors of the AIRR Community consortium paper cited for Dr. Vander Heiden above, which reflects shared participation in the community's standards effort. But I would also note that the Kleinstein Lab and its Immcantation framework (with which Drs. Vander Heiden and Hoehn are associated) are, if anything, our principal competitors in this area. 
+
 We believe these revisions clarify the scope and are glad to make any further adjustments the handling editor or reviewers request.
