@@ -12,7 +12,7 @@ The substantial effort in the application (as distinct from `olmsted-cli` and fr
 - **Forest reconciliation** logic that normalizes multi-root inputs from various upstream pipelines into a single rooted tree via consensus synthetic roots.
 - A **Vega-wrapper abstraction** that preserves zoom/pan/brush state across streaming data updates.
 
-This domain logic is exercised by a suite of **over 600 automated tests across 29 files**, run in CI alongside linting and a production build. The load-bearing decisions are documented in `DESIGN.md` and `ARCHITECTURE.md` in the repository.
+This domain logic is exercised by a suite of **over 600 automated tests across more than 30 files**, run in CI alongside linting and a production build. The load-bearing decisions are documented in `DESIGN.md` and `ARCHITECTURE.md` in the repository.
 
 As one indication that the visualization application is a distinct and useful contribution in the eyes of the field, it was presented in the software session of the [AIRR Community Meeting VIII](https://www.antibodysociety.org/the-airr-community/meetings/airr-community-meeting-viii-decoding-and-recoding-immunity/), the primary gathering of the immune-repertoire analysis community, where it was enthusiastically received, including by Steven Kleinstein, whose group develops the widely used Immcantation suite (which includes `dowser`). We take this as evidence that the tool addresses a real need for the community independent of any particular data-processing pipeline.
 

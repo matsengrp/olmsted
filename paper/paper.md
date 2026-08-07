@@ -109,7 +109,7 @@ This is both a privacy guarantee—sensitive patient-derived sequences never lea
 The engineering effort in the application, as distinct from upstream tree-building tools and the olmsted-cli format shim, is substantial and domain-specific.
 It includes: a lazy-loading data model that keeps thousand-family datasets responsive by loading heavy per-tree sequence data only on demand; a field-metadata system that lets dataset-supplied fields dynamically populate axes, color encodings, tooltips, and table columns without code changes; reconciliation of "forest" inputs (multiple disconnected subtrees) into a single rooted tree via consensus synthetic roots; and a Vega-wrapper abstraction that preserves zoom, pan, and brush state across data updates.
 These decisions, and the guardrails that protect them, are documented in the repository's `DESIGN.md` and `ARCHITECTURE.md`.
-Correctness of this domain logic is protected by a suite of over 600 automated tests across 29 files, run in continuous integration alongside linting and a production build.
+Correctness of this domain logic is protected by a suite of over 600 automated tests across more than 30 files, run in continuous integration alongside linting and a production build.
 
 **Provenance.**
 The codebase originated in 2018 as a fork of Nextstrain's Auspice [@Hadfield2018-nextstrain], a viewer for viral-genome phylogeography, and was actively developed through 2020 before being shelved.
