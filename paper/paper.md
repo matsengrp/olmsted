@@ -103,10 +103,11 @@ This separation of concerns lets the visualization improve independently of, and
 Olmsted is built with React and Redux, with all visualizations implemented as Vega specifications [@Satyanarayan2016-rv] and rendered through a single wrapper component.
 The application is deliberately client-side only: it performs no server-side computation, and uploaded data is stored in the browser (IndexedDB, via Dexie) and never transmitted (\autoref{fig:database}).
 This is both a privacy guarantee—sensitive patient-derived sequences never leave the researcher's machine—and an operational simplification, since the public instance at [olmstedviz.org](http://olmstedviz.org) is served as static files with no backend to maintain.
+The application can also be run locally via Docker.
 
 ![Dataset management interface.\label{fig:database}](./images/1-02-database-manager.png){height="3in"}
 
-The engineering effort in the application, as distinct from upstream tree-building tools and the olmsted-cli format shim, is substantial and domain-specific.
+The engineering effort in the application is substantial and domain-specific.
 It includes: a lazy-loading data model that keeps thousand-family datasets responsive by loading heavy per-tree sequence data only on demand; a field-metadata system that lets dataset-supplied fields dynamically populate axes, color encodings, tooltips, and table columns without code changes; reconciliation of "forest" inputs (multiple disconnected subtrees) into a single rooted tree via consensus synthetic roots; and a Vega-wrapper abstraction that preserves zoom, pan, and brush state across data updates.
 These decisions, and the guardrails that protect them, are documented in the repository's `DESIGN.md` and `ARCHITECTURE.md`.
 Correctness of this domain logic is protected by a suite of over 600 automated tests across more than 30 files, run in continuous integration alongside linting and a production build.
@@ -124,8 +125,8 @@ The `olmsted` command-line tool converts data into Olmsted's JSON format.
 Unlike the web application, this data-preparation step requires a one-time install: `olmsted-cli` is a Python package (Python 3.8 or higher) installed with `pip install olmsted-cli` (or `pipx install olmsted-cli` for an isolated environment).
 It supports two input formats:
 
-- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema remains experimental and is evolving; we are committed to supporting the newer schema versions as they become formalized.
-- **PCP (Parent-Child Pair) format**: A CSV-based format with explicit parent-child relationships
+- **AIRR format**: The JSON-based standard developed by the Adaptive Immune Receptor Repertoire Community [@Rubelt2017-vv; @Vander_Heiden2018-mu; @AIRR-Schema]. The AIRR lineage tree schema is being finalized and we will continue to adapt to changes should they arise.
+- **PCP (Parent-Child Pair) format**: A CSV-based format with explicit parent-child relationships.
 
 Example usage:
 ```bash
@@ -186,7 +187,6 @@ The 2025 revival was carried out with substantial assistance from agentic AI cod
 These tools were used to modernize the application's dependencies and JavaScript frameworks, replace the legacy server-side data pipeline with client-side processing and browser-based (IndexedDB) storage, and add the test suite and continuous integration described above.
 AI assistance was also used in preparing repository documentation and in drafting portions of this manuscript.
 All AI-assisted changes to code and text were reviewed, edited, and tested by the authors, who take full responsibility for the content.
-The application can be deployed as a static single-page application or run locally via Docker.
 
 # Acknowledgements
 
