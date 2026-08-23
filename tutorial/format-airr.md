@@ -1,5 +1,20 @@
 # AIRR (Adaptive Immune Receptor Repertoire) Format
 
+> **Note**: This page documents olmsted-cli's **legacy** `-f airr` input (the
+> nested `{ident, subjects, samples, seeds, clones}` shape below). Research
+> into its provenance found that, despite reusing some AIRR field names, this
+> container was never part of any official AIRR Community schema release, at
+> any version — see the field-by-field breakdown in
+> [matsengrp/olmsted-cli#47](https://github.com/matsengrp/olmsted-cli/issues/47).
+> That issue tracks removing this legacy format and renaming olmsted-cli's
+> other AIRR input, `-f airr2` (which *does* implement an official schema —
+> the AIRR-C v2 Clone/Tree/Node/Cell schema, AIRR Schema v2.0.0), to `-f airr`
+> in its place. Once that lands, this page will need a rewrite to describe
+> the new shape; until then, treat the content below as describing what
+> will become a removed format, and see
+> [olmsted-cli's FORMATS.md](https://github.com/matsengrp/olmsted-cli/blob/main/FORMATS.md)
+> for the current, authoritative format descriptions.
+
 ## Overview
 
 AIRR format is a JSON-based standard developed by the AIRR Community for representing adaptive immune receptor repertoire sequencing data, including B and T cell receptor sequences, clonal families, and phylogenetic relationships.
