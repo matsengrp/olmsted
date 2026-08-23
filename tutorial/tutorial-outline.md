@@ -346,6 +346,7 @@
   - **Reference**: See `tutorial/format-pcp.md` for full specification
 
 - **AIRR (Adaptive Immune Receptor Repertoire) Format**:
+  - **Note**: [matsengrp/olmsted-cli#47](https://github.com/matsengrp/olmsted-cli/issues/47) tracks removing today's legacy `-f airr` (the nested samples → clones → trees → nodes shape below, which does not correspond to any official AIRR release) and renaming `-f airr2` (the real AIRR-C v2 Clone/Tree/Node/Cell schema) to `-f airr`. Confirm that issue's status before recording a tutorial video against this section.
   - **Single JSON file** following AIRR Community standards
   - Show example from `olmsted-cli/example_data/airr/`
   - Nested structure: samples → clones → trees → nodes

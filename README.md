@@ -126,9 +126,11 @@ Example PCP data can be found in the `olmsted-cli/example_data/` directory, demo
 
 #### AIRR Format
 
+**Note**: olmsted-cli currently accepts two AIRR-flavored JSON inputs, `-f airr` (legacy) and `-f airr2`. Only `airr2` corresponds to an official AIRR Community schema release — the **AIRR-C v2 Clone/Tree/Node/Cell schema** (AIRR Schema v2.0.0), documented at [docs.airr-community.org/en/latest/datarep/clone.html](https://docs.airr-community.org/en/latest/datarep/clone.html). The legacy `-f airr` container was never part of any official AIRR release, despite reusing some AIRR field names; [matsengrp/olmsted-cli#47](https://github.com/matsengrp/olmsted-cli/issues/47) tracks removing it and renaming `airr2` to `airr`. See [olmsted-cli's FORMATS.md](https://github.com/matsengrp/olmsted-cli/blob/main/FORMATS.md) for the authoritative, current field-level mapping — the summary below may be stale once that issue lands.
+
 The AIRR JSON format is described [here](https://github.com/airr-community/airr-standards/blob/master/specs/airr-schema.yaml).
 A list of tools that output this format can be found [here](https://docs.airr-community.org/en/stable/resources/rearrangement_support.html).
-For a human-readable version of the schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/main/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
+For a human-readable version of the Olmsted output schema, see [olmstedviz.org/schema.html](http://www.olmstedviz.org/schema.html) or view [schema.html](https://github.com/matsengrp/olmsted/blob/main/schema.html) on [htmlpreview.github.io](https://htmlpreview.github.io).
 
 ### Validation
 

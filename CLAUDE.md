@@ -120,7 +120,7 @@ See **[PRE-MERGE-CHECKLIST.md](./PRE-MERGE-CHECKLIST.md)** for the full checklis
 
 ### Data Formats
 
-- **AIRR**: Adaptive Immune Receptor Repertoire - JSON format following AIRR Community standards
+- **AIRR**: Adaptive Immune Receptor Repertoire. olmsted-cli currently accepts two JSON input variants named `-f airr` and `-f airr2`, but only `airr2` (the AIRR-C v2 Clone/Tree/Node/Cell schema, the format Dowser's `writeTreesJSON` emits) corresponds to an actual official AIRR Community schema release. `-f airr` (legacy) reuses some AIRR field names inside an Olmsted-specific container that was never part of any official AIRR release. [matsengrp/olmsted-cli#47](https://github.com/matsengrp/olmsted-cli/issues/47) tracks removing the legacy format and renaming `airr2` to `airr`, since only one variant will remain — check that issue for current status before assuming which shape `-f airr` means.
 - **PCP**: Parent-Child Pair - CSV format with phylogenetic relationships and optional Newick trees
 - **Olmsted JSON**: Internal format produced by olmsted-cli, consumed by the web application
 
