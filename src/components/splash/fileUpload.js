@@ -143,7 +143,7 @@ class FileUpload extends React.Component {
 
       if (!fileType) {
         throw new Error(
-          "Unsupported file type. Please upload olmsted-cli consolidated JSON files (.json or .json.gz). For split files, select all files together (datasets.json, clones.*.json, tree.*.json)."
+          "Unsupported file type. Please upload olmsted-cli consolidated JSON files (.json or .json.gz). For split files, select all files together (datasets.json, clones.*.json, tree.*.json) — note this format is deprecated and will be removed in a future release; regenerate your data with a current olmsted-cli, which produces a single consolidated JSON file."
         );
       }
 
@@ -558,14 +558,18 @@ class FileUpload extends React.Component {
               {uploadedFiles.some(
                 (f) =>
                   !this.state.dismissedWarnings.has(f.datasetId) &&
-                  (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                  (f.missingFieldWarnings?.length > 0 ||
+                    f.dataModifications?.length > 0 ||
+                    f.fileType === "consolidated-split")
               ) && (
                 <div style={{ marginBottom: 10 }}>
                   {uploadedFiles
                     .filter(
                       (f) =>
                         !this.state.dismissedWarnings.has(f.datasetId) &&
-                        (f.missingFieldWarnings?.length > 0 || f.dataModifications?.length > 0)
+                        (f.missingFieldWarnings?.length > 0 ||
+                          f.dataModifications?.length > 0 ||
+                          f.fileType === "consolidated-split")
                     )
                     .map((file) => (
                       <div
@@ -614,6 +618,13 @@ class FileUpload extends React.Component {
                             &times;
                           </button>
                         </div>
+                        {file.fileType === "consolidated-split" && (
+                          <div style={{ marginBottom: 4 }}>
+                            This dataset was uploaded using the <strong>split-file (multi-file) format</strong>, which
+                            is deprecated and will be removed in a future release. Regenerate it with a current
+                            olmsted-cli, which produces a single consolidated JSON file, to avoid disruption.
+                          </div>
+                        )}
                         {file.missingFieldWarnings?.length > 0 && (
                           <div style={{ marginBottom: 4 }}>
                             <strong>Missing data fields:</strong>
