@@ -1,4 +1,4 @@
-import queryString from "query-string";
+import * as queryString from "../utils/queryString";
 import * as types from "../actions/types";
 
 /* What is this middleware?
