@@ -50,7 +50,7 @@ olmsted/
 ## Development Environment
 
 ### Requirements
-- **Node.js**: v20.x LTS
+- **Node.js**: v22.x LTS
 - **npm**: >= 9.0.0
 
 ### Setup
