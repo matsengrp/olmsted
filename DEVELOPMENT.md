@@ -38,14 +38,14 @@ open http://localhost:3999
 
 ## Prerequisites
 
-- **Node.js**: v20.x LTS (see `engines` in package.json)
+- **Node.js**: v22.x LTS (see `engines` in package.json)
 - **npm**: >= 9.0.0
 - **Git**: For version control
 
 ### Verifying Your Environment
 
 ```bash
-node --version   # Should output v20.x.x
+node --version   # Should output v22.x.x
 npm --version    # Should output 9.x.x or higher
 ```
 
@@ -654,7 +654,7 @@ python bin/aws_invalidate_cloudfront.py
 
 ### `npm install` Fails
 
-Ensure you are running Node.js v20.x (`node --version`). Peer dependency conflicts have been resolved via overrides in `package.json`, so `--legacy-peer-deps` should not be needed.
+Ensure you are running Node.js v22.x (`node --version`). Peer dependency conflicts have been resolved via overrides in `package.json`, so `--legacy-peer-deps` should not be needed.
 
 ### Hot Reloading Not Working
 
